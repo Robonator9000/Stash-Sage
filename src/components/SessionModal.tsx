@@ -79,12 +79,12 @@ export function SessionModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className={`w-full max-w-md rounded-2xl border-2 overflow-hidden shadow-2xl flex flex-col max-h-[85vh] ${
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className={`w-full max-w-md rounded-2xl border-2 overflow-hidden shadow-2xl flex flex-col max-h-[90vh] ${
         isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
       }`}>
         {/* Header - Fixed */}
-        <div className={`flex items-center justify-between p-4 border-b flex-shrink-0 ${
+        <div className={`flex items-center justify-between p-5 border-b flex-shrink-0 ${
           isDark ? 'border-slate-800' : 'border-gray-200'
         }`}>
           <div>
@@ -109,7 +109,7 @@ export function SessionModal({
 
         {/* Content - Scrollable */}
         <div 
-          className="p-4 space-y-4 overflow-y-auto flex-1"
+          className="p-5 space-y-5 overflow-y-auto flex-1"
           style={{ scrollbarGutter: 'stable' }}
         >
           {/* People & Stats */}
@@ -151,7 +151,7 @@ export function SessionModal({
           {/* Amount Used */}
           <div>
             <label className={`block text-sm font-medium mb-2 ${
-              isDark ? 'text-slate-400' : 'text-gray-500'
+              isDark ? 'text-slate-300' : 'text-gray-700'
             }`}>
               {t('amountUsed', settings.language)} (g)
             </label>
@@ -330,7 +330,7 @@ export function SessionModal({
           {/* Notes */}
           <div>
             <label className={`block text-sm font-medium mb-2 ${
-              isDark ? 'text-slate-400' : 'text-gray-500'
+              isDark ? 'text-slate-300' : 'text-gray-700'
             }`}>
               {t('sessionNotes', settings.language)}
             </label>
@@ -349,7 +349,7 @@ export function SessionModal({
         </div>
 
         {/* Footer - Fixed */}
-        <div className={`flex gap-3 p-4 border-t flex-shrink-0 ${
+        <div className={`flex items-center gap-3 p-5 border-t flex-shrink-0 ${
           isDark ? 'border-slate-800' : 'border-gray-200'
         }`}>
           <button
@@ -366,8 +366,8 @@ export function SessionModal({
             onClick={handleFinishSession}
             className={`flex-1 py-3 rounded-xl font-bold transition-all ${
               isDark 
-                ? 'bg-gradient-to-r from-cyan-500 to-green-500 text-white hover:from-cyan-400 hover:to-green-400' 
-                : 'bg-gradient-to-r from-cyan-500 to-green-500 text-white hover:from-cyan-400 hover:to-green-400'
+                ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white hover:from-cyan-400 hover:to-emerald-400' 
+                : 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white hover:from-cyan-400 hover:to-emerald-400'
             }`}
           >
             {t('finishSession', settings.language)}

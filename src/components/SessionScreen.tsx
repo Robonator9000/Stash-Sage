@@ -93,7 +93,7 @@ export function SessionScreen({ product, initialAmount, people, onFinish, onClos
       <div className="sticky top-0 bg-slate-900 border-b border-slate-800 px-4 py-4 z-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-cyan-500 to-green-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-cyan-500 to-emerald-500 flex items-center justify-center">
               <Flame className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -103,7 +103,7 @@ export function SessionScreen({ product, initialAmount, people, onFinish, onClos
           </div>
           <button
             onClick={() => setShowFinishConfirm(true)}
-            className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-green-500 text-white font-bold rounded-lg hover:from-cyan-400 hover:to-green-400 transition-all"
+            className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-bold rounded-lg hover:from-cyan-400 hover:to-emerald-400 transition-all"
           >
             Finish
           </button>
@@ -128,7 +128,7 @@ export function SessionScreen({ product, initialAmount, people, onFinish, onClos
               <span className="text-lg font-bold text-white w-12 text-center">{hitTimerSeconds}s</span>
               <button
                 onClick={() => adjustTimer(5)}
-                className="w-8 h-8 rounded-lg bg-gradient-to-r from-cyan-600 to-green-600 text-white flex items-center justify-center hover:from-cyan-500 hover:to-green-500 transition-colors"
+                className="w-8 h-8 rounded-lg bg-gradient-to-r from-cyan-600 to-emerald-600 text-white flex items-center justify-center hover:from-cyan-500 hover:to-emerald-500 transition-colors"
               >
                 <Plus className="w-4 h-4" />
               </button>
@@ -184,7 +184,7 @@ export function SessionScreen({ product, initialAmount, people, onFinish, onClos
               className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${
                 timerRunning
                   ? 'bg-amber-500 hover:bg-amber-400'
-                  : 'bg-gradient-to-r from-cyan-500 to-green-500 hover:from-cyan-400 hover:to-green-400'
+                  : 'bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400'
               }`}
             >
               {timerRunning ? (
@@ -218,7 +218,7 @@ export function SessionScreen({ product, initialAmount, people, onFinish, onClos
                 key={i}
                 className={`flex-1 min-w-[60px] py-3 px-4 rounded-xl text-center font-bold transition-all ${
                   i === currentPerson
-                    ? 'bg-gradient-to-r from-cyan-500 to-green-500 text-white scale-105'
+                    ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white scale-105'
                     : 'bg-slate-800 text-slate-400'
                 }`}
               >
@@ -229,7 +229,7 @@ export function SessionScreen({ product, initialAmount, people, onFinish, onClos
 
           <button
             onClick={handleNextHit}
-            className="w-full py-4 bg-gradient-to-r from-cyan-500 to-green-500 text-white font-bold rounded-xl hover:from-cyan-400 hover:to-green-400 transition-all text-lg"
+            className="w-full py-4 bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-bold rounded-xl hover:from-cyan-400 hover:to-emerald-400 transition-all text-lg"
           >
             Next Hit →
           </button>
@@ -262,7 +262,7 @@ export function SessionScreen({ product, initialAmount, people, onFinish, onClos
             </div>
           </div>
 
-          <div className="bg-gradient-to-r from-cyan-900/50 to-green-900/50 rounded-xl p-4 mb-4">
+          <div className="bg-gradient-to-r from-cyan-900/50 to-emerald-900/50 rounded-xl p-4 mb-4">
             <p className="text-sm text-slate-400 mb-1">Per Person</p>
             <p className="text-2xl font-bold text-white">{perPerson.toFixed(2)}g</p>
           </div>
@@ -293,7 +293,7 @@ export function SessionScreen({ product, initialAmount, people, onFinish, onClos
               </button>
               <button
                 onClick={() => adjustAmount(0.1)}
-                className="w-12 h-12 rounded-xl bg-gradient-to-r from-cyan-600 to-green-600 text-white flex items-center justify-center hover:from-cyan-500 hover:to-green-500 transition-colors font-bold"
+                className="w-12 h-12 rounded-xl bg-gradient-to-r from-cyan-600 to-emerald-600 text-white flex items-center justify-center hover:from-cyan-500 hover:to-emerald-500 transition-colors font-bold"
               >
                 +0.1
               </button>
@@ -318,7 +318,7 @@ export function SessionScreen({ product, initialAmount, people, onFinish, onClos
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-slate-900 border-2 border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
             <div className="p-6">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-cyan-500 to-green-500 flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500 flex items-center justify-center mx-auto mb-4">
                 <Check className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-bold text-white text-center mb-2">Finish Session?</h3>
@@ -335,7 +335,7 @@ export function SessionScreen({ product, initialAmount, people, onFinish, onClos
                 </button>
                 <button
                   onClick={handleFinishSession}
-                  className="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-green-500 text-white font-bold rounded-xl hover:from-cyan-400 hover:to-green-400 transition-all"
+                  className="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-bold rounded-xl hover:from-cyan-400 hover:to-emerald-400 transition-all"
                 >
                   Finish
                 </button>

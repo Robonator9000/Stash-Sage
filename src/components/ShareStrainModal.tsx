@@ -75,14 +75,14 @@ export function ShareStrainModal({ products, onClose, onShare, isDark = true }: 
         isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
       }`}>
         {/* Header */}
-        <div className={`flex items-center justify-between p-4 border-b ${isDark ? 'border-slate-800' : 'border-gray-200'}`}>
+        <div className={`flex items-center justify-between p-5 border-b ${isDark ? 'border-slate-800' : 'border-gray-200'}`}>
           <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
             {t('shareStrain', settings.language)}
           </h2>
           <button
             onClick={onClose}
-            className={`p-2 rounded-lg transition-colors ${
-              isDark ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'
+            className={`p-2 rounded-xl transition-colors ${
+              isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'
             }`}
           >
             <X className="w-5 h-5" />
@@ -90,7 +90,7 @@ export function ShareStrainModal({ products, onClose, onShare, isDark = true }: 
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-4">
+        <div className="p-5 space-y-5">
           {/* Toggle: From Stash or Custom */}
           <div className="flex gap-2">
             <button
@@ -378,10 +378,10 @@ export function ShareStrainModal({ products, onClose, onShare, isDark = true }: 
         </div>
 
         {/* Footer */}
-        <div className={`flex gap-3 p-4 border-t ${isDark ? 'border-slate-800' : 'border-gray-200'}`}>
+        <div className={`flex items-center gap-3 p-5 border-t ${isDark ? 'border-slate-800' : 'border-gray-200'}`}>
           <button
             onClick={onClose}
-            className={`flex-1 py-2.5 rounded-xl font-medium transition-colors ${
+            className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
               isDark 
                 ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' 
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -392,9 +392,9 @@ export function ShareStrainModal({ products, onClose, onShare, isDark = true }: 
           <button
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className={`flex-1 py-2.5 rounded-xl font-bold transition-all ${
+            className={`flex-1 py-3 rounded-xl font-bold transition-all ${
               canSubmit
-                ? 'bg-gradient-to-r from-cyan-500 to-green-500 text-white hover:from-cyan-400 hover:to-green-400'
+                ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white hover:from-cyan-400 hover:to-emerald-400'
                 : isDark 
                   ? 'bg-slate-700 text-slate-500 cursor-not-allowed' 
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'

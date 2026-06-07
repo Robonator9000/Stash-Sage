@@ -95,10 +95,10 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
                 onChange={(e) => setAmount(Math.max(0, parseFloat(e.target.value) || 0))}
                 min="0"
                 step="0.1"
-                className={`flex-1 px-4 py-2 rounded-xl border-2 text-center font-bold outline-none ${
+                className={`flex-1 px-4 py-3 rounded-xl border-2 text-center font-bold outline-none ${
                   isDark 
-                    ? 'bg-slate-800 border-slate-700 text-white' 
-                    : 'bg-gray-50 border-gray-200 text-gray-900'
+                    ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' 
+                    : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
                 }`}
               />
               <button
@@ -187,7 +187,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
               onClick={() => setStartSession(!startSession)}
               className={`w-14 h-8 rounded-full transition-colors relative ${
                 startSession 
-                  ? 'bg-gradient-to-r from-cyan-500 to-green-500' 
+                  ? 'bg-gradient-to-r from-cyan-500 to-emerald-500' 
                   : isDark ? 'bg-slate-600' : 'bg-gray-300'
               }`}
             >
@@ -230,8 +230,8 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
             className={`flex-1 py-3 rounded-xl font-bold transition-all ${
               amount > 0
                 ? isDark 
-                    ? 'bg-gradient-to-r from-cyan-500 to-green-500 text-white hover:from-cyan-400 hover:to-green-400' 
-                    : 'bg-gradient-to-r from-cyan-600 to-green-600 text-white hover:from-cyan-500 hover:to-green-500'
+                    ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white hover:from-cyan-400 hover:to-emerald-400' 
+                    : 'bg-gradient-to-r from-cyan-600 to-emerald-600 text-white hover:from-cyan-500 hover:to-emerald-500'
                 : 'bg-slate-700 cursor-not-allowed'
             }`}
           >
