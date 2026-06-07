@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Product } from '../types';
+import { useSettings } from '../utils/useSettings';
 import { roundToHundredth } from '../utils/helpers';
 import { X, Users, Minus, Plus, Play } from 'lucide-react';
 
@@ -11,9 +12,10 @@ interface ConsumeModalProps {
 }
 
 export function ConsumeModal({ product, onConsume, onClose, isDark = true }: ConsumeModalProps) {
+  const { settings } = useSettings();
   const [isVisible, setIsVisible] = useState(false);
-  const [people, setPeople] = useState(2);
-  const [amount, setAmount] = useState(0.5);
+  const [people, setPeople] = useState(settings.sessionDefaults.defaultPeople);
+  const [amount, setAmount] = useState(settings.sessionDefaults.defaultAmount);
   const [startSession, setStartSession] = useState(false);
 
   useEffect(() => {

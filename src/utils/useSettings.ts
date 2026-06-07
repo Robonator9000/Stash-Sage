@@ -16,13 +16,26 @@ const defaultSettings: Settings = {
   },
   favoriteBrands: [],
   recentBrands: [],
+  sessionDefaults: {
+    defaultAmount: 0.5,
+    defaultPeople: 2,
+    defaultHitTimer: 10,
+    defaultGramsPerBowl: 0.25,
+    rotationEnabled: false,
+  },
 };
 
 export function useSettings() {
   const [settings, setSettings] = useState<Settings>(() => {
     try {
       const saved = localStorage.getItem(SETTINGS_KEY);
-      return saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
+      if (!saved) return defaultSettings;
+      const parsed = JSON.parse(saved);
+      return {
+        ...defaultSettings,
+        ...parsed,
+        sessionDefaults: { ...defaultSettings.sessionDefaults, ...parsed.sessionDefaults },
+      };
     } catch {
       return defaultSettings;
     }

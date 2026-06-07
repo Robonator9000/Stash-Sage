@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Product, Session } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
-import { X, Users, Clock, Play, Pause, RotateCcw, Calculator } from 'lucide-react';
+import { X, Users, Clock, Play, Pause, RotateCcw, Calculator, ArrowRight } from 'lucide-react';
 
 interface SessionModalProps {
   product: Product;
@@ -31,8 +31,27 @@ export function SessionModal({
   const [isTimerRunning, setIsTimerRunning] = useState(autoStartTimer);
   const [timerSeconds, setTimerSeconds] = useState(defaultHitTimer);
   const [sessionNotes, setSessionNotes] = useState('');
-  const [gramsPerBowl, setGramsPerBowl] = useState(0.25);
+  const [gramsPerBowl, setGramsPerBowl] = useState(settings.sessionDefaults.defaultGramsPerBowl);
   const [showCalculator, setShowCalculator] = useState(false);
+  const [currentPerson, setCurrentPerson] = useState(0);
+  const [personHits, setPersonHits] = useState<number[]>(() => new Array(people).fill(0));
+
+  const rotationEnabled = settings.sessionDefaults.rotationEnabled && people > 1;
+
+  useEffect(() => {
+    setPersonHits(new Array(people).fill(0));
+    setCurrentPerson(0);
+  }, [people]);
+
+  const handleHit = useCallback(() => {
+    setHitsCount((prev) => prev + 1);
+    setPersonHits((prev) => {
+      const next = [...prev];
+      next[currentPerson] = (next[currentPerson] || 0) + 1;
+      return next;
+    });
+    setCurrentPerson((p) => (p + 1) % people);
+  }, [currentPerson, people]);
 
   // Calculate bowls per person automatically
   const gramsPerPerson = people > 0 ? amountUsed / people : 0;
@@ -60,6 +79,8 @@ export function SessionModal({
       hitsCount,
       notes: sessionNotes,
       bowlsPerPerson: Math.round(bowlsPerPerson * 10) / 10,
+      personHits: rotationEnabled ? personHits : undefined,
+      rotationEnabled: rotationEnabled || undefined,
     };
     onFinish(product.id, amountUsed, session);
   };
@@ -113,39 +134,98 @@ export function SessionModal({
           style={{ scrollbarGutter: 'stable' }}
         >
           {/* People & Stats */}
-          <div className={`flex items-center justify-between p-3 rounded-xl ${
+          <div className={`p-3 rounded-xl space-y-3 ${
             isDark ? 'bg-slate-800' : 'bg-gray-100'
           }`}>
-            <div className="flex items-center gap-2">
-              <Users className={`w-5 h-5 ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`} />
-              <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {people} {people === 1 ? t('person', settings.language) : t('people', settings.language)}
-              </span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Users className={`w-5 h-5 ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`} />
+                <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {people} {people === 1 ? t('person', settings.language) : t('people', settings.language)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                  {t('hits', settings.language)}:
+                </span>
+                <span className={`font-bold w-8 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {hitsCount}
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                {t('hits', settings.language)}:
-              </span>
-              <button
-                onClick={() => setHitsCount(Math.max(0, hitsCount - 1))}
-                className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold ${
-                  isDark ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                -
-              </button>
-              <span className={`font-bold w-8 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {hitsCount}
-              </span>
-              <button
-                onClick={() => setHitsCount(hitsCount + 1)}
-                className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold ${
-                  isDark ? 'bg-cyan-600 text-white hover:bg-cyan-500' : 'bg-cyan-500 text-white hover:bg-cyan-400'
-                }`}
-              >
-                +
-              </button>
-            </div>
+
+            {rotationEnabled && (
+              <>
+                {/* Person Indicators */}
+                <div className="flex gap-1.5">
+                  {Array.from({ length: people }, (_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCurrentPerson(i)}
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        i === currentPerson
+                          ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white shadow-lg scale-105'
+                          : isDark
+                            ? 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+                            : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
+                      }`}
+                    >
+                      P{i + 1}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Per-Person Hit Counts */}
+                <div className="flex gap-1.5">
+                  {personHits.map((hits, i) => (
+                    <div
+                      key={i}
+                      className={`flex-1 text-center text-xs py-1 rounded-md ${
+                        i === currentPerson
+                          ? isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-100 text-cyan-700'
+                          : isDark ? 'text-slate-500' : 'text-gray-400'
+                      }`}
+                    >
+                      {hits}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Next Hit Button */}
+                <button
+                  onClick={handleHit}
+                  className={`w-full py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all ${
+                    isDark
+                      ? 'bg-cyan-600 text-white hover:bg-cyan-500'
+                      : 'bg-cyan-500 text-white hover:bg-cyan-400'
+                  }`}
+                >
+                  <ArrowRight className="w-4 h-4" />
+                  {t('nextHit', settings.language)} — P{(currentPerson % people) + 1}
+                </button>
+              </>
+            )}
+
+            {!rotationEnabled && (
+              <div className="flex items-center justify-center gap-2">
+                <button
+                  onClick={() => setHitsCount(Math.max(0, hitsCount - 1))}
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold ${
+                    isDark ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  -
+                </button>
+                <button
+                  onClick={() => setHitsCount(hitsCount + 1)}
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold ${
+                    isDark ? 'bg-cyan-600 text-white hover:bg-cyan-500' : 'bg-cyan-500 text-white hover:bg-cyan-400'
+                  }`}
+                >
+                  +
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Amount Used */}

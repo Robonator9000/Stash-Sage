@@ -33,6 +33,13 @@ export interface Settings {
   };
   favoriteBrands: string[];
   recentBrands: string[];
+  sessionDefaults: {
+    defaultAmount: number;
+    defaultPeople: number;
+    defaultHitTimer: number;
+    defaultGramsPerBowl: number;
+    rotationEnabled: boolean;
+  };
 }
 
 export interface CommunityPost {
@@ -64,6 +71,8 @@ export interface Session {
   hitsCount: number;
   notes: string;
   bowlsPerPerson: number;
+  personHits?: number[];
+  rotationEnabled?: boolean;
 }
 
 export type SortOption = 'newest' | 'oldest' | 'name' | 'rating' | 'thc' | 'amount' | 'price';

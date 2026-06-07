@@ -3,7 +3,7 @@ import { Product } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { createExportData, downloadExport, downloadCsvExport, copyExportToClipboard, parseImportData, ImportResult } from '../utils/dataTransfer';
-import { X, Globe, Palette, BarChart3, ChevronDown, Check, Download, Upload, Database, FileSpreadsheet, Clipboard, Merge } from 'lucide-react';
+import { X, Globe, Palette, BarChart3, ChevronDown, Check, Download, Upload, Database, FileSpreadsheet, Clipboard, Merge, Clock, Users, Scale, RotateCcw } from 'lucide-react';
 
 interface SettingsModalProps {
   products: Product[];
@@ -345,6 +345,121 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
                     >
                       {t('light', settings.language)}
                     </button>
+                  </div>
+                </div>
+
+                {/* Session Defaults */}
+                <div>
+                  <label className={sectionLabel}>
+                    <RotateCcw className="w-4 h-4" />
+                    {t('sessionDefaults', settings.language)}
+                  </label>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className={`block text-xs mb-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                          <Scale className="w-3 h-3 inline mr-1" />
+                          {t('defaultAmount', settings.language)}
+                        </label>
+                        <input
+                          type="number"
+                          value={settings.sessionDefaults.defaultAmount}
+                          onChange={(e) => updateSettings({
+                            sessionDefaults: { ...settings.sessionDefaults, defaultAmount: Math.max(0, parseFloat(e.target.value) || 0) }
+                          })}
+                          min="0"
+                          step="0.1"
+                          className={`w-full px-3 py-2 rounded-xl border-2 text-sm font-medium outline-none ${
+                            isDark
+                              ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
+                              : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
+                          }`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`block text-xs mb-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                          <Users className="w-3 h-3 inline mr-1" />
+                          {t('defaultPeople', settings.language)}
+                        </label>
+                        <input
+                          type="number"
+                          value={settings.sessionDefaults.defaultPeople}
+                          onChange={(e) => updateSettings({
+                            sessionDefaults: { ...settings.sessionDefaults, defaultPeople: Math.max(1, parseInt(e.target.value) || 1) }
+                          })}
+                          min="1"
+                          step="1"
+                          className={`w-full px-3 py-2 rounded-xl border-2 text-sm font-medium outline-none ${
+                            isDark
+                              ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
+                              : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
+                          }`}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className={`block text-xs mb-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                          <Clock className="w-3 h-3 inline mr-1" />
+                          {t('defaultHitTimer', settings.language)}
+                        </label>
+                        <input
+                          type="number"
+                          value={settings.sessionDefaults.defaultHitTimer}
+                          onChange={(e) => updateSettings({
+                            sessionDefaults: { ...settings.sessionDefaults, defaultHitTimer: Math.max(1, parseInt(e.target.value) || 1) }
+                          })}
+                          min="1"
+                          step="1"
+                          className={`w-full px-3 py-2 rounded-xl border-2 text-sm font-medium outline-none ${
+                            isDark
+                              ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
+                              : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
+                          }`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`block text-xs mb-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                          <Scale className="w-3 h-3 inline mr-1" />
+                          {t('defaultGramsPerBowl', settings.language)}
+                        </label>
+                        <input
+                          type="number"
+                          value={settings.sessionDefaults.defaultGramsPerBowl}
+                          onChange={(e) => updateSettings({
+                            sessionDefaults: { ...settings.sessionDefaults, defaultGramsPerBowl: Math.max(0.01, parseFloat(e.target.value) || 0.01) }
+                          })}
+                          min="0.01"
+                          step="0.05"
+                          className={`w-full px-3 py-2 rounded-xl border-2 text-sm font-medium outline-none ${
+                            isDark
+                              ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
+                              : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
+                          }`}
+                        />
+                      </div>
+                    </div>
+                    <div className={`flex items-center justify-between p-3 rounded-xl border-2 ${
+                      isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'
+                    }`}>
+                      <span className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+                        {t('rotationEnabled', settings.language)}
+                      </span>
+                      <button
+                        onClick={() => updateSettings({
+                          sessionDefaults: { ...settings.sessionDefaults, rotationEnabled: !settings.sessionDefaults.rotationEnabled }
+                        })}
+                        className={`w-12 h-7 rounded-full transition-colors relative ${
+                          settings.sessionDefaults.rotationEnabled
+                            ? 'bg-gradient-to-r from-cyan-500 to-emerald-500'
+                            : isDark ? 'bg-slate-600' : 'bg-gray-300'
+                        }`}
+                      >
+                        <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform shadow ${
+                          settings.sessionDefaults.rotationEnabled ? 'translate-x-[1.375rem]' : 'translate-x-0.5'
+                        }`} />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
