@@ -1,4 +1,4 @@
-# Stash Tracker
+# Stash-Tracker
 
 A React web app for tracking cannabis products, consumption sessions, and community strain sharing.
 
