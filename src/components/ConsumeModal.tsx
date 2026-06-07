@@ -133,39 +133,6 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
             </div>
           </div>
 
-          {/* People */}
-          <div>
-            <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-              <Users className="w-4 h-4 inline mr-1" />
-              People
-            </label>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setPeople(Math.max(1, people - 1))}
-                className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-colors ${
-                  isDark 
-                    ? 'bg-slate-800 text-white hover:bg-slate-700' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                <Minus className="w-4 h-4" />
-              </button>
-              <span className={`flex-1 text-center text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {people}
-              </span>
-              <button
-                onClick={() => setPeople(people + 1)}
-                className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-colors ${
-                  isDark 
-                    ? 'bg-cyan-600 text-white hover:bg-cyan-500' 
-                    : 'bg-cyan-500 text-white hover:bg-cyan-400'
-                }`}
-              >
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
           {/* Start Session Toggle */}
           <div className={`flex items-center justify-between p-4 rounded-xl border-2 ${
             isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'
@@ -194,6 +161,41 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
               }`} />
             </button>
           </div>
+
+          {/* People — only shown when start session is on */}
+          {startSession && (
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+                <Users className="w-4 h-4 inline mr-1" />
+                People
+              </label>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPeople(Math.max(1, people - 1))}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-colors ${
+                    isDark 
+                      ? 'bg-slate-800 text-white hover:bg-slate-700' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
+                <span className={`flex-1 text-center text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {people}
+                </span>
+                <button
+                  onClick={() => setPeople(people + 1)}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-colors ${
+                    isDark 
+                      ? 'bg-cyan-600 text-white hover:bg-cyan-500' 
+                      : 'bg-cyan-500 text-white hover:bg-cyan-400'
+                  }`}
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Remaining After */}
           <div className={`p-3 rounded-xl ${isDark ? 'bg-slate-800/50' : 'bg-gray-100'}`}>

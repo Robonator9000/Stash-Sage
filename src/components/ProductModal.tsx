@@ -31,7 +31,6 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
   const brandDropdownRef = useRef<HTMLDivElement>(null);
 
   const [name, setName] = useState(product?.name || '');
-  const [strain, setStrain] = useState(product?.strain || '');
   const [type, setType] = useState<'indica' | 'sativa' | 'hybrid'>(product?.type || 'hybrid');
   const [thc, setThc] = useState(product?.thc || 0);
   const [cbd, setCbd] = useState(product?.cbd || 0);
@@ -102,7 +101,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
     const productData: Product = {
       id: product?.id || generateId(),
       name: name.trim(),
-      strain: strain.trim() || name.trim(),
+      strain: name.trim(),
       type,
       thc,
       cbd,
@@ -214,34 +213,16 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
             </div>
           </div>
 
-          {/* Name */}
+          {/* Strain Name */}
           <div>
             <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-              Product Name *
+              Strain Name *
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Blue Dream"
-              className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
-                isDark 
-                  ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' 
-                  : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-              } outline-none`}
-            />
-          </div>
-
-          {/* Strain */}
-          <div>
-            <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-              Strain Name
-            </label>
-            <input
-              type="text"
-              value={strain}
-              onChange={(e) => setStrain(e.target.value)}
-              placeholder="e.g., Blue Dream #4"
               className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
                 isDark 
                   ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' 

@@ -116,6 +116,7 @@ export default function App() {
     { value: 'thc', labelKey: 'sortThc' },
     { value: 'amount', labelKey: 'sortAmount' },
     { value: 'price', labelKey: 'sortPrice' },
+    { value: 'favorites', labelKey: 'sortFavorites' },
   ];
 
   const filterOptions = [

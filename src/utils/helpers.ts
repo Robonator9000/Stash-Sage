@@ -58,9 +58,17 @@ export function searchProducts(products: Product[], query: string): Product[] {
 export function sortProducts(products: Product[], sortBy: SortOption): Product[] {
   const sorted = [...products];
   
+  const favoritesFirst = (arr: Product[]) => {
+    const favs = arr.filter(p => p.favorite).sort((a, b) => a.name.localeCompare(b.name));
+    const rest = arr.filter(p => !p.favorite);
+    return [...favs, ...rest];
+  };
+
   switch (sortBy) {
-    case 'newest':
-      return sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    case 'newest': {
+      const byDate = sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      return favoritesFirst(byDate);
+    }
     case 'oldest':
       return sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     case 'name':
@@ -73,6 +81,8 @@ export function sortProducts(products: Product[], sortBy: SortOption): Product[]
       return sorted.sort((a, b) => (b.amount || 0) - (a.amount || 0));
     case 'price':
       return sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
+    case 'favorites':
+      return favoritesFirst(sorted);
     default:
       return sorted;
   }

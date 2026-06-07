@@ -68,9 +68,11 @@ export function ProductCard({ product, onClick, onConsume, onToggleFavorite, isD
                 {product.type}
               </span>
             </div>
-            <p className={`text-sm truncate ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-              {product.strain}
-            </p>
+            {product.brand && (
+              <p className={`text-sm truncate ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                From {product.brand}
+              </p>
+            )}
             <div className="flex items-center gap-3 mt-1">
               <span className={`text-sm font-medium ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`}>
                 {amountString}
@@ -247,9 +249,11 @@ export function ProductCard({ product, onClick, onConsume, onToggleFavorite, isD
             <h3 className={`font-bold text-lg truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>
               {product.name}
             </h3>
-            <p className={`text-sm truncate ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-              {product.strain}
-            </p>
+            {product.brand && (
+              <p className={`text-sm truncate ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                From {product.brand}
+              </p>
+            )}
           </div>
         </div>
 

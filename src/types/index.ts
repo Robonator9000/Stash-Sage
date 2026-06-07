@@ -75,6 +75,6 @@ export interface Session {
   rotationEnabled?: boolean;
 }
 
-export type SortOption = 'newest' | 'oldest' | 'name' | 'rating' | 'thc' | 'amount' | 'price';
+export type SortOption = 'newest' | 'oldest' | 'name' | 'rating' | 'thc' | 'amount' | 'price' | 'favorites';
 export type FilterType = 'all' | 'indica' | 'sativa' | 'hybrid' | 'favorites' | 'inStock' | 'lowStock' | 'outOfStock';
 export type ViewLayout = 'grid' | 'list' | 'compact';

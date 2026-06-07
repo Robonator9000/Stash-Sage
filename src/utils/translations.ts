@@ -42,6 +42,7 @@ const translations: Record<string, Record<string, string>> = {
     sortThc: 'Highest THC',
     sortAmount: 'Most Amount',
     sortPrice: 'Highest Price',
+    sortFavorites: 'Favorites First',
     filterAll: 'All Products',
     filterIndica: 'Indica',
     filterSativa: 'Sativa',
