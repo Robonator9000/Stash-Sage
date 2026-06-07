@@ -4,8 +4,6 @@ import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { createExportData, downloadExport, downloadCsvExport, copyExportToClipboard, parseImportData, ImportResult } from '../utils/dataTransfer';
 import { X, Globe, Palette, BarChart3, ChevronDown, Check, Download, Upload, Database, FileSpreadsheet, Clipboard, Merge, Clock, Users, Scale, RotateCcw, DollarSign, Lock, Hash } from 'lucide-react';
-import { Toast } from './Toast';
-
 interface SettingsModalProps {
   products: Product[];
   onImport: (data: ImportResult) => void;
@@ -35,7 +33,6 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
   const [showPinDisable, setShowPinDisable] = useState(false);
   const [pinError, setPinError] = useState('');
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
-  const [showRefreshToast, setShowRefreshToast] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
@@ -56,21 +53,14 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
 
   const handleStatToggle = (key: keyof Settings['statsVisibility']) => {
     toggleStatVisibility(key);
-    setShowRefreshToast(true);
-  };
-
-  const handleRefresh = () => {
-    window.location.reload();
   };
 
   const handleThemeChange = (theme: 'dark' | 'light') => {
     updateSettings({ theme });
-    setTimeout(() => window.location.reload(), 100);
   };
 
   const handleCurrencyChange = (sym: string) => {
     updateSettings({ currency: sym });
-    setTimeout(() => window.location.reload(), 100);
   };
 
   const handleExport = () => {
@@ -731,15 +721,6 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
         </div>
       </div>
 
-      {showRefreshToast && (
-        <Toast
-          message={t('statsChanged', settings.language)}
-          onClose={() => setShowRefreshToast(false)}
-          onRefresh={handleRefresh}
-          isDark={isDark}
-          language={settings.language}
-        />
-      )}
     </>
   );
 }
