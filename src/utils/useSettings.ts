@@ -31,65 +31,88 @@ const defaultSettings: Settings = {
   },
 };
 
+function loadSettings(): Settings {
+  try {
+    const saved = localStorage.getItem(SETTINGS_KEY);
+    if (!saved) return { ...defaultSettings };
+    const parsed = JSON.parse(saved);
+    return {
+      ...defaultSettings,
+      ...parsed,
+      sessionDefaults: { ...defaultSettings.sessionDefaults, ...parsed.sessionDefaults },
+    };
+  } catch {
+    return { ...defaultSettings };
+  }
+}
+
+type Listener = (s: Settings) => void;
+let _settings: Settings = loadSettings();
+const _listeners = new Set<Listener>();
+
+function notifyListeners() {
+  _listeners.forEach((l) => l(_settings));
+}
+
 export function useSettings() {
-  const [settings, setSettings] = useState<Settings>(() => {
-    try {
-      const saved = localStorage.getItem(SETTINGS_KEY);
-      if (!saved) return defaultSettings;
-      const parsed = JSON.parse(saved);
-      return {
-        ...defaultSettings,
-        ...parsed,
-        sessionDefaults: { ...defaultSettings.sessionDefaults, ...parsed.sessionDefaults },
-      };
-    } catch {
-      return defaultSettings;
-    }
-  });
+  const [settings, setSettings] = useState<Settings>(() => ({ ..._settings }));
 
   useEffect(() => {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-  }, [settings]);
+    _listeners.add(setSettings);
+    return () => { _listeners.delete(setSettings); };
+  }, []);
 
   const updateSettings = useCallback((updates: Partial<Settings>) => {
-    setSettings((prev) => ({ ...prev, ...updates }));
+    _settings = { ..._settings, ...updates };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(_settings));
+    notifyListeners();
   }, []);
 
   const toggleStatVisibility = useCallback((stat: keyof Settings['statsVisibility']) => {
-    setSettings((prev) => ({
-      ...prev,
+    _settings = {
+      ..._settings,
       statsVisibility: {
-        ...prev.statsVisibility,
-        [stat]: !prev.statsVisibility[stat],
+        ..._settings.statsVisibility,
+        [stat]: !_settings.statsVisibility[stat],
       },
-    }));
+    };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(_settings));
+    notifyListeners();
   }, []);
 
   const addFavoriteBrand = useCallback((brand: string) => {
-    setSettings((prev) => ({
-      ...prev,
-      favoriteBrands: prev.favoriteBrands.includes(brand)
-        ? prev.favoriteBrands
-        : [...prev.favoriteBrands, brand],
-    }));
+    _settings = {
+      ..._settings,
+      favoriteBrands: _settings.favoriteBrands.includes(brand)
+        ? _settings.favoriteBrands
+        : [..._settings.favoriteBrands, brand],
+    };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(_settings));
+    notifyListeners();
   }, []);
 
   const removeFavoriteBrand = useCallback((brand: string) => {
-    setSettings((prev) => ({
-      ...prev,
-      favoriteBrands: prev.favoriteBrands.filter((b) => b !== brand),
-    }));
+    _settings = {
+      ..._settings,
+      favoriteBrands: _settings.favoriteBrands.filter((b) => b !== brand),
+    };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(_settings));
+    notifyListeners();
   }, []);
 
   const addRecentBrand = useCallback((brand: string) => {
-    setSettings((prev) => ({
-      ...prev,
-      recentBrands: [brand, ...prev.recentBrands.filter((b) => b !== brand)].slice(0, 10),
-    }));
+    _settings = {
+      ..._settings,
+      recentBrands: [brand, ..._settings.recentBrands.filter((b) => b !== brand)].slice(0, 10),
+    };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(_settings));
+    notifyListeners();
   }, []);
 
   const replaceSettings = useCallback((nextSettings: Settings) => {
-    setSettings({ ...defaultSettings, ...nextSettings });
+    _settings = { ...defaultSettings, ...nextSettings };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(_settings));
+    notifyListeners();
   }, []);
 
   return {
