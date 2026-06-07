@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Product } from '../types';
 import { formatDate, roundToHundredth } from '../utils/helpers';
 import { Star, Heart, Flame, Clock, Package } from 'lucide-react';
@@ -13,8 +12,6 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onClick, onConsume, onToggleFavorite, isDark = true, layout = 'grid' }: ProductCardProps) {
-  const [showMenu, setShowMenu] = useState(false);
-
   const displayAmount = roundToHundredth(product.amount);
   const amountString = `${displayAmount.toFixed(2)}g`;
 

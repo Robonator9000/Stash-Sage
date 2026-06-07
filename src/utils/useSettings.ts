@@ -69,9 +69,14 @@ export function useSettings() {
     }));
   }, []);
 
+  const replaceSettings = useCallback((nextSettings: Settings) => {
+    setSettings({ ...defaultSettings, ...nextSettings });
+  }, []);
+
   return {
     settings,
     updateSettings,
+    replaceSettings,
     toggleStatVisibility,
     addFavoriteBrand,
     removeFavoriteBrand,

@@ -1,12 +1,14 @@
 import { Search, X } from 'lucide-react';
+import { t } from '../utils/translations';
 
 interface SearchBarProps {
   value: string;
   onChange: (value: string) => void;
   isDark?: boolean;
+  language?: string;
 }
 
-export function SearchBar({ value, onChange, isDark = true }: SearchBarProps) {
+export function SearchBar({ value, onChange, isDark = true, language = 'en' }: SearchBarProps) {
   return (
     <div className="relative">
       <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${
@@ -16,7 +18,7 @@ export function SearchBar({ value, onChange, isDark = true }: SearchBarProps) {
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Search products..."
+        placeholder={t('searchPlaceholder', language)}
         className={`w-full pl-12 pr-10 py-3 rounded-xl border-2 transition-colors ${
           isDark 
             ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' 

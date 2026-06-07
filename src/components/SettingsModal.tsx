@@ -1,10 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { Product } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
-import { X, Globe, Palette, BarChart3, ChevronDown, Check } from 'lucide-react';
+import { createExportData, downloadExport, downloadCsvExport, copyExportToClipboard, parseImportData, ImportResult } from '../utils/dataTransfer';
+import { X, Globe, Palette, BarChart3, ChevronDown, Check, Download, Upload, Database, FileSpreadsheet, Clipboard, Merge } from 'lucide-react';
 import { Toast } from './Toast';
 
 interface SettingsModalProps {
+  products: Product[];
+  onImport: (data: ImportResult) => void;
+  onMergeImport: (data: ImportResult) => void;
   onClose: () => void;
   onStatsChange?: () => void;
   isDark?: boolean;
@@ -18,16 +23,25 @@ const LANGUAGES = [
   { code: 'pt', name: 'Português', flag: '🇧🇷' },
 ];
 
-export function SettingsModal({ onClose, onStatsChange, isDark = true }: SettingsModalProps) {
+export function SettingsModal({ products, onImport, onMergeImport, onClose, isDark = true }: SettingsModalProps) {
   const { settings, updateSettings, toggleStatVisibility } = useSettings();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const mergeFileInputRef = useRef<HTMLInputElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const [showRefreshToast, setShowRefreshToast] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 10);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!feedback) return;
+    const timer = setTimeout(() => setFeedback(null), 4000);
+    return () => clearTimeout(timer);
+  }, [feedback]);
 
   const handleClose = () => {
     setIsVisible(false);
@@ -43,6 +57,72 @@ export function SettingsModal({ onClose, onStatsChange, isDark = true }: Setting
     window.location.reload();
   };
 
+  const handleExport = () => {
+    try {
+      const data = createExportData(products, settings);
+      downloadExport(data);
+      setFeedback({ type: 'success', message: t('exportSuccess', settings.language) });
+    } catch {
+      setFeedback({ type: 'error', message: t('importError', settings.language) });
+    }
+  };
+
+  const handleExportCsv = () => {
+    try {
+      downloadCsvExport(products);
+      setFeedback({ type: 'success', message: t('exportSuccess', settings.language) });
+    } catch {
+      setFeedback({ type: 'error', message: t('importError', settings.language) });
+    }
+  };
+
+  const handleCopyToClipboard = async () => {
+    try {
+      const data = createExportData(products, settings);
+      await copyExportToClipboard(data);
+      setFeedback({ type: 'success', message: t('copiedToClipboard', settings.language) });
+    } catch {
+      setFeedback({ type: 'error', message: t('importError', settings.language) });
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleMergeImportClick = () => {
+    mergeFileInputRef.current?.click();
+  };
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>, merge = false) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    if (!file.name.endsWith('.json')) {
+      setFeedback({ type: 'error', message: t('importError', settings.language) });
+      return;
+    }
+
+    try {
+      const content = await file.text();
+      const data = parseImportData(content);
+
+      if (!merge) {
+        const confirmed = window.confirm(t('importConfirm', settings.language));
+        if (!confirmed) return;
+        onImport(data);
+      } else {
+        onMergeImport(data);
+      }
+
+      setFeedback({ type: 'success', message: t('importSuccess', settings.language) });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : t('importError', settings.language);
+      setFeedback({ type: 'error', message });
+    }
+  };
+
   const statOptions = [
     { key: 'totalProducts' as const, label: t('totalProducts', settings.language) },
     { key: 'totalAmount' as const, label: t('totalAmount', settings.language) },
@@ -52,22 +132,32 @@ export function SettingsModal({ onClose, onStatsChange, isDark = true }: Setting
     { key: 'totalValue' as const, label: t('totalValue', settings.language) },
   ];
 
+  const sectionLabel = `flex items-center gap-2 text-sm font-medium mb-3 ${isDark ? 'text-slate-300' : 'text-gray-700'}`;
+  const actionButton = (active: boolean) =>
+    `py-3 px-4 rounded-xl text-sm font-semibold transition-all border-2 flex items-center justify-center gap-2 ${
+      active
+        ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
+        : isDark
+          ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
+          : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
+    }`;
+
   return (
     <>
-      <div 
+      <div
         className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-200 ${
           isVisible ? 'bg-black/80 backdrop-blur-sm' : 'bg-black/0'
         }`}
         onClick={handleClose}
       >
-        <div 
-          className={`w-full max-w-md rounded-2xl border-2 shadow-2xl transition-all duration-200 ${
+        <div
+          className={`w-full max-w-md max-h-[90vh] flex flex-col rounded-2xl border-2 shadow-2xl transition-all duration-200 ${
             isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
           } ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className={`flex items-center justify-between p-5 border-b ${
+          <div className={`flex items-center justify-between p-5 border-b shrink-0 ${
             isDark ? 'border-slate-800' : 'border-gray-200'
           }`}>
             <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -84,10 +174,10 @@ export function SettingsModal({ onClose, onStatsChange, isDark = true }: Setting
           </div>
 
           {/* Content */}
-          <div className="p-5 space-y-6">
+          <div className="p-5 space-y-6 overflow-y-auto">
             {/* Language */}
             <div>
-              <label className={`flex items-center gap-2 text-sm font-medium mb-3 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+              <label className={sectionLabel}>
                 <Globe className="w-4 h-4" />
                 {t('language', settings.language)}
               </label>
@@ -95,8 +185,8 @@ export function SettingsModal({ onClose, onStatsChange, isDark = true }: Setting
                 <button
                   onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
                   className={`w-full px-4 py-3 rounded-xl border-2 transition-colors text-left flex items-center justify-between ${
-                    isDark 
-                      ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' 
+                    isDark
+                      ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
                       : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
                   } outline-none`}
                 >
@@ -115,7 +205,7 @@ export function SettingsModal({ onClose, onStatsChange, isDark = true }: Setting
                       <button
                         key={lang.code}
                         onClick={() => {
-                          updateSettings({ language: lang.code as any });
+                          updateSettings({ language: lang.code as typeof settings.language });
                           setShowLanguageDropdown(false);
                         }}
                         className={`w-full px-4 py-3 text-left flex items-center justify-between transition-colors ${
@@ -138,46 +228,101 @@ export function SettingsModal({ onClose, onStatsChange, isDark = true }: Setting
 
             {/* Theme */}
             <div>
-              <label className={`flex items-center gap-2 text-sm font-medium mb-3 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+              <label className={sectionLabel}>
                 <Palette className="w-4 h-4" />
                 {t('theme', settings.language)}
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => updateSettings({ theme: 'dark' })}
-                  className={`py-3 px-4 rounded-xl text-sm font-semibold transition-all border-2 ${
-                    settings.theme === 'dark'
-                      ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
-                      : isDark 
-                        ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
-                        : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
-                  }`}
+                  className={actionButton(settings.theme === 'dark')}
                 >
                   {t('dark', settings.language)}
                 </button>
                 <button
                   onClick={() => updateSettings({ theme: 'light' })}
-                  className={`py-3 px-4 rounded-xl text-sm font-semibold transition-all border-2 ${
-                    settings.theme === 'light'
-                      ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
-                      : isDark 
-                        ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
-                        : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
-                  }`}
+                  className={actionButton(settings.theme === 'light')}
                 >
                   {t('light', settings.language)}
                 </button>
               </div>
             </div>
 
+            {/* Backup & Restore */}
+            <div>
+              <label className={sectionLabel}>
+                <Database className="w-4 h-4" />
+                {t('dataBackup', settings.language)}
+              </label>
+              <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+                {t('dataBackupHint', settings.language)}
+              </p>
+
+              {/* Export Options */}
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                <button onClick={handleExport} className={actionButton(false)}>
+                  <Download className="w-4 h-4" />
+                  <span className="text-[10px] leading-tight">{t('exportData', settings.language)}</span>
+                </button>
+                <button onClick={handleExportCsv} className={actionButton(false)}>
+                  <FileSpreadsheet className="w-4 h-4" />
+                  <span className="text-[10px] leading-tight">{t('exportCsv', settings.language)}</span>
+                </button>
+                <button onClick={handleCopyToClipboard} className={actionButton(false)}>
+                  <Clipboard className="w-4 h-4" />
+                  <span className="text-[10px] leading-tight">{t('copyToClipboard', settings.language)}</span>
+                </button>
+              </div>
+
+              {/* Import Options */}
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={handleImportClick} className={actionButton(false)}>
+                  <Upload className="w-4 h-4" />
+                  {t('importData', settings.language)}
+                </button>
+                <button onClick={handleMergeImportClick} className={actionButton(false)}>
+                  <Merge className="w-4 h-4" />
+                  {t('importMerge', settings.language)}
+                </button>
+              </div>
+
+              <p className={`text-xs mt-2 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+                {t('importMergeHint', settings.language)}
+              </p>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json,application/json"
+                onChange={(e) => handleImportFile(e, false)}
+                className="hidden"
+              />
+              <input
+                ref={mergeFileInputRef}
+                type="file"
+                accept=".json,application/json"
+                onChange={(e) => handleImportFile(e, true)}
+                className="hidden"
+              />
+              {feedback && (
+                <p className={`mt-3 text-xs font-medium ${
+                  feedback.type === 'success'
+                    ? isDark ? 'text-emerald-400' : 'text-emerald-600'
+                    : isDark ? 'text-red-400' : 'text-red-600'
+                }`}>
+                  {feedback.message}
+                </p>
+              )}
+            </div>
+
             {/* Stats Visibility */}
             <div>
-              <label className={`flex items-center gap-2 text-sm font-medium mb-3 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+              <label className={sectionLabel}>
                 <BarChart3 className="w-4 h-4" />
                 {t('showStats', settings.language)}
               </label>
               <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
-                Changes require page refresh to take effect
+                {t('statsRefreshHint', settings.language)}
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {statOptions.map((stat) => (
@@ -187,7 +332,7 @@ export function SettingsModal({ onClose, onStatsChange, isDark = true }: Setting
                     className={`py-2 px-3 rounded-xl text-sm font-medium transition-all border-2 text-left ${
                       settings.statsVisibility[stat.key]
                         ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
-                        : isDark 
+                        : isDark
                           ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
                           : 'bg-gray-100 border-gray-200 text-gray-500 hover:border-gray-300'
                     }`}
@@ -201,13 +346,13 @@ export function SettingsModal({ onClose, onStatsChange, isDark = true }: Setting
         </div>
       </div>
 
-      {/* Refresh Toast */}
       {showRefreshToast && (
         <Toast
-          message="Stats visibility changed"
+          message={t('statsChanged', settings.language)}
           onClose={() => setShowRefreshToast(false)}
           onRefresh={handleRefresh}
           isDark={isDark}
+          language={settings.language}
         />
       )}
     </>

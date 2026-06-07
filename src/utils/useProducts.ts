@@ -56,6 +56,10 @@ export function useProducts() {
     );
   }, []);
 
+  const replaceAllProducts = useCallback((nextProducts: Product[]) => {
+    setProducts(nextProducts.map(parseProductDates));
+  }, []);
+
   return {
     products,
     addProduct,
@@ -63,5 +67,6 @@ export function useProducts() {
     deleteProduct,
     toggleFavorite,
     consumeProduct,
+    replaceAllProducts,
   };
 }

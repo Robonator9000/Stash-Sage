@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { RefreshCw, X } from 'lucide-react';
+import { t } from '../utils/translations';
 
 interface ToastProps {
   message: string;
   onClose: () => void;
   onRefresh: () => void;
   isDark?: boolean;
+  language?: string;
 }
 
-export function Toast({ message, onClose, onRefresh, isDark = true }: ToastProps) {
+export function Toast({ message, onClose, onRefresh, isDark = true, language = 'en' }: ToastProps) {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -35,7 +37,7 @@ export function Toast({ message, onClose, onRefresh, isDark = true }: ToastProps
         onClick={onRefresh}
         className="px-3 py-1 rounded-lg text-sm font-medium bg-gradient-to-r from-cyan-500 to-emerald-500 text-white hover:from-cyan-400 hover:to-emerald-400 transition-all"
       >
-        Refresh
+        {t('refresh', language)}
       </button>
       <button
         onClick={handleClose}

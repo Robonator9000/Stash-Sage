@@ -1,8 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Product } from './types';
 import { useProducts } from './utils/useProducts';
 import { useSettings } from './utils/useSettings';
-import { searchProducts, sortProducts, filterProducts } from './utils/helpers';
+import { ImportResult } from './utils/dataTransfer';
+import { searchProducts, sortProducts, filterProducts, generateId } from './utils/helpers';
+import { t } from './utils/translations';
 import { ProductCard } from './components/ProductCard';
 import { ProductModal } from './components/ProductModal';
 import { ConsumeModal } from './components/ConsumeModal';
@@ -13,8 +15,8 @@ import { EmptyState } from './components/EmptyState';
 import { Plus, Settings, Grid, List, Layout, ArrowUpDown, Filter } from 'lucide-react';
 
 export default function App() {
-  const { products, addProduct, updateProduct, deleteProduct, toggleFavorite, consumeProduct } = useProducts();
-  const { settings } = useSettings();
+  const { products, addProduct, updateProduct, deleteProduct, toggleFavorite, consumeProduct, replaceAllProducts } = useProducts();
+  const { settings, replaceSettings } = useSettings();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name' | 'rating' | 'thc' | 'amount' | 'price'>('newest');
@@ -64,26 +66,46 @@ export default function App() {
     }
   };
 
+  const handleImport = useCallback((data: ImportResult) => {
+    replaceAllProducts(data.products);
+    if (data.settings) {
+      replaceSettings(data.settings);
+    }
+  }, [replaceAllProducts, replaceSettings]);
+
+  const handleMergeImport = useCallback((data: ImportResult) => {
+    for (const product of data.products) {
+      addProduct({
+        ...product,
+        id: generateId(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
+  }, [addProduct]);
+
   const sortOptions = [
-    { value: 'newest', label: 'Newest First' },
-    { value: 'oldest', label: 'Oldest First' },
-    { value: 'name', label: 'Name A-Z' },
-    { value: 'rating', label: 'Highest Rated' },
-    { value: 'thc', label: 'Highest THC' },
-    { value: 'amount', label: 'Most Amount' },
-    { value: 'price', label: 'Highest Price' },
+    { value: 'newest', labelKey: 'sortNewest' },
+    { value: 'oldest', labelKey: 'sortOldest' },
+    { value: 'name', labelKey: 'sortName' },
+    { value: 'rating', labelKey: 'sortRating' },
+    { value: 'thc', labelKey: 'sortThc' },
+    { value: 'amount', labelKey: 'sortAmount' },
+    { value: 'price', labelKey: 'sortPrice' },
   ];
 
   const filterOptions = [
-    { value: 'all', label: 'All Products' },
-    { value: 'indica', label: 'Indica' },
-    { value: 'sativa', label: 'Sativa' },
-    { value: 'hybrid', label: 'Hybrid' },
-    { value: 'favorites', label: 'Favorites' },
-    { value: 'inStock', label: 'In Stock' },
-    { value: 'lowStock', label: 'Low Stock' },
-    { value: 'outOfStock', label: 'Out of Stock' },
+    { value: 'all', labelKey: 'filterAll' },
+    { value: 'indica', labelKey: 'filterIndica' },
+    { value: 'sativa', labelKey: 'filterSativa' },
+    { value: 'hybrid', labelKey: 'filterHybrid' },
+    { value: 'favorites', labelKey: 'filterFavorites' },
+    { value: 'inStock', labelKey: 'filterInStock' },
+    { value: 'lowStock', labelKey: 'filterLowStock' },
+    { value: 'outOfStock', labelKey: 'filterOutOfStock' },
   ];
+
+  const lang = settings.language;
 
   return (
     <div className={`min-h-screen transition-colors ${isDark ? 'bg-slate-950' : 'bg-gray-50'}`}>
@@ -127,6 +149,7 @@ export default function App() {
             value={searchQuery}
             onChange={setSearchQuery}
             isDark={isDark}
+            language={lang}
           />
 
           {/* Controls Row */}
@@ -147,7 +170,7 @@ export default function App() {
                   }`}
                 >
                   <ArrowUpDown className="w-4 h-4" />
-                  {sortOptions.find(o => o.value === sortBy)?.label}
+                  {t(sortOptions.find(o => o.value === sortBy)?.labelKey || 'sortNewest', lang)}
                 </button>
                 {showSortDropdown && (
                   <div className={`absolute top-full left-0 mt-2 w-48 rounded-xl border-2 shadow-xl z-10 overflow-hidden ${
@@ -166,7 +189,7 @@ export default function App() {
                             : isDark ? 'hover:bg-slate-700 text-white' : 'hover:bg-gray-100 text-gray-900'
                         }`}
                       >
-                        {option.label}
+                        {t(option.labelKey, lang)}
                       </button>
                     ))}
                   </div>
@@ -187,7 +210,7 @@ export default function App() {
                   }`}
                 >
                   <Filter className="w-4 h-4" />
-                  {filterOptions.find(o => o.value === filterBy)?.label}
+                  {t(filterOptions.find(o => o.value === filterBy)?.labelKey || 'filterAll', lang)}
                 </button>
                 {showFilterDropdown && (
                   <div className={`absolute top-full left-0 mt-2 w-48 rounded-xl border-2 shadow-xl z-10 overflow-hidden ${
@@ -206,7 +229,7 @@ export default function App() {
                             : isDark ? 'hover:bg-slate-700 text-white' : 'hover:bg-gray-100 text-gray-900'
                         }`}
                       >
-                        {option.label}
+                        {t(option.labelKey, lang)}
                       </button>
                     ))}
                   </div>
@@ -315,6 +338,9 @@ export default function App() {
 
       {isSettingsOpen && (
         <SettingsModal
+          products={products}
+          onImport={handleImport}
+          onMergeImport={handleMergeImport}
           onClose={() => setIsSettingsOpen(false)}
           isDark={isDark}
         />
