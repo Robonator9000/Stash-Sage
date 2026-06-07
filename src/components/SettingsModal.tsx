@@ -63,6 +63,11 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
     setTimeout(() => window.location.reload(), 100);
   };
 
+  const handleCurrencyChange = (sym: string) => {
+    updateSettings({ currency: sym });
+    setTimeout(() => window.location.reload(), 100);
+  };
+
   const handleExport = () => {
     try {
       const data = createExportData(products, settings);
@@ -366,7 +371,7 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
                     {['$', '€', '£', '¥', '₿'].map((sym) => (
                       <button
                         key={sym}
-                        onClick={() => updateSettings({ currency: sym })}
+                        onClick={() => handleCurrencyChange(sym)}
                         className={`py-3 rounded-xl text-lg font-bold transition-all border-2 ${
                           settings.currency === sym
                             ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
