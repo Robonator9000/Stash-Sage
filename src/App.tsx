@@ -33,6 +33,7 @@ export default function App() {
   const [sessionAmount, setSessionAmount] = useState(0);
   const [sessionPeople, setSessionPeople] = useState(2);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [showSmoke, setShowSmoke] = useState(false);
   
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -73,6 +74,9 @@ export default function App() {
         setSessionProduct(consumingProduct);
         setSessionAmount(amount);
         setSessionPeople(people);
+      } else {
+        setShowSmoke(true);
+        setTimeout(() => setShowSmoke(false), 1200);
       }
     }
   };
@@ -82,6 +86,8 @@ export default function App() {
     setSessionProduct(null);
     setSessionAmount(0);
     setSessionPeople(2);
+    setShowSmoke(true);
+    setTimeout(() => setShowSmoke(false), 1200);
   };
 
   const handleImport = useCallback((data: ImportResult) => {
@@ -377,6 +383,15 @@ export default function App() {
           onClose={() => setIsSettingsOpen(false)}
           isDark={isDark}
         />
+      )}
+
+      {/* Smoke Animation */}
+      {showSmoke && (
+        <div className="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center">
+          <span className="animate-smoke-puff text-7xl">💨</span>
+          <span className="animate-smoke-puff-2 text-6xl ml-4">💨</span>
+          <span className="animate-smoke-puff text-5xl ml-2" style={{ animationDelay: '0.2s' }}>💨</span>
+        </div>
       )}
     </div>
   );

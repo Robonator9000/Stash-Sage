@@ -118,18 +118,14 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
               {quickAmounts.map((amt) => (
                 <button
                   key={amt}
-                  onClick={() => setAmount(amt)}
+                  onClick={() => setAmount(prev => roundToHundredth(prev + amt))}
                   className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    amount === amt
-                      ? isDark
-                        ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500'
-                        : 'bg-cyan-50 text-cyan-600 border border-cyan-500'
-                      : isDark
-                        ? 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    isDark
+                      ? 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  {amt}g
+                  +{amt}g
                 </button>
               ))}
             </div>

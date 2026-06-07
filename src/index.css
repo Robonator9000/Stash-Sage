@@ -31,3 +31,43 @@ body {
   scrollbar-width: thin;
   scrollbar-color: #334155 transparent;
 }
+
+@keyframes smokePuff {
+  0% {
+    transform: scale(0.5) translateY(0);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.5) translateY(-20px);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2.5) translateY(-60px);
+    opacity: 0;
+  }
+}
+
+@keyframes smokePuff2 {
+  0% {
+    transform: scale(0.3) translateY(0) translateX(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.2) translateY(-30px) translateX(15px);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(2) translateY(-80px) translateX(30px);
+    opacity: 0;
+  }
+}
+
+.animate-smoke-puff {
+  animation: smokePuff 1s ease-out forwards;
+  pointer-events: none;
+}
+
+.animate-smoke-puff-2 {
+  animation: smokePuff2 1.2s ease-out forwards;
+  pointer-events: none;
+}

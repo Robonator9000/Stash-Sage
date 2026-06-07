@@ -40,12 +40,12 @@ export function StatsCard({ products, isDark = true }: StatsCardProps) {
   }
 
   return (
-    <div className={`rounded-2xl border-2 p-4 ${
+    <div className={`rounded-2xl border-2 p-4 transition-all duration-500 ${
       isDark 
         ? 'bg-slate-900/50 border-slate-800' 
         : 'bg-white border-gray-200 shadow-sm'
     }`}>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 transition-all duration-500">
         {visibleStats.map((stat) => {
           const Icon = stat.icon;
           return (

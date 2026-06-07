@@ -4,7 +4,6 @@ import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { createExportData, downloadExport, downloadCsvExport, copyExportToClipboard, parseImportData, ImportResult } from '../utils/dataTransfer';
 import { X, Globe, Palette, BarChart3, ChevronDown, Check, Download, Upload, Database, FileSpreadsheet, Clipboard, Merge } from 'lucide-react';
-import { Toast } from './Toast';
 
 interface SettingsModalProps {
   products: Product[];
@@ -28,8 +27,8 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mergeFileInputRef = useRef<HTMLInputElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [activeTab, setActiveTab] = useState<'general' | 'personalization'>('general');
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
-  const [showRefreshToast, setShowRefreshToast] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
@@ -50,11 +49,11 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
 
   const handleStatToggle = (key: 'totalProducts' | 'totalAmount' | 'totalSessions' | 'averageRating' | 'averageTHC' | 'totalValue') => {
     toggleStatVisibility(key);
-    setShowRefreshToast(true);
   };
 
-  const handleRefresh = () => {
-    window.location.reload();
+  const handleThemeChange = (theme: 'dark' | 'light') => {
+    updateSettings({ theme });
+    setTimeout(() => window.location.reload(), 100);
   };
 
   const handleExport = () => {
@@ -173,188 +172,211 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
             </button>
           </div>
 
+          {/* Tabs */}
+          <div className={`flex border-b shrink-0 ${isDark ? 'border-slate-800' : 'border-gray-200'}`}>
+            <button
+              onClick={() => setActiveTab('general')}
+              className={`flex-1 py-3 text-sm font-medium transition-colors relative ${
+                activeTab === 'general'
+                  ? isDark ? 'text-cyan-400' : 'text-cyan-600'
+                  : isDark ? 'text-slate-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              General
+              {activeTab === 'general' && (
+                <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-full" />
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('personalization')}
+              className={`flex-1 py-3 text-sm font-medium transition-colors relative ${
+                activeTab === 'personalization'
+                  ? isDark ? 'text-cyan-400' : 'text-cyan-600'
+                  : isDark ? 'text-slate-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              Personalization
+              {activeTab === 'personalization' && (
+                <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-full" />
+              )}
+            </button>
+          </div>
+
           {/* Content */}
           <div className="p-5 space-y-6 overflow-y-auto">
-            {/* Language */}
-            <div>
-              <label className={sectionLabel}>
-                <Globe className="w-4 h-4" />
-                {t('language', settings.language)}
-              </label>
-              <div className="relative">
-                <button
-                  onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
-                  className={`w-full px-4 py-3 rounded-xl border-2 transition-colors text-left flex items-center justify-between ${
-                    isDark
-                      ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
-                      : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-                  } outline-none`}
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="text-lg">{LANGUAGES.find(l => l.code === settings.language)?.flag}</span>
-                    {LANGUAGES.find(l => l.code === settings.language)?.name}
-                  </span>
-                  <ChevronDown className={`w-4 h-4 transition-transform ${showLanguageDropdown ? 'rotate-180' : ''}`} />
-                </button>
+            {activeTab === 'general' && (
+              <>
+                {/* Language */}
+                <div>
+                  <label className={sectionLabel}>
+                    <Globe className="w-4 h-4" />
+                    {t('language', settings.language)}
+                  </label>
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
+                      className={`w-full px-4 py-3 rounded-xl border-2 transition-colors text-left flex items-center justify-between ${
+                        isDark
+                          ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
+                          : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
+                      } outline-none`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="text-lg">{LANGUAGES.find(l => l.code === settings.language)?.flag}</span>
+                        {LANGUAGES.find(l => l.code === settings.language)?.name}
+                      </span>
+                      <ChevronDown className={`w-4 h-4 transition-transform ${showLanguageDropdown ? 'rotate-180' : ''}`} />
+                    </button>
 
-                {showLanguageDropdown && (
-                  <div className={`absolute top-full left-0 right-0 mt-2 rounded-xl border-2 shadow-xl z-10 overflow-hidden ${
-                    isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'
-                  }`}>
-                    {LANGUAGES.map((lang) => (
+                    {showLanguageDropdown && (
+                      <div className={`absolute top-full left-0 right-0 mt-2 rounded-xl border-2 shadow-xl z-10 overflow-hidden ${
+                        isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'
+                      }`}>
+                        {LANGUAGES.map((lang) => (
+                          <button
+                            key={lang.code}
+                            onClick={() => {
+                              updateSettings({ language: lang.code as typeof settings.language });
+                              setShowLanguageDropdown(false);
+                            }}
+                            className={`w-full px-4 py-3 text-left flex items-center justify-between transition-colors ${
+                              settings.language === lang.code
+                                ? isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
+                                : isDark ? 'hover:bg-slate-700 text-white' : 'hover:bg-gray-100 text-gray-900'
+                            }`}
+                          >
+                            <span className="flex items-center gap-2">
+                              <span className="text-lg">{lang.flag}</span>
+                              {lang.name}
+                            </span>
+                            {settings.language === lang.code && <Check className="w-4 h-4" />}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Backup & Restore */}
+                <div>
+                  <label className={sectionLabel}>
+                    <Database className="w-4 h-4" />
+                    {t('dataBackup', settings.language)}
+                  </label>
+                  <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+                    {t('dataBackupHint', settings.language)}
+                  </p>
+
+                  <div className="grid grid-cols-3 gap-2 mb-3">
+                    <button onClick={handleExport} className={actionButton(false)}>
+                      <Download className="w-4 h-4" />
+                      <span className="text-[10px] leading-tight">{t('exportData', settings.language)}</span>
+                    </button>
+                    <button onClick={handleExportCsv} className={actionButton(false)}>
+                      <FileSpreadsheet className="w-4 h-4" />
+                      <span className="text-[10px] leading-tight">{t('exportCsv', settings.language)}</span>
+                    </button>
+                    <button onClick={handleCopyToClipboard} className={actionButton(false)}>
+                      <Clipboard className="w-4 h-4" />
+                      <span className="text-[10px] leading-tight">{t('copyToClipboard', settings.language)}</span>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <button onClick={handleImportClick} className={actionButton(false)}>
+                      <Upload className="w-4 h-4" />
+                      {t('importData', settings.language)}
+                    </button>
+                    <button onClick={handleMergeImportClick} className={actionButton(false)}>
+                      <Merge className="w-4 h-4" />
+                      {t('importMerge', settings.language)}
+                    </button>
+                  </div>
+
+                  <p className={`text-xs mt-2 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+                    {t('importMergeHint', settings.language)}
+                  </p>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".json,application/json"
+                    onChange={(e) => handleImportFile(e, false)}
+                    className="hidden"
+                  />
+                  <input
+                    ref={mergeFileInputRef}
+                    type="file"
+                    accept=".json,application/json"
+                    onChange={(e) => handleImportFile(e, true)}
+                    className="hidden"
+                  />
+                  {feedback && (
+                    <p className={`mt-3 text-xs font-medium ${
+                      feedback.type === 'success'
+                        ? isDark ? 'text-emerald-400' : 'text-emerald-600'
+                        : isDark ? 'text-red-400' : 'text-red-600'
+                    }`}>
+                      {feedback.message}
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
+
+            {activeTab === 'personalization' && (
+              <>
+                {/* Theme */}
+                <div>
+                  <label className={sectionLabel}>
+                    <Palette className="w-4 h-4" />
+                    {t('theme', settings.language)}
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => handleThemeChange('dark')}
+                      className={actionButton(settings.theme === 'dark')}
+                    >
+                      {t('dark', settings.language)}
+                    </button>
+                    <button
+                      onClick={() => handleThemeChange('light')}
+                      className={actionButton(settings.theme === 'light')}
+                    >
+                      {t('light', settings.language)}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Stats Visibility */}
+                <div>
+                  <label className={sectionLabel}>
+                    <BarChart3 className="w-4 h-4" />
+                    {t('showStats', settings.language)}
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {statOptions.map((stat) => (
                       <button
-                        key={lang.code}
-                        onClick={() => {
-                          updateSettings({ language: lang.code as typeof settings.language });
-                          setShowLanguageDropdown(false);
-                        }}
-                        className={`w-full px-4 py-3 text-left flex items-center justify-between transition-colors ${
-                          settings.language === lang.code
-                            ? isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
-                            : isDark ? 'hover:bg-slate-700 text-white' : 'hover:bg-gray-100 text-gray-900'
+                        key={stat.key}
+                        onClick={() => handleStatToggle(stat.key)}
+                        className={`py-2 px-3 rounded-xl text-sm font-medium transition-all border-2 text-left ${
+                          settings.statsVisibility[stat.key]
+                            ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
+                            : isDark
+                              ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
+                              : 'bg-gray-100 border-gray-200 text-gray-500 hover:border-gray-300'
                         }`}
                       >
-                        <span className="flex items-center gap-2">
-                          <span className="text-lg">{lang.flag}</span>
-                          {lang.name}
-                        </span>
-                        {settings.language === lang.code && <Check className="w-4 h-4" />}
+                        {stat.label}
                       </button>
                     ))}
                   </div>
-                )}
-              </div>
-            </div>
-
-            {/* Theme */}
-            <div>
-              <label className={sectionLabel}>
-                <Palette className="w-4 h-4" />
-                {t('theme', settings.language)}
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => updateSettings({ theme: 'dark' })}
-                  className={actionButton(settings.theme === 'dark')}
-                >
-                  {t('dark', settings.language)}
-                </button>
-                <button
-                  onClick={() => updateSettings({ theme: 'light' })}
-                  className={actionButton(settings.theme === 'light')}
-                >
-                  {t('light', settings.language)}
-                </button>
-              </div>
-            </div>
-
-            {/* Backup & Restore */}
-            <div>
-              <label className={sectionLabel}>
-                <Database className="w-4 h-4" />
-                {t('dataBackup', settings.language)}
-              </label>
-              <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
-                {t('dataBackupHint', settings.language)}
-              </p>
-
-              {/* Export Options */}
-              <div className="grid grid-cols-3 gap-2 mb-3">
-                <button onClick={handleExport} className={actionButton(false)}>
-                  <Download className="w-4 h-4" />
-                  <span className="text-[10px] leading-tight">{t('exportData', settings.language)}</span>
-                </button>
-                <button onClick={handleExportCsv} className={actionButton(false)}>
-                  <FileSpreadsheet className="w-4 h-4" />
-                  <span className="text-[10px] leading-tight">{t('exportCsv', settings.language)}</span>
-                </button>
-                <button onClick={handleCopyToClipboard} className={actionButton(false)}>
-                  <Clipboard className="w-4 h-4" />
-                  <span className="text-[10px] leading-tight">{t('copyToClipboard', settings.language)}</span>
-                </button>
-              </div>
-
-              {/* Import Options */}
-              <div className="grid grid-cols-2 gap-2">
-                <button onClick={handleImportClick} className={actionButton(false)}>
-                  <Upload className="w-4 h-4" />
-                  {t('importData', settings.language)}
-                </button>
-                <button onClick={handleMergeImportClick} className={actionButton(false)}>
-                  <Merge className="w-4 h-4" />
-                  {t('importMerge', settings.language)}
-                </button>
-              </div>
-
-              <p className={`text-xs mt-2 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
-                {t('importMergeHint', settings.language)}
-              </p>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".json,application/json"
-                onChange={(e) => handleImportFile(e, false)}
-                className="hidden"
-              />
-              <input
-                ref={mergeFileInputRef}
-                type="file"
-                accept=".json,application/json"
-                onChange={(e) => handleImportFile(e, true)}
-                className="hidden"
-              />
-              {feedback && (
-                <p className={`mt-3 text-xs font-medium ${
-                  feedback.type === 'success'
-                    ? isDark ? 'text-emerald-400' : 'text-emerald-600'
-                    : isDark ? 'text-red-400' : 'text-red-600'
-                }`}>
-                  {feedback.message}
-                </p>
-              )}
-            </div>
-
-            {/* Stats Visibility */}
-            <div>
-              <label className={sectionLabel}>
-                <BarChart3 className="w-4 h-4" />
-                {t('showStats', settings.language)}
-              </label>
-              <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
-                {t('statsRefreshHint', settings.language)}
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {statOptions.map((stat) => (
-                  <button
-                    key={stat.key}
-                    onClick={() => handleStatToggle(stat.key)}
-                    className={`py-2 px-3 rounded-xl text-sm font-medium transition-all border-2 text-left ${
-                      settings.statsVisibility[stat.key]
-                        ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
-                        : isDark
-                          ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
-                          : 'bg-gray-100 border-gray-200 text-gray-500 hover:border-gray-300'
-                    }`}
-                  >
-                    {stat.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
-
-      {showRefreshToast && (
-        <Toast
-          message={t('statsChanged', settings.language)}
-          onClose={() => setShowRefreshToast(false)}
-          onRefresh={handleRefresh}
-          isDark={isDark}
-          language={settings.language}
-        />
-      )}
     </>
   );
 }
