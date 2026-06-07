@@ -1,18 +1,20 @@
 import { useState, useEffect } from 'react';
 import { Product } from '../types';
 import { roundToHundredth } from '../utils/helpers';
-import { X, Flame, Minus, Plus } from 'lucide-react';
+import { X, Users, Minus, Plus, Play } from 'lucide-react';
 
 interface ConsumeModalProps {
   product: Product;
-  onConsume: (amount: number) => void;
+  onConsume: (amount: number, startSession: boolean, people: number) => void;
   onClose: () => void;
   isDark?: boolean;
 }
 
 export function ConsumeModal({ product, onConsume, onClose, isDark = true }: ConsumeModalProps) {
-  const [amount, setAmount] = useState(0.5);
   const [isVisible, setIsVisible] = useState(false);
+  const [people, setPeople] = useState(2);
+  const [amount, setAmount] = useState(0.5);
+  const [startSession, setStartSession] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 10);
@@ -25,16 +27,14 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
   };
 
   const handleConsume = () => {
-    const roundedAmount = roundToHundredth(amount);
-    onConsume(roundedAmount);
-    handleClose();
+    onConsume(roundToHundredth(amount), startSession, people);
   };
-
-  const quickAmounts = [0.1, 0.25, 0.5, 1, 2];
 
   const adjustAmount = (delta: number) => {
     setAmount(prev => Math.max(0.01, roundToHundredth(prev + delta)));
   };
+
+  const quickAmounts = [0.1, 0.25, 0.5, 1, 2];
 
   return (
     <div 
@@ -72,70 +72,129 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
         </div>
 
         {/* Content */}
-        <div className="p-5 space-y-4">
-          {/* Quick Amounts */}
+        <div className="p-5 space-y-5">
+          {/* Amount */}
           <div>
             <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-              Quick Select (grams)
+              Amount (grams)
             </label>
-            <div className="flex flex-wrap gap-2">
-              {quickAmounts.map((qa) => (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => adjustAmount(-0.1)}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-colors ${
+                  isDark 
+                    ? 'bg-slate-800 text-white hover:bg-slate-700' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <Minus className="w-4 h-4" />
+              </button>
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(Math.max(0, parseFloat(e.target.value) || 0))}
+                min="0"
+                step="0.1"
+                className={`flex-1 px-4 py-2 rounded-xl border-2 text-center font-bold outline-none ${
+                  isDark 
+                    ? 'bg-slate-800 border-slate-700 text-white' 
+                    : 'bg-gray-50 border-gray-200 text-gray-900'
+                }`}
+              />
+              <button
+                onClick={() => adjustAmount(0.1)}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-colors ${
+                  isDark 
+                    ? 'bg-cyan-600 text-white hover:bg-cyan-500' 
+                    : 'bg-cyan-500 text-white hover:bg-cyan-400'
+                }`}
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* Quick Amount Buttons */}
+            <div className="flex gap-2 mt-3">
+              {quickAmounts.map((amt) => (
                 <button
-                  key={qa}
-                  onClick={() => setAmount(qa)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all border-2 ${
-                    amount === qa
-                      ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
-                      : isDark 
-                        ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
-                        : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
+                  key={amt}
+                  onClick={() => setAmount(amt)}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    amount === amt
+                      ? isDark
+                        ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500'
+                        : 'bg-cyan-50 text-cyan-600 border border-cyan-500'
+                      : isDark
+                        ? 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  {qa}g
+                  {amt}g
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Custom Amount */}
+          {/* People */}
           <div>
             <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-              Custom Amount (grams)
+              <Users className="w-4 h-4 inline mr-1" />
+              People
             </label>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => adjustAmount(-0.1)}
-                className={`p-3 rounded-xl transition-all ${
+                onClick={() => setPeople(Math.max(1, people - 1))}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-colors ${
                   isDark 
-                    ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' 
+                    ? 'bg-slate-800 text-white hover:bg-slate-700' 
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                <Minus className="w-5 h-5" />
+                <Minus className="w-4 h-4" />
               </button>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={amount}
-                onChange={(e) => setAmount(Math.max(0, parseFloat(e.target.value) || 0))}
-                className={`flex-1 px-4 py-3 rounded-xl border-2 text-center font-bold text-lg transition-colors ${
-                  isDark 
-                    ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' 
-                    : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-                } outline-none`}
-              />
+              <span className={`flex-1 text-center text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {people}
+              </span>
               <button
-                onClick={() => adjustAmount(0.1)}
-                className={`p-3 rounded-xl transition-all ${
+                onClick={() => setPeople(people + 1)}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-colors ${
                   isDark 
-                    ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-cyan-600 text-white hover:bg-cyan-500' 
+                    : 'bg-cyan-500 text-white hover:bg-cyan-400'
                 }`}
               >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-4 h-4" />
               </button>
             </div>
+          </div>
+
+          {/* Start Session Toggle */}
+          <div className={`flex items-center justify-between p-4 rounded-xl border-2 ${
+            isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'
+          }`}>
+            <div className="flex items-center gap-3">
+              <Play className={`w-5 h-5 ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`} />
+              <div>
+                <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Start Session
+                </span>
+                <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                  Track hits with timer
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setStartSession(!startSession)}
+              className={`w-14 h-8 rounded-full transition-colors relative ${
+                startSession 
+                  ? 'bg-gradient-to-r from-cyan-500 to-green-500' 
+                  : isDark ? 'bg-slate-600' : 'bg-gray-300'
+              }`}
+            >
+              <div className={`absolute top-1 w-6 h-6 rounded-full bg-white transition-transform shadow ${
+                startSession ? 'translate-x-7' : 'translate-x-1'
+              }`} />
+            </button>
           </div>
 
           {/* Remaining After */}
@@ -149,19 +208,34 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
               </span>
             </div>
           </div>
+        </div>
 
-          {/* Consume Button */}
+        {/* Footer */}
+        <div className={`flex items-center gap-3 p-5 border-t ${
+          isDark ? 'border-slate-800' : 'border-gray-200'
+        }`}>
+          <button
+            onClick={handleClose}
+            className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
+              isDark 
+                ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Cancel
+          </button>
           <button
             onClick={handleConsume}
             disabled={amount <= 0}
-            className={`w-full py-3 px-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 py-3 rounded-xl font-bold transition-all ${
               amount > 0
-                ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400'
+                ? isDark 
+                    ? 'bg-gradient-to-r from-cyan-500 to-green-500 text-white hover:from-cyan-400 hover:to-green-400' 
+                    : 'bg-gradient-to-r from-cyan-600 to-green-600 text-white hover:from-cyan-500 hover:to-green-500'
                 : 'bg-slate-700 cursor-not-allowed'
             }`}
           >
-            <Flame className="w-5 h-5" />
-            Consume {roundToHundredth(amount).toFixed(2)}g
+            {startSession ? 'Start Session' : 'Consume'}
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
-import { Product } from './types';
+import { Product, Session } from './types';
 import { useProducts } from './utils/useProducts';
+import { useSessions } from './utils/useSessions';
 import { useSettings } from './utils/useSettings';
 import { ImportResult } from './utils/dataTransfer';
 import { searchProducts, sortProducts, filterProducts, generateId } from './utils/helpers';
@@ -8,6 +9,7 @@ import { t } from './utils/translations';
 import { ProductCard } from './components/ProductCard';
 import { ProductModal } from './components/ProductModal';
 import { ConsumeModal } from './components/ConsumeModal';
+import { SessionModal } from './components/SessionModal';
 import { SettingsModal } from './components/SettingsModal';
 import { StatsCard } from './components/StatsCard';
 import { SearchBar } from './components/SearchBar';
@@ -16,6 +18,7 @@ import { Plus, Settings, Grid, List, Layout, ArrowUpDown, Filter } from 'lucide-
 
 export default function App() {
   const { products, addProduct, updateProduct, deleteProduct, toggleFavorite, consumeProduct, replaceAllProducts } = useProducts();
+  const { addSession } = useSessions();
   const { settings, replaceSettings } = useSettings();
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,6 +29,9 @@ export default function App() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [consumingProduct, setConsumingProduct] = useState<Product | null>(null);
+  const [sessionProduct, setSessionProduct] = useState<Product | null>(null);
+  const [sessionAmount, setSessionAmount] = useState(0);
+  const [sessionPeople, setSessionPeople] = useState(2);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   const [showSortDropdown, setShowSortDropdown] = useState(false);
@@ -59,11 +65,23 @@ export default function App() {
     setEditingProduct(null);
   };
 
-  const handleConsume = (amount: number) => {
+  const handleConsume = (amount: number, startSession: boolean, people: number) => {
     if (consumingProduct) {
       consumeProduct(consumingProduct.id, amount);
       setConsumingProduct(null);
+      if (startSession) {
+        setSessionProduct(consumingProduct);
+        setSessionAmount(amount);
+        setSessionPeople(people);
+      }
     }
+  };
+
+  const handleFinishSession = (productId: string, amountUsed: number, session: Session) => {
+    addSession(session);
+    setSessionProduct(null);
+    setSessionAmount(0);
+    setSessionPeople(2);
   };
 
   const handleImport = useCallback((data: ImportResult) => {
@@ -332,6 +350,21 @@ export default function App() {
           product={consumingProduct}
           onConsume={handleConsume}
           onClose={() => setConsumingProduct(null)}
+          isDark={isDark}
+        />
+      )}
+
+      {sessionProduct && (
+        <SessionModal
+          product={sessionProduct}
+          initialAmount={sessionAmount}
+          people={sessionPeople}
+          onFinish={handleFinishSession}
+          onClose={() => {
+            setSessionProduct(null);
+            setSessionAmount(0);
+            setSessionPeople(2);
+          }}
           isDark={isDark}
         />
       )}
