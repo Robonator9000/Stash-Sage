@@ -9,6 +9,7 @@ import { t } from './utils/translations';
 import { ProductCard } from './components/ProductCard';
 import { ProductModal } from './components/ProductModal';
 import { ConsumeModal } from './components/ConsumeModal';
+import { SellModal } from './components/SellModal';
 import { SessionModal } from './components/SessionModal';
 import { SettingsModal } from './components/SettingsModal';
 import { PinModal } from './components/PinModal';
@@ -30,6 +31,7 @@ export default function App() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [consumingProduct, setConsumingProduct] = useState<Product | null>(null);
+  const [sellingProduct, setSellingProduct] = useState<Product | null>(null);
   const [sessionProduct, setSessionProduct] = useState<Product | null>(null);
   const [sessionAmount, setSessionAmount] = useState(0);
   const [sessionPeople, setSessionPeople] = useState(2);
@@ -78,6 +80,13 @@ export default function App() {
     }
     setEditingProduct(null);
   };
+
+  const handleSell = useCallback((amount: number) => {
+    if (sellingProduct) {
+      consumeProduct(sellingProduct.id, amount);
+      setSellingProduct(null);
+    }
+  }, [sellingProduct, consumeProduct]);
 
   const handleConsume = (amount: number, startSession: boolean, people: number, consumedAt?: Date) => {
     if (consumingProduct) {
@@ -347,6 +356,7 @@ export default function App() {
                   product={product}
                   onClick={() => setEditingProduct(product)}
                   onConsume={() => setConsumingProduct(product)}
+                  onSell={() => setSellingProduct(product)}
                   onToggleFavorite={() => toggleFavorite(product.id)}
                   isDark={isDark}
                   layout={layout}
@@ -386,6 +396,15 @@ export default function App() {
           product={consumingProduct}
           onConsume={handleConsume}
           onClose={() => setConsumingProduct(null)}
+          isDark={isDark}
+        />
+      )}
+
+      {sellingProduct && (
+        <SellModal
+          product={sellingProduct}
+          onSell={handleSell}
+          onClose={() => setSellingProduct(null)}
           isDark={isDark}
         />
       )}

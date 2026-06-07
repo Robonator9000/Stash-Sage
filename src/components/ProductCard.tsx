@@ -1,11 +1,12 @@
 import { Product } from '../types';
 import { formatDate, roundToHundredth, formatPrecision } from '../utils/helpers';
-import { Star, Heart, Flame, Clock, Package } from 'lucide-react';
+import { Star, Heart, Flame, Clock, Package, DollarSign } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
   onClick: () => void;
   onConsume: () => void;
+  onSell: () => void;
   onToggleFavorite: () => void;
   isDark?: boolean;
   layout?: 'grid' | 'list' | 'compact';
@@ -109,6 +110,19 @@ export function ProductCard({ product, onClick, onConsume, onToggleFavorite, isD
               }`}
             >
               <Flame className="w-4 h-4" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onSell();
+              }}
+              className={`p-2 rounded-lg transition-all ${
+                isDark 
+                  ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' 
+                  : 'bg-amber-50 text-amber-600 hover:bg-amber-100'
+              }`}
+            >
+              <DollarSign className="w-4 h-4" />
             </button>
             <button
               onClick={(e) => {
@@ -320,6 +334,20 @@ export function ProductCard({ product, onClick, onConsume, onToggleFavorite, isD
           >
             <Flame className="w-4 h-4" />
             <span className="text-sm">Consume</span>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onSell();
+            }}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl font-medium transition-all ${
+              isDark 
+                ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' 
+                : 'bg-amber-50 text-amber-600 hover:bg-amber-100'
+            }`}
+          >
+            <DollarSign className="w-4 h-4" />
+            <span className="text-sm">Sell</span>
           </button>
           <button
             onClick={(e) => {
