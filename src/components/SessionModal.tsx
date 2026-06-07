@@ -229,28 +229,6 @@ export function SessionModal({
             )}
           </div>
 
-          {/* Amount Used */}
-          <div>
-            <label className={`block text-sm font-medium mb-2 ${
-              isDark ? 'text-slate-300' : 'text-gray-700'
-            }`}>
-              {t('amountUsed', settings.language)} (g)
-            </label>
-            <input
-              type="number"
-              step="0.1"
-              min="0"
-              max={product.amount}
-              value={amountUsed}
-              onChange={(e) => setAmountUsed(parseFloat(e.target.value) || 0)}
-              className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
-                isDark 
-                  ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' 
-                  : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-              }`}
-            />
-          </div>
-
           {/* Bowl Calculator - Collapsible */}
           <div className={`rounded-xl border-2 overflow-hidden ${
             isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'
@@ -279,23 +257,19 @@ export function SessionModal({
                   <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
                     {t('gramsPerBowl', settings.language)}
                   </span>
-                  <select
+                  <input
+                    type="number"
+                    min="0.01"
+                    max="5"
+                    step="0.05"
                     value={gramsPerBowl}
-                    onChange={(e) => setGramsPerBowl(parseFloat(e.target.value))}
-                    className={`px-3 py-1.5 rounded-lg border-2 text-sm font-medium ${
-                      isDark 
-                        ? 'bg-slate-900 border-slate-700 text-white' 
-                        : 'bg-white border-gray-200 text-gray-900'
+                    onChange={(e) => setGramsPerBowl(Math.max(0.01, parseFloat(e.target.value) || 0.01))}
+                    className={`w-20 px-2 py-1.5 rounded-lg border-2 text-sm font-medium text-center outline-none ${
+                      isDark
+                        ? 'bg-slate-900 border-slate-700 text-white focus:border-cyan-500'
+                        : 'bg-white border-gray-200 text-gray-900 focus:border-cyan-500'
                     }`}
-                  >
-                    <option value={0.15}>0.15g</option>
-                    <option value={0.2}>0.2g</option>
-                    <option value={0.25}>0.25g</option>
-                    <option value={0.3}>0.3g</option>
-                    <option value={0.35}>0.35g</option>
-                    <option value={0.4}>0.4g</option>
-                    <option value={0.5}>0.5g</option>
-                  </select>
+                  />
                 </div>
 
                 {/* Calculation breakdown */}
