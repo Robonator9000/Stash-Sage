@@ -30,6 +30,7 @@ export function SessionModal({
   const [hitsCount, setHitsCount] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(autoStartTimer);
   const [timerSeconds, setTimerSeconds] = useState(defaultHitTimer);
+  const [customTimerDuration, setCustomTimerDuration] = useState(defaultHitTimer);
   const [sessionNotes, setSessionNotes] = useState('');
   const [gramsPerBowl, setGramsPerBowl] = useState(settings.sessionDefaults.defaultGramsPerBowl);
   const [showCalculator, setShowCalculator] = useState(false);
@@ -86,12 +87,12 @@ export function SessionModal({
   };
 
   const resetTimer = () => {
-    setTimerSeconds(defaultHitTimer);
+    setTimerSeconds(customTimerDuration);
     setIsTimerRunning(false);
   };
 
   const startTimer = () => {
-    setTimerSeconds(defaultHitTimer);
+    setTimerSeconds(customTimerDuration);
     setIsTimerRunning(true);
   };
 
@@ -361,10 +362,54 @@ export function SessionModal({
                   {t('hitTimer', settings.language)}
                 </span>
               </div>
-              <div className={`text-2xl font-mono font-bold ${
-                timerSeconds <= 3 ? 'text-red-400' : isDark ? 'text-white' : 'text-gray-900'
-              }`}>
-                {Math.floor(timerSeconds / 60)}:{(timerSeconds % 60).toString().padStart(2, '0')}
+              <div className="flex items-center gap-2">
+                {!isTimerRunning && (
+                  <div className="flex items-center gap-1 mr-2">
+                    <button
+                      onClick={() => {
+                        const next = Math.max(1, customTimerDuration - 5);
+                        setCustomTimerDuration(next);
+                      }}
+                      className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold ${
+                        isDark ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      min="1"
+                      max="999"
+                      value={customTimerDuration}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 1;
+                        setCustomTimerDuration(val);
+                      }}
+                      className={`w-12 text-center text-xs font-bold rounded border-2 outline-none ${
+                        isDark
+                          ? 'bg-slate-700 border-slate-600 text-white'
+                          : 'bg-gray-200 border-gray-300 text-gray-900'
+                      }`}
+                    />
+                    <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>s</span>
+                    <button
+                      onClick={() => {
+                        const next = customTimerDuration + 5;
+                        setCustomTimerDuration(next);
+                      }}
+                      className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold ${
+                        isDark ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      +
+                    </button>
+                  </div>
+                )}
+                <div className={`text-2xl font-mono font-bold ${
+                  timerSeconds <= 3 ? 'text-red-400' : isDark ? 'text-white' : 'text-gray-900'
+                }`}>
+                  {Math.floor(timerSeconds / 60)}:{(timerSeconds % 60).toString().padStart(2, '0')}
+                </div>
               </div>
             </div>
 
