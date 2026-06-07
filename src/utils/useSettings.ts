@@ -7,6 +7,10 @@ const defaultSettings: Settings = {
   language: 'en',
   theme: 'dark',
   currency: '$',
+  decimalPrecision: 2,
+  showTimerMs: false,
+  pinEnabled: false,
+  pinHash: '',
   statsVisibility: {
     totalProducts: true,
     totalAmount: true,

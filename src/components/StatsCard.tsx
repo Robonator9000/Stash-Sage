@@ -3,6 +3,7 @@ import { t } from '../utils/translations';
 import { roundToHundredth } from '../utils/helpers';
 import { Product } from '../types';
 import { Package, Scale, Flame, Star, Percent, DollarSign, Clock } from 'lucide-react';
+import { formatPrecision } from '../utils/helpers';
 
 interface StatsCardProps {
   products: Product[];
@@ -43,13 +44,14 @@ export function StatsCard({ products, isDark = true }: StatsCardProps) {
       })()
     : '—';
 
+  const dp = settings.decimalPrecision;
   const statItems = [
     { key: 'totalProducts' as const, visible: stats.totalProducts, icon: Package, label: t('totalProducts', settings.language), value: totalProducts.toString(), suffix: '' },
-    { key: 'totalAmount' as const, visible: stats.totalAmount, icon: Scale, label: t('totalAmount', settings.language), value: totalAmount.toFixed(2), suffix: 'g' },
+    { key: 'totalAmount' as const, visible: stats.totalAmount, icon: Scale, label: t('totalAmount', settings.language), value: formatPrecision(totalAmount, dp), suffix: 'g' },
     { key: 'totalSessions' as const, visible: stats.totalSessions, icon: Flame, label: t('totalSessions', settings.language), value: totalSessions.toString(), suffix: '' },
-    { key: 'averageRating' as const, visible: stats.averageRating, icon: Star, label: t('averageRating', settings.language), value: averageRating.toFixed(2), suffix: '/5' },
-    { key: 'averageTHC' as const, visible: stats.averageTHC, icon: Percent, label: t('averageTHC', settings.language), value: averageTHC.toFixed(2), suffix: '%' },
-    { key: 'totalValue' as const, visible: stats.totalValue, icon: DollarSign, label: t('totalValue', settings.language), value: totalValue.toFixed(2), suffix: settings.currency },
+    { key: 'averageRating' as const, visible: stats.averageRating, icon: Star, label: t('averageRating', settings.language), value: formatPrecision(averageRating, dp), suffix: '/5' },
+    { key: 'averageTHC' as const, visible: stats.averageTHC, icon: Percent, label: t('averageTHC', settings.language), value: formatPrecision(averageTHC, dp), suffix: '%' },
+    { key: 'totalValue' as const, visible: stats.totalValue, icon: DollarSign, label: t('totalValue', settings.language), value: formatPrecision(totalValue, dp), suffix: settings.currency },
     { key: 'lastConsumed' as const, visible: stats.lastConsumed, icon: Clock, label: t('lastConsumed', settings.language), value: lastConsumedStr, suffix: '' },
   ];
 

@@ -1,5 +1,5 @@
 import { Product } from '../types';
-import { formatDate, roundToHundredth } from '../utils/helpers';
+import { formatDate, roundToHundredth, formatPrecision } from '../utils/helpers';
 import { Star, Heart, Flame, Clock, Package } from 'lucide-react';
 
 interface ProductCardProps {
@@ -9,11 +9,12 @@ interface ProductCardProps {
   onToggleFavorite: () => void;
   isDark?: boolean;
   layout?: 'grid' | 'list' | 'compact';
+  precision?: number;
 }
 
-export function ProductCard({ product, onClick, onConsume, onToggleFavorite, isDark = true, layout = 'grid' }: ProductCardProps) {
+export function ProductCard({ product, onClick, onConsume, onToggleFavorite, isDark = true, layout = 'grid', precision = 2 }: ProductCardProps) {
   const displayAmount = roundToHundredth(product.amount);
-  const amountString = `${displayAmount.toFixed(2)}g`;
+  const amountString = `${formatPrecision(displayAmount, precision)}g`;
 
   const getStrainColor = (strainType: string) => {
     switch (strainType.toLowerCase()) {

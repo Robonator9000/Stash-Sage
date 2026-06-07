@@ -15,6 +15,11 @@ export function roundToHundredth(num: number): number {
   return Math.round(num * 100) / 100;
 }
 
+// Format number with variable precision
+export function formatPrecision(value: number, precision: number = 2): string {
+  return value.toFixed(precision);
+}
+
 // Format date
 export function formatDate(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;

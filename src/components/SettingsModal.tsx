@@ -3,7 +3,7 @@ import { Product, Settings } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { createExportData, downloadExport, downloadCsvExport, copyExportToClipboard, parseImportData, ImportResult } from '../utils/dataTransfer';
-import { X, Globe, Palette, BarChart3, ChevronDown, Check, Download, Upload, Database, FileSpreadsheet, Clipboard, Merge, Clock, Users, Scale, RotateCcw, DollarSign } from 'lucide-react';
+import { X, Globe, Palette, BarChart3, ChevronDown, Check, Download, Upload, Database, FileSpreadsheet, Clipboard, Merge, Clock, Users, Scale, RotateCcw, DollarSign, Lock, Hash } from 'lucide-react';
 import { Toast } from './Toast';
 
 interface SettingsModalProps {
@@ -28,7 +28,12 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mergeFileInputRef = useRef<HTMLInputElement>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [activeTab, setActiveTab] = useState<'general' | 'personalization'>('general');
+  const [activeTab, setActiveTab] = useState<'personalization' | 'dangerZone'>('personalization');
+  const [pinSetupValue, setPinSetupValue] = useState('');
+  const [pinDisableValue, setPinDisableValue] = useState('');
+  const [showPinSetup, setShowPinSetup] = useState(false);
+  const [showPinDisable, setShowPinDisable] = useState(false);
+  const [pinError, setPinError] = useState('');
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const [showRefreshToast, setShowRefreshToast] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -188,19 +193,6 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
           {/* Tabs */}
           <div className={`flex border-b shrink-0 ${isDark ? 'border-slate-800' : 'border-gray-200'}`}>
             <button
-              onClick={() => setActiveTab('general')}
-              className={`flex-1 py-3 text-sm font-medium transition-colors relative ${
-                activeTab === 'general'
-                  ? isDark ? 'text-cyan-400' : 'text-cyan-600'
-                  : isDark ? 'text-slate-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'
-              }`}
-            >
-              General
-              {activeTab === 'general' && (
-                <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-full" />
-              )}
-            </button>
-            <button
               onClick={() => setActiveTab('personalization')}
               className={`flex-1 py-3 text-sm font-medium transition-colors relative ${
                 activeTab === 'personalization'
@@ -213,63 +205,25 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
                 <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-full" />
               )}
             </button>
+            <button
+              onClick={() => setActiveTab('dangerZone')}
+              className={`flex-1 py-3 text-sm font-medium transition-colors relative ${
+                activeTab === 'dangerZone'
+                  ? isDark ? 'text-red-400' : 'text-red-600'
+                  : isDark ? 'text-slate-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              {t('dangerZone', settings.language)}
+              {activeTab === 'dangerZone' && (
+                <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-red-500 to-rose-500 rounded-full" />
+              )}
+            </button>
           </div>
 
           {/* Content */}
           <div className="p-5 space-y-6 overflow-y-auto">
-            {activeTab === 'general' && (
+            {activeTab === 'dangerZone' && (
               <>
-                {/* Language */}
-                <div>
-                  <label className={sectionLabel}>
-                    <Globe className="w-4 h-4" />
-                    {t('language', settings.language)}
-                  </label>
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
-                      className={`w-full px-4 py-3 rounded-xl border-2 transition-colors text-left flex items-center justify-between ${
-                        isDark
-                          ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
-                          : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-                      } outline-none`}
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className="text-lg">{LANGUAGES.find(l => l.code === settings.language)?.flag}</span>
-                        {LANGUAGES.find(l => l.code === settings.language)?.name}
-                      </span>
-                      <ChevronDown className={`w-4 h-4 transition-transform ${showLanguageDropdown ? 'rotate-180' : ''}`} />
-                    </button>
-
-                    {showLanguageDropdown && (
-                      <div className={`absolute top-full left-0 right-0 mt-2 rounded-xl border-2 shadow-xl z-10 overflow-hidden ${
-                        isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'
-                      }`}>
-                        {LANGUAGES.map((lang) => (
-                          <button
-                            key={lang.code}
-                            onClick={() => {
-                              updateSettings({ language: lang.code as typeof settings.language });
-                              setShowLanguageDropdown(false);
-                            }}
-                            className={`w-full px-4 py-3 text-left flex items-center justify-between transition-colors ${
-                              settings.language === lang.code
-                                ? isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
-                                : isDark ? 'hover:bg-slate-700 text-white' : 'hover:bg-gray-100 text-gray-900'
-                            }`}
-                          >
-                            <span className="flex items-center gap-2">
-                              <span className="text-lg">{lang.flag}</span>
-                              {lang.name}
-                            </span>
-                            {settings.language === lang.code && <Check className="w-4 h-4" />}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
                 {/* Backup & Restore */}
                 <div>
                   <label className={sectionLabel}>
@@ -334,11 +288,206 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
                     </p>
                   )}
                 </div>
+
+                {/* PIN Lock */}
+                <div>
+                  <label className={sectionLabel}>
+                    <Lock className="w-4 h-4" />
+                    {t('pinLock', settings.language)}
+                  </label>
+                  <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+                    {t('pinLockHint', settings.language)}
+                  </p>
+
+                  {!settings.pinEnabled ? (
+                    <>
+                      {!showPinSetup ? (
+                        <button
+                          onClick={() => { setShowPinSetup(true); setPinSetupValue(''); setPinError(''); }}
+                          className={`w-full py-3 px-4 rounded-xl text-sm font-semibold transition-all border-2 ${
+                            isDark
+                              ? 'bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30'
+                              : 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100'
+                          }`}
+                        >
+                          {t('enablePin', settings.language)}
+                        </button>
+                      ) : (
+                        <div className="space-y-3">
+                          <input
+                            type="password"
+                            inputMode="numeric"
+                            maxLength={6}
+                            value={pinSetupValue}
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                              setPinSetupValue(val);
+                              setPinError('');
+                            }}
+                            placeholder={t('enterPin', settings.language)}
+                            className={`w-full px-4 py-3 rounded-xl border-2 text-center text-lg tracking-widest font-mono outline-none ${
+                              isDark
+                                ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500'
+                                : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
+                            }`}
+                          />
+                          {pinError && (
+                            <p className={`text-xs font-medium ${isDark ? 'text-red-400' : 'text-red-600'}`}>{pinError}</p>
+                          )}
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => { setShowPinSetup(false); setPinSetupValue(''); setPinError(''); }}
+                              className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${
+                                isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              }`}
+                            >
+                              {t('cancel', settings.language)}
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (pinSetupValue.length < 4) {
+                                  setPinError(t('pinLengthError', settings.language));
+                                  return;
+                                }
+                                updateSettings({ pinEnabled: true, pinHash: btoa(pinSetupValue) });
+                                setShowPinSetup(false);
+                                setPinSetupValue('');
+                              }}
+                              className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                                pinSetupValue.length >= 4
+                                  ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white'
+                                  : isDark ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                              }`}
+                            >
+                              {t('save', settings.language)}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {!showPinDisable ? (
+                        <button
+                          onClick={() => { setShowPinDisable(true); setPinDisableValue(''); setPinError(''); }}
+                          className={`w-full py-3 px-4 rounded-xl text-sm font-semibold transition-all border-2 ${
+                            isDark
+                              ? 'bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30'
+                              : 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100'
+                          }`}
+                        >
+                          {t('disablePin', settings.language)}
+                        </button>
+                      ) : (
+                        <div className="space-y-3">
+                          <input
+                            type="password"
+                            inputMode="numeric"
+                            maxLength={6}
+                            value={pinDisableValue}
+                            onChange={(e) => {
+                              setPinDisableValue(e.target.value.replace(/\D/g, '').slice(0, 6));
+                              setPinError('');
+                            }}
+                            placeholder={t('enterCurrentPin', settings.language)}
+                            className={`w-full px-4 py-3 rounded-xl border-2 text-center text-lg tracking-widest font-mono outline-none ${
+                              isDark
+                                ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500'
+                                : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
+                            }`}
+                          />
+                          {pinError && (
+                            <p className={`text-xs font-medium ${isDark ? 'text-red-400' : 'text-red-600'}`}>{pinError}</p>
+                          )}
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => { setShowPinDisable(false); setPinDisableValue(''); setPinError(''); }}
+                              className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${
+                                isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              }`}
+                            >
+                              {t('cancel', settings.language)}
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (btoa(pinDisableValue) !== settings.pinHash) {
+                                  setPinError(t('pinMismatch', settings.language));
+                                  return;
+                                }
+                                updateSettings({ pinEnabled: false, pinHash: '' });
+                                setShowPinDisable(false);
+                                setPinDisableValue('');
+                              }}
+                              className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                                pinDisableValue.length >= 4
+                                  ? 'bg-gradient-to-r from-red-500 to-rose-500 text-white'
+                                  : isDark ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                              }`}
+                            >
+                              {t('disablePin', settings.language)}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               </>
             )}
 
             {activeTab === 'personalization' && (
               <>
+                {/* Language */}
+                <div>
+                  <label className={sectionLabel}>
+                    <Globe className="w-4 h-4" />
+                    {t('language', settings.language)}
+                  </label>
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
+                      className={`w-full px-4 py-3 rounded-xl border-2 transition-colors text-left flex items-center justify-between ${
+                        isDark
+                          ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
+                          : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
+                      } outline-none`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="text-lg">{LANGUAGES.find(l => l.code === settings.language)?.flag}</span>
+                        {LANGUAGES.find(l => l.code === settings.language)?.name}
+                      </span>
+                      <ChevronDown className={`w-4 h-4 transition-transform ${showLanguageDropdown ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {showLanguageDropdown && (
+                      <div className={`absolute top-full left-0 right-0 mt-2 rounded-xl border-2 shadow-xl z-10 overflow-hidden ${
+                        isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'
+                      }`}>
+                        {LANGUAGES.map((lang) => (
+                          <button
+                            key={lang.code}
+                            onClick={() => {
+                              updateSettings({ language: lang.code as typeof settings.language });
+                              setShowLanguageDropdown(false);
+                            }}
+                            className={`w-full px-4 py-3 text-left flex items-center justify-between transition-colors ${
+                              settings.language === lang.code
+                                ? isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
+                                : isDark ? 'hover:bg-slate-700 text-white' : 'hover:bg-gray-100 text-gray-900'
+                            }`}
+                          >
+                            <span className="flex items-center gap-2">
+                              <span className="text-lg">{lang.flag}</span>
+                              {lang.name}
+                            </span>
+                            {settings.language === lang.code && <Check className="w-4 h-4" />}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Theme */}
                 <div>
                   <label className={sectionLabel}>
@@ -384,6 +533,57 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Decimal Precision */}
+                <div>
+                  <label className={sectionLabel}>
+                    <Hash className="w-4 h-4" />
+                    {t('decimalPrecision', settings.language)}
+                  </label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[0, 1, 2, 3].map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => updateSettings({ decimalPrecision: p })}
+                        className={`py-3 rounded-xl text-sm font-bold transition-all border-2 ${
+                          settings.decimalPrecision === p
+                            ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
+                            : isDark
+                              ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
+                              : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Show Timer Milliseconds */}
+                <div className={`flex items-center justify-between p-3 rounded-xl border-2 ${
+                  isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'
+                }`}>
+                  <div>
+                    <span className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+                      {t('showTimerMs', settings.language)}
+                    </span>
+                    <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+                      {t('showTimerMsHint', settings.language)}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => updateSettings({ showTimerMs: !settings.showTimerMs })}
+                    className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${
+                      settings.showTimerMs
+                        ? 'bg-gradient-to-r from-cyan-500 to-emerald-500'
+                        : isDark ? 'bg-slate-600' : 'bg-gray-300'
+                    }`}
+                  >
+                    <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform shadow ${
+                      settings.showTimerMs ? 'translate-x-[1.375rem]' : 'translate-x-0.5'
+                    }`} />
+                  </button>
                 </div>
 
                 {/* Session Defaults */}

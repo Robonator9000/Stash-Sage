@@ -3,6 +3,7 @@ import { Product, Session } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { X, Users, Clock, Play, Pause, RotateCcw, Calculator, ArrowRight } from 'lucide-react';
+import { formatPrecision } from '../utils/helpers';
 
 interface SessionModalProps {
   product: Product;
@@ -30,6 +31,7 @@ export function SessionModal({
   const [hitsCount, setHitsCount] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(autoStartTimer);
   const [timerSeconds, setTimerSeconds] = useState(defaultHitTimer);
+  const [timerMs, setTimerMs] = useState(0);
   const [customTimerDuration, setCustomTimerDuration] = useState(defaultHitTimer);
   const [sessionNotes, setSessionNotes] = useState('');
   const [gramsPerBowl, setGramsPerBowl] = useState(settings.sessionDefaults.defaultGramsPerBowl);
@@ -62,12 +64,24 @@ export function SessionModal({
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
     if (isTimerRunning && timerSeconds > 0) {
+      const ms = settings.showTimerMs ? 100 : 1000;
       interval = setInterval(() => {
-        setTimerSeconds((prev) => prev - 1);
-      }, 1000);
+        if (settings.showTimerMs) {
+          setTimerMs((prev) => {
+            const next = prev - 100;
+            if (next <= 0) {
+              setTimerSeconds((s) => s - 1);
+              return 1000 + next;
+            }
+            return next;
+          });
+        } else {
+          setTimerSeconds((prev) => prev - 1);
+        }
+      }, ms);
     }
     return () => clearInterval(interval);
-  }, [isTimerRunning, timerSeconds]);
+  }, [isTimerRunning, timerSeconds, settings.showTimerMs]);
 
   const handleFinishSession = () => {
     const session: Session = {
@@ -88,11 +102,13 @@ export function SessionModal({
 
   const resetTimer = () => {
     setTimerSeconds(customTimerDuration);
+    setTimerMs(0);
     setIsTimerRunning(false);
   };
 
   const startTimer = () => {
     setTimerSeconds(customTimerDuration);
+    setTimerMs(0);
     setIsTimerRunning(true);
   };
 
@@ -281,7 +297,7 @@ export function SessionModal({
                       {t('totalAmount', settings.language)}:
                     </span>
                     <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {amountUsed.toFixed(2)}g
+                      {formatPrecision(amountUsed, settings.decimalPrecision)}g
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
@@ -298,7 +314,7 @@ export function SessionModal({
                         {t('gramsPerPerson', settings.language)}:
                       </span>
                       <span className={`font-bold ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`}>
-                        {gramsPerPerson.toFixed(2)}g
+                        {formatPrecision(gramsPerPerson, settings.decimalPrecision)}g
                       </span>
                     </div>
                   </div>
@@ -383,6 +399,7 @@ export function SessionModal({
                   timerSeconds <= 3 ? 'text-red-400' : isDark ? 'text-white' : 'text-gray-900'
                 }`}>
                   {Math.floor(timerSeconds / 60)}:{(timerSeconds % 60).toString().padStart(2, '0')}
+                  {settings.showTimerMs && <span className="text-sm opacity-60">.{Math.floor(timerMs / 100).toString().padStart(1, '0')}</span>}
                 </div>
               </div>
             </div>

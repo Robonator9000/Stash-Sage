@@ -31,6 +31,10 @@ export interface Settings {
     totalValue: boolean;
     lastConsumed: boolean;
   };
+  decimalPrecision: number;
+  showTimerMs: boolean;
+  pinEnabled: boolean;
+  pinHash: string;
   favoriteBrands: string[];
   recentBrands: string[];
   sessionDefaults: {

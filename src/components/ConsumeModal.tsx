@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Product, Settings } from '../types';
 import { useSettings } from '../utils/useSettings';
-import { roundToHundredth } from '../utils/helpers';
+import { roundToHundredth, formatPrecision } from '../utils/helpers';
 import { X, Users, Minus, Plus, Play } from 'lucide-react';
 import { t } from '../utils/translations';
 
@@ -67,7 +67,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
               Consume {product.name}
             </h2>
             <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-              Available: {product.amount.toFixed(2)}g
+              Available: {formatPrecision(product.amount, settings.decimalPrecision)}g
             </p>
           </div>
           <button
@@ -228,7 +228,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
                 Remaining after:
               </span>
               <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {Math.max(0, roundToHundredth(product.amount - amount)).toFixed(2)}g
+                {formatPrecision(Math.max(0, roundToHundredth(product.amount - amount)), settings.decimalPrecision)}g
               </span>
             </div>
           </div>

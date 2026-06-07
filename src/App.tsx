@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Product, Session, SortOption, FilterType } from './types';
 import { useProducts } from './utils/useProducts';
 import { useSessions } from './utils/useSessions';
@@ -11,6 +11,7 @@ import { ProductModal } from './components/ProductModal';
 import { ConsumeModal } from './components/ConsumeModal';
 import { SessionModal } from './components/SessionModal';
 import { SettingsModal } from './components/SettingsModal';
+import { PinModal } from './components/PinModal';
 import { StatsCard } from './components/StatsCard';
 import { SearchBar } from './components/SearchBar';
 import { EmptyState } from './components/EmptyState';
@@ -39,6 +40,18 @@ export default function App() {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
   const isDark = settings.theme === 'dark';
+
+  // Pin lock
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pinUnlocked, setPinUnlocked] = useState(false);
+
+  useEffect(() => {
+    if (settings.pinEnabled && settings.pinHash && !pinUnlocked) {
+      setShowPinModal(true);
+    } else if (!settings.pinEnabled) {
+      setPinUnlocked(true);
+    }
+  }, [settings.pinEnabled, settings.pinHash]);
 
   // Filter, search, and sort products
   const filteredProducts = useMemo(() => {
@@ -328,20 +341,31 @@ export default function App() {
                 ? 'flex flex-col gap-3'
                 : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3'
           }>
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onClick={() => setEditingProduct(product)}
-                onConsume={() => setConsumingProduct(product)}
-                onToggleFavorite={() => toggleFavorite(product.id)}
-                isDark={isDark}
-                layout={layout}
-              />
+              {filteredProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onClick={() => setEditingProduct(product)}
+                  onConsume={() => setConsumingProduct(product)}
+                  onToggleFavorite={() => toggleFavorite(product.id)}
+                  isDark={isDark}
+                  layout={layout}
+                  precision={settings.decimalPrecision}
+                />
             ))}
           </div>
         )}
       </main>
+
+      {/* Pin Lock */}
+      {showPinModal && (
+        <PinModal
+          pinHash={settings.pinHash}
+          onSuccess={() => { setPinUnlocked(true); setShowPinModal(false); }}
+          isDark={isDark}
+          language={lang}
+        />
+      )}
 
       {/* Modals */}
       {(isAddModalOpen || editingProduct) && (
