@@ -13,7 +13,7 @@ interface ProductCardProps {
   precision?: number;
 }
 
-export function ProductCard({ product, onClick, onConsume, onToggleFavorite, isDark = true, layout = 'grid', precision = 2 }: ProductCardProps) {
+export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavorite, isDark = true, layout = 'grid', precision = 2 }: ProductCardProps) {
   const displayAmount = roundToHundredth(product.amount);
   const amountString = `${formatPrecision(displayAmount, precision)}g`;
 
