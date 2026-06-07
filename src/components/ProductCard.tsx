@@ -15,14 +15,16 @@ export function ProductCard({ product, onClick, onConsume, onToggleFavorite, isD
   const displayAmount = roundToHundredth(product.amount);
   const amountString = `${displayAmount.toFixed(2)}g`;
 
-  const getStrainColor = (strainType: 'indica' | 'sativa' | 'hybrid') => {
-    switch (strainType) {
+  const getStrainColor = (strainType: string) => {
+    switch (strainType.toLowerCase()) {
       case 'indica':
         return { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/30' };
       case 'sativa':
         return { bg: 'bg-amber-500/20', text: 'text-amber-400', border: 'border-amber-500/30' };
       case 'hybrid':
         return { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/30' };
+      default:
+        return { bg: 'bg-slate-500/20', text: 'text-slate-400', border: 'border-slate-500/30' };
     }
   };
 
@@ -281,17 +283,18 @@ export function ProductCard({ product, onClick, onConsume, onToggleFavorite, isD
         </div>
 
         {product.rating > 0 && (
-          <div className="flex items-center gap-1 mb-3">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Star
-                key={star}
-                className={`w-4 h-4 ${
-                  star <= product.rating
-                    ? 'text-amber-400 fill-amber-400'
-                    : isDark ? 'text-slate-600' : 'text-gray-300'
-                }`}
-              />
-            ))}
+          <div className="flex items-center gap-0 mb-3">
+            {[1, 2, 3, 4, 5].map((star) => {
+              const fillPercent = product.rating >= star ? 100 : product.rating >= star - 0.5 ? 50 : 0;
+              return (
+                <div key={star} className="relative w-4 h-4">
+                  <Star className={`w-4 h-4 absolute inset-0 ${isDark ? 'text-slate-600' : 'text-gray-300'}`} />
+                  <div className="absolute inset-0 overflow-hidden" style={{ width: `${fillPercent}%` }}>
+                    <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 

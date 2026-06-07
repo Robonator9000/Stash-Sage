@@ -31,7 +31,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
   const brandDropdownRef = useRef<HTMLDivElement>(null);
 
   const [name, setName] = useState(product?.name || '');
-  const [type, setType] = useState<'indica' | 'sativa' | 'hybrid'>(product?.type || 'hybrid');
+  const [type, setType] = useState<string>(product?.type || 'hybrid');
   const [thc, setThc] = useState(product?.thc || 0);
   const [cbd, setCbd] = useState(product?.cbd || 0);
   const [amount, setAmount] = useState(product?.amount || 0);
@@ -122,14 +122,16 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
     handleClose();
   };
 
-  const getStrainColor = (strainType: 'indica' | 'sativa' | 'hybrid') => {
-    switch (strainType) {
+  const getStrainColor = (strainType: string) => {
+    switch (strainType.toLowerCase()) {
       case 'indica':
         return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
       case 'sativa':
         return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
       case 'hybrid':
         return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+      default:
+        return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
     }
   };
 
@@ -325,7 +327,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
             <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
               Strain Type
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2 mb-2">
               {(['indica', 'sativa', 'hybrid'] as const).map((t) => (
                 <button
                   key={t}
@@ -342,6 +344,17 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                 </button>
               ))}
             </div>
+            <input
+              type="text"
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              placeholder="Or type a custom strain type..."
+              className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
+                isDark 
+                  ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' 
+                  : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
+              } outline-none`}
+            />
           </div>
 
           {/* THC & CBD */}
@@ -408,7 +421,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
             </div>
             <div>
               <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                Price ($)
+                Price ({settings.currency})
               </label>
               <input
                 type="number"
@@ -432,26 +445,34 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
               Rating
             </label>
             <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  onClick={() => setRating(star)}
-                  onMouseEnter={() => setHoveredStar(star)}
-                  onMouseLeave={() => setHoveredStar(0)}
-                  className="p-1 transition-transform hover:scale-110"
-                >
-                  <Star
-                    className={`w-7 h-7 transition-colors ${
-                      star <= (hoveredStar || rating)
-                        ? 'text-amber-400 fill-amber-400'
-                        : isDark ? 'text-slate-600' : 'text-gray-300'
-                    }`}
-                  />
-                </button>
-              ))}
-              {rating > 0 && (
+              {[1, 2, 3, 4, 5].map((star) => {
+                const fillPercent = (hoveredStar || rating) >= star ? 100 : (hoveredStar || rating) >= star - 0.5 ? 50 : 0;
+                return (
+                  <div key={star} className="relative flex">
+                    <button
+                      onClick={() => setRating(star - 0.5)}
+                      onMouseEnter={() => setHoveredStar(star - 0.5)}
+                      onMouseLeave={() => setHoveredStar(0)}
+                      className="absolute left-0 top-0 w-1/2 h-full z-10 cursor-pointer"
+                    />
+                    <button
+                      onClick={() => setRating(star)}
+                      onMouseEnter={() => setHoveredStar(star)}
+                      onMouseLeave={() => setHoveredStar(0)}
+                      className="absolute right-0 top-0 w-1/2 h-full z-10 cursor-pointer"
+                    />
+                    <div className="relative w-7 h-7 pointer-events-none">
+                      <Star className={`w-7 h-7 absolute inset-0 ${isDark ? 'text-slate-600' : 'text-gray-300'}`} />
+                      <div className={`absolute inset-0 overflow-hidden transition-all`} style={{ width: `${fillPercent}%` }}>
+                        <Star className="w-7 h-7 text-amber-400 fill-amber-400" />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              {(hoveredStar || rating) > 0 && (
                 <span className={`ml-2 text-sm font-medium ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                  {rating}/5
+                  {(hoveredStar || rating)}/5
                 </span>
               )}
             </div>

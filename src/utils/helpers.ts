@@ -89,8 +89,8 @@ export function sortProducts(products: Product[], sortBy: SortOption): Product[]
 }
 
 // Strain type badge colors
-export function getStrainColor(strainType: 'indica' | 'sativa' | 'hybrid'): string {
-  switch (strainType) {
+export function getStrainColor(strainType: string): string {
+  switch (strainType.toLowerCase()) {
     case 'indica':
       return 'bg-purple-500/20 text-purple-400';
     case 'sativa':
@@ -105,12 +105,8 @@ export function getStrainColor(strainType: 'indica' | 'sativa' | 'hybrid'): stri
 // Filter products
 export function filterProducts(products: Product[], filterBy: FilterType): Product[] {
   switch (filterBy) {
-    case 'indica':
-      return products.filter((p) => p.type === 'indica');
-    case 'sativa':
-      return products.filter((p) => p.type === 'sativa');
-    case 'hybrid':
-      return products.filter((p) => p.type === 'hybrid');
+    case 'all':
+      return products;
     case 'favorites':
       return products.filter((p) => p.favorite);
     case 'inStock':
@@ -120,6 +116,6 @@ export function filterProducts(products: Product[], filterBy: FilterType): Produ
     case 'outOfStock':
       return products.filter((p) => p.amount <= 0);
     default:
-      return products;
+      return products.filter((p) => p.type.toLowerCase() === filterBy.toLowerCase());
   }
 }

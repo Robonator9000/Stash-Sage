@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { Product, Session } from './types';
+import { Product, Session, SortOption, FilterType } from './types';
 import { useProducts } from './utils/useProducts';
 import { useSessions } from './utils/useSessions';
 import { useSettings } from './utils/useSettings';
@@ -22,8 +22,8 @@ export default function App() {
   const { settings, replaceSettings } = useSettings();
   
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name' | 'rating' | 'thc' | 'amount' | 'price'>('newest');
-  const [filterBy, setFilterBy] = useState<'all' | 'indica' | 'sativa' | 'hybrid' | 'favorites' | 'inStock' | 'lowStock' | 'outOfStock'>('all');
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [filterBy, setFilterBy] = useState<FilterType>('all');
   const [layout, setLayout] = useState<'grid' | 'list' | 'compact'>('grid');
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -119,11 +119,13 @@ export default function App() {
     { value: 'favorites', labelKey: 'sortFavorites' },
   ];
 
+  const customTypes = [...new Set(products.map(p => p.type).filter(t => !['indica', 'sativa', 'hybrid'].includes(t)))];
   const filterOptions = [
     { value: 'all', labelKey: 'filterAll' },
     { value: 'indica', labelKey: 'filterIndica' },
     { value: 'sativa', labelKey: 'filterSativa' },
     { value: 'hybrid', labelKey: 'filterHybrid' },
+    ...customTypes.map(t => ({ value: t, labelKey: t, display: t.charAt(0).toUpperCase() + t.slice(1) })),
     { value: 'favorites', labelKey: 'filterFavorites' },
     { value: 'inStock', labelKey: 'filterInStock' },
     { value: 'lowStock', labelKey: 'filterLowStock' },
@@ -235,7 +237,10 @@ export default function App() {
                   }`}
                 >
                   <Filter className="w-4 h-4" />
-                  {t(filterOptions.find(o => o.value === filterBy)?.labelKey || 'filterAll', lang)}
+                  {(() => {
+                    const opt = filterOptions.find(o => o.value === filterBy) as any;
+                    return opt?.display || t(opt?.labelKey || 'filterAll', lang);
+                  })()}
                 </button>
                 {showFilterDropdown && (
                   <div className={`absolute top-full left-0 mt-2 w-48 rounded-xl border-2 shadow-xl z-10 overflow-hidden ${
@@ -254,7 +259,7 @@ export default function App() {
                             : isDark ? 'hover:bg-slate-700 text-white' : 'hover:bg-gray-100 text-gray-900'
                         }`}
                       >
-                        {t(option.labelKey, lang)}
+                        {(option as any).display || t(option.labelKey, lang)}
                       </button>
                     ))}
                   </div>

@@ -2,7 +2,7 @@ export interface Product {
   id: string;
   name: string;
   strain: string;
-  type: 'indica' | 'sativa' | 'hybrid';
+  type: string;
   thc: number;
   cbd: number;
   amount: number; // Always in grams
@@ -57,5 +57,5 @@ export interface Session {
 }
 
 export type SortOption = 'newest' | 'oldest' | 'name' | 'rating' | 'thc' | 'amount' | 'price' | 'favorites';
-export type FilterType = 'all' | 'indica' | 'sativa' | 'hybrid' | 'favorites' | 'inStock' | 'lowStock' | 'outOfStock';
+export type FilterType = string;
 export type ViewLayout = 'grid' | 'list' | 'compact';
