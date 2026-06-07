@@ -21,8 +21,6 @@ export interface Product {
 export interface Settings {
   language: 'en' | 'es' | 'fr' | 'de' | 'pt';
   theme: 'dark' | 'light';
-  profileName?: string;
-  profilePicture?: string;
   statsVisibility: {
     totalProducts: boolean;
     totalAmount: boolean;
@@ -40,25 +38,6 @@ export interface Settings {
     defaultGramsPerBowl: number;
     rotationEnabled: boolean;
   };
-}
-
-export interface CommunityPost {
-  id: string;
-  userId: string;
-  userName: string;
-  userAvatar?: string;
-  productName: string;
-  strain: string;
-  type: 'indica' | 'sativa' | 'hybrid';
-  thc: number;
-  cbd: number;
-  picture?: string;
-  notes?: string;
-  rating: number;
-  ratings: { userId: string; rating: number }[];
-  likes: number;
-  likedBy: string[];
-  createdAt: Date;
 }
 
 export interface Session {
