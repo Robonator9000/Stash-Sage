@@ -65,13 +65,13 @@ export function StatsCard({ products, isDark = true }: StatsCardProps) {
         ? 'bg-slate-900/50 border-slate-800' 
         : 'bg-white border-gray-200 shadow-sm'
     }`}>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 transition-all duration-500">
+      <div className="flex flex-wrap gap-3 transition-all duration-500">
         {visibleStats.map((stat) => {
           const Icon = stat.icon;
           return (
             <div
               key={stat.key}
-              className={`rounded-xl p-3 text-center transition-all ${
+              className={`flex-1 min-w-[100px] rounded-xl p-3 text-center transition-all ${
                 isDark 
                   ? 'bg-slate-800/50 hover:bg-slate-800' 
                   : 'bg-gray-50 hover:bg-gray-100'

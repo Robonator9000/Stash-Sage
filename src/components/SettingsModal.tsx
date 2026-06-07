@@ -507,12 +507,12 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
                     <BarChart3 className="w-4 h-4" />
                     {t('showStats', settings.language)}
                   </label>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     {statOptions.map((stat) => (
                       <button
                         key={stat.key}
                         onClick={() => handleStatToggle(stat.key)}
-                        className={`flex-1 py-2 px-3 rounded-xl text-sm text-center font-medium transition-all border-2 ${
+                        className={`py-2 px-3 rounded-xl text-sm font-medium transition-all border-2 text-left ${
                           settings.statsVisibility[stat.key]
                             ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
                             : isDark
