@@ -21,6 +21,7 @@ export interface Product {
 export interface Settings {
   language: 'en' | 'es' | 'fr' | 'de' | 'pt';
   theme: 'dark' | 'light';
+  currency: string;
   statsVisibility: {
     totalProducts: boolean;
     totalAmount: boolean;
@@ -28,6 +29,7 @@ export interface Settings {
     averageRating: boolean;
     averageTHC: boolean;
     totalValue: boolean;
+    lastConsumed: boolean;
   };
   favoriteBrands: string[];
   recentBrands: string[];

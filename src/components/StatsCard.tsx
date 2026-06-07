@@ -2,7 +2,7 @@ import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { roundToHundredth } from '../utils/helpers';
 import { Product } from '../types';
-import { Package, Scale, Flame, Star, Percent, DollarSign } from 'lucide-react';
+import { Package, Scale, Flame, Star, Percent, DollarSign, Clock } from 'lucide-react';
 
 interface StatsCardProps {
   products: Product[];
@@ -24,13 +24,33 @@ export function StatsCard({ products, isDark = true }: StatsCardProps) {
     : 0;
   const totalValue = roundToHundredth(products.reduce((sum, p) => sum + (p.price || 0), 0));
 
+  const lastConsumedDate = products.reduce<Date | null>((latest, p) => {
+    if (!p.lastConsumed) return latest;
+    const d = new Date(p.lastConsumed);
+    return !latest || d.getTime() > latest.getTime() ? d : latest;
+  }, null);
+  const lastConsumedStr = lastConsumedDate
+    ? (() => {
+        const diffMs = Date.now() - lastConsumedDate.getTime();
+        const diffMins = Math.floor(diffMs / 60000);
+        if (diffMins < 60) return `${diffMins}m ago`;
+        const diffHours = Math.floor(diffMins / 60);
+        if (diffHours < 24) return `${diffHours}h ago`;
+        const diffDays = Math.floor(diffHours / 24);
+        if (diffDays < 30) return `${diffDays}d ago`;
+        const diffMonths = Math.floor(diffDays / 30);
+        return `${diffMonths}mo ago`;
+      })()
+    : '—';
+
   const statItems = [
     { key: 'totalProducts' as const, visible: stats.totalProducts, icon: Package, label: t('totalProducts', settings.language), value: totalProducts.toString(), suffix: '' },
     { key: 'totalAmount' as const, visible: stats.totalAmount, icon: Scale, label: t('totalAmount', settings.language), value: totalAmount.toFixed(2), suffix: 'g' },
     { key: 'totalSessions' as const, visible: stats.totalSessions, icon: Flame, label: t('totalSessions', settings.language), value: totalSessions.toString(), suffix: '' },
     { key: 'averageRating' as const, visible: stats.averageRating, icon: Star, label: t('averageRating', settings.language), value: averageRating.toFixed(2), suffix: '/5' },
     { key: 'averageTHC' as const, visible: stats.averageTHC, icon: Percent, label: t('averageTHC', settings.language), value: averageTHC.toFixed(2), suffix: '%' },
-    { key: 'totalValue' as const, visible: stats.totalValue, icon: DollarSign, label: t('totalValue', settings.language), value: totalValue.toFixed(2), suffix: '' },
+    { key: 'totalValue' as const, visible: stats.totalValue, icon: DollarSign, label: t('totalValue', settings.language), value: totalValue.toFixed(2), suffix: settings.currency },
+    { key: 'lastConsumed' as const, visible: stats.lastConsumed, icon: Clock, label: t('lastConsumed', settings.language), value: lastConsumedStr, suffix: '' },
   ];
 
   const visibleStats = statItems.filter(s => s.visible);

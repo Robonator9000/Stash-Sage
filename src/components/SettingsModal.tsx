@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Product } from '../types';
+import { Product, Settings } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { createExportData, downloadExport, downloadCsvExport, copyExportToClipboard, parseImportData, ImportResult } from '../utils/dataTransfer';
-import { X, Globe, Palette, BarChart3, ChevronDown, Check, Download, Upload, Database, FileSpreadsheet, Clipboard, Merge, Clock, Users, Scale, RotateCcw } from 'lucide-react';
+import { X, Globe, Palette, BarChart3, ChevronDown, Check, Download, Upload, Database, FileSpreadsheet, Clipboard, Merge, Clock, Users, Scale, RotateCcw, DollarSign } from 'lucide-react';
 import { Toast } from './Toast';
 
 interface SettingsModalProps {
@@ -49,7 +49,7 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
     setTimeout(onClose, 200);
   };
 
-  const handleStatToggle = (key: 'totalProducts' | 'totalAmount' | 'totalSessions' | 'averageRating' | 'averageTHC' | 'totalValue') => {
+  const handleStatToggle = (key: keyof Settings['statsVisibility']) => {
     toggleStatVisibility(key);
     setShowRefreshToast(true);
   };
@@ -136,6 +136,7 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
     { key: 'averageRating' as const, label: t('averageRating', settings.language) },
     { key: 'averageTHC' as const, label: t('averageTHC', settings.language) },
     { key: 'totalValue' as const, label: t('totalValue', settings.language) },
+    { key: 'lastConsumed' as const, label: t('lastConsumed', settings.language) },
   ];
 
   const sectionLabel = `flex items-center gap-2 text-sm font-medium mb-3 ${isDark ? 'text-slate-300' : 'text-gray-700'}`;
@@ -352,6 +353,31 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
                     >
                       {t('light', settings.language)}
                     </button>
+                  </div>
+                </div>
+
+                {/* Currency */}
+                <div>
+                  <label className={sectionLabel}>
+                    <DollarSign className="w-4 h-4" />
+                    {t('currency', settings.language)}
+                  </label>
+                  <div className="grid grid-cols-5 gap-2">
+                    {['$', '€', '£', '¥', '₿'].map((sym) => (
+                      <button
+                        key={sym}
+                        onClick={() => updateSettings({ currency: sym })}
+                        className={`py-3 rounded-xl text-lg font-bold transition-all border-2 ${
+                          settings.currency === sym
+                            ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
+                            : isDark
+                              ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
+                              : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
+                        }`}
+                      >
+                        {sym}
+                      </button>
+                    ))}
                   </div>
                 </div>
 

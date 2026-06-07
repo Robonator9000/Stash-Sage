@@ -41,7 +41,7 @@ export function useProducts() {
     );
   }, []);
 
-  const consumeProduct = useCallback((id: string, amountConsumed: number) => {
+  const consumeProduct = useCallback((id: string, amountConsumed: number, consumedAt?: Date) => {
     setProducts((prev) =>
       prev.map((p) =>
         p.id === id
@@ -49,7 +49,7 @@ export function useProducts() {
               ...p,
               amount: Math.max(0, p.amount - amountConsumed),
               consumptionCount: (p.consumptionCount || 0) + 1,
-              lastConsumed: new Date(),
+              lastConsumed: consumedAt || new Date(),
             }
           : p
       )

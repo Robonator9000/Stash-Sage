@@ -6,6 +6,7 @@ const SETTINGS_KEY = 'weed-settings';
 const defaultSettings: Settings = {
   language: 'en',
   theme: 'dark',
+  currency: '$',
   statsVisibility: {
     totalProducts: true,
     totalAmount: true,
@@ -13,6 +14,7 @@ const defaultSettings: Settings = {
     averageRating: true,
     averageTHC: true,
     totalValue: true,
+    lastConsumed: true,
   },
   favoriteBrands: [],
   recentBrands: [],

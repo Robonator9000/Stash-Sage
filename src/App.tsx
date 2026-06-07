@@ -66,9 +66,9 @@ export default function App() {
     setEditingProduct(null);
   };
 
-  const handleConsume = (amount: number, startSession: boolean, people: number) => {
+  const handleConsume = (amount: number, startSession: boolean, people: number, consumedAt?: Date) => {
     if (consumingProduct) {
-      consumeProduct(consumingProduct.id, amount);
+      consumeProduct(consumingProduct.id, amount, consumedAt);
       setConsumingProduct(null);
       if (startSession) {
         setSessionProduct(consumingProduct);

@@ -77,6 +77,9 @@ const translations: Record<string, Record<string, string>> = {
     defaultHitTimer: 'Default Hit Timer (s)',
     defaultGramsPerBowl: 'Default Grams per Bowl',
     rotationEnabled: 'Enable Rotation',
+    lastConsumed: 'Last Consumed',
+    setConsumptionTime: 'Consumption Time',
+    currency: 'Currency',
   },
   es: {
     totalProducts: 'Productos',
@@ -155,6 +158,9 @@ const translations: Record<string, Record<string, string>> = {
     defaultHitTimer: 'Temporizador (s)',
     defaultGramsPerBowl: 'Gramos por bowl',
     rotationEnabled: 'Activar rotación',
+    lastConsumed: 'Último Consumo',
+    setConsumptionTime: 'Hora de Consumo',
+    currency: 'Moneda',
   },
   fr: {
     totalProducts: 'Produits',
@@ -233,6 +239,9 @@ const translations: Record<string, Record<string, string>> = {
     defaultHitTimer: 'Minuteur (s)',
     defaultGramsPerBowl: 'Grammes par bowl',
     rotationEnabled: 'Activer la rotation',
+    lastConsumed: 'Dernière Consommation',
+    setConsumptionTime: 'Heure de Consommation',
+    currency: 'Devise',
   },
   de: {
     totalProducts: 'Produkte',
@@ -311,6 +320,9 @@ const translations: Record<string, Record<string, string>> = {
     defaultHitTimer: 'Standard-Timer (s)',
     defaultGramsPerBowl: 'Gramm pro Bowl',
     rotationEnabled: 'Rotation aktivieren',
+    lastConsumed: 'Zuletzt konsumiert',
+    setConsumptionTime: 'Konsumzeit',
+    currency: 'Währung',
   },
   pt: {
     totalProducts: 'Produtos',
@@ -389,6 +401,9 @@ const translations: Record<string, Record<string, string>> = {
     defaultHitTimer: 'Temporizador Padrão (s)',
     defaultGramsPerBowl: 'Gramas por Bowl Padrão',
     rotationEnabled: 'Ativar Rodízio',
+    lastConsumed: 'Último Consumo',
+    setConsumptionTime: 'Hora de Consumo',
+    currency: 'Moeda',
   },
 };
 

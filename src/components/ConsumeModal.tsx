@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Product } from '../types';
+import { Product, Settings } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { roundToHundredth } from '../utils/helpers';
 import { X, Users, Minus, Plus, Play } from 'lucide-react';
+import { t } from '../utils/translations';
 
 interface ConsumeModalProps {
   product: Product;
-  onConsume: (amount: number, startSession: boolean, people: number) => void;
+  onConsume: (amount: number, startSession: boolean, people: number, consumedAt?: Date) => void;
   onClose: () => void;
   isDark?: boolean;
 }
@@ -17,6 +18,12 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
   const [people, setPeople] = useState(settings.sessionDefaults.defaultPeople);
   const [amount, setAmount] = useState(settings.sessionDefaults.defaultAmount);
   const [startSession, setStartSession] = useState(false);
+  const [consumedAt, setConsumedAt] = useState(() => {
+    const now = new Date();
+    const offset = now.getTimezoneOffset();
+    const local = new Date(now.getTime() - offset * 60000);
+    return local.toISOString().slice(0, 16);
+  });
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 10);
@@ -29,7 +36,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
   };
 
   const handleConsume = () => {
-    onConsume(roundToHundredth(amount), startSession, people);
+    onConsume(roundToHundredth(amount), startSession, people, new Date(consumedAt));
   };
 
   const adjustAmount = (delta: number) => {
@@ -196,6 +203,23 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
               </div>
             </div>
           )}
+
+          {/* Consumption Time */}
+          <div className={`flex items-center justify-between p-3 rounded-xl border-2 ${
+            isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'
+          }`}>
+            <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+              {t('setConsumptionTime', settings.language)}
+            </span>
+            <input
+              type="datetime-local"
+              value={consumedAt}
+              onChange={(e) => setConsumedAt(e.target.value)}
+              className={`text-xs border-0 bg-transparent outline-none ${
+                isDark ? 'text-slate-400' : 'text-gray-500'
+              }`}
+            />
+          </div>
 
           {/* Remaining After */}
           <div className={`p-3 rounded-xl ${isDark ? 'bg-slate-800/50' : 'bg-gray-100'}`}>
