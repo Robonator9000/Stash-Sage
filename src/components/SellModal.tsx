@@ -59,12 +59,15 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
 
   const handleSell = () => {
     const grams = parseFloat(quickSellGrams);
-    if (grams > 0 && grams <= product.amount) {
-      onSell(roundToHundredth(grams));
+    const portions = parseInt(quickSellPortions) || 0;
+    const total = grams * portions;
+    if (grams > 0 && portions > 0 && total <= product.amount) {
+      onSell(roundToHundredth(total));
     }
   };
 
-  const canQuickSell = parseFloat(quickSellGrams) > 0 && parseFloat(quickSellGrams) <= product.amount;
+  const quickSellTotal = (parseFloat(quickSellGrams) || 0) * (parseInt(quickSellPortions) || 0);
+  const canQuickSell = (parseFloat(quickSellGrams) || 0) > 0 && (parseInt(quickSellPortions) || 0) > 0 && quickSellTotal <= product.amount;
 
   return (
     <div
@@ -216,7 +219,7 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
             </label>
             <div className="grid grid-cols-2 gap-3 mb-3">
               <div>
-                <span className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>Grams to sell</span>
+                <span className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>Grams per portion</span>
                 <input
                   type="number"
                   value={quickSellGrams}
@@ -251,10 +254,18 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
             <div className={`p-3 rounded-xl ${isDark ? 'bg-slate-800/50' : 'bg-gray-100'}`}>
               <div className="flex justify-between items-center">
                 <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                  Total to sell:
+                </span>
+                <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {formatPrecision(quickSellTotal, settings.decimalPrecision)}g
+                </span>
+              </div>
+              <div className="flex justify-between items-center mt-1">
+                <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
                   Remaining after:
                 </span>
                 <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {formatPrecision(Math.max(0, roundToHundredth(product.amount - (parseFloat(quickSellGrams) || 0))), settings.decimalPrecision)}g
+                  {formatPrecision(Math.max(0, roundToHundredth(product.amount - quickSellTotal)), settings.decimalPrecision)}g
                 </span>
               </div>
             </div>
