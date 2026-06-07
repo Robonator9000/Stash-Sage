@@ -4,6 +4,7 @@ import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { createExportData, downloadExport, downloadCsvExport, copyExportToClipboard, parseImportData, ImportResult } from '../utils/dataTransfer';
 import { X, Globe, Palette, BarChart3, ChevronDown, Check, Download, Upload, Database, FileSpreadsheet, Clipboard, Merge, Clock, Users, Scale, RotateCcw } from 'lucide-react';
+import { Toast } from './Toast';
 
 interface SettingsModalProps {
   products: Product[];
@@ -29,6 +30,7 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
   const [isVisible, setIsVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<'general' | 'personalization'>('general');
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+  const [showRefreshToast, setShowRefreshToast] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
@@ -49,6 +51,11 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
 
   const handleStatToggle = (key: 'totalProducts' | 'totalAmount' | 'totalSessions' | 'averageRating' | 'averageTHC' | 'totalValue') => {
     toggleStatVisibility(key);
+    setShowRefreshToast(true);
+  };
+
+  const handleRefresh = () => {
+    window.location.reload();
   };
 
   const handleThemeChange = (theme: 'dark' | 'light') => {
@@ -492,6 +499,16 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
           </div>
         </div>
       </div>
+
+      {showRefreshToast && (
+        <Toast
+          message={t('statsChanged', settings.language)}
+          onClose={() => setShowRefreshToast(false)}
+          onRefresh={handleRefresh}
+          isDark={isDark}
+          language={settings.language}
+        />
+      )}
     </>
   );
 }
