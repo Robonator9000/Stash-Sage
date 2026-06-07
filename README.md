@@ -10,15 +10,17 @@ A modern progressive web app for managing your cannabis collection, tracking con
 
 | | |
 |---|---|
-| **Inventory Management** | Add strains with THC/CBD, type, brand, rating, notes, and photos |
-| **Consumption Tracking** | Log each use, track remaining amounts, and review consumption history |
-| **Session Mode** | Start a timed session with a built-in hit timer, bowl calculator, and notes |
-| **Blunt Rotation** | Track hits per person with an automatic rotation — perfect for group sessions |
-| **Stats Dashboard** | At-a-glance totals for products, amount, sessions, average rating, THC, and value |
-| **Customizable** | Choose which stats to show, pick your theme, and set session defaults |
-| **Multi-Language** | English, Español, Français, Deutsch, Português |
-| **Dark & Light Themes** | Switch between dark and light modes |
-| **PWA Ready** | Install on your phone or desktop. Works offline. |
+| **Inventory Management** | Add strains with name/brand, type (Indica/Sativa/Hybrid), THC/CBD, rating, price, notes, and photos. Sort/filter by name, rating, THC, amount, price, favorites, stock status, or product type. |
+| **Consumption Tracking** | Log each use with custom amount via quick-add buttons or free input. Backdate consumption time. Track remaining amounts and view last-consumed dates per product. |
+| **Session Mode** | Start a timed session with a built-in hit timer (customizable interval), bowl calculator, grams-per-bowl input, session notes, and auto-finish animation. |
+| **Blunt Rotation** | Track hits per person with an automatic rotating indicator — perfect for group sessions. Enable/disable in session defaults. |
+| **Stats Dashboard** | At-a-glance totals for products, amount, sessions, average rating, THC, total value (with currency symbol), and last-consumed time. All stats can be toggled on/off. |
+| **Favorites** | Star your go-to products and filter by favorites. Favorites are always sorted first. |
+| **Data Backup** | Export/import your full collection and settings as JSON. Merge imports to combine collections. Export as CSV and copy to clipboard also supported. |
+| **Multi-Language** | English, Español, Français, Deutsch, Português. |
+| **Dark & Light Themes** | Switch between dark and light modes. |
+| **Customization** | Choose currency symbol ($/€/£/¥/₿), pick which stats to display, and set session defaults (amount, people, hit timer, grams per bowl, rotation). |
+| **PWA Ready** | Install on your phone or desktop. Works offline with full service-worker caching. |
 
 ## 🚀 Quick Start
 
