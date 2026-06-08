@@ -37,6 +37,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
   };
 
   const quickAmounts = [0.1, 0.25, 0.5, 1, 2];
+  const [quickAddMode, setQuickAddMode] = useState(false);
 
   return (
     <div
@@ -122,22 +123,18 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
             </div>
 
             <div className="flex gap-2 mt-3">
-              {quickAmounts.map((amt) => (
+                  {quickAmounts.map((amt) => (
                 <button
                   key={amt}
-                  onClick={() => setAmount(amt)}
-                  aria-label={`${amt}g`}
+                  onClick={() => setAmount(prev => roundToHundredth(Math.min(product.amount, prev + amt)))}
+                  aria-label={`+${amt}g`}
                   className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-                    amount === amt
-                      ? isDark
-                        ? 'bg-cyanx/15 text-cyanx border border-cyanx/30'
-                        : 'bg-cyan-50 text-cyan-600 border border-cyan-200'
-                      : isDark
-                        ? 'bg-surface text-mist hover:bg-surface-light'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    isDark
+                      ? 'bg-surface text-mist hover:bg-surface-light'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  {amt}g
+                  +{amt}g
                 </button>
               ))}
             </div>
