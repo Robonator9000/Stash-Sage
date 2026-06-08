@@ -15,12 +15,20 @@ interface SettingsModalProps {
 }
 
 const LANGUAGES = [
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' },
-  { code: 'fr', name: 'Français', flag: '🇫🇷' },
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'pt', name: 'Português', flag: '🇧🇷' },
+  { code: 'en', flag: '🇺🇸' },
+  { code: 'es', flag: '🇪🇸' },
+  { code: 'fr', flag: '🇫🇷' },
+  { code: 'de', flag: '🇩🇪' },
+  { code: 'pt', flag: '🇧🇷' },
 ];
+
+const LANGUAGE_NAMES: Record<string, Record<string, string>> = {
+  en: { en: 'English', es: 'Spanish', fr: 'French', de: 'German', pt: 'Portuguese' },
+  es: { en: 'Inglés', es: 'Español', fr: 'Francés', de: 'Alemán', pt: 'Portugués' },
+  fr: { en: 'Anglais', es: 'Espagnol', fr: 'Français', de: 'Allemand', pt: 'Portugais' },
+  de: { en: 'Englisch', es: 'Spanisch', fr: 'Französisch', de: 'Deutsch', pt: 'Portugiesisch' },
+  pt: { en: 'Inglês', es: 'Espanhol', fr: 'Francês', de: 'Alemão', pt: 'Português' },
+};
 
 export function SettingsModal({ products, onImport, onMergeImport, onClose, isDark = true }: SettingsModalProps) {
   const { settings, updateSettings, toggleStatVisibility } = useSettings();
@@ -454,11 +462,11 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
                           : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
                       } outline-none`}
                     >
-                      <span className="flex items-center gap-2">
-                        <span className="text-lg">{LANGUAGES.find(l => l.code === settings.language)?.flag}</span>
-                        {LANGUAGES.find(l => l.code === settings.language)?.name}
-                      </span>
-                      <ChevronDown className={`w-4 h-4 transition-transform ${showLanguageDropdown ? 'rotate-180' : ''}`} />
+                        <span className="flex items-center gap-2">
+                          <span className="text-lg">{LANGUAGES.find(l => l.code === settings.language)?.flag}</span>
+                          {LANGUAGE_NAMES[settings.language]?.[settings.language] || settings.language}
+                        </span>
+                        <ChevronDown className={`w-4 h-4 transition-transform ${showLanguageDropdown ? 'rotate-180' : ''}`} />
                     </button>
 
                     {showLanguageDropdown && (
@@ -480,7 +488,7 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
                           >
                             <span className="flex items-center gap-2">
                               <span className="text-lg">{lang.flag}</span>
-                              {lang.name}
+                              {LANGUAGE_NAMES[settings.language]?.[lang.code] || lang.code}
                             </span>
                             {settings.language === lang.code && <Check className="w-4 h-4" />}
                           </button>
