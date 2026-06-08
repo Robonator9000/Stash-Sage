@@ -88,7 +88,7 @@ interface UIState {
   searchQuery: string
   sortBy: string
   filterBy: string
-  layout: 'grid' | 'list'
+  layout: 'grid' | 'list' | 'compact'
 
   // Modal states
   addProductOpen: boolean

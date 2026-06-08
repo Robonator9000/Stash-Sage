@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo, useSyncExternalStore } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTheme } from 'next-themes'
 import { t } from '@/lib/translations'
@@ -32,7 +32,7 @@ import {
   BarChart3, PieChart, ArrowUpRight, ArrowDownRight, Download,
   Upload, Copy, Lock, Unlock, X, Timer, RotateCw, Hash,
   Leaf, Archive, Activity, ShoppingCart, Eye, Filter, ArrowUpDown,
-  Pause
+  Pause, Cloud, Sparkles
 } from 'lucide-react'
 import {
   LineChart, Line, BarChart, Bar, PieChart as RechartsPie, Pie, Cell,
@@ -136,10 +136,34 @@ function StarRating({ value, onChange, readonly = false, size = 'sm' }: { value:
   )
 }
 
+// ── Theme Toggle (hydration-safe) ────────────────────────────────────────────
+function ThemeToggleButton({ resolvedTheme, onToggle }: { resolvedTheme: string | undefined; onToggle: () => void }) {
+  // resolvedTheme is undefined during SSR, so we render a placeholder
+  // to avoid hydration mismatch between server and client.
+  // Using useSyncExternalStore to detect client mount without setState-in-effect.
+  const mounted = useSyncExternalStore(
+    () => () => {},  // subscribe (noop)
+    () => true,       // getSnapshot (client)
+    () => false       // getServerSnapshot
+  )
+  if (!mounted) {
+    return (
+      <Button variant="ghost" size="icon" className="size-8">
+        <Sun className="size-3.5 opacity-50" />
+      </Button>
+    )
+  }
+  return (
+    <Button variant="ghost" size="icon" className="size-8" onClick={onToggle}>
+      {resolvedTheme === 'dark' ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}
+    </Button>
+  )
+}
+
 // ── Main Page Component ──────────────────────────────────────────────────────
 export default function Home() {
   const queryClient = useQueryClient()
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme, resolvedTheme } = useTheme()
   const store = useStore()
   const lang = store.settings.language
 
@@ -172,6 +196,11 @@ export default function Home() {
   // Consume form
   const [consumeAmount, setConsumeAmount] = useState('0.5')
   const [consumeTime, setConsumeTime] = useState('')
+  const [consumeMode, setConsumeMode] = useState<'quick' | 'session'>('quick')
+
+  // Animation state
+  const [smokeEffects, setSmokeEffects] = useState<Array<{id: number; x: number; y: number}>>([])
+  const [dollarEffects, setDollarEffects] = useState<Array<{id: number; x: number; y: number}>>([])
 
   // Sell form
   const [sellGramsPerPortion, setSellGramsPerPortion] = useState('0.5')
@@ -276,6 +305,28 @@ export default function Home() {
     onError: () => toast.error('Failed to delete product'),
   })
 
+  // ── Animation triggers ──────────────────────────────────────────────────
+  const triggerSmokeEffect = useCallback(() => {
+    const id = Date.now()
+    const x = 40 + Math.random() * 20
+    const y = 30 + Math.random() * 20
+    setSmokeEffects(prev => [...prev, { id, x, y }])
+    setTimeout(() => setSmokeEffects(prev => prev.filter(e => e.id !== id)), 1300)
+  }, [])
+
+  const triggerDollarEffect = useCallback(() => {
+    const effects: Array<{id: number; x: number; y: number}> = []
+    for (let i = 0; i < 4; i++) {
+      effects.push({
+        id: Date.now() + i,
+        x: 30 + Math.random() * 40,
+        y: 40 + Math.random() * 20,
+      })
+    }
+    setDollarEffects(effects)
+    setTimeout(() => setDollarEffects([]), 1500)
+  }, [])
+
   const consumeProduct = useMutation({
     mutationFn: ({ id, amount, consumedAt }: { id: string; amount: number; consumedAt?: string }) =>
       api.post(`/api/products/${id}/consume`, { amount, consumedAt }),
@@ -283,6 +334,7 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['products'] })
       queryClient.invalidateQueries({ queryKey: ['stats'] })
       queryClient.invalidateQueries({ queryKey: ['consumption'] })
+      triggerSmokeEffect()
       store.closeAllModals()
       toast.success(`Consumed ${consumeAmount}g`)
       if (data.lowStock) {
@@ -299,6 +351,7 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['products'] })
       queryClient.invalidateQueries({ queryKey: ['stats'] })
       queryClient.invalidateQueries({ queryKey: ['consumption'] })
+      triggerDollarEffect()
       store.closeAllModals()
       toast.success('Sold successfully!')
       if (data.lowStock) {
@@ -368,6 +421,7 @@ export default function Home() {
   const handleOpenConsume = useCallback((p: Product) => {
     setConsumeAmount('0.5')
     setConsumeTime('')
+    setConsumeMode('quick')
     store.openConsume(p)
   }, [store])
 
@@ -555,32 +609,33 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       {/* ═══ HEADER ═══ */}
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-lg">
-        <div className="max-w-7xl mx-auto px-4 py-3">
+        <div className="max-w-7xl mx-auto px-3 py-2">
           {/* Top row */}
-          <div className="flex items-center gap-3 mb-3">
+          <div className="flex items-center gap-2 mb-2">
             <h1 className="text-xl font-bold gradient-text flex items-center gap-1.5 shrink-0">
               <Leaf className="size-5" /> Stash Tracker
             </h1>
             <div className="flex-1 relative max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
               <Input
                 value={searchInput}
                 onChange={(e) => handleSearch(e.target.value)}
                 placeholder={t('searchPlaceholder', lang)}
-                className="pl-9 h-9 bg-muted/50"
+                className="pl-8 h-8 bg-muted/50 text-sm"
               />
             </div>
             <div className="flex items-center gap-1.5">
               <Button size="sm" onClick={handleOpenAddProduct}
-                className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white hover:from-teal-600 hover:to-emerald-600 h-9">
-                <Plus className="size-4 mr-1" />{t('addProduct', lang)}
+                className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white hover:from-teal-600 hover:to-emerald-600 h-8 text-xs">
+                <Plus className="size-3.5 mr-0.5" />{t('addProduct', lang)}
               </Button>
-              <Button variant="ghost" size="icon" className="size-9" onClick={() => store.openSettings()}>
-                <Settings className="size-4" />
+              <Button variant="ghost" size="icon" className="size-8" onClick={() => store.openSettings()}>
+                <Settings className="size-3.5" />
               </Button>
-              <Button variant="ghost" size="icon" className="size-9" onClick={() => { const next = theme === 'dark' ? 'light' : 'dark'; setTheme(next); updateSettings.mutate({ theme: next }); }}>
-                {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
-              </Button>
+              <ThemeToggleButton
+                resolvedTheme={resolvedTheme}
+                onToggle={() => { const next = resolvedTheme === 'dark' ? 'light' : 'dark'; setTheme(next); updateSettings.mutate({ theme: next }); }}
+              />
             </div>
           </div>
           {/* Filter row */}
@@ -635,19 +690,19 @@ export default function Home() {
       </header>
 
       {/* ═══ MAIN CONTENT ═══ */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-4">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-3 py-3">
         <Tabs value={store.activeTab} onValueChange={(v) => store.setActiveTab(v as 'inventory' | 'dashboard' | 'history')}>
-          <TabsList className="mb-4">
-            <TabsTrigger value="inventory"><Package className="size-3.5 mr-1" />{t('inventory', lang)}</TabsTrigger>
-            <TabsTrigger value="dashboard"><BarChart3 className="size-3.5 mr-1" />{t('dashboard', lang)}</TabsTrigger>
-            <TabsTrigger value="history"><Clock className="size-3.5 mr-1" />{t('history', lang)}</TabsTrigger>
+          <TabsList className="mb-2">
+            <TabsTrigger value="inventory" className="text-xs"><Package className="size-3 mr-1" />{t('inventory', lang)}</TabsTrigger>
+            <TabsTrigger value="dashboard" className="text-xs"><BarChart3 className="size-3 mr-1" />{t('dashboard', lang)}</TabsTrigger>
+            <TabsTrigger value="history" className="text-xs"><Clock className="size-3 mr-1" />{t('history', lang)}</TabsTrigger>
           </TabsList>
 
           {/* ═══ INVENTORY TAB ═══ */}
           <TabsContent value="inventory">
             {/* Stats Bar */}
             {stats && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-3">
                 {[
                   { key: 'totalProducts', value: stats.totalProducts, icon: Package, color: 'text-teal-400' },
                   { key: 'totalAmount', value: `${stats.totalAmount.toFixed(1)}g`, icon: Archive, color: 'text-emerald-400' },
@@ -656,12 +711,12 @@ export default function Home() {
                   { key: 'totalValue', value: `${currency}${stats.totalValue.toFixed(0)}`, icon: DollarSign, color: 'text-green-400' },
                   { key: 'totalSessions', value: stats.totalSessions, icon: Users, color: 'text-blue-400' },
                 ].map(({ key, value, icon: Icon, color }) => (
-                  <Card key={key} className="py-2 px-3">
-                    <div className="flex items-center gap-2">
-                      <Icon className={`size-4 ${color}`} />
+                  <Card key={key} className="py-1.5 px-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <Icon className={`size-3.5 ${color}`} />
                       <div>
-                        <p className="text-xs text-muted-foreground">{t(key, lang)}</p>
-                        <p className="text-sm font-semibold">{value}</p>
+                        <p className="text-[10px] text-muted-foreground leading-tight">{t(key, lang)}</p>
+                        <p className="text-xs font-semibold">{value}</p>
                       </div>
                     </div>
                   </Card>
@@ -671,7 +726,7 @@ export default function Home() {
 
             {/* Loading */}
             {productsQuery.isLoading && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <Card key={i} className="p-4"><Skeleton className="h-32 w-full" /></Card>
                 ))}
@@ -700,12 +755,13 @@ export default function Home() {
 
             {/* Grid Layout */}
             {products.length > 0 && store.layout === 'grid' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {products.map((p: Product) => (
                   <ProductCardGrid key={p.id} product={p} lang={lang} currency={currency}
                     onEdit={() => handleOpenEditProduct(p)}
                     onConsume={() => handleOpenConsume(p)}
                     onSell={() => handleOpenSell(p)}
+                    onSession={() => handleOpenSession(p)}
                     onFavorite={() => toggleFavorite.mutate(p.id)}
                     onDelete={() => setDeleteConfirm(p.id)}
                   />
@@ -715,12 +771,13 @@ export default function Home() {
 
             {/* List Layout */}
             {products.length > 0 && store.layout === 'list' && (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1.5">
                 {products.map((p: Product) => (
                   <ProductCardList key={p.id} product={p} lang={lang} currency={currency}
                     onEdit={() => handleOpenEditProduct(p)}
                     onConsume={() => handleOpenConsume(p)}
                     onSell={() => handleOpenSell(p)}
+                    onSession={() => handleOpenSession(p)}
                     onFavorite={() => toggleFavorite.mutate(p.id)}
                     onDelete={() => setDeleteConfirm(p.id)}
                   />
@@ -730,11 +787,12 @@ export default function Home() {
 
             {/* Compact Layout */}
             {products.length > 0 && store.layout === 'compact' && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1.5">
                 {products.map((p: Product) => (
                   <ProductCardCompact key={p.id} product={p} lang={lang} currency={currency}
                     onEdit={() => handleOpenEditProduct(p)}
                     onConsume={() => handleOpenConsume(p)}
+                    onSession={() => handleOpenSession(p)}
                     onFavorite={() => toggleFavorite.mutate(p.id)}
                   />
                 ))}
@@ -754,7 +812,7 @@ export default function Home() {
           {/* ═══ DASHBOARD TAB ═══ */}
           <TabsContent value="dashboard">
             {statsQuery.isLoading ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {Array.from({ length: 4 }).map((_, i) => <Card key={i} className="p-4"><Skeleton className="h-64 w-full" /></Card>)}
               </div>
             ) : stats ? (
@@ -777,7 +835,7 @@ export default function Home() {
                 </div>
 
                 {/* Charts */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                   {/* Consumption Trend */}
                   <Card className="p-4">
                     <CardHeader className="p-0 pb-2"><CardTitle className="text-sm font-medium">{t('consumptionTrend', lang)}</CardTitle></CardHeader>
@@ -1062,44 +1120,155 @@ export default function Home() {
       <Dialog open={!!store.consumingProduct} onOpenChange={() => store.closeAllModals()}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>{t('consume', lang)} — {store.consumingProduct?.name}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Flame className="size-4 text-teal-400" />
+              {consumeMode === 'session' ? t('session', lang) : t('consume', lang)} — {store.consumingProduct?.name}
+            </DialogTitle>
             <DialogDescription />
           </DialogHeader>
-          <div className="space-y-3">
-            <div className="text-center text-2xl font-bold text-teal-400">
-              {consumeAmount}g
+          {store.consumingProduct && (
+            <div className="space-y-3">
+              {/* Mode toggle */}
+              <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => setConsumeMode('quick')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    consumeMode === 'quick'
+                      ? 'bg-background shadow-sm text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Flame className="size-3" />
+                  {t('consume', lang)}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConsumeMode('session')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    consumeMode === 'session'
+                      ? 'bg-background shadow-sm text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Users className="size-3" />
+                  {t('session', lang)}
+                </button>
+              </div>
+
+              {/* Quick consume mode */}
+              {consumeMode === 'quick' && (
+                <>
+                  <div className="text-center text-2xl font-bold text-teal-400">
+                    {consumeAmount}g
+                  </div>
+                  <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                    {[0.1, 0.25, 0.5, 1, 2].map(v => (
+                      <Button key={v} variant="outline" size="sm" className="h-7 text-xs px-2"
+                        onClick={() => setConsumeAmount(String(parseFloat(consumeAmount) + v))}>+{v}</Button>
+                    ))}
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">{t('amount', lang)} ({t('grams', lang)})</Label>
+                    <Input type="number" step="0.01" value={consumeAmount} onChange={(e) => setConsumeAmount(e.target.value)} />
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {t('amount', lang)}: {store.consumingProduct.amount.toFixed(1)}g {t('grams', lang)} {t('filterInStock', lang).toLowerCase()}
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">{t('setConsumptionTime', lang)}</Label>
+                    <Input type="datetime-local" value={consumeTime} onChange={(e) => setConsumeTime(e.target.value)} />
+                  </div>
+                </>
+              )}
+
+              {/* Session mode */}
+              {consumeMode === 'session' && (
+                <>
+                  <div className="space-y-1">
+                    <Label className="text-xs">{t('amount', lang)} ({t('grams', lang)})</Label>
+                    <Input type="number" step="0.01" value={consumeAmount} onChange={(e) => setConsumeAmount(e.target.value)} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">{t('people', lang)}</Label>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="icon" className="size-7" onClick={() => setSessionPeople(p => Math.max(1, p - 1))}>-</Button>
+                      <span className="text-base font-bold w-6 text-center">{sessionPeople}</span>
+                      <Button variant="outline" size="icon" className="size-7" onClick={() => setSessionPeople(p => p + 1)}>+</Button>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">{t('hits', lang)}</Label>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setSessionHits(h => Math.max(0, h - 1))}>-</Button>
+                      <span className="text-base font-bold w-6 text-center">{sessionHits}</span>
+                      <Button variant="outline" size="sm" className="h-7 text-xs bg-teal-500/20" onClick={() => setSessionHits(h => h + 1)}>+1</Button>
+                      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setSessionHits(h => h + 5)}>+5</Button>
+                    </div>
+                  </div>
+                  {/* Timer */}
+                  <div className="space-y-1">
+                    <Label className="text-xs">{t('hitTimer', lang)}</Label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl font-mono font-bold">{formatTimer(sessionTimerValue)}</span>
+                      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setSessionTimerRunning(!sessionTimerRunning)}>
+                        {sessionTimerRunning ? <Pause className="size-3" /> : <Timer className="size-3" />}
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { setSessionTimerRunning(false); setSessionTimerValue(0) }}>
+                        <RotateCw className="size-3" />
+                      </Button>
+                    </div>
+                  </div>
+                  {/* Rotation */}
+                  {store.settings.sessionDefaults?.rotationEnabled && (
+                    <div className="space-y-1">
+                      <Label className="text-xs">{t('rotation', lang)}</Label>
+                      <div className="flex items-center gap-1.5">
+                        {Array.from({ length: sessionPeople }).map((_, i) => (
+                          <div key={i} className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border-2 ${i === sessionRotationIndex ? 'border-teal-400 bg-teal-500/20 text-teal-400' : 'border-muted-foreground/30'}`}>
+                            {i + 1}
+                          </div>
+                        ))}
+                        <Button variant="outline" size="sm" className="h-7 text-xs ml-1" onClick={() => setSessionRotationIndex(i => (i + 1) % sessionPeople)}>
+                          {t('nextHit', lang)}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  <div className="space-y-1">
+                    <Label className="text-xs">{t('sessionNotes', lang)}</Label>
+                    <Textarea value={sessionNotes} onChange={(e) => setSessionNotes(e.target.value)} placeholder={t('sessionNotesPlaceholder', lang)} rows={2} />
+                  </div>
+                </>
+              )}
             </div>
-            <div className="flex items-center justify-center gap-2 flex-wrap">
-              {[0.1, 0.25, 0.5, 1, 2].map(v => (
-                <Button key={v} variant="outline" size="sm" className="h-8 text-xs"
-                  onClick={() => setConsumeAmount(String(parseFloat(consumeAmount) + v))}>+{v}</Button>
-              ))}
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">{t('amount', lang)} ({t('grams', lang)})</Label>
-              <Input type="number" step="0.01" value={consumeAmount} onChange={(e) => setConsumeAmount(e.target.value)} />
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {t('amount', lang)}: {store.consumingProduct?.amount?.toFixed(1) ?? 0}g {t('grams', lang)} {t('filterInStock', lang).toLowerCase()}
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">{t('setConsumptionTime', lang)}</Label>
-              <Input type="datetime-local" value={consumeTime} onChange={(e) => setConsumeTime(e.target.value)} />
-            </div>
-          </div>
+          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => store.closeAllModals()}>{t('cancel', lang)}</Button>
-            <Button onClick={handleSubmitConsume} disabled={consumeProduct.isPending}
-              className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white">
-              <Flame className="size-3.5 mr-1" />{t('consume', lang)}
-            </Button>
+            {consumeMode === 'quick' ? (
+              <Button onClick={handleSubmitConsume} disabled={consumeProduct.isPending}
+                className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white">
+                <Flame className="size-3.5 mr-1" />{t('consume', lang)}
+              </Button>
+            ) : (
+              <Button onClick={handleSubmitSession} disabled={createSession.isPending}
+                className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white">
+                <Users className="size-3.5 mr-1" />{t('finishSession', lang)}
+              </Button>
+            )}
           </DialogFooter>
+          {/* Smoke animation overlay */}
+          {smokeEffects.map((effect) => (
+            <div key={effect.id} className="absolute animate-smoke-puff" style={{ left: `${effect.x}%`, top: `${effect.y}%` }}>
+              <Cloud className="size-8 text-muted-foreground/50" />
+            </div>
+          ))}
         </DialogContent>
       </Dialog>
 
       {/* ═══ SELL DIALOG ═══ */}
       <Dialog open={!!store.sellingProduct} onOpenChange={() => store.closeAllModals()}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md overflow-hidden">
           <DialogHeader>
             <DialogTitle>{t('sell', lang)} — {store.sellingProduct?.name}</DialogTitle>
             <DialogDescription>{t('divideIntoPortions', lang)}</DialogDescription>
@@ -1148,6 +1317,12 @@ export default function Home() {
               <DollarSign className="size-3.5 mr-1" />{t('sell', lang)}
             </Button>
           </DialogFooter>
+          {/* Dollar animation overlay */}
+          {dollarEffects.map((effect) => (
+            <div key={effect.id} className="absolute animate-dollar-float" style={{ left: `${effect.x}%`, top: `${effect.y}%` }}>
+              <DollarSign className="size-6 text-emerald-400/80" />
+            </div>
+          ))}
         </DialogContent>
       </Dialog>
 
@@ -1456,53 +1631,56 @@ export default function Home() {
 }
 
 // ═══ PRODUCT CARD — Grid Layout ═══════════════════════════════════════════
-function ProductCardGrid({ product: p, lang, currency, onEdit, onConsume, onSell, onFavorite, onDelete }: {
+function ProductCardGrid({ product: p, lang, currency, onEdit, onConsume, onSell, onSession, onFavorite, onDelete }: {
   product: Product; lang: string; currency: string;
-  onEdit: () => void; onConsume: () => void; onSell: () => void; onFavorite: () => void; onDelete: () => void;
+  onEdit: () => void; onConsume: () => void; onSell: () => void; onSession: () => void; onFavorite: () => void; onDelete: () => void;
 }) {
   return (
     <Card className="group relative overflow-hidden transition-shadow hover:shadow-lg cursor-pointer" onClick={onEdit}>
       {p.picture && (
-        <div className="w-full h-32 overflow-hidden">
+        <div className="w-full h-28 overflow-hidden">
           <img src={p.picture} alt={p.name} className="w-full h-full object-cover" />
         </div>
       )}
-      <CardContent className="p-4">
+      <CardContent className="p-3">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <h3 className="font-semibold text-sm truncate">{p.name}</h3>
-            {p.brand && <p className="text-xs text-muted-foreground truncate">{p.brand}</p>}
+            {p.brand && <p className="text-[10px] text-muted-foreground truncate">{p.brand}</p>}
           </div>
           <button onClick={(e) => { e.stopPropagation(); onFavorite() }}
             className="shrink-0 transition-transform hover:scale-125">
-            <Heart className={`size-4 ${p.favorite ? 'fill-red-400 text-red-400' : 'text-muted-foreground/40'}`} />
+            <Heart className={`size-3.5 ${p.favorite ? 'fill-red-400 text-red-400' : 'text-muted-foreground/40'}`} />
           </button>
         </div>
-        <div className="flex items-center gap-1.5 mt-2">
-          <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${getTypeColor(p.type)}`}>
+        <div className="flex items-center gap-1.5 mt-1.5">
+          <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${getTypeColor(p.type)}`}>
             {p.type}
           </Badge>
-          {p.thc > 0 && <span className="text-[10px] text-muted-foreground">{t('thc', lang)} {p.thc}%</span>}
-          {p.cbd > 0 && <span className="text-[10px] text-muted-foreground">{t('cbd', lang)} {p.cbd}%</span>}
+          {p.thc > 0 && <span className="text-[9px] text-muted-foreground">{p.thc}%</span>}
+          {p.cbd > 0 && <span className="text-[9px] text-muted-foreground">{t('cbd', lang)} {p.cbd}%</span>}
         </div>
-        <div className="flex items-center justify-between mt-2">
-          <span className="text-sm font-medium">{p.amount.toFixed(1)}g</span>
-          {p.price > 0 && <span className="text-xs text-muted-foreground">{currency}{p.price.toFixed(0)}</span>}
+        <div className="flex items-center justify-between mt-1.5">
+          <span className="text-xs font-medium">{p.amount.toFixed(1)}g</span>
+          {p.price > 0 && <span className="text-[10px] text-muted-foreground">{currency}{p.price.toFixed(0)}</span>}
         </div>
-        <div className="flex items-center justify-between mt-1">
+        <div className="flex items-center justify-between mt-0.5">
           <StarRating value={p.rating} readonly />
-          <span className="text-[10px] text-muted-foreground">{formatRelativeTime(p.lastConsumed, lang)}</span>
+          <span className="text-[9px] text-muted-foreground">{formatRelativeTime(p.lastConsumed, lang)}</span>
         </div>
-        <div className="flex items-center gap-1.5 mt-3" onClick={(e) => e.stopPropagation()}>
-          <Button size="sm" variant="outline" className="h-7 text-xs flex-1" onClick={onConsume}>
-            <Flame className="size-3 mr-0.5" />{t('consume', lang)}
+        <div className="flex items-center gap-1 mt-2" onClick={(e) => e.stopPropagation()}>
+          <Button size="sm" variant="outline" className="h-6 text-[10px] flex-1 px-0" onClick={onConsume}>
+            <Flame className="size-2.5 mr-0.5" />{t('consume', lang)}
           </Button>
-          <Button size="sm" variant="outline" className="h-7 text-xs flex-1" onClick={onSell}>
-            <DollarSign className="size-3 mr-0.5" />{t('sell', lang)}
+          <Button size="sm" variant="outline" className="h-6 text-[10px] flex-1 px-0" onClick={onSession}>
+            <Users className="size-2.5 mr-0.5" />{t('session', lang)}
+          </Button>
+          <Button size="sm" variant="outline" className="h-6 text-[10px] flex-1 px-0" onClick={onSell}>
+            <DollarSign className="size-2.5 mr-0.5" />{t('sell', lang)}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="ghost" className="h-7 w-7 p-0"><MoreVertical className="size-3" /></Button>
+              <Button size="sm" variant="ghost" className="h-6 w-6 p-0"><MoreVertical className="size-2.5" /></Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={onEdit}><Edit3 className="size-3 mr-2" />{t('editProduct', lang)}</DropdownMenuItem>
@@ -1516,47 +1694,50 @@ function ProductCardGrid({ product: p, lang, currency, onEdit, onConsume, onSell
 }
 
 // ═══ PRODUCT CARD — List Layout ═══════════════════════════════════════════
-function ProductCardList({ product: p, lang, currency, onEdit, onConsume, onSell, onFavorite, onDelete }: {
+function ProductCardList({ product: p, lang, currency, onEdit, onConsume, onSell, onSession, onFavorite, onDelete }: {
   product: Product; lang: string; currency: string;
-  onEdit: () => void; onConsume: () => void; onSell: () => void; onFavorite: () => void; onDelete: () => void;
+  onEdit: () => void; onConsume: () => void; onSell: () => void; onSession: () => void; onFavorite: () => void; onDelete: () => void;
 }) {
   return (
-    <Card className="p-3 flex items-center gap-3 cursor-pointer hover:shadow-md transition-shadow" onClick={onEdit}>
+    <Card className="p-2.5 flex items-center gap-2.5 cursor-pointer hover:shadow-md transition-shadow" onClick={onEdit}>
       {p.picture ? (
-        <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0">
+        <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0">
           <img src={p.picture} alt={p.name} className="w-full h-full object-cover" />
         </div>
       ) : (
-        <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center shrink-0">
-          <Leaf className="size-5 text-muted-foreground/40" />
+        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+          <Leaf className="size-4 text-muted-foreground/40" />
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <h3 className="font-semibold text-sm truncate">{p.name}</h3>
-          <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${getTypeColor(p.type)}`}>{p.type}</Badge>
+          <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${getTypeColor(p.type)}`}>{p.type}</Badge>
           <button onClick={(e) => { e.stopPropagation(); onFavorite() }} className="shrink-0">
-            <Heart className={`size-3.5 ${p.favorite ? 'fill-red-400 text-red-400' : 'text-muted-foreground/40'}`} />
+            <Heart className={`size-3 ${p.favorite ? 'fill-red-400 text-red-400' : 'text-muted-foreground/40'}`} />
           </button>
         </div>
-        <div className="flex items-center gap-3 mt-0.5">
-          {p.brand && <span className="text-xs text-muted-foreground">{p.brand}</span>}
-          {p.thc > 0 && <span className="text-xs text-muted-foreground">{t('thc', lang)} {p.thc}%</span>}
-          <span className="text-xs font-medium">{p.amount.toFixed(1)}g</span>
-          {p.price > 0 && <span className="text-xs text-muted-foreground">{currency}{p.price.toFixed(0)}</span>}
+        <div className="flex items-center gap-2 mt-0.5">
+          {p.brand && <span className="text-[10px] text-muted-foreground">{p.brand}</span>}
+          {p.thc > 0 && <span className="text-[10px] text-muted-foreground">{p.thc}%</span>}
+          <span className="text-[10px] font-medium">{p.amount.toFixed(1)}g</span>
+          {p.price > 0 && <span className="text-[10px] text-muted-foreground">{currency}{p.price.toFixed(0)}</span>}
           <StarRating value={p.rating} readonly />
         </div>
       </div>
-      <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={onConsume}>
-          <Flame className="size-3" />
+      <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+        <Button size="sm" variant="outline" className="h-6 w-6 p-0" onClick={onConsume}>
+          <Flame className="size-2.5" />
         </Button>
-        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={onSell}>
-          <DollarSign className="size-3" />
+        <Button size="sm" variant="outline" className="h-6 w-6 p-0" onClick={onSession}>
+          <Users className="size-2.5" />
+        </Button>
+        <Button size="sm" variant="outline" className="h-6 w-6 p-0" onClick={onSell}>
+          <DollarSign className="size-2.5" />
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="sm" variant="ghost" className="h-7 w-7 p-0"><MoreVertical className="size-3" /></Button>
+            <Button size="sm" variant="ghost" className="h-6 w-6 p-0"><MoreVertical className="size-2.5" /></Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={onEdit}><Edit3 className="size-3 mr-2" />{t('editProduct', lang)}</DropdownMenuItem>
@@ -1569,26 +1750,31 @@ function ProductCardList({ product: p, lang, currency, onEdit, onConsume, onSell
 }
 
 // ═══ PRODUCT CARD — Compact Layout ═══════════════════════════════════════
-function ProductCardCompact({ product: p, lang, currency, onEdit, onConsume, onFavorite }: {
+function ProductCardCompact({ product: p, lang, currency, onEdit, onConsume, onSession, onFavorite }: {
   product: Product; lang: string; currency: string;
-  onEdit: () => void; onConsume: () => void; onFavorite: () => void;
+  onEdit: () => void; onConsume: () => void; onSession: () => void; onFavorite: () => void;
 }) {
   return (
-    <Card className="p-2.5 cursor-pointer hover:shadow-md transition-shadow" onClick={onEdit}>
-      <div className="flex items-center justify-between mb-1">
-        <h3 className="text-xs font-semibold truncate">{p.name}</h3>
+    <Card className="p-2 cursor-pointer hover:shadow-md transition-shadow" onClick={onEdit}>
+      <div className="flex items-center justify-between mb-0.5">
+        <h3 className="text-[10px] font-semibold truncate">{p.name}</h3>
         <button onClick={(e) => { e.stopPropagation(); onFavorite() }}>
-          <Heart className={`size-3 ${p.favorite ? 'fill-red-400 text-red-400' : 'text-muted-foreground/30'}`} />
+          <Heart className={`size-2.5 ${p.favorite ? 'fill-red-400 text-red-400' : 'text-muted-foreground/30'}`} />
         </button>
       </div>
-      <Badge variant="outline" className={`text-[9px] px-1 py-0 mb-1 ${getTypeColor(p.type)}`}>{p.type}</Badge>
+      <Badge variant="outline" className={`text-[8px] px-1 py-0 mb-0.5 ${getTypeColor(p.type)}`}>{p.type}</Badge>
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium">{p.amount.toFixed(1)}g</span>
+        <span className="text-[10px] font-medium">{p.amount.toFixed(1)}g</span>
         <StarRating value={p.rating} readonly />
       </div>
-      <Button size="sm" variant="outline" className="h-6 text-[10px] w-full mt-1.5" onClick={(e) => { e.stopPropagation(); onConsume() }}>
-        <Flame className="size-2.5 mr-0.5" />{t('consume', lang)}
-      </Button>
+      <div className="flex items-center gap-0.5 mt-1" onClick={(e) => e.stopPropagation()}>
+        <Button size="sm" variant="outline" className="h-5 text-[8px] flex-1 px-0" onClick={onConsume}>
+          <Flame className="size-2" />
+        </Button>
+        <Button size="sm" variant="outline" className="h-5 text-[8px] flex-1 px-0" onClick={onSession}>
+          <Users className="size-2" />
+        </Button>
+      </div>
     </Card>
   )
 }
