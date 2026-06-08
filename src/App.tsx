@@ -164,14 +164,7 @@ export default function App() {
   return (
     <div
       className="min-h-screen transition-colors"
-      style={{
-        backgroundColor: 'var(--bg)',
-        backgroundImage: `url(${import.meta.env.BASE_URL}${isDark ? 'bg-dark.gif' : 'bg-light.gif'})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-        backgroundBlendMode: 'overlay',
-      }}
+      style={{ backgroundColor: 'var(--bg)' }}
     >
       <BackgroundCanvas isDark={isDark} />
       <AppHeader

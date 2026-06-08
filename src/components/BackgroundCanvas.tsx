@@ -1,5 +1,13 @@
 import { useEffect, useRef } from 'react';
 
+interface Orb {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  radius: number;
+}
+
 interface Particle {
   x: number;
   y: number;
@@ -7,7 +15,6 @@ interface Particle {
   vy: number;
   size: number;
   alpha: number;
-  alphaSpeed: number;
   hue: number;
 }
 
@@ -17,7 +24,6 @@ interface BackgroundCanvasProps {
 
 export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const particlesRef = useRef<Particle[]>([]);
   const rafRef = useRef<number>(0);
 
   useEffect(() => {
@@ -33,23 +39,37 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
     resize();
     window.addEventListener('resize', resize);
 
-    const count = Math.min(40, Math.floor((canvas.width * canvas.height) / 20000));
+    const orbCount = 3;
+    const orbs: Orb[] = [];
+    for (let i = 0; i < orbCount; i++) {
+      orbs.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.15,
+        vy: (Math.random() - 0.5) * 0.15,
+        radius: Math.max(canvas.width, canvas.height) * (0.3 + Math.random() * 0.25),
+      });
+    }
+
+    const particleCount = Math.min(50, Math.floor((canvas.width * canvas.height) / 16000));
     const particles: Particle[] = [];
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < particleCount; i++) {
       particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: -(0.2 + Math.random() * 0.4),
-        size: 1.5 + Math.random() * 3,
-        alpha: 0.1 + Math.random() * 0.4,
-        alphaSpeed: 0.002 + Math.random() * 0.005,
+        vx: (Math.random() - 0.5) * 0.2,
+        vy: -(0.15 + Math.random() * 0.35),
+        size: 1 + Math.random() * 2.5,
+        alpha: 0.08 + Math.random() * 0.25,
         hue: isDark
-          ? 180 + Math.random() * 40
-          : 160 + Math.random() * 40,
+          ? 170 + Math.random() * 50
+          : 150 + Math.random() * 50,
       });
     }
-    particlesRef.current = particles;
+
+    const accentFrom = isDark ? 'rgba(6, 182, 212,' : 'rgba(6, 182, 212,';
+    const accentMid = isDark ? 'rgba(16, 185, 129,' : 'rgba(16, 185, 129,';
+    const accentTo = isDark ? 'rgba(56, 189, 248,' : 'rgba(14, 165, 233,';
 
     let frame = 0;
 
@@ -57,51 +77,40 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
       frame++;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw ambient gradient orbs
-      const gradient1 = ctx.createRadialGradient(
-        canvas.width * 0.2 + Math.sin(frame * 0.003) * 100,
-        canvas.height * 0.3 + Math.cos(frame * 0.004) * 80,
-        0,
-        canvas.width * 0.2 + Math.sin(frame * 0.003) * 100,
-        canvas.height * 0.3 + Math.cos(frame * 0.004) * 80,
-        canvas.width * 0.5,
-      );
-      if (isDark) {
-        gradient1.addColorStop(0, 'rgba(6, 182, 212, 0.03)');
-        gradient1.addColorStop(0.5, 'rgba(16, 185, 129, 0.02)');
-        gradient1.addColorStop(1, 'transparent');
-      } else {
-        gradient1.addColorStop(0, 'rgba(6, 182, 212, 0.04)');
-        gradient1.addColorStop(0.5, 'rgba(16, 185, 129, 0.02)');
-        gradient1.addColorStop(1, 'transparent');
+      for (const orb of orbs) {
+        orb.x += orb.vx + Math.sin(frame * 0.002 + orb.radius) * 0.3;
+        orb.y += orb.vy + Math.cos(frame * 0.003 + orb.radius) * 0.3;
+        if (orb.x < -orb.radius) orb.x = canvas.width + orb.radius;
+        if (orb.x > canvas.width + orb.radius) orb.x = -orb.radius;
+        if (orb.y < -orb.radius) orb.y = canvas.height + orb.radius;
+        if (orb.y > canvas.height + orb.radius) orb.y = -orb.radius;
+
+        const grad = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.radius);
+        grad.addColorStop(0, `${accentFrom} 0.05)`);
+        grad.addColorStop(0.4, `${accentMid} 0.025)`);
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
-      ctx.fillStyle = gradient1;
+
+      const extraGrad = ctx.createRadialGradient(
+        canvas.width * (0.5 + Math.sin(frame * 0.004) * 0.15),
+        canvas.height * (0.5 + Math.cos(frame * 0.005) * 0.15),
+        0,
+        canvas.width * (0.5 + Math.sin(frame * 0.004) * 0.15),
+        canvas.height * (0.5 + Math.cos(frame * 0.005) * 0.15),
+        Math.max(canvas.width, canvas.height) * 0.6,
+      );
+      extraGrad.addColorStop(0, `${accentTo} 0.03)`);
+      extraGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = extraGrad;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      const gradient2 = ctx.createRadialGradient(
-        canvas.width * 0.8 + Math.cos(frame * 0.005) * 120,
-        canvas.height * 0.6 + Math.sin(frame * 0.003) * 100,
-        0,
-        canvas.width * 0.8 + Math.cos(frame * 0.005) * 120,
-        canvas.height * 0.6 + Math.sin(frame * 0.003) * 100,
-        canvas.width * 0.4,
-      );
-      if (isDark) {
-        gradient2.addColorStop(0, 'rgba(16, 185, 129, 0.03)');
-        gradient2.addColorStop(1, 'transparent');
-      } else {
-        gradient2.addColorStop(0, 'rgba(6, 182, 212, 0.03)');
-        gradient2.addColorStop(1, 'transparent');
-      }
-      ctx.fillStyle = gradient2;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Draw particles
       for (const p of particles) {
         p.x += p.vx;
         p.y += p.vy;
-        p.alpha += (Math.random() - 0.5) * p.alphaSpeed;
-        p.alpha = Math.max(0.05, Math.min(0.5, p.alpha));
+        p.alpha += (Math.random() - 0.5) * 0.003;
+        p.alpha = Math.max(0.03, Math.min(0.35, p.alpha));
 
         if (p.y < -10) {
           p.y = canvas.height + 10;
@@ -113,9 +122,9 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         if (isDark) {
-          ctx.fillStyle = `hsla(${p.hue}, 80%, 60%, ${p.alpha})`;
+          ctx.fillStyle = `hsla(${p.hue}, 70%, 65%, ${p.alpha})`;
         } else {
-          ctx.fillStyle = `hsla(${p.hue}, 60%, 50%, ${p.alpha * 0.7})`;
+          ctx.fillStyle = `hsla(${p.hue}, 55%, 45%, ${p.alpha * 0.6})`;
         }
         ctx.fill();
       }
