@@ -147,8 +147,8 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
       <div
         className={`group relative rounded-xl border-2 transition-all cursor-pointer ${
           isDark 
-            ? 'bg-slate-900/50 border-slate-800 hover:border-slate-700 hover:bg-slate-900' 
-            : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-lg'
+            ? 'bg-slate-900/50 border-slate-800 hover:border-cyan-500/30 hover:bg-slate-900 hover:shadow-xl hover:shadow-cyan-500/10' 
+            : 'bg-white border-gray-200 hover:border-cyan-400/50 hover:shadow-xl hover:shadow-cyan-500/10'
         } ${product.favorite ? 'ring-2 ring-amber-500/50' : ''}`}
         onClick={onClick}
       >
@@ -198,19 +198,47 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
           )}
         </div>
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onConsume();
-          }}
-          className={`absolute bottom-2 right-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all ${
-            isDark 
-              ? 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30' 
-              : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'
-          }`}
-        >
-          <Flame className="w-4 h-4" />
-        </button>
+        <div className="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onConsume();
+            }}
+            className={`p-1.5 rounded-lg ${
+              isDark 
+                ? 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30' 
+                : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'
+            }`}
+          >
+            <Flame className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onSell();
+            }}
+            className={`p-1.5 rounded-lg ${
+              isDark 
+                ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' 
+                : 'bg-amber-50 text-amber-600 hover:bg-amber-100'
+            }`}
+          >
+            <DollarSign className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite();
+            }}
+            className={`p-1.5 rounded-lg ${
+              product.favorite
+                ? 'text-amber-400'
+                : isDark ? 'text-slate-400 hover:text-amber-400' : 'text-gray-400 hover:text-amber-500'
+            }`}
+          >
+            <Heart className={`w-3.5 h-3.5 ${product.favorite ? 'fill-current' : ''}`} />
+          </button>
+        </div>
       </div>
     );
   }
