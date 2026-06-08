@@ -18,91 +18,17 @@ interface Particle {
   hue: number;
 }
 
-interface DustMote {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  size: number;
-  alpha: number;
-  phase: number;
-}
-
 interface BackgroundCanvasProps {
   isDark: boolean;
 }
 
-function smoothNoiseTile(size: number, octaves: number): ImageData {
-  const c = document.createElement('canvas');
-  c.width = size;
-  c.height = size;
-  const cx = c.getContext('2d')!;
-
-  const layers: ImageData[] = [];
-
-  for (let o = 0; o < octaves; o++) {
-    const cellSize = Math.max(2, size >> (o + 1));
-    const cols = Math.ceil(size / cellSize) + 1;
-    const rows = Math.ceil(size / cellSize) + 1;
-    const grid: number[][] = [];
-    for (let y = 0; y < rows; y++) {
-      grid[y] = [];
-      for (let x = 0; x < cols; x++) {
-        grid[y][x] = Math.random();
-      }
-    }
-
-    const img = cx.createImageData(size, size);
-    for (let py = 0; py < size; py++) {
-      for (let px = 0; px < size; px++) {
-        const gx = px / cellSize;
-        const gy = py / cellSize;
-        const ix = Math.floor(gx);
-        const iy = Math.floor(gy);
-        const fx = gx - ix;
-        const fy = gy - iy;
-
-        const smoothstep = (t: number) => t * t * (3 - 2 * t);
-        const sx = smoothstep(fx);
-        const sy = smoothstep(fy);
-
-        const v00 = grid[iy][ix];
-        const v10 = grid[iy][Math.min(ix + 1, cols - 1)];
-        const v01 = grid[Math.min(iy + 1, rows - 1)][ix];
-        const v11 = grid[Math.min(iy + 1, rows - 1)][Math.min(ix + 1, cols - 1)];
-
-        const top = v00 + (v10 - v00) * sx;
-        const bot = v01 + (v11 - v01) * sx;
-        const v = top + (bot - top) * sy;
-
-        const idx = (py * size + px) * 4;
-        const val = Math.floor(v * 255);
-        img.data[idx] = val;
-        img.data[idx + 1] = val;
-        img.data[idx + 2] = val;
-        img.data[idx + 3] = 255;
-      }
-    }
-    layers.push(img);
-  }
-
-  const out = cx.createImageData(size, size);
-  for (let i = 0; i < out.data.length; i += 4) {
-    let sum = 0;
-    let weightSum = 0;
-    for (let o = 0; o < octaves; o++) {
-      const w = 1 / (o + 1);
-      sum += layers[o].data[i] * w;
-      weightSum += w;
-    }
-    const v = Math.floor(sum / weightSum);
-    out.data[i] = v;
-    out.data[i + 1] = v;
-    out.data[i + 2] = v;
-    out.data[i + 3] = 255;
-  }
-  return out;
-}
+const TEXTURES = [
+  'https://w-img.b-cdn.net/lil-darkie/textures/dust.png',
+  'https://w-img.b-cdn.net/lil-darkie/textures/concrete-wall-2.png',
+  'https://w-img.b-cdn.net/lil-darkie/textures/old-wall.png',
+  'https://w-img.b-cdn.net/lil-darkie/textures/concrete-wall.png',
+  'https://w-img.b-cdn.net/lil-darkie/textures/asfalt-dark.png',
+];
 
 export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -113,15 +39,6 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
-    const tileSize = 64;
-    const noiseData = smoothNoiseTile(tileSize, 3);
-    const noiseCanvas = document.createElement('canvas');
-    noiseCanvas.width = tileSize;
-    noiseCanvas.height = tileSize;
-    const nc = noiseCanvas.getContext('2d')!;
-    nc.putImageData(noiseData, 0, 0);
-    const noisePattern = ctx.createPattern(noiseCanvas, 'repeat')!;
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -151,24 +68,10 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
         vx: (Math.random() - 0.5) * 0.2,
         vy: -(0.15 + Math.random() * 0.35),
         size: 1 + Math.random() * 2.5,
-        alpha: isDark ? 0.08 + Math.random() * 0.25 : 0.15 + Math.random() * 0.3,
+        alpha: 0.08 + Math.random() * 0.25,
         hue: isDark
           ? 170 + Math.random() * 50
           : 150 + Math.random() * 50,
-      });
-    }
-
-    const moteCount = Math.max(8, Math.floor((canvas.width * canvas.height) / 80000));
-    const motes: DustMote[] = [];
-    for (let i = 0; i < moteCount; i++) {
-      motes.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.04,
-        vy: -(0.02 + Math.random() * 0.04),
-        size: 3 + Math.random() * 8,
-        alpha: Math.random() * 0.12,
-        phase: Math.random() * Math.PI * 2,
       });
     }
 
@@ -249,51 +152,6 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
         ctx.fill();
       }
 
-      // Dust motes — hazy out-of-focus specks like lens dust
-      for (const m of motes) {
-        m.x += m.vx + Math.sin(frame * 0.001 + m.phase) * 0.05;
-        m.y += m.vy;
-        const breathe = Math.sin(frame * 0.005 + m.phase) * 0.5 + 0.5;
-        const currentAlpha = m.alpha * breathe;
-
-        if (m.y < -20) {
-          m.y = canvas.height + 20;
-          m.x = Math.random() * canvas.width;
-        }
-        if (m.x < -20) m.x = canvas.width + 20;
-        if (m.x > canvas.width + 20) m.x = -20;
-
-        const grad = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, m.size);
-        if (isDark) {
-          grad.addColorStop(0, `rgba(200,210,220,${currentAlpha})`);
-          grad.addColorStop(0.5, `rgba(180,190,200,${currentAlpha * 0.4})`);
-        } else {
-          grad.addColorStop(0, `rgba(60,60,60,${currentAlpha})`);
-          grad.addColorStop(0.5, `rgba(80,80,80,${currentAlpha * 0.3})`);
-        }
-        grad.addColorStop(1, 'transparent');
-        ctx.fillStyle = grad;
-        ctx.fillRect(m.x - m.size, m.y - m.size, m.size * 2, m.size * 2);
-      }
-
-      // Fractal noise overlay — organic surface texture
-      ctx.save();
-      ctx.globalAlpha = isDark ? 0.035 : 0.025;
-      ctx.fillStyle = noisePattern;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.restore();
-
-      // Vignette — natural edge darkening
-      const vigGrad = ctx.createRadialGradient(
-        canvas.width * 0.5, canvas.height * 0.5, canvas.width * 0.25,
-        canvas.width * 0.5, canvas.height * 0.5, Math.max(canvas.width, canvas.height) * 0.75,
-      );
-      vigGrad.addColorStop(0, 'transparent');
-      vigGrad.addColorStop(0.5, 'transparent');
-      vigGrad.addColorStop(1, isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.15)');
-      ctx.fillStyle = vigGrad;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
       rafRef.current = requestAnimationFrame(animate);
     };
     animate();
@@ -305,11 +163,35 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
   }, [isDark]);
 
   return (
-    <canvas
-      id="bg-canvas"
-      ref={canvasRef}
-      className="fixed inset-0 pointer-events-none"
-      style={{ zIndex: 0 }}
-    />
+    <>
+      <canvas
+        id="bg-canvas"
+        ref={canvasRef}
+        className="fixed inset-0 pointer-events-none"
+        style={{ zIndex: 0 }}
+      />
+      {/* Photo-texture overlay — real surface photographs cycling like lildarkie.com */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          zIndex: 1,
+          filter: 'invert(1)',
+          opacity: isDark ? 0.15 : 0.08,
+          backgroundImage: `url(${TEXTURES[0]})`,
+          backgroundRepeat: 'repeat',
+          animation: 'cycleTextures 0.75s step-end infinite alternate-reverse',
+        }}
+      />
+      <style>{`
+        @keyframes cycleTextures {
+          0% { background-image: url(${TEXTURES[0]}); }
+          20% { background-image: url(${TEXTURES[1]}); }
+          40% { background-image: url(${TEXTURES[2]}); }
+          60% { background-image: url(${TEXTURES[3]}); }
+          80% { background-image: url(${TEXTURES[4]}); }
+          100% { background-image: url(${TEXTURES[2]}); }
+        }
+      `}</style>
+    </>
   );
 }
