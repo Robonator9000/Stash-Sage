@@ -201,27 +201,30 @@ export default function App() {
 
   if (!settings.onboardingDone) {
     return (
-      <div
-        className="min-h-screen transition-colors"
-        style={{ backgroundColor: 'var(--bg)' }}
-      >
+      <>
         <BackgroundCanvas isDark={isDark} />
-        <WelcomeModal
-          onComplete={(language) => updateSettings({ language, onboardingDone: true })}
-          isDark={isDark}
-          browserLang={browserLang}
-        />
-      </div>
+        <div
+          className="min-h-screen transition-colors relative"
+          style={{ backgroundColor: 'var(--bg)', zIndex: 1 }}
+        >
+          <WelcomeModal
+            onComplete={(language) => updateSettings({ language, onboardingDone: true })}
+            isDark={isDark}
+            browserLang={browserLang}
+          />
+        </div>
+      </>
     );
   }
 
   return (
-    <div
-      className="min-h-screen transition-colors"
-      style={{ backgroundColor: 'var(--bg)' }}
-    >
+    <>
       <BackgroundCanvas isDark={isDark} />
-      <AppHeader
+      <div
+        className="min-h-screen transition-colors relative"
+        style={{ backgroundColor: 'var(--bg)', zIndex: 1 }}
+      >
+        <AppHeader
         isDark={isDark}
         lang={lang}
         searchQuery={searchQuery}
@@ -382,6 +385,7 @@ export default function App() {
           <span className="animate-smoke-puff text-5xl ml-2" style={{ animationDelay: '0.2s' }}>💨</span>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
