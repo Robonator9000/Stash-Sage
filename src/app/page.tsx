@@ -173,6 +173,8 @@ export default function Home() {
   // ── Local state ──────────────────────────────────────────────────────────
   const [searchDebounced, setSearchDebounced] = useState('')
   const [searchInput, setSearchInput] = useState('')
+  const [searchPreviewOpen, setSearchPreviewOpen] = useState(false)
+  const searchContainerRef = useRef<HTMLDivElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout>>()
   const [page, setPage] = useState(1)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
@@ -230,6 +232,7 @@ export default function Home() {
   // ── Debounced search ─────────────────────────────────────────────────────
   const handleSearch = useCallback((val: string) => {
     setSearchInput(val)
+    setSearchPreviewOpen(val.length > 0)
     clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
       setSearchDebounced(val)
@@ -270,6 +273,17 @@ export default function Home() {
       setTheme(settingsQuery.data.theme)
     }
   }, [settingsQuery.data?.theme, setTheme])
+
+  // Close search preview on click outside
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setSearchPreviewOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
 
   // ── Mutations ────────────────────────────────────────────────────────────
   const createProduct = useMutation({
@@ -554,72 +568,45 @@ export default function Home() {
             <h1 className="text-lg font-black gradient-text flex items-center gap-1.5 shrink-0 tracking-tight">
               <Leaf className="size-5" /> STASH
             </h1>
-            {/* Spacer */}
-            <div className="flex-1" />
-            {/* Right-aligned compact controls */}
+            {/* Search with preview dropdown */}
+            <div ref={searchContainerRef} className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/60" />
+              <Input value={searchInput} onChange={(e) => handleSearch(e.target.value)}
+                onFocus={() => { if (searchInput) setSearchPreviewOpen(true) }}
+                placeholder={t('searchPlaceholder', lang)}
+                className="pl-8 h-8 bg-muted/40 border-0 text-sm rounded-full focus-visible:ring-1" />
+              {/* Search preview dropdown */}
+              {searchPreviewOpen && searchInput && products.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-xl shadow-2xl overflow-hidden z-50 max-h-80 overflow-y-auto">
+                  {products.slice(0, 8).map((p: Product) => (
+                    <button key={p.id} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-muted/50 text-left transition-colors"
+                      onClick={() => { handleOpenEditProduct(p); setSearchInput(''); setSearchDebounced(''); setSearchPreviewOpen(false); }}>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${p.type?.toLowerCase() === 'indica' ? 'bg-purple-500/10' : p.type?.toLowerCase() === 'sativa' ? 'bg-amber-500/10' : 'bg-emerald-500/10'}`}>
+                        <Leaf className={`size-3.5 ${p.type?.toLowerCase() === 'indica' ? 'text-purple-400' : p.type?.toLowerCase() === 'sativa' ? 'text-amber-400' : 'text-emerald-400'}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold truncate">{p.name}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">
+                          {[p.strain, p.type, p.brand, p.thc > 0 ? `${p.thc}% THC` : ''].filter(Boolean).join(' · ')}
+                        </p>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground shrink-0">{p.amount.toFixed(1)}g</span>
+                    </button>
+                  ))}
+                  {products.length > 8 && (
+                    <div className="px-3 py-2 text-[10px] text-muted-foreground text-center border-t border-border/30">
+                      +{products.length - 8} more results
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             <div className="flex items-center gap-2">
-              <div className="relative w-44">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3 text-muted-foreground/60" />
-                <Input value={searchInput} onChange={(e) => handleSearch(e.target.value)}
-                  placeholder={t('searchPlaceholder', lang)}
-                  className="pl-7 h-7 bg-muted/40 border-0 text-[11px] rounded-full focus-visible:ring-1" />
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1 rounded-full px-2">
-                    <ArrowUpDown className="size-2.5" />
-                    {t(`sort${store.sortBy.charAt(0).toUpperCase() + store.sortBy.slice(1)}`, lang)}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  {['newest', 'oldest', 'name', 'rating', 'thc', 'amount', 'price', 'favorites'].map(s => (
-                    <DropdownMenuItem key={s} onClick={() => store.setSortBy(s)}>
-                      {t(`sort${s.charAt(0).toUpperCase() + s.slice(1)}`, lang)}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1 rounded-full px-2">
-                    <Filter className="size-2.5" />
-                    {t(`filter${store.filterBy.charAt(0).toUpperCase() + store.filterBy.slice(1)}`, lang) || 'Filter'}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  {['all', 'indica', 'sativa', 'hybrid', 'favorites', 'inStock', 'lowStock', 'outOfStock'].map(f => (
-                    <DropdownMenuItem key={f} onClick={() => { store.setFilterBy(f); setPage(1) }}>
-                      {t(`filter${f.charAt(0).toUpperCase() + f.slice(1)}`, lang) || f}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <div className="flex items-center border rounded-full overflow-hidden">
-                {([['grid', LayoutGrid], ['list', List], ['compact', Grid3X3]] as const).map(([l, Icon]) => (
-                  <Button key={l} variant="ghost" size="icon"
-                    className={`size-7 rounded-none ${store.layout === l ? 'bg-muted' : ''}`}
-                    onClick={() => store.setLayout(l as 'grid' | 'list' | 'compact')}>
-                    <Icon className="size-3" />
-                  </Button>
-                ))}
-              </div>
-              <Select value={String(store.pageSize)} onValueChange={(v) => { store.setPageSize(parseInt(v)); setPage(1) }}>
-                <SelectTrigger className="h-7 w-[58px] text-[10px] rounded-full border px-1.5">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[20, 50, 100].map(s => <SelectItem key={s} value={String(s)}>{s}/p</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <span className="text-[10px] text-muted-foreground tabular-nums">
-                {totalProductsCount}
-              </span>
-              <div className="w-px h-4 bg-border/50" />
               <Button size="sm" onClick={handleOpenAddProduct}
-                className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white hover:from-teal-600 hover:to-emerald-600 h-7 text-[10px] rounded-full px-2.5 shadow-md shadow-teal-500/20">
-                <Plus className="size-3 mr-0.5" />{t('addProduct', lang)}
+                className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white hover:from-teal-600 hover:to-emerald-600 h-8 text-xs rounded-full px-3 shadow-md shadow-teal-500/20">
+                <Plus className="size-3.5 mr-0.5" />{t('addProduct', lang)}
               </Button>
-              <Button variant="ghost" size="icon" className="size-7 rounded-full" onClick={() => store.openSettings()}>
+              <Button variant="ghost" size="icon" className="size-8 rounded-full" onClick={() => store.openSettings()}>
                 <Settings className="size-3.5" />
               </Button>
               <ThemeToggleButton resolvedTheme={resolvedTheme}
@@ -632,10 +619,10 @@ export default function Home() {
       {/* ═══ MAIN ═══ */}
       <main className="flex-1 w-full px-8 lg:px-16 xl:px-24 py-6">
         <Tabs value={store.activeTab} onValueChange={(v) => store.setActiveTab(v as 'inventory' | 'dashboard' | 'history')}>
-          <TabsList className="mb-6 w-full justify-start gap-1 bg-transparent p-0 h-auto">
-            <TabsTrigger value="inventory" className="text-sm gap-1.5 rounded-lg px-4 py-2 data-[state=active]:bg-muted data-[state=active]:shadow-sm underline-offset-4 data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400"><Package className="size-4" />{t('inventory', lang)}</TabsTrigger>
-            <TabsTrigger value="dashboard" className="text-sm gap-1.5 rounded-lg px-4 py-2 data-[state=active]:bg-muted data-[state=active]:shadow-sm underline-offset-4 data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400"><BarChart3 className="size-4" />{t('dashboard', lang)}</TabsTrigger>
-            <TabsTrigger value="history" className="text-sm gap-1.5 rounded-lg px-4 py-2 data-[state=active]:bg-muted data-[state=active]:shadow-sm underline-offset-4 data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400"><Clock className="size-4" />{t('history', lang)}</TabsTrigger>
+          <TabsList className="mb-6 w-full justify-start gap-2 bg-transparent p-0 h-auto border-0 shadow-none">
+            <TabsTrigger value="inventory" className="text-sm gap-1.5 rounded-none px-3 py-2 border-0 bg-transparent shadow-none hover:bg-muted/40 underline-offset-4 data-[state=active]:bg-transparent data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400 data-[state=active]:shadow-none"><Package className="size-4" />{t('inventory', lang)}</TabsTrigger>
+            <TabsTrigger value="dashboard" className="text-sm gap-1.5 rounded-none px-3 py-2 border-0 bg-transparent shadow-none hover:bg-muted/40 underline-offset-4 data-[state=active]:bg-transparent data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400 data-[state=active]:shadow-none"><BarChart3 className="size-4" />{t('dashboard', lang)}</TabsTrigger>
+            <TabsTrigger value="history" className="text-sm gap-1.5 rounded-none px-3 py-2 border-0 bg-transparent shadow-none hover:bg-muted/40 underline-offset-4 data-[state=active]:bg-transparent data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400 data-[state=active]:shadow-none"><Clock className="size-4" />{t('history', lang)}</TabsTrigger>
           </TabsList>
 
           {/* ═══ INVENTORY ═══ */}
@@ -670,6 +657,60 @@ export default function Home() {
                 </div>
               )
             })()}
+
+            {/* Inventory controls: sort, filter, layout, page size */}
+            <div className="flex items-center gap-2 flex-wrap mb-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1 rounded-full px-2.5">
+                    <ArrowUpDown className="size-2.5" />
+                    {t(`sort${store.sortBy.charAt(0).toUpperCase() + store.sortBy.slice(1)}`, lang)}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  {['newest', 'oldest', 'name', 'rating', 'thc', 'amount', 'price', 'favorites'].map(s => (
+                    <DropdownMenuItem key={s} onClick={() => store.setSortBy(s)}>
+                      {t(`sort${s.charAt(0).toUpperCase() + s.slice(1)}`, lang)}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1 rounded-full px-2.5">
+                    <Filter className="size-2.5" />
+                    {t(`filter${store.filterBy.charAt(0).toUpperCase() + store.filterBy.slice(1)}`, lang) || 'Filter'}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  {['all', 'indica', 'sativa', 'hybrid', 'favorites', 'inStock', 'lowStock', 'outOfStock'].map(f => (
+                    <DropdownMenuItem key={f} onClick={() => { store.setFilterBy(f); setPage(1) }}>
+                      {t(`filter${f.charAt(0).toUpperCase() + f.slice(1)}`, lang) || f}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <div className="flex items-center border rounded-full overflow-hidden">
+                {([['grid', LayoutGrid], ['list', List], ['compact', Grid3X3]] as const).map(([l, Icon]) => (
+                  <Button key={l} variant="ghost" size="icon"
+                    className={`size-7 rounded-none ${store.layout === l ? 'bg-muted' : ''}`}
+                    onClick={() => store.setLayout(l as 'grid' | 'list' | 'compact')}>
+                    <Icon className="size-3" />
+                  </Button>
+                ))}
+              </div>
+              <Select value={String(store.pageSize)} onValueChange={(v) => { store.setPageSize(parseInt(v)); setPage(1) }}>
+                <SelectTrigger className="h-7 w-[70px] text-[11px] rounded-full border px-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[20, 50, 100].map(s => <SelectItem key={s} value={String(s)}>{s} {t('perPage', lang)}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <span className="text-[11px] text-muted-foreground ml-auto">
+                {totalProductsCount} {t('totalProducts', lang).toLowerCase()}
+              </span>
+            </div>
 
             {/* Loading */}
             {productsQuery.isLoading && (
