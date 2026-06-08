@@ -60,7 +60,7 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
         vx: (Math.random() - 0.5) * 0.2,
         vy: -(0.15 + Math.random() * 0.35),
         size: 1 + Math.random() * 2.5,
-        alpha: 0.08 + Math.random() * 0.25,
+        alpha: isDark ? 0.08 + Math.random() * 0.25 : 0.15 + Math.random() * 0.3,
         hue: isDark
           ? 170 + Math.random() * 50
           : 150 + Math.random() * 50,
@@ -78,12 +78,12 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
           { pos: 0.75, r: 56, g: 189, b: 248, a: 0.01 },
         ]
       : [
-          { pos: 0, r: 6, g: 182, b: 212, a: 0.07 },
-          { pos: 0.12, r: 6, g: 182, b: 212, a: 0.05 },
-          { pos: 0.25, r: 16, g: 185, b: 129, a: 0.035 },
-          { pos: 0.4, r: 16, g: 185, b: 129, a: 0.025 },
-          { pos: 0.55, r: 14, g: 165, b: 233, a: 0.015 },
-          { pos: 0.75, r: 14, g: 165, b: 233, a: 0.008 },
+          { pos: 0, r: 8, g: 145, b: 178, a: 0.25 },
+          { pos: 0.12, r: 8, g: 145, b: 178, a: 0.18 },
+          { pos: 0.25, r: 5, g: 150, b: 105, a: 0.12 },
+          { pos: 0.4, r: 5, g: 150, b: 105, a: 0.08 },
+          { pos: 0.55, r: 7, g: 130, b: 190, a: 0.05 },
+          { pos: 0.75, r: 7, g: 130, b: 190, a: 0.025 },
         ];
 
     let frame = 0;
@@ -112,8 +112,13 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
       const ex = canvas.width * (0.5 + Math.sin(frame * 0.004) * 0.15);
       const ey = canvas.height * (0.5 + Math.cos(frame * 0.005) * 0.15);
       const extraGrad = ctx.createRadialGradient(ex, ey, 0, ex, ey, Math.max(canvas.width, canvas.height) * 0.5);
-      extraGrad.addColorStop(0, `rgba(56,189,248,${0.025 * pulse})`);
-      extraGrad.addColorStop(0.3, `rgba(16,185,129,${0.015 * pulse})`);
+      if (isDark) {
+        extraGrad.addColorStop(0, `rgba(56,189,248,${0.025 * pulse})`);
+        extraGrad.addColorStop(0.3, `rgba(16,185,129,${0.015 * pulse})`);
+      } else {
+        extraGrad.addColorStop(0, `rgba(56,189,248,${0.08 * pulse})`);
+        extraGrad.addColorStop(0.3, `rgba(16,185,129,${0.05 * pulse})`);
+      }
       extraGrad.addColorStop(1, 'transparent');
       ctx.fillStyle = extraGrad;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -136,7 +141,7 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
         if (isDark) {
           ctx.fillStyle = `hsla(${p.hue}, 70%, 65%, ${p.alpha})`;
         } else {
-          ctx.fillStyle = `hsla(${p.hue}, 55%, 45%, ${p.alpha * 0.6})`;
+          ctx.fillStyle = `hsla(${p.hue}, 60%, 40%, ${p.alpha * 0.7})`;
         }
         ctx.fill();
       }
