@@ -18,21 +18,20 @@ import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Search, Plus, Settings, Sun, Moon, LayoutGrid, List, Grid3X3,
-  Heart, Star, ChevronDown, MoreVertical, Trash2, Edit3,
-  Flame, DollarSign, Clock, Users, Zap, Package, TrendingUp,
-  BarChart3, PieChart, ArrowUpRight, ArrowDownRight, Download,
-  Upload, Copy, Lock, Unlock, X, Timer, RotateCw, Hash,
-  Leaf, Archive, Activity, ShoppingCart, Eye, Filter, ArrowUpDown,
-  Pause, Cloud, Sparkles
+  Heart, Star, Trash2, Edit3,
+  Flame, DollarSign, Clock, Users, Zap, Package,
+  BarChart3, Download, Upload, Copy, Lock, Unlock,
+  X, Timer, RotateCw, Leaf, Archive, Activity,
+  Filter, ArrowUpDown, Pause, Cloud, ChevronLeft, ChevronRight,
+  Eye, EyeOff
 } from 'lucide-react'
 import {
   LineChart, Line, BarChart, Bar, PieChart as RechartsPie, Pie, Cell,
@@ -90,25 +89,42 @@ const api = {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function formatRelativeTime(dateStr: string | null, lang: string): string {
-  if (!dateStr) return '—'
+  if (!dateStr) return ''
   const diff = Date.now() - new Date(dateStr).getTime()
   const mins = Math.floor(diff / 60000)
   const hours = Math.floor(diff / 3600000)
   const days = Math.floor(diff / 86400000)
-  const months = Math.floor(days / 30)
   if (mins < 1) return 'Just now'
   if (mins < 60) return t('minutesAgo', lang).replace('{n}', String(mins))
   if (hours < 24) return t('hoursAgo', lang).replace('{n}', String(hours))
   if (days < 30) return t('daysAgo', lang).replace('{n}', String(days))
-  return t('monthsAgo', lang).replace('{n}', String(months))
+  return t('monthsAgo', lang).replace('{n}', String(Math.floor(days / 30)))
 }
 
 function getTypeColor(type: string): string {
   switch (type?.toLowerCase()) {
-    case 'indica': return 'bg-purple-500/20 text-purple-400 border-purple-500/30'
-    case 'sativa': return 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-    case 'hybrid': return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-    default: return 'bg-slate-500/20 text-slate-400 border-slate-500/30'
+    case 'indica': return 'bg-purple-500/15 text-purple-400 border-purple-500/25'
+    case 'sativa': return 'bg-amber-500/15 text-amber-400 border-amber-500/25'
+    case 'hybrid': return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25'
+    default: return 'bg-slate-500/15 text-slate-400 border-slate-500/25'
+  }
+}
+
+function getTypeGlow(type: string): string {
+  switch (type?.toLowerCase()) {
+    case 'indica': return 'glow-indica'
+    case 'sativa': return 'glow-sativa'
+    case 'hybrid': return 'glow-hybrid'
+    default: return ''
+  }
+}
+
+function getTypeStripe(type: string): string {
+  switch (type?.toLowerCase()) {
+    case 'indica': return 'stripe-indica'
+    case 'sativa': return 'stripe-sativa'
+    case 'hybrid': return 'stripe-hybrid'
+    default: return ''
   }
 }
 
@@ -121,15 +137,15 @@ function getTypeChartColor(type: string): string {
   }
 }
 
-// ── Star Rating Component ────────────────────────────────────────────────────
+// ── Star Rating ──────────────────────────────────────────────────────────────
 function StarRating({ value, onChange, readonly = false, size = 'sm' }: { value: number; onChange?: (v: number) => void; readonly?: boolean; size?: 'sm' | 'md' }) {
-  const sz = size === 'sm' ? 'size-3.5' : 'size-5'
+  const sz = size === 'sm' ? 'size-3' : 'size-4'
   return (
     <div className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((i) => (
         <button key={i} type="button" disabled={readonly} onClick={() => onChange?.(i)}
           className={`transition-colors ${readonly ? 'cursor-default' : 'cursor-pointer hover:scale-110'}`}>
-          <Star className={`${sz} ${i <= value ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/40'}`} />
+          <Star className={`${sz} ${i <= value ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'}`} />
         </button>
       ))}
     </div>
@@ -138,32 +154,19 @@ function StarRating({ value, onChange, readonly = false, size = 'sm' }: { value:
 
 // ── Theme Toggle (hydration-safe) ────────────────────────────────────────────
 function ThemeToggleButton({ resolvedTheme, onToggle }: { resolvedTheme: string | undefined; onToggle: () => void }) {
-  // resolvedTheme is undefined during SSR, so we render a placeholder
-  // to avoid hydration mismatch between server and client.
-  // Using useSyncExternalStore to detect client mount without setState-in-effect.
-  const mounted = useSyncExternalStore(
-    () => () => {},  // subscribe (noop)
-    () => true,       // getSnapshot (client)
-    () => false       // getServerSnapshot
-  )
-  if (!mounted) {
-    return (
-      <Button variant="ghost" size="icon" className="size-8">
-        <Sun className="size-3.5 opacity-50" />
-      </Button>
-    )
-  }
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false)
+  if (!mounted) return <div className="size-8" />
   return (
-    <Button variant="ghost" size="icon" className="size-8" onClick={onToggle}>
+    <Button variant="ghost" size="icon" className="size-8 rounded-full" onClick={onToggle}>
       {resolvedTheme === 'dark' ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}
     </Button>
   )
 }
 
-// ── Main Page Component ──────────────────────────────────────────────────────
+// ── Main Page ────────────────────────────────────────────────────────────────
 export default function Home() {
   const queryClient = useQueryClient()
-  const { theme, setTheme, resolvedTheme } = useTheme()
+  const { setTheme, resolvedTheme } = useTheme()
   const store = useStore()
   const lang = store.settings.language
 
@@ -177,7 +180,7 @@ export default function Home() {
   const [historyTo, setHistoryTo] = useState('')
   const [historyPage, setHistoryPage] = useState(1)
 
-  // Product form state
+  // Product form
   const [formName, setFormName] = useState('')
   const [formStrain, setFormStrain] = useState('')
   const [formType, setFormType] = useState('hybrid')
@@ -198,9 +201,9 @@ export default function Home() {
   const [consumeTime, setConsumeTime] = useState('')
   const [consumeMode, setConsumeMode] = useState<'quick' | 'session'>('quick')
 
-  // Animation state
-  const [smokeEffects, setSmokeEffects] = useState<Array<{id: number; x: number; y: number}>>([])
-  const [dollarEffects, setDollarEffects] = useState<Array<{id: number; x: number; y: number}>>([])
+  // Animation state — rendered at PAGE level so visible after dialog closes
+  const [smokeEffects, setSmokeEffects] = useState<Array<{ id: number; x: number; y: number }>>([])
+  const [dollarEffects, setDollarEffects] = useState<Array<{ id: number; x: number; y: number }>>([])
 
   // Sell form
   const [sellGramsPerPortion, setSellGramsPerPortion] = useState('0.5')
@@ -208,22 +211,23 @@ export default function Home() {
   const [sellPricePerPortion, setSellPricePerPortion] = useState('')
   const [sellNote, setSellNote] = useState('')
 
-  // Session form
+  // Session form — new design: countdown timer with auto-rotation
   const [sessionPeople, setSessionPeople] = useState(2)
-  const [sessionHits, setSessionHits] = useState(0)
+  const [sessionTimePerHit, setSessionTimePerHit] = useState(10) // seconds per hit
+  const [sessionCountdown, setSessionCountdown] = useState(0) // remaining seconds * 10 (for 100ms ticks)
   const [sessionTimerRunning, setSessionTimerRunning] = useState(false)
-  const [sessionTimerValue, setSessionTimerValue] = useState(0)
-  const [sessionNotes, setSessionNotes] = useState('')
   const [sessionRotationIndex, setSessionRotationIndex] = useState(0)
+  const [sessionNotes, setSessionNotes] = useState('')
+  const [sessionStarted, setSessionStarted] = useState(false)
   const sessionTimerRef = useRef<ReturnType<typeof setInterval>>()
 
-  // Settings form
-  const [settingsTab, setSettingsTab] = useState<'personalization' | 'danger'>('personalization')
+  // Settings
+  const [settingsTab, setSettingsTab] = useState<'personalization' | 'stats' | 'danger'>('personalization')
   const [pinInput, setPinInput] = useState('')
   const [pinConfirm, setPinConfirm] = useState('')
   const [showPinSetup, setShowPinSetup] = useState(false)
 
-  // ── Debounced search ────────────────────────────────────────────────────
+  // ── Debounced search ─────────────────────────────────────────────────────
   const handleSearch = useCallback((val: string) => {
     setSearchInput(val)
     clearTimeout(debounceRef.current)
@@ -233,10 +237,10 @@ export default function Home() {
     }, 300)
   }, [])
 
-  // ── Queries ─────────────────────────────────────────────────────────────
+  // ── Queries ──────────────────────────────────────────────────────────────
   const productsQuery = useQuery({
-    queryKey: ['products', searchDebounced, store.filterBy, store.sortBy, page],
-    queryFn: () => api.get(`/api/products?search=${encodeURIComponent(searchDebounced)}&filter=${store.filterBy}&sort=${store.sortBy}&page=${page}&limit=50`),
+    queryKey: ['products', searchDebounced, store.filterBy, store.sortBy, page, store.pageSize],
+    queryFn: () => api.get(`/api/products?search=${encodeURIComponent(searchDebounced)}&filter=${store.filterBy}&sort=${store.sortBy}&page=${page}&limit=${store.pageSize}`),
   })
 
   const statsQuery = useQuery({
@@ -254,14 +258,11 @@ export default function Home() {
     queryFn: () => api.get(`/api/consumption?page=${historyPage}&limit=20${historyFrom ? `&from=${historyFrom}` : ''}${historyTo ? `&to=${historyTo}` : ''}`),
   })
 
-  // ── Sync settings from API ──────────────────────────────────────────────
+  // ── Sync settings ────────────────────────────────────────────────────────
   useEffect(() => {
-    if (settingsQuery.data) {
-      store.setSettings(settingsQuery.data)
-    }
+    if (settingsQuery.data) store.setSettings(settingsQuery.data)
   }, [settingsQuery.data, store.setSettings])
 
-  // ── Apply theme from settings on initial load ──────────────────────────
   const appliedThemeRef = useRef(false)
   useEffect(() => {
     if (!appliedThemeRef.current && settingsQuery.data?.theme) {
@@ -270,61 +271,42 @@ export default function Home() {
     }
   }, [settingsQuery.data?.theme, setTheme])
 
-  // ── Mutations ───────────────────────────────────────────────────────────
+  // ── Mutations ────────────────────────────────────────────────────────────
   const createProduct = useMutation({
     mutationFn: (data: Record<string, unknown>) => api.post('/api/products', data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] })
-      queryClient.invalidateQueries({ queryKey: ['stats'] })
-      store.closeAllModals()
-      toast.success('Product added!')
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['products'] }); queryClient.invalidateQueries({ queryKey: ['stats'] }); store.closeAllModals(); toast.success('Product added!') },
     onError: () => toast.error('Failed to add product'),
   })
 
   const updateProduct = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => api.put(`/api/products/${id}`, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] })
-      queryClient.invalidateQueries({ queryKey: ['stats'] })
-      store.closeAllModals()
-      toast.success('Product updated!')
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['products'] }); queryClient.invalidateQueries({ queryKey: ['stats'] }); store.closeAllModals(); toast.success('Product updated!') },
     onError: () => toast.error('Failed to update product'),
   })
 
   const deleteProduct = useMutation({
     mutationFn: (id: string) => api.del(`/api/products/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] })
-      queryClient.invalidateQueries({ queryKey: ['stats'] })
-      setDeleteConfirm(null)
-      store.closeAllModals()
-      toast.success('Product deleted')
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['products'] }); queryClient.invalidateQueries({ queryKey: ['stats'] }); setDeleteConfirm(null); store.closeAllModals(); toast.success('Product deleted') },
     onError: () => toast.error('Failed to delete product'),
   })
 
-  // ── Animation triggers ──────────────────────────────────────────────────
+  // ── Animation triggers (fire BEFORE closing dialog) ──────────────────────
   const triggerSmokeEffect = useCallback(() => {
-    const id = Date.now()
-    const x = 40 + Math.random() * 20
-    const y = 30 + Math.random() * 20
-    setSmokeEffects(prev => [...prev, { id, x, y }])
-    setTimeout(() => setSmokeEffects(prev => prev.filter(e => e.id !== id)), 1300)
+    const effects: Array<{ id: number; x: number; y: number }> = []
+    for (let i = 0; i < 5; i++) {
+      effects.push({ id: Date.now() + i, x: 35 + Math.random() * 30, y: 30 + Math.random() * 25 })
+    }
+    setSmokeEffects(effects)
+    setTimeout(() => setSmokeEffects([]), 1400)
   }, [])
 
   const triggerDollarEffect = useCallback(() => {
-    const effects: Array<{id: number; x: number; y: number}> = []
-    for (let i = 0; i < 4; i++) {
-      effects.push({
-        id: Date.now() + i,
-        x: 30 + Math.random() * 40,
-        y: 40 + Math.random() * 20,
-      })
+    const effects: Array<{ id: number; x: number; y: number }> = []
+    for (let i = 0; i < 6; i++) {
+      effects.push({ id: Date.now() + i, x: 25 + Math.random() * 50, y: 35 + Math.random() * 25 })
     }
     setDollarEffects(effects)
-    setTimeout(() => setDollarEffects([]), 1500)
+    setTimeout(() => setDollarEffects([]), 1600)
   }, [])
 
   const consumeProduct = useMutation({
@@ -335,8 +317,9 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['stats'] })
       queryClient.invalidateQueries({ queryKey: ['consumption'] })
       triggerSmokeEffect()
-      store.closeAllModals()
       toast.success(`Consumed ${consumeAmount}g`)
+      // Delay close so user sees animation start
+      setTimeout(() => store.closeAllModals(), 100)
       if (data.lowStock) {
         toast.warning(t('lowStockAlert', lang), { description: t('lowStockMessage', lang).replace('{name}', data.product.name).replace('{amount}', String(data.product.amount)) })
       }
@@ -352,45 +335,31 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['stats'] })
       queryClient.invalidateQueries({ queryKey: ['consumption'] })
       triggerDollarEffect()
-      store.closeAllModals()
       toast.success('Sold successfully!')
-      if (data.lowStock) {
-        toast.warning(t('lowStockAlert', lang))
-      }
+      setTimeout(() => store.closeAllModals(), 100)
+      if (data.lowStock) toast.warning(t('lowStockAlert', lang))
     },
     onError: () => toast.error('Failed to sell'),
   })
 
   const toggleFavorite = useMutation({
     mutationFn: (id: string) => api.post(`/api/products/${id}/favorite`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] })
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
   })
 
   const updateSettings = useMutation({
     mutationFn: (data: Record<string, unknown>) => api.put('/api/settings', data),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['settings'] })
-      if (data.theme) setTheme(data.theme)
-      toast.success('Settings updated')
-    },
+    onSuccess: (data) => { queryClient.invalidateQueries({ queryKey: ['settings'] }); if (data.theme) setTheme(data.theme); toast.success('Settings updated') },
     onError: () => toast.error('Failed to update settings'),
   })
 
   const createSession = useMutation({
     mutationFn: (data: Record<string, unknown>) => api.post('/api/sessions', data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] })
-      queryClient.invalidateQueries({ queryKey: ['stats'] })
-      queryClient.invalidateQueries({ queryKey: ['consumption'] })
-      store.closeAllModals()
-      toast.success('Session completed!')
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['products'] }); queryClient.invalidateQueries({ queryKey: ['stats'] }); queryClient.invalidateQueries({ queryKey: ['consumption'] }); store.closeAllModals(); toast.success('Session completed!') },
     onError: () => toast.error('Failed to create session'),
   })
 
-  // ── Form reset helpers ──────────────────────────────────────────────────
+  // ── Form helpers ─────────────────────────────────────────────────────────
   const resetProductForm = useCallback(() => {
     setFormName(''); setFormStrain(''); setFormType('hybrid'); setFormCustomType('')
     setFormThc(''); setFormCbd(''); setFormAmount(''); setFormPrice('')
@@ -399,7 +368,8 @@ export default function Home() {
   }, [])
 
   const populateProductForm = useCallback((p: Product) => {
-    setFormName(p.name); setFormStrain(p.strain); setFormType(['indica', 'sativa', 'hybrid'].includes(p.type?.toLowerCase()) ? p.type.toLowerCase() : 'custom')
+    setFormName(p.name); setFormStrain(p.strain)
+    setFormType(['indica', 'sativa', 'hybrid'].includes(p.type?.toLowerCase()) ? p.type.toLowerCase() : 'custom')
     setFormCustomType(['indica', 'sativa', 'hybrid'].includes(p.type?.toLowerCase()) ? '' : p.type)
     setFormThc(String(p.thc)); setFormCbd(String(p.cbd)); setFormAmount(String(p.amount))
     setFormPrice(String(p.price)); setFormRating(p.rating); setFormBrand(p.brand || '')
@@ -407,56 +377,46 @@ export default function Home() {
     setFormPicture(p.picture)
   }, [])
 
-  // Handlers that open modals AND reset/populate forms (avoiding setState in effects)
-  const handleOpenAddProduct = useCallback(() => {
-    resetProductForm()
-    store.openAddProduct()
-  }, [resetProductForm, store])
-
-  const handleOpenEditProduct = useCallback((p: Product) => {
-    populateProductForm(p)
-    store.openEditProduct(p)
-  }, [populateProductForm, store])
-
+  const handleOpenAddProduct = useCallback(() => { resetProductForm(); store.openAddProduct() }, [resetProductForm, store])
+  const handleOpenEditProduct = useCallback((p: Product) => { populateProductForm(p); store.openEditProduct(p) }, [populateProductForm, store])
   const handleOpenConsume = useCallback((p: Product) => {
-    setConsumeAmount('0.5')
-    setConsumeTime('')
-    setConsumeMode('quick')
-    store.openConsume(p)
+    setConsumeAmount('0.5'); setConsumeTime(''); setConsumeMode('quick'); store.openConsume(p)
   }, [store])
-
   const handleOpenSell = useCallback((p: Product) => {
-    setSellGramsPerPortion('0.5')
-    setSellNumPortions('1')
-    setSellPricePerPortion('')
-    setSellNote('')
-    store.openSell(p)
+    setSellGramsPerPortion('0.5'); setSellNumPortions('1'); setSellPricePerPortion(''); setSellNote(''); store.openSell(p)
   }, [store])
-
   const handleOpenSession = useCallback((p: Product) => {
     const defaults = store.settings.sessionDefaults || defaultSettings.sessionDefaults
     setSessionPeople(defaults.defaultPeople)
-    setSessionHits(0)
+    setSessionTimePerHit(defaults.defaultHitTimer)
+    setSessionCountdown(0)
     setSessionTimerRunning(false)
-    setSessionTimerValue(0)
-    setSessionNotes('')
     setSessionRotationIndex(0)
+    setSessionNotes('')
+    setSessionStarted(false)
     store.openSession(p)
   }, [store])
 
-  // Session timer
+  // ── Session countdown timer with auto-rotation ──────────────────────────
   useEffect(() => {
     if (sessionTimerRunning) {
       sessionTimerRef.current = setInterval(() => {
-        setSessionTimerValue(v => v + (store.settings.showTimerMs ? 10 : 100))
-      }, store.settings.showTimerMs ? 10 : 100)
+        setSessionCountdown(prev => {
+          if (prev <= 1) {
+            // Timer expired — auto-rotate to next person and reset timer
+            setSessionRotationIndex(ri => (ri + 1) % sessionPeople)
+            return sessionTimePerHit * 10 // reset countdown (in 100ms ticks)
+          }
+          return prev - 1
+        })
+      }, 100)
     } else {
       clearInterval(sessionTimerRef.current)
     }
     return () => clearInterval(sessionTimerRef.current)
-  }, [sessionTimerRunning, store.settings.showTimerMs])
+  }, [sessionTimerRunning, sessionPeople, sessionTimePerHit])
 
-  // ── Computed values ─────────────────────────────────────────────────────
+  // ── Computed values ──────────────────────────────────────────────────────
   const products = productsQuery.data?.products || []
   const totalPages = productsQuery.data?.totalPages || 1
   const totalProductsCount = productsQuery.data?.total || 0
@@ -464,98 +424,75 @@ export default function Home() {
   const consumptionLogs = consumptionQuery.data?.logs || []
   const consumptionTotalPages = consumptionQuery.data?.totalPages || 1
 
-  const sellTotalGrams = useMemo(() => {
-    return parseFloat(sellGramsPerPortion || '0') * parseFloat(sellNumPortions || '0')
-  }, [sellGramsPerPortion, sellNumPortions])
-
-  const sellTotalValue = useMemo(() => {
-    return parseFloat(sellPricePerPortion || '0') * parseFloat(sellNumPortions || '0')
-  }, [sellPricePerPortion, sellNumPortions])
-
+  const sellTotalGrams = useMemo(() => parseFloat(sellGramsPerPortion || '0') * parseFloat(sellNumPortions || '0'), [sellGramsPerPortion, sellNumPortions])
+  const sellTotalValue = useMemo(() => parseFloat(sellPricePerPortion || '0') * parseFloat(sellNumPortions || '0'), [sellPricePerPortion, sellNumPortions])
   const sellProfit = useMemo(() => {
     if (!store.sellingProduct) return 0
     const costPerGram = store.sellingProduct.price / Math.max(store.sellingProduct.amount + sellTotalGrams, 0.01)
     return sellTotalValue - (costPerGram * sellTotalGrams)
   }, [store.sellingProduct, sellTotalGrams, sellTotalValue])
 
-  const formatTimer = (ms: number) => {
-    const secs = Math.floor(ms / 1000)
-    const mins = Math.floor(secs / 60)
-    const remainSecs = secs % 60
-    const remainMs = store.settings.showTimerMs ? `.${String(Math.floor((ms % 1000) / 10)).padStart(2, '0')}` : ''
-    return `${mins}:${String(remainSecs).padStart(2, '0')}${remainMs}`
+  const formatCountdown = (ticks: number) => {
+    const totalSecs = Math.ceil(ticks / 10)
+    const mins = Math.floor(totalSecs / 60)
+    const secs = totalSecs % 60
+    return `${mins}:${String(secs).padStart(2, '0')}`
   }
 
-  // ── Backup / Export ─────────────────────────────────────────────────────
+  const currency = store.settings.currency || '$'
+
+  // ── Stats visibility ─────────────────────────────────────────────────────
+  const statsVis = store.settings.statsVisibility || defaultSettings.statsVisibility
+
+  // ── Backup / Export ──────────────────────────────────────────────────────
   const handleExportJson = async () => {
     try {
       const data = await api.get('/api/backup')
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
       const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url; a.download = `stash-backup-${new Date().toISOString().split('T')[0]}.json`
-      a.click(); URL.revokeObjectURL(url)
-      toast.success(t('exportSuccess', lang))
+      const a = document.createElement('a'); a.href = url; a.download = `stash-backup-${new Date().toISOString().split('T')[0]}.json`
+      a.click(); URL.revokeObjectURL(url); toast.success(t('exportSuccess', lang))
     } catch { toast.error('Export failed') }
   }
-
   const handleExportCsv = async () => {
     try {
       const prods = productsQuery.data?.products || []
       if (prods.length === 0) { toast.error('No data to export'); return }
       const headers = ['Name', 'Strain', 'Type', 'THC', 'CBD', 'Amount', 'Price', 'Rating', 'Brand', 'Notes', 'Tags', 'Effects', 'Favorite', 'Created']
-      const rows = prods.map((p: Product) => [
-        p.name, p.strain, p.type, p.thc, p.cbd, p.amount, p.price, p.rating,
-        p.brand || '', (p.notes || '').replace(/"/g, '""'), p.tags, p.effects, p.favorite, p.createdAt
-      ].map(v => `"${v}"`).join(','))
+      const rows = prods.map((p: Product) => [p.name, p.strain, p.type, p.thc, p.cbd, p.amount, p.price, p.rating, p.brand || '', (p.notes || '').replace(/"/g, '""'), p.tags, p.effects, p.favorite, p.createdAt].map(v => `"${v}"`).join(','))
       const csv = [headers.join(','), ...rows].join('\n')
-      const blob = new Blob([csv], { type: 'text/csv' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url; a.download = `stash-export-${new Date().toISOString().split('T')[0]}.csv`
-      a.click(); URL.revokeObjectURL(url)
-      toast.success(t('exportSuccess', lang))
+      const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob)
+      const a = document.createElement('a'); a.href = url; a.download = `stash-export-${new Date().toISOString().split('T')[0]}.csv`
+      a.click(); URL.revokeObjectURL(url); toast.success(t('exportSuccess', lang))
     } catch { toast.error('Export failed') }
   }
-
   const handleCopyBackup = async () => {
-    try {
-      const data = await api.get('/api/backup')
-      await navigator.clipboard.writeText(JSON.stringify(data, null, 2))
-      toast.success(t('copiedToClipboard', lang))
-    } catch { toast.error('Copy failed') }
+    try { const data = await api.get('/api/backup'); await navigator.clipboard.writeText(JSON.stringify(data, null, 2)); toast.success(t('copiedToClipboard', lang)) }
+    catch { toast.error('Copy failed') }
   }
-
   const handleImportBackup = async (mode: 'replace' | 'merge') => {
-    const input = document.createElement('input')
-    input.type = 'file'; input.accept = '.json'
+    const input = document.createElement('input'); input.type = 'file'; input.accept = '.json'
     input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0]
-      if (!file) return
+      const file = (e.target as HTMLInputElement).files?.[0]; if (!file) return
       try {
-        const text = await file.text()
-        const data = JSON.parse(text)
+        const text = await file.text(); const data = JSON.parse(text)
         await api.post('/api/backup', { mode, data })
-        queryClient.invalidateQueries({ queryKey: ['products'] })
-        queryClient.invalidateQueries({ queryKey: ['stats'] })
-        queryClient.invalidateQueries({ queryKey: ['settings'] })
-        queryClient.invalidateQueries({ queryKey: ['consumption'] })
+        queryClient.invalidateQueries({ queryKey: ['products'] }); queryClient.invalidateQueries({ queryKey: ['stats'] })
+        queryClient.invalidateQueries({ queryKey: ['settings'] }); queryClient.invalidateQueries({ queryKey: ['consumption'] })
         toast.success(t('importSuccess', lang))
       } catch { toast.error(t('importError', lang)) }
     }
     input.click()
   }
 
-  // ── Picture upload helper ───────────────────────────────────────────────
   const handlePictureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0]; if (!file) return
     const reader = new FileReader()
     reader.onload = () => setFormPicture(reader.result as string)
     reader.readAsDataURL(file)
   }
 
-  // ── Submit handlers ─────────────────────────────────────────────────────
+  // ── Submit handlers ──────────────────────────────────────────────────────
   const handleSubmitProduct = () => {
     if (!formName.trim()) { toast.error('Name is required'); return }
     const finalType = formType === 'custom' ? formCustomType : formType
@@ -567,11 +504,8 @@ export default function Home() {
       notes: formNotes || null, tags: formTags, effects: formEffects,
       picture: formPicture,
     }
-    if (store.editingProduct) {
-      updateProduct.mutate({ id: store.editingProduct.id, data })
-    } else {
-      createProduct.mutate(data)
-    }
+    if (store.editingProduct) updateProduct.mutate({ id: store.editingProduct.id, data })
+    else createProduct.mutate(data)
   }
 
   const handleSubmitConsume = () => {
@@ -589,62 +523,61 @@ export default function Home() {
 
   const handleSubmitSession = () => {
     if (!store.sessionProduct) return
-    const sessionAmount = store.settings.sessionDefaults?.defaultAmount ?? 0.5
     createSession.mutate({
       productId: store.sessionProduct.id,
-      amount: sessionAmount,
+      amount: parseFloat(consumeAmount) || (store.settings.sessionDefaults?.defaultAmount ?? 0.5),
       people: sessionPeople,
-      hitsCount: sessionHits,
       notes: sessionNotes || null,
-      bowlsPerPerson: store.settings.sessionDefaults?.defaultGramsPerBowl ?? 0.25,
-      rotationEnabled: store.settings.sessionDefaults?.rotationEnabled ?? false,
+      rotationEnabled: true,
     })
   }
 
-  // ── Currency ────────────────────────────────────────────────────────────
-  const currency = store.settings.currency || '$'
-
-  // ── Render ──────────────────────────────────────────────────────────────
+  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
+      {/* ═══ PAGE-LEVEL ANIMATION OVERLAYS ═══ */}
+      {smokeEffects.map((effect) => (
+        <div key={effect.id} className="fixed z-[100] animate-smoke-puff" style={{ left: `${effect.x}%`, top: `${effect.y}%` }}>
+          <Cloud className="size-10 text-teal-300/40" />
+        </div>
+      ))}
+      {dollarEffects.map((effect) => (
+        <div key={effect.id} className="fixed z-[100] animate-dollar-float" style={{ left: `${effect.x}%`, top: `${effect.y}%` }}>
+          <DollarSign className="size-7 text-emerald-400/70 font-bold" />
+        </div>
+      ))}
+
       {/* ═══ HEADER ═══ */}
-      <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-lg">
-        <div className="max-w-7xl mx-auto px-3 py-2">
-          {/* Top row */}
-          <div className="flex items-center gap-2 mb-2">
-            <h1 className="text-xl font-bold gradient-text flex items-center gap-1.5 shrink-0">
-              <Leaf className="size-5" /> Stash Tracker
+      <header className="sticky top-0 z-40 border-b border-border/50 bg-background/90 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-4 py-2.5">
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-lg font-black gradient-text flex items-center gap-1.5 shrink-0 tracking-tight">
+              <Leaf className="size-5" /> STASH
             </h1>
-            <div className="flex-1 relative max-w-md">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-              <Input
-                value={searchInput}
-                onChange={(e) => handleSearch(e.target.value)}
+            <div className="flex-1 relative max-w-sm">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/60" />
+              <Input value={searchInput} onChange={(e) => handleSearch(e.target.value)}
                 placeholder={t('searchPlaceholder', lang)}
-                className="pl-8 h-8 bg-muted/50 text-sm"
-              />
+                className="pl-8 h-8 bg-muted/40 border-0 text-sm rounded-full focus-visible:ring-1" />
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
               <Button size="sm" onClick={handleOpenAddProduct}
-                className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white hover:from-teal-600 hover:to-emerald-600 h-8 text-xs">
+                className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white hover:from-teal-600 hover:to-emerald-600 h-8 text-xs rounded-full px-3 shadow-lg shadow-teal-500/20">
                 <Plus className="size-3.5 mr-0.5" />{t('addProduct', lang)}
               </Button>
-              <Button variant="ghost" size="icon" className="size-8" onClick={() => store.openSettings()}>
+              <Button variant="ghost" size="icon" className="size-8 rounded-full" onClick={() => store.openSettings()}>
                 <Settings className="size-3.5" />
               </Button>
-              <ThemeToggleButton
-                resolvedTheme={resolvedTheme}
-                onToggle={() => { const next = resolvedTheme === 'dark' ? 'light' : 'dark'; setTheme(next); updateSettings.mutate({ theme: next }); }}
-              />
+              <ThemeToggleButton resolvedTheme={resolvedTheme}
+                onToggle={() => { const next = resolvedTheme === 'dark' ? 'light' : 'dark'; setTheme(next); updateSettings.mutate({ theme: next }) }} />
             </div>
           </div>
           {/* Filter row */}
           <div className="flex items-center gap-2 flex-wrap">
-            {/* Sort */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 text-xs gap-1">
-                  <ArrowUpDown className="size-3" />
+                <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1 rounded-full px-2.5">
+                  <ArrowUpDown className="size-2.5" />
                   {t(`sort${store.sortBy.charAt(0).toUpperCase() + store.sortBy.slice(1)}`, lang)}
                 </Button>
               </DropdownMenuTrigger>
@@ -656,11 +589,10 @@ export default function Home() {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            {/* Filter */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 text-xs gap-1">
-                  <Filter className="size-3" />
+                <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1 rounded-full px-2.5">
+                  <Filter className="size-2.5" />
                   {t(`filter${store.filterBy.charAt(0).toUpperCase() + store.filterBy.slice(1)}`, lang) || 'Filter'}
                 </Button>
               </DropdownMenuTrigger>
@@ -673,50 +605,59 @@ export default function Home() {
               </DropdownMenuContent>
             </DropdownMenu>
             {/* Layout toggles */}
-            <div className="flex items-center border rounded-md overflow-hidden">
+            <div className="flex items-center border rounded-full overflow-hidden">
               {([['grid', LayoutGrid], ['list', List], ['compact', Grid3X3]] as const).map(([l, Icon]) => (
                 <Button key={l} variant="ghost" size="icon"
-                  className={`size-8 rounded-none ${store.layout === l ? 'bg-muted' : ''}`}
+                  className={`size-7 rounded-none ${store.layout === l ? 'bg-muted' : ''}`}
                   onClick={() => store.setLayout(l as 'grid' | 'list' | 'compact')}>
-                  <Icon className="size-3.5" />
+                  <Icon className="size-3" />
                 </Button>
               ))}
             </div>
-            <span className="text-xs text-muted-foreground ml-auto">
+            {/* Page size selector */}
+            <Select value={String(store.pageSize)} onValueChange={(v) => { store.setPageSize(parseInt(v)); setPage(1) }}>
+              <SelectTrigger className="h-7 w-[70px] text-[11px] rounded-full border px-2">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[20, 50, 100].map(s => <SelectItem key={s} value={String(s)}>{s} {t('perPage', lang)}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <span className="text-[11px] text-muted-foreground ml-auto">
               {totalProductsCount} {t('totalProducts', lang).toLowerCase()}
             </span>
           </div>
         </div>
       </header>
 
-      {/* ═══ MAIN CONTENT ═══ */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-3 py-3">
+      {/* ═══ MAIN ═══ */}
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-4">
         <Tabs value={store.activeTab} onValueChange={(v) => store.setActiveTab(v as 'inventory' | 'dashboard' | 'history')}>
-          <TabsList className="mb-2">
-            <TabsTrigger value="inventory" className="text-xs"><Package className="size-3 mr-1" />{t('inventory', lang)}</TabsTrigger>
-            <TabsTrigger value="dashboard" className="text-xs"><BarChart3 className="size-3 mr-1" />{t('dashboard', lang)}</TabsTrigger>
-            <TabsTrigger value="history" className="text-xs"><Clock className="size-3 mr-1" />{t('history', lang)}</TabsTrigger>
+          <TabsList className="mb-3">
+            <TabsTrigger value="inventory" className="text-xs gap-1"><Package className="size-3" />{t('inventory', lang)}</TabsTrigger>
+            <TabsTrigger value="dashboard" className="text-xs gap-1"><BarChart3 className="size-3" />{t('dashboard', lang)}</TabsTrigger>
+            <TabsTrigger value="history" className="text-xs gap-1"><Clock className="size-3" />{t('history', lang)}</TabsTrigger>
           </TabsList>
 
-          {/* ═══ INVENTORY TAB ═══ */}
+          {/* ═══ INVENTORY ═══ */}
           <TabsContent value="inventory">
             {/* Stats Bar */}
             {stats && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-4">
                 {[
                   { key: 'totalProducts', value: stats.totalProducts, icon: Package, color: 'text-teal-400' },
                   { key: 'totalAmount', value: `${stats.totalAmount.toFixed(1)}g`, icon: Archive, color: 'text-emerald-400' },
                   { key: 'averageRating', value: stats.averageRating.toFixed(1), icon: Star, color: 'text-amber-400' },
                   { key: 'averageTHC', value: `${stats.averageTHC.toFixed(1)}%`, icon: Zap, color: 'text-purple-400' },
                   { key: 'totalValue', value: `${currency}${stats.totalValue.toFixed(0)}`, icon: DollarSign, color: 'text-green-400' },
-                  { key: 'totalSessions', value: stats.totalSessions, icon: Users, color: 'text-blue-400' },
-                ].map(({ key, value, icon: Icon, color }) => (
-                  <Card key={key} className="py-1.5 px-2.5">
-                    <div className="flex items-center gap-1.5">
-                      <Icon className={`size-3.5 ${color}`} />
+                  { key: 'totalSessions', value: stats.totalSessions, icon: Users, color: 'text-cyan-400' },
+                ].filter(({ key }) => statsVis[key] !== false).map(({ key, value, icon: Icon, color }) => (
+                  <Card key={key} className="glass-card py-2 px-3 rounded-xl">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 rounded-lg bg-muted/50"><Icon className={`size-3.5 ${color}`} /></div>
                       <div>
-                        <p className="text-[10px] text-muted-foreground leading-tight">{t(key, lang)}</p>
-                        <p className="text-xs font-semibold">{value}</p>
+                        <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{t(key, lang)}</p>
+                        <p className="text-sm font-bold">{value}</p>
                       </div>
                     </div>
                   </Card>
@@ -727,74 +668,62 @@ export default function Home() {
             {/* Loading */}
             {productsQuery.isLoading && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <Card key={i} className="p-4"><Skeleton className="h-32 w-full" /></Card>
-                ))}
+                {Array.from({ length: 6 }).map((_, i) => <Card key={i} className="p-4 rounded-xl"><Skeleton className="h-32 w-full rounded-lg" /></Card>)}
               </div>
             )}
 
             {/* Empty states */}
             {!productsQuery.isLoading && products.length === 0 && !searchDebounced && (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <Leaf className="size-16 text-muted-foreground/30 mb-4" />
-                <h3 className="text-lg font-medium mb-1">{t('noProductsYet', lang)}</h3>
-                <p className="text-muted-foreground text-sm mb-4">{t('addFirstProductHint', lang)}</p>
-                <Button onClick={handleOpenAddProduct}
-                  className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white">
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <div className="w-20 h-20 rounded-full bg-teal-500/10 flex items-center justify-center mb-4">
+                  <Leaf className="size-10 text-teal-500/50" />
+                </div>
+                <h3 className="text-lg font-semibold mb-1">{t('noProductsYet', lang)}</h3>
+                <p className="text-muted-foreground text-sm mb-5">{t('addFirstProductHint', lang)}</p>
+                <Button onClick={handleOpenAddProduct} className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-full shadow-lg shadow-teal-500/20">
                   <Plus className="size-4 mr-1" />{t('addProduct', lang)}
                 </Button>
               </div>
             )}
             {!productsQuery.isLoading && products.length === 0 && searchDebounced && (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <Search className="size-16 text-muted-foreground/30 mb-4" />
-                <h3 className="text-lg font-medium mb-1">{t('noProductsFound', lang)}</h3>
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <Search className="size-16 text-muted-foreground/20 mb-4" />
+                <h3 className="text-lg font-semibold mb-1">{t('noProductsFound', lang)}</h3>
                 <p className="text-muted-foreground text-sm">{t('adjustSearchHint', lang)}</p>
               </div>
             )}
 
-            {/* Grid Layout */}
+            {/* Grid */}
             {products.length > 0 && store.layout === 'grid' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {products.map((p: Product) => (
                   <ProductCardGrid key={p.id} product={p} lang={lang} currency={currency}
-                    onEdit={() => handleOpenEditProduct(p)}
-                    onConsume={() => handleOpenConsume(p)}
-                    onSell={() => handleOpenSell(p)}
-                    onSession={() => handleOpenSession(p)}
-                    onFavorite={() => toggleFavorite.mutate(p.id)}
-                    onDelete={() => setDeleteConfirm(p.id)}
-                  />
+                    onEdit={() => handleOpenEditProduct(p)} onConsume={() => handleOpenConsume(p)}
+                    onSell={() => handleOpenSell(p)} onSession={() => handleOpenSession(p)}
+                    onFavorite={() => toggleFavorite.mutate(p.id)} onDelete={() => setDeleteConfirm(p.id)} />
                 ))}
               </div>
             )}
 
-            {/* List Layout */}
+            {/* List */}
             {products.length > 0 && store.layout === 'list' && (
               <div className="flex flex-col gap-1.5">
                 {products.map((p: Product) => (
                   <ProductCardList key={p.id} product={p} lang={lang} currency={currency}
-                    onEdit={() => handleOpenEditProduct(p)}
-                    onConsume={() => handleOpenConsume(p)}
-                    onSell={() => handleOpenSell(p)}
-                    onSession={() => handleOpenSession(p)}
-                    onFavorite={() => toggleFavorite.mutate(p.id)}
-                    onDelete={() => setDeleteConfirm(p.id)}
-                  />
+                    onEdit={() => handleOpenEditProduct(p)} onConsume={() => handleOpenConsume(p)}
+                    onSell={() => handleOpenSell(p)} onSession={() => handleOpenSession(p)}
+                    onFavorite={() => toggleFavorite.mutate(p.id)} onDelete={() => setDeleteConfirm(p.id)} />
                 ))}
               </div>
             )}
 
-            {/* Compact Layout */}
+            {/* Compact */}
             {products.length > 0 && store.layout === 'compact' && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1.5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                 {products.map((p: Product) => (
                   <ProductCardCompact key={p.id} product={p} lang={lang} currency={currency}
-                    onEdit={() => handleOpenEditProduct(p)}
-                    onConsume={() => handleOpenConsume(p)}
-                    onSession={() => handleOpenSession(p)}
-                    onFavorite={() => toggleFavorite.mutate(p.id)}
-                  />
+                    onEdit={() => handleOpenEditProduct(p)} onConsume={() => handleOpenConsume(p)}
+                    onSell={() => handleOpenSell(p)} onFavorite={() => toggleFavorite.mutate(p.id)} />
                 ))}
               </div>
             )}
@@ -802,22 +731,25 @@ export default function Home() {
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-2 mt-6">
-                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Prev</Button>
-                <span className="text-sm text-muted-foreground">Page {page} of {totalPages}</span>
-                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>Next</Button>
+                <Button variant="outline" size="icon" className="size-8 rounded-full" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <span className="text-sm text-muted-foreground min-w-[80px] text-center">{page} / {totalPages}</span>
+                <Button variant="outline" size="icon" className="size-8 rounded-full" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
+                  <ChevronRight className="size-4" />
+                </Button>
               </div>
             )}
           </TabsContent>
 
-          {/* ═══ DASHBOARD TAB ═══ */}
+          {/* ═══ DASHBOARD ═══ */}
           <TabsContent value="dashboard">
             {statsQuery.isLoading ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                {Array.from({ length: 4 }).map((_, i) => <Card key={i} className="p-4"><Skeleton className="h-64 w-full" /></Card>)}
+                {Array.from({ length: 4 }).map((_, i) => <Card key={i} className="p-4 rounded-xl"><Skeleton className="h-64 w-full rounded-lg" /></Card>)}
               </div>
             ) : stats ? (
               <div className="space-y-4">
-                {/* Key Stats */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {[
                     { label: t('totalProducts', lang), value: stats.totalProducts, icon: Package, color: 'text-teal-400', bg: 'bg-teal-500/10' },
@@ -825,27 +757,24 @@ export default function Home() {
                     { label: t('totalValue', lang), value: `${currency}${stats.totalValue.toFixed(0)}`, icon: DollarSign, color: 'text-green-400', bg: 'bg-green-500/10' },
                     { label: t('totalSessions', lang), value: stats.totalSessions, icon: Users, color: 'text-purple-400', bg: 'bg-purple-500/10' },
                   ].map(({ label, value, icon: Icon, color, bg }) => (
-                    <Card key={label} className="p-4">
+                    <Card key={label} className="p-4 rounded-xl glass-card">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${bg}`}><Icon className={`size-5 ${color}`} /></div>
-                        <div><p className="text-xs text-muted-foreground">{label}</p><p className="text-lg font-bold">{value}</p></div>
+                        <div className={`p-2.5 rounded-xl ${bg}`}><Icon className={`size-5 ${color}`} /></div>
+                        <div><p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p><p className="text-xl font-black">{value}</p></div>
                       </div>
                     </Card>
                   ))}
                 </div>
-
-                {/* Charts */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                  {/* Consumption Trend */}
-                  <Card className="p-4">
-                    <CardHeader className="p-0 pb-2"><CardTitle className="text-sm font-medium">{t('consumptionTrend', lang)}</CardTitle></CardHeader>
+                  <Card className="p-4 rounded-xl">
+                    <CardHeader className="p-0 pb-2"><CardTitle className="text-xs font-semibold uppercase tracking-wider">{t('consumptionTrend', lang)}</CardTitle></CardHeader>
                     <CardContent className="p-0">
-                      <div className="h-64">
+                      <div className="h-56">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={stats.consumptionTrend}>
                             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                            <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" tickFormatter={(v: string) => v.slice(5)} />
-                            <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
+                            <XAxis dataKey="date" tick={{ fontSize: 9 }} stroke="var(--muted-foreground)" tickFormatter={(v: string) => v.slice(5)} />
+                            <YAxis tick={{ fontSize: 9 }} stroke="var(--muted-foreground)" />
                             <RechartsTooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8 }} />
                             <Line type="monotone" dataKey="amount" stroke="#14b8a6" strokeWidth={2} dot={false} />
                           </LineChart>
@@ -853,86 +782,60 @@ export default function Home() {
                       </div>
                     </CardContent>
                   </Card>
-
-                  {/* Stock Distribution */}
-                  <Card className="p-4">
-                    <CardHeader className="p-0 pb-2"><CardTitle className="text-sm font-medium">{t('stockOverview', lang)}</CardTitle></CardHeader>
+                  <Card className="p-4 rounded-xl">
+                    <CardHeader className="p-0 pb-2"><CardTitle className="text-xs font-semibold uppercase tracking-wider">{t('stockOverview', lang)}</CardTitle></CardHeader>
                     <CardContent className="p-0">
-                      <div className="h-64 flex items-center justify-center">
+                      <div className="h-56 flex items-center justify-center">
                         {stats.stockDistribution.inStock + stats.stockDistribution.lowStock + stats.stockDistribution.outOfStock > 0 ? (
                           <ResponsiveContainer width="100%" height="100%">
                             <RechartsPie>
-                              <Pie
-                                data={[
-                                  { name: t('filterInStock', lang), value: stats.stockDistribution.inStock, fill: '#10b981' },
-                                  { name: t('filterLowStock', lang), value: stats.stockDistribution.lowStock, fill: '#f59e0b' },
-                                  { name: t('filterOutOfStock', lang), value: stats.stockDistribution.outOfStock, fill: '#ef4444' },
-                                ]}
-                                dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2}
-                              >
-                                {[
-                                  { name: 'inStock', fill: '#10b981' },
-                                  { name: 'lowStock', fill: '#f59e0b' },
-                                  { name: 'outOfStock', fill: '#ef4444' },
-                                ].map((entry) => <Cell key={entry.name} fill={entry.fill} />)}
+                              <Pie data={[
+                                { name: t('filterInStock', lang), value: stats.stockDistribution.inStock, fill: '#10b981' },
+                                { name: t('filterLowStock', lang), value: stats.stockDistribution.lowStock, fill: '#f59e0b' },
+                                { name: t('filterOutOfStock', lang), value: stats.stockDistribution.outOfStock, fill: '#ef4444' },
+                              ]} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={45} outerRadius={75} paddingAngle={2}>
+                                {[{ name: 'inStock', fill: '#10b981' }, { name: 'lowStock', fill: '#f59e0b' }, { name: 'outOfStock', fill: '#ef4444' }].map((entry) => <Cell key={entry.name} fill={entry.fill} />)}
                               </Pie>
-                              <Legend />
-                              <RechartsTooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8 }} />
+                              <Legend /><RechartsTooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8 }} />
                             </RechartsPie>
                           </ResponsiveContainer>
-                        ) : (
-                          <p className="text-muted-foreground text-sm">{t('noProductsYet', lang)}</p>
-                        )}
+                        ) : <p className="text-muted-foreground text-sm">{t('noProductsYet', lang)}</p>}
                       </div>
                     </CardContent>
                   </Card>
-
-                  {/* Top Strains */}
-                  <Card className="p-4">
-                    <CardHeader className="p-0 pb-2"><CardTitle className="text-sm font-medium">{t('topStrains', lang)}</CardTitle></CardHeader>
+                  <Card className="p-4 rounded-xl">
+                    <CardHeader className="p-0 pb-2"><CardTitle className="text-xs font-semibold uppercase tracking-wider">{t('topStrains', lang)}</CardTitle></CardHeader>
                     <CardContent className="p-0">
-                      <div className="h-64">
+                      <div className="h-56">
                         {stats.topStrains.length > 0 ? (
                           <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={stats.topStrains} layout="vertical">
                               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                              <XAxis type="number" domain={[0, 5]} tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
-                              <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" width={80} />
+                              <XAxis type="number" domain={[0, 5]} tick={{ fontSize: 9 }} stroke="var(--muted-foreground)" />
+                              <YAxis type="category" dataKey="name" tick={{ fontSize: 9 }} stroke="var(--muted-foreground)" width={80} />
                               <RechartsTooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8 }} />
-                              <Bar dataKey="rating" radius={[0, 4, 4, 0]}>
-                                {stats.topStrains.map((s) => <Cell key={s.id} fill={getTypeChartColor(s.type)} />)}
-                              </Bar>
+                              <Bar dataKey="rating" radius={[0, 4, 4, 0]}>{stats.topStrains.map((s) => <Cell key={s.id} fill={getTypeChartColor(s.type)} />)}</Bar>
                             </BarChart>
                           </ResponsiveContainer>
-                        ) : (
-                          <div className="flex items-center justify-center h-full">
-                            <p className="text-muted-foreground text-sm">{t('noProductsYet', lang)}</p>
-                          </div>
-                        )}
+                        ) : <div className="flex items-center justify-center h-full"><p className="text-muted-foreground text-sm">{t('noProductsYet', lang)}</p></div>}
                       </div>
                     </CardContent>
                   </Card>
-
-                  {/* Spending by Month */}
-                  <Card className="p-4">
-                    <CardHeader className="p-0 pb-2"><CardTitle className="text-sm font-medium">{t('totalSpent', lang)} — {t('thisMonth', lang)}</CardTitle></CardHeader>
+                  <Card className="p-4 rounded-xl">
+                    <CardHeader className="p-0 pb-2"><CardTitle className="text-xs font-semibold uppercase tracking-wider">{t('totalSpent', lang)}</CardTitle></CardHeader>
                     <CardContent className="p-0">
-                      <div className="h-64">
+                      <div className="h-56">
                         {stats.spendingByMonth.some(m => m.total > 0) ? (
                           <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={stats.spendingByMonth}>
                               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                              <XAxis dataKey="month" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" tickFormatter={(v: string) => v.slice(5)} />
-                              <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
+                              <XAxis dataKey="month" tick={{ fontSize: 9 }} stroke="var(--muted-foreground)" tickFormatter={(v: string) => v.slice(5)} />
+                              <YAxis tick={{ fontSize: 9 }} stroke="var(--muted-foreground)" />
                               <RechartsTooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8 }} />
                               <Bar dataKey="total" fill="#14b8a6" radius={[4, 4, 0, 0]} />
                             </BarChart>
                           </ResponsiveContainer>
-                        ) : (
-                          <div className="flex items-center justify-center h-full">
-                            <p className="text-muted-foreground text-sm">{t('noActivity', lang)}</p>
-                          </div>
-                        )}
+                        ) : <div className="flex items-center justify-center h-full"><p className="text-muted-foreground text-sm">{t('noActivity', lang)}</p></div>}
                       </div>
                     </CardContent>
                   </Card>
@@ -941,65 +844,51 @@ export default function Home() {
             ) : null}
           </TabsContent>
 
-          {/* ═══ HISTORY TAB ═══ */}
+          {/* ═══ HISTORY ═══ */}
           <TabsContent value="history">
-            <div className="space-y-4">
-              {/* Date filters */}
+            <div className="space-y-3">
               <div className="flex items-center gap-2 flex-wrap">
                 <Label className="text-xs text-muted-foreground">{t('from', lang)}</Label>
-                <Input type="date" value={historyFrom} onChange={(e) => { setHistoryFrom(e.target.value); setHistoryPage(1) }}
-                  className="h-8 w-auto text-xs" />
+                <Input type="date" value={historyFrom} onChange={(e) => { setHistoryFrom(e.target.value); setHistoryPage(1) }} className="h-7 w-auto text-xs rounded-lg" />
                 <Label className="text-xs text-muted-foreground">To</Label>
-                <Input type="date" value={historyTo} onChange={(e) => { setHistoryTo(e.target.value); setHistoryPage(1) }}
-                  className="h-8 w-auto text-xs" />
+                <Input type="date" value={historyTo} onChange={(e) => { setHistoryTo(e.target.value); setHistoryPage(1) }} className="h-7 w-auto text-xs rounded-lg" />
                 {(historyFrom || historyTo) && (
-                  <Button variant="ghost" size="sm" className="h-8 text-xs"
-                    onClick={() => { setHistoryFrom(''); setHistoryTo(''); setHistoryPage(1) }}>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs rounded-full" onClick={() => { setHistoryFrom(''); setHistoryTo(''); setHistoryPage(1) }}>
                     <X className="size-3 mr-1" />Clear
                   </Button>
                 )}
               </div>
-
               {consumptionQuery.isLoading ? (
-                <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <Card key={i} className="p-3"><Skeleton className="h-12 w-full" /></Card>)}</div>
+                <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <Card key={i} className="p-3 rounded-xl"><Skeleton className="h-12 w-full rounded-lg" /></Card>)}</div>
               ) : consumptionLogs.length === 0 ? (
-                <div className="flex flex-col items-center py-16 text-center">
-                  <Activity className="size-16 text-muted-foreground/30 mb-4" />
-                  <h3 className="text-lg font-medium mb-1">{t('noActivity', lang)}</h3>
+                <div className="flex flex-col items-center py-20 text-center">
+                  <Activity className="size-16 text-muted-foreground/20 mb-4" />
+                  <h3 className="text-lg font-semibold">{t('noActivity', lang)}</h3>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {consumptionLogs.map((log: ConsumptionLog) => (
-                    <Card key={log.id} className="p-3 flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${log.type === 'sell' ? 'bg-green-500/10' : 'bg-teal-500/10'}`}>
+                    <Card key={log.id} className="p-3 flex items-center gap-3 rounded-xl glass-card">
+                      <div className={`p-2 rounded-xl ${log.type === 'sell' ? 'bg-green-500/10' : 'bg-teal-500/10'}`}>
                         {log.type === 'sell' ? <DollarSign className="size-4 text-green-400" /> : <Flame className="size-4 text-teal-400" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{log.product?.name || 'Unknown'}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {log.type === 'sell' ? t('sell', lang) : t('consume', lang)} — {log.amount}g
-                          {log.note && ` — ${log.note}`}
-                        </p>
+                        <p className="text-xs text-muted-foreground">{log.type === 'sell' ? t('sell', lang) : t('consume', lang)} — {log.amount}g{log.note ? ` — ${log.note}` : ''}</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(log.consumedAt).toLocaleDateString()}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(log.consumedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </p>
+                        <p className="text-xs text-muted-foreground">{new Date(log.consumedAt).toLocaleDateString()}</p>
+                        <p className="text-[10px] text-muted-foreground">{new Date(log.consumedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                       </div>
                     </Card>
                   ))}
                 </div>
               )}
-
-              {/* Pagination */}
               {consumptionTotalPages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-4">
-                  <Button variant="outline" size="sm" disabled={historyPage <= 1} onClick={() => setHistoryPage(p => p - 1)}>Prev</Button>
-                  <span className="text-sm text-muted-foreground">Page {historyPage} of {consumptionTotalPages}</span>
-                  <Button variant="outline" size="sm" disabled={historyPage >= consumptionTotalPages} onClick={() => setHistoryPage(p => p + 1)}>Next</Button>
+                  <Button variant="outline" size="icon" className="size-8 rounded-full" disabled={historyPage <= 1} onClick={() => setHistoryPage(p => p - 1)}><ChevronLeft className="size-4" /></Button>
+                  <span className="text-sm text-muted-foreground">{historyPage} / {consumptionTotalPages}</span>
+                  <Button variant="outline" size="icon" className="size-8 rounded-full" disabled={historyPage >= consumptionTotalPages} onClick={() => setHistoryPage(p => p + 1)}><ChevronRight className="size-4" /></Button>
                 </div>
               )}
             </div>
@@ -1008,119 +897,68 @@ export default function Home() {
       </main>
 
       {/* ═══ FOOTER ═══ */}
-      <footer className="mt-auto border-t border-border py-3 text-center text-xs text-muted-foreground">
-        🌿 Stash Tracker — {t('manageConsumption', lang)}
+      <footer className="mt-auto border-t border-border/30 py-3 text-center text-[10px] text-muted-foreground/50 uppercase tracking-widest">
+        Stash Tracker
       </footer>
 
       {/* ═══ ADD/EDIT PRODUCT DIALOG ═══ */}
       <Dialog open={store.addProductOpen || !!store.editingProduct} onOpenChange={() => store.closeAllModals()}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl">
           <DialogHeader>
-            <DialogTitle>{store.editingProduct ? t('editProduct', lang) : t('addProduct', lang)}</DialogTitle>
+            <DialogTitle className="text-lg font-black">{store.editingProduct ? t('editProduct', lang) : t('addProduct', lang)}</DialogTitle>
             <DialogDescription />
           </DialogHeader>
           <div className="space-y-3">
-            {/* Name */}
+            <div className="space-y-1"><Label className="text-xs font-medium">{t('strainName', lang)} *</Label><Input value={formName} onChange={(e) => setFormName(e.target.value)} placeholder={t('strainNamePlaceholder', lang)} className="rounded-lg" /></div>
+            <div className="space-y-1"><Label className="text-xs font-medium">{t('brandDispensary', lang)}</Label><Input value={formBrand} onChange={(e) => setFormBrand(e.target.value)} placeholder={t('selectBrand', lang)} className="rounded-lg" /></div>
             <div className="space-y-1">
-              <Label className="text-xs">{t('strainName', lang)} *</Label>
-              <Input value={formName} onChange={(e) => setFormName(e.target.value)} placeholder={t('strainNamePlaceholder', lang)} />
-            </div>
-            {/* Brand */}
-            <div className="space-y-1">
-              <Label className="text-xs">{t('brandDispensary', lang)}</Label>
-              <Input value={formBrand} onChange={(e) => setFormBrand(e.target.value)} placeholder={t('selectBrand', lang)} />
-            </div>
-            {/* Type */}
-            <div className="space-y-1">
-              <Label className="text-xs">{t('strainType', lang)}</Label>
+              <Label className="text-xs font-medium">{t('strainType', lang)}</Label>
               <Select value={formType} onValueChange={setFormType}>
-                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-9 rounded-lg"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="indica">Indica</SelectItem>
-                  <SelectItem value="sativa">Sativa</SelectItem>
-                  <SelectItem value="hybrid">Hybrid</SelectItem>
-                  <SelectItem value="custom">{t('custom', lang)}</SelectItem>
+                  <SelectItem value="indica">Indica</SelectItem><SelectItem value="sativa">Sativa</SelectItem>
+                  <SelectItem value="hybrid">Hybrid</SelectItem><SelectItem value="custom">{t('custom', lang)}</SelectItem>
                 </SelectContent>
               </Select>
-              {formType === 'custom' && (
-                <Input value={formCustomType} onChange={(e) => setFormCustomType(e.target.value)} placeholder={t('customStrainPlaceholder', lang)} className="mt-1" />
-              )}
+              {formType === 'custom' && <Input value={formCustomType} onChange={(e) => setFormCustomType(e.target.value)} placeholder={t('customStrainPlaceholder', lang)} className="mt-1 rounded-lg" />}
             </div>
-            {/* THC / CBD */}
             <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label className="text-xs">{t('thcPercent', lang)}</Label>
-                <Input type="number" step="0.1" value={formThc} onChange={(e) => setFormThc(e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">{t('cbdPercent', lang)}</Label>
-                <Input type="number" step="0.1" value={formCbd} onChange={(e) => setFormCbd(e.target.value)} />
-              </div>
+              <div className="space-y-1"><Label className="text-xs font-medium">{t('thcPercent', lang)}</Label><Input type="number" step="0.1" value={formThc} onChange={(e) => setFormThc(e.target.value)} className="rounded-lg" /></div>
+              <div className="space-y-1"><Label className="text-xs font-medium">{t('cbdPercent', lang)}</Label><Input type="number" step="0.1" value={formCbd} onChange={(e) => setFormCbd(e.target.value)} className="rounded-lg" /></div>
             </div>
-            {/* Amount / Price */}
             <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label className="text-xs">{t('amountGrams', lang)}</Label>
-                <Input type="number" step="0.01" value={formAmount} onChange={(e) => setFormAmount(e.target.value)} placeholder={t('amountPlaceholder', lang)} />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">{t('priceLabel', lang)} ({currency})</Label>
-                <Input type="number" step="0.01" value={formPrice} onChange={(e) => setFormPrice(e.target.value)} placeholder={t('pricePlaceholder', lang)} />
-              </div>
+              <div className="space-y-1"><Label className="text-xs font-medium">{t('amountGrams', lang)}</Label><Input type="number" step="0.01" value={formAmount} onChange={(e) => setFormAmount(e.target.value)} placeholder={t('amountPlaceholder', lang)} className="rounded-lg" /></div>
+              <div className="space-y-1"><Label className="text-xs font-medium">{t('priceLabel', lang)} ({currency})</Label><Input type="number" step="0.01" value={formPrice} onChange={(e) => setFormPrice(e.target.value)} placeholder={t('pricePlaceholder', lang)} className="rounded-lg" /></div>
             </div>
-            {/* Rating */}
+            <div className="space-y-1"><Label className="text-xs font-medium">{t('rating', lang)}</Label><StarRating value={formRating} onChange={setFormRating} size="md" /></div>
+            <div className="space-y-1"><Label className="text-xs font-medium">{t('tags', lang)}</Label><Input value={formTags} onChange={(e) => setFormTags(e.target.value)} placeholder="e.g., relaxing, euphoric" className="rounded-lg" /></div>
+            <div className="space-y-1"><Label className="text-xs font-medium">{t('effects', lang)}</Label><Input value={formEffects} onChange={(e) => setFormEffects(e.target.value)} placeholder="e.g., happy, creative" className="rounded-lg" /></div>
+            <div className="space-y-1"><Label className="text-xs font-medium">{t('notesLabel', lang)}</Label><Textarea value={formNotes} onChange={(e) => setFormNotes(e.target.value)} placeholder={t('notesPlaceholder', lang)} rows={2} className="rounded-lg" /></div>
             <div className="space-y-1">
-              <Label className="text-xs">{t('rating', lang)}</Label>
-              <StarRating value={formRating} onChange={setFormRating} size="md" />
-            </div>
-            {/* Tags */}
-            <div className="space-y-1">
-              <Label className="text-xs">{t('tags', lang)}</Label>
-              <Input value={formTags} onChange={(e) => setFormTags(e.target.value)} placeholder="e.g., relaxing, euphoric" />
-            </div>
-            {/* Effects */}
-            <div className="space-y-1">
-              <Label className="text-xs">{t('effects', lang)}</Label>
-              <Input value={formEffects} onChange={(e) => setFormEffects(e.target.value)} placeholder="e.g., happy, creative" />
-            </div>
-            {/* Notes */}
-            <div className="space-y-1">
-              <Label className="text-xs">{t('notesLabel', lang)}</Label>
-              <Textarea value={formNotes} onChange={(e) => setFormNotes(e.target.value)} placeholder={t('notesPlaceholder', lang)} rows={2} />
-            </div>
-            {/* Picture */}
-            <div className="space-y-1">
-              <Label className="text-xs">{formPicture ? t('changePicture', lang) : t('uploadPicture', lang)}</Label>
+              <Label className="text-xs font-medium">{formPicture ? t('changePicture', lang) : t('uploadPicture', lang)}</Label>
               <Input type="file" accept="image/*" onChange={handlePictureUpload} className="text-xs" />
               {formPicture && (
-                <div className="relative mt-1 w-20 h-20 rounded-lg overflow-hidden border">
+                <div className="relative mt-1 w-20 h-20 rounded-xl overflow-hidden border">
                   <img src={formPicture} alt="Product" className="w-full h-full object-cover" />
-                  <button type="button" onClick={() => setFormPicture(null)}
-                    className="absolute top-0.5 right-0.5 bg-destructive rounded-full p-0.5"><X className="size-3 text-white" /></button>
+                  <button type="button" onClick={() => setFormPicture(null)} className="absolute top-0.5 right-0.5 bg-destructive rounded-full p-0.5"><X className="size-3 text-white" /></button>
                 </div>
               )}
             </div>
           </div>
           <DialogFooter>
-            {store.editingProduct && (
-              <Button variant="destructive" size="sm" onClick={() => setDeleteConfirm(store.editingProduct!.id)} className="mr-auto">
-                <Trash2 className="size-3.5 mr-1" />{t('delete', lang)}
-              </Button>
-            )}
-            <Button variant="outline" onClick={() => store.closeAllModals()}>{t('cancel', lang)}</Button>
+            {store.editingProduct && <Button variant="destructive" size="sm" onClick={() => setDeleteConfirm(store.editingProduct!.id)} className="mr-auto rounded-lg"><Trash2 className="size-3.5 mr-1" />{t('delete', lang)}</Button>}
+            <Button variant="outline" onClick={() => store.closeAllModals()} className="rounded-lg">{t('cancel', lang)}</Button>
             <Button onClick={handleSubmitProduct} disabled={createProduct.isPending || updateProduct.isPending}
-              className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white">
-              {t('save', lang)}
-            </Button>
+              className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-lg">{t('save', lang)}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* ═══ CONSUME DIALOG ═══ */}
+      {/* ═══ CONSUME / SESSION DIALOG ═══ */}
       <Dialog open={!!store.consumingProduct} onOpenChange={() => store.closeAllModals()}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-lg font-black">
               <Flame className="size-4 text-teal-400" />
               {consumeMode === 'session' ? t('session', lang) : t('consume', lang)} — {store.consumingProduct?.name}
             </DialogTitle>
@@ -1129,289 +967,256 @@ export default function Home() {
           {store.consumingProduct && (
             <div className="space-y-3">
               {/* Mode toggle */}
-              <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
-                <button
-                  type="button"
-                  onClick={() => setConsumeMode('quick')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs font-medium transition-all ${
-                    consumeMode === 'quick'
-                      ? 'bg-background shadow-sm text-foreground'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <Flame className="size-3" />
-                  {t('consume', lang)}
+              <div className="flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-xl">
+                <button type="button" onClick={() => setConsumeMode('quick')}
+                  className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-xl text-xs font-semibold transition-all ${consumeMode === 'quick' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}>
+                  <Flame className="size-3" />{t('consume', lang)}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setConsumeMode('session')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs font-medium transition-all ${
-                    consumeMode === 'session'
-                      ? 'bg-background shadow-sm text-foreground'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <Users className="size-3" />
-                  {t('session', lang)}
+                <button type="button" onClick={() => setConsumeMode('session')}
+                  className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-xl text-xs font-semibold transition-all ${consumeMode === 'session' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}>
+                  <Users className="size-3" />{t('session', lang)}
                 </button>
               </div>
 
-              {/* Quick consume mode */}
+              {/* Quick consume */}
               {consumeMode === 'quick' && (
                 <>
-                  <div className="text-center text-2xl font-bold text-teal-400">
-                    {consumeAmount}g
+                  <div className="text-center">
+                    <span className="text-3xl font-black text-teal-400">{consumeAmount}g</span>
                   </div>
                   <div className="flex items-center justify-center gap-1.5 flex-wrap">
                     {[0.1, 0.25, 0.5, 1, 2].map(v => (
-                      <Button key={v} variant="outline" size="sm" className="h-7 text-xs px-2"
+                      <Button key={v} variant="outline" size="sm" className="h-7 text-xs px-2.5 rounded-full"
                         onClick={() => setConsumeAmount(String(parseFloat(consumeAmount) + v))}>+{v}</Button>
                     ))}
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs">{t('amount', lang)} ({t('grams', lang)})</Label>
-                    <Input type="number" step="0.01" value={consumeAmount} onChange={(e) => setConsumeAmount(e.target.value)} />
+                    <Input type="number" step="0.01" value={consumeAmount} onChange={(e) => setConsumeAmount(e.target.value)} className="rounded-lg" />
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    {t('amount', lang)}: {store.consumingProduct.amount.toFixed(1)}g {t('grams', lang)} {t('filterInStock', lang).toLowerCase()}
-                  </div>
+                  <p className="text-xs text-muted-foreground text-center">
+                    {store.consumingProduct.amount.toFixed(1)}g {t('grams', lang)} {t('filterInStock', lang).toLowerCase()}
+                  </p>
                   <div className="space-y-1">
                     <Label className="text-xs">{t('setConsumptionTime', lang)}</Label>
-                    <Input type="datetime-local" value={consumeTime} onChange={(e) => setConsumeTime(e.target.value)} />
+                    <Input type="datetime-local" value={consumeTime} onChange={(e) => setConsumeTime(e.target.value)} className="rounded-lg" />
                   </div>
                 </>
               )}
 
-              {/* Session mode */}
+              {/* Session mode — new design: countdown timer with auto-rotation */}
               {consumeMode === 'session' && (
                 <>
                   <div className="space-y-1">
-                    <Label className="text-xs">{t('amount', lang)} ({t('grams', lang)})</Label>
-                    <Input type="number" step="0.01" value={consumeAmount} onChange={(e) => setConsumeAmount(e.target.value)} />
+                    <Label className="text-xs font-medium">{t('amount', lang)} ({t('grams', lang)})</Label>
+                    <Input type="number" step="0.01" value={consumeAmount} onChange={(e) => setConsumeAmount(e.target.value)} className="rounded-lg" />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">{t('people', lang)}</Label>
+                    <Label className="text-xs font-medium">{t('people', lang)}</Label>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="icon" className="size-7" onClick={() => setSessionPeople(p => Math.max(1, p - 1))}>-</Button>
-                      <span className="text-base font-bold w-6 text-center">{sessionPeople}</span>
-                      <Button variant="outline" size="icon" className="size-7" onClick={() => setSessionPeople(p => p + 1)}>+</Button>
+                      <Button variant="outline" size="icon" className="size-8 rounded-full" onClick={() => setSessionPeople(p => Math.max(2, p - 1))}>-</Button>
+                      <span className="text-lg font-black w-8 text-center">{sessionPeople}</span>
+                      <Button variant="outline" size="icon" className="size-8 rounded-full" onClick={() => setSessionPeople(p => p + 1)}>+</Button>
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">{t('hits', lang)}</Label>
+                    <Label className="text-xs font-medium">{t('timePerHit', lang)}</Label>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setSessionHits(h => Math.max(0, h - 1))}>-</Button>
-                      <span className="text-base font-bold w-6 text-center">{sessionHits}</span>
-                      <Button variant="outline" size="sm" className="h-7 text-xs bg-teal-500/20" onClick={() => setSessionHits(h => h + 1)}>+1</Button>
-                      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setSessionHits(h => h + 5)}>+5</Button>
+                      <Button variant="outline" size="icon" className="size-8 rounded-full" onClick={() => setSessionTimePerHit(s => Math.max(5, s - 5))}>-</Button>
+                      <span className="text-lg font-black w-12 text-center">{sessionTimePerHit}s</span>
+                      <Button variant="outline" size="icon" className="size-8 rounded-full" onClick={() => setSessionTimePerHit(s => s + 5)}>+</Button>
                     </div>
                   </div>
-                  {/* Timer */}
-                  <div className="space-y-1">
-                    <Label className="text-xs">{t('hitTimer', lang)}</Label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl font-mono font-bold">{formatTimer(sessionTimerValue)}</span>
-                      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setSessionTimerRunning(!sessionTimerRunning)}>
-                        {sessionTimerRunning ? <Pause className="size-3" /> : <Timer className="size-3" />}
+
+                  {/* Timer display */}
+                  <div className="text-center py-3">
+                    <div className={`text-4xl font-mono font-black ${sessionTimerRunning ? 'text-teal-400 animate-timer-pulse' : sessionStarted ? 'text-foreground' : 'text-muted-foreground'}`}>
+                      {formatCountdown(sessionCountdown)}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-widest">
+                      {sessionTimerRunning ? t('sessionActive', lang) : t('sessionIdle', lang)}
+                    </p>
+                  </div>
+
+                  {/* Timer controls */}
+                  <div className="flex items-center justify-center gap-2">
+                    {!sessionStarted ? (
+                      <Button onClick={() => { setSessionStarted(true); setSessionCountdown(sessionTimePerHit * 10); setSessionTimerRunning(true); setSessionRotationIndex(0) }}
+                        className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-full px-6 shadow-lg shadow-teal-500/20">
+                        <Timer className="size-4 mr-1.5" />{t('sessionStart', lang)}
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { setSessionTimerRunning(false); setSessionTimerValue(0) }}>
-                        <RotateCw className="size-3" />
-                      </Button>
-                    </div>
+                    ) : (
+                      <>
+                        <Button variant="outline" size="sm" className="rounded-full"
+                          onClick={() => setSessionTimerRunning(!sessionTimerRunning)}>
+                          {sessionTimerRunning ? <Pause className="size-3.5 mr-1" /> : <Timer className="size-3.5 mr-1" />}
+                          {sessionTimerRunning ? t('sessionPause', lang) : t('start', lang)}
+                        </Button>
+                        <Button variant="ghost" size="sm" className="rounded-full"
+                          onClick={() => { setSessionTimerRunning(false); setSessionCountdown(sessionTimePerHit * 10) }}>
+                          <RotateCw className="size-3.5 mr-1" />Reset
+                        </Button>
+                      </>
+                    )}
                   </div>
-                  {/* Rotation */}
-                  {store.settings.sessionDefaults?.rotationEnabled && (
-                    <div className="space-y-1">
-                      <Label className="text-xs">{t('rotation', lang)}</Label>
-                      <div className="flex items-center gap-1.5">
+
+                  {/* Rotation indicator */}
+                  {sessionStarted && (
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">{t('rotation', lang)}</Label>
+                      <div className="flex items-center justify-center gap-2">
                         {Array.from({ length: sessionPeople }).map((_, i) => (
-                          <div key={i} className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border-2 ${i === sessionRotationIndex ? 'border-teal-400 bg-teal-500/20 text-teal-400' : 'border-muted-foreground/30'}`}>
+                          <div key={i} className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all ${
+                            i === sessionRotationIndex
+                              ? 'border-teal-400 bg-teal-500/20 text-teal-400 rotation-active'
+                              : 'border-muted-foreground/20 text-muted-foreground'
+                          }`}>
                             {i + 1}
                           </div>
                         ))}
-                        <Button variant="outline" size="sm" className="h-7 text-xs ml-1" onClick={() => setSessionRotationIndex(i => (i + 1) % sessionPeople)}>
-                          {t('nextHit', lang)}
-                        </Button>
                       </div>
+                      <p className="text-[10px] text-center text-muted-foreground">
+                        {t('currentPerson', lang)}: {sessionRotationIndex + 1} / {sessionPeople}
+                      </p>
                     </div>
                   )}
+
                   <div className="space-y-1">
-                    <Label className="text-xs">{t('sessionNotes', lang)}</Label>
-                    <Textarea value={sessionNotes} onChange={(e) => setSessionNotes(e.target.value)} placeholder={t('sessionNotesPlaceholder', lang)} rows={2} />
+                    <Label className="text-xs font-medium">{t('sessionNotes', lang)}</Label>
+                    <Textarea value={sessionNotes} onChange={(e) => setSessionNotes(e.target.value)} placeholder={t('sessionNotesPlaceholder', lang)} rows={2} className="rounded-lg" />
                   </div>
                 </>
               )}
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => store.closeAllModals()}>{t('cancel', lang)}</Button>
+            <Button variant="outline" onClick={() => store.closeAllModals()} className="rounded-lg">{t('cancel', lang)}</Button>
             {consumeMode === 'quick' ? (
               <Button onClick={handleSubmitConsume} disabled={consumeProduct.isPending}
-                className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white">
+                className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-lg">
                 <Flame className="size-3.5 mr-1" />{t('consume', lang)}
               </Button>
             ) : (
               <Button onClick={handleSubmitSession} disabled={createSession.isPending}
-                className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white">
+                className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-lg">
                 <Users className="size-3.5 mr-1" />{t('finishSession', lang)}
               </Button>
             )}
           </DialogFooter>
-          {/* Smoke animation overlay */}
-          {smokeEffects.map((effect) => (
-            <div key={effect.id} className="absolute animate-smoke-puff" style={{ left: `${effect.x}%`, top: `${effect.y}%` }}>
-              <Cloud className="size-8 text-muted-foreground/50" />
-            </div>
-          ))}
         </DialogContent>
       </Dialog>
 
       {/* ═══ SELL DIALOG ═══ */}
       <Dialog open={!!store.sellingProduct} onOpenChange={() => store.closeAllModals()}>
-        <DialogContent className="max-w-md overflow-hidden">
+        <DialogContent className="max-w-md rounded-2xl overflow-hidden">
           <DialogHeader>
-            <DialogTitle>{t('sell', lang)} — {store.sellingProduct?.name}</DialogTitle>
+            <DialogTitle className="text-lg font-black">{t('sell', lang)} — {store.sellingProduct?.name}</DialogTitle>
             <DialogDescription>{t('divideIntoPortions', lang)}</DialogDescription>
           </DialogHeader>
           {store.sellingProduct && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <Label className="text-xs">{t('gramsPerPortion', lang)}</Label>
-                  <Input type="number" step="0.01" value={sellGramsPerPortion} onChange={(e) => setSellGramsPerPortion(e.target.value)} />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">{t('numberOfPortions', lang)}</Label>
-                  <Input type="number" step="1" value={sellNumPortions} onChange={(e) => setSellNumPortions(e.target.value)} />
-                </div>
+                <div className="space-y-1"><Label className="text-xs">{t('gramsPerPortion', lang)}</Label><Input type="number" step="0.01" value={sellGramsPerPortion} onChange={(e) => setSellGramsPerPortion(e.target.value)} className="rounded-lg" /></div>
+                <div className="space-y-1"><Label className="text-xs">{t('numberOfPortions', lang)}</Label><Input type="number" step="1" value={sellNumPortions} onChange={(e) => setSellNumPortions(e.target.value)} className="rounded-lg" /></div>
               </div>
-              <div className="space-y-1">
-                <Label className="text-xs">{t('pricePerPortion', lang)} ({currency})</Label>
-                <Input type="number" step="0.01" value={sellPricePerPortion} onChange={(e) => setSellPricePerPortion(e.target.value)} />
-              </div>
-              {/* Summary */}
-              <Card className="p-3 bg-muted/50">
+              <div className="space-y-1"><Label className="text-xs">{t('pricePerPortion', lang)} ({currency})</Label><Input type="number" step="0.01" value={sellPricePerPortion} onChange={(e) => setSellPricePerPortion(e.target.value)} className="rounded-lg" /></div>
+              <Card className="p-3 rounded-xl bg-muted/30">
                 <div className="space-y-1 text-sm">
-                  <div className="flex justify-between"><span className="text-muted-foreground">{t('totalToSell', lang)}</span><span>{sellTotalGrams.toFixed(2)}g</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">{t('saleValue', lang)}</span><span>{currency}{sellTotalValue.toFixed(2)}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">{t('remainingAfter', lang)}</span><span>{Math.max(0, store.sellingProduct.amount - sellTotalGrams).toFixed(2)}g</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">{t('totalToSell', lang)}</span><span className="font-medium">{sellTotalGrams.toFixed(2)}g</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">{t('saleValue', lang)}</span><span className="font-medium">{currency}{sellTotalValue.toFixed(2)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">{t('remainingAfter', lang)}</span><span className="font-medium">{Math.max(0, store.sellingProduct.amount - sellTotalGrams).toFixed(2)}g</span></div>
                   <Separator />
-                  <div className="flex justify-between font-medium">
+                  <div className="flex justify-between font-bold">
                     <span>{sellProfit >= 0 ? t('profit', lang) : t('loss', lang)}</span>
-                    <span className={sellProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}>
-                      {currency}{Math.abs(sellProfit).toFixed(2)}
-                    </span>
+                    <span className={sellProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}>{currency}{Math.abs(sellProfit).toFixed(2)}</span>
                   </div>
                 </div>
               </Card>
-              <div className="space-y-1">
-                <Label className="text-xs">{t('notesLabel', lang)}</Label>
-                <Input value={sellNote} onChange={(e) => setSellNote(e.target.value)} placeholder="Note (optional)" />
-              </div>
+              <div className="space-y-1"><Label className="text-xs">{t('notesLabel', lang)}</Label><Input value={sellNote} onChange={(e) => setSellNote(e.target.value)} placeholder="Note (optional)" className="rounded-lg" /></div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => store.closeAllModals()}>{t('cancel', lang)}</Button>
+            <Button variant="outline" onClick={() => store.closeAllModals()} className="rounded-lg">{t('cancel', lang)}</Button>
             <Button onClick={handleSubmitSell} disabled={sellProduct.isPending}
-              className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white">
+              className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-lg">
               <DollarSign className="size-3.5 mr-1" />{t('sell', lang)}
             </Button>
           </DialogFooter>
-          {/* Dollar animation overlay */}
-          {dollarEffects.map((effect) => (
-            <div key={effect.id} className="absolute animate-dollar-float" style={{ left: `${effect.x}%`, top: `${effect.y}%` }}>
-              <DollarSign className="size-6 text-emerald-400/80" />
-            </div>
-          ))}
         </DialogContent>
       </Dialog>
 
-      {/* ═══ SESSION DIALOG ═══ */}
+      {/* ═══ SESSION DIALOG (standalone, kept for backward compat but simplified) ═══ */}
       <Dialog open={!!store.sessionProduct} onOpenChange={() => store.closeAllModals()}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
-            <DialogTitle>{t('session', lang)} — {store.sessionProduct?.name}</DialogTitle>
+            <DialogTitle className="text-lg font-black">{t('session', lang)} — {store.sessionProduct?.name}</DialogTitle>
             <DialogDescription />
           </DialogHeader>
           {store.sessionProduct && (
-            <div className="space-y-4">
-              {/* People */}
+            <div className="space-y-3">
               <div className="space-y-1">
-                <Label className="text-xs">{t('people', lang)}</Label>
+                <Label className="text-xs font-medium">{t('people', lang)}</Label>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="icon" className="size-8" onClick={() => setSessionPeople(p => Math.max(1, p - 1))}>-</Button>
-                  <span className="text-lg font-bold w-8 text-center">{sessionPeople}</span>
-                  <Button variant="outline" size="icon" className="size-8" onClick={() => setSessionPeople(p => p + 1)}>+</Button>
+                  <Button variant="outline" size="icon" className="size-8 rounded-full" onClick={() => setSessionPeople(p => Math.max(2, p - 1))}>-</Button>
+                  <span className="text-lg font-black w-8 text-center">{sessionPeople}</span>
+                  <Button variant="outline" size="icon" className="size-8 rounded-full" onClick={() => setSessionPeople(p => p + 1)}>+</Button>
                 </div>
               </div>
-
-              {/* Hits */}
               <div className="space-y-1">
-                <Label className="text-xs">{t('hits', lang)}</Label>
+                <Label className="text-xs font-medium">{t('timePerHit', lang)}</Label>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setSessionHits(h => Math.max(0, h - 1))}>-</Button>
-                  <span className="text-lg font-bold w-8 text-center">{sessionHits}</span>
-                  <Button variant="outline" size="sm" className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white"
-                    onClick={() => setSessionHits(h => h + 1)}>+1</Button>
-                  <Button variant="outline" size="sm" onClick={() => setSessionHits(h => h + 5)}>+5</Button>
+                  <Button variant="outline" size="icon" className="size-8 rounded-full" onClick={() => setSessionTimePerHit(s => Math.max(5, s - 5))}>-</Button>
+                  <span className="text-lg font-black w-12 text-center">{sessionTimePerHit}s</span>
+                  <Button variant="outline" size="icon" className="size-8 rounded-full" onClick={() => setSessionTimePerHit(s => s + 5)}>+</Button>
                 </div>
               </div>
-
               {/* Timer */}
-              <div className="space-y-1">
-                <Label className="text-xs">{t('hitTimer', lang)}</Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl font-mono font-bold">{formatTimer(sessionTimerValue)}</span>
-                  <Button variant="outline" size="sm" onClick={() => setSessionTimerRunning(!sessionTimerRunning)}>
-                    {sessionTimerRunning ? <Pause className="size-3.5" /> : <Timer className="size-3.5" />}
-                    {sessionTimerRunning ? t('pause', lang) : t('start', lang)}
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => { setSessionTimerRunning(false); setSessionTimerValue(0) }}>
-                    <RotateCw className="size-3.5" />
-                  </Button>
+              <div className="text-center py-3">
+                <div className={`text-4xl font-mono font-black ${sessionTimerRunning ? 'text-teal-400 animate-timer-pulse' : sessionStarted ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  {formatCountdown(sessionCountdown)}
                 </div>
               </div>
-
-              {/* Rotation */}
-              {store.settings.sessionDefaults?.rotationEnabled && (
-                <div className="space-y-1">
-                  <Label className="text-xs">{t('rotation', lang)}</Label>
-                  <div className="flex items-center gap-2">
-                    {Array.from({ length: sessionPeople }).map((_, i) => (
-                      <div key={i} className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 ${i === sessionRotationIndex ? 'border-teal-400 bg-teal-500/20 text-teal-400' : 'border-muted-foreground/30'}`}>
-                        {i + 1}
-                      </div>
-                    ))}
-                    <Button variant="outline" size="sm" onClick={() => setSessionRotationIndex(i => (i + 1) % sessionPeople)}>
-                      {t('nextHit', lang)}
+              <div className="flex items-center justify-center gap-2">
+                {!sessionStarted ? (
+                  <Button onClick={() => { setSessionStarted(true); setSessionCountdown(sessionTimePerHit * 10); setSessionTimerRunning(true); setSessionRotationIndex(0) }}
+                    className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-full px-6">
+                    <Timer className="size-4 mr-1.5" />{t('sessionStart', lang)}
+                  </Button>
+                ) : (
+                  <>
+                    <Button variant="outline" size="sm" className="rounded-full" onClick={() => setSessionTimerRunning(!sessionTimerRunning)}>
+                      {sessionTimerRunning ? <Pause className="size-3.5 mr-1" /> : <Timer className="size-3.5 mr-1" />}
+                      {sessionTimerRunning ? t('sessionPause', lang) : t('start', lang)}
                     </Button>
+                    <Button variant="ghost" size="sm" className="rounded-full" onClick={() => { setSessionTimerRunning(false); setSessionCountdown(sessionTimePerHit * 10) }}>
+                      <RotateCw className="size-3.5 mr-1" />Reset
+                    </Button>
+                  </>
+                )}
+              </div>
+              {/* Rotation */}
+              {sessionStarted && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">{t('rotation', lang)}</Label>
+                  <div className="flex items-center justify-center gap-2">
+                    {Array.from({ length: sessionPeople }).map((_, i) => (
+                      <div key={i} className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all ${
+                        i === sessionRotationIndex ? 'border-teal-400 bg-teal-500/20 text-teal-400 rotation-active' : 'border-muted-foreground/20 text-muted-foreground'
+                      }`}>{i + 1}</div>
+                    ))}
                   </div>
                 </div>
               )}
-
-              {/* Bowl Calculator */}
-              <Card className="p-3 bg-muted/50">
-                <p className="text-xs font-medium mb-1">{t('bowlCalculator', lang)}</p>
-                <div className="grid grid-cols-3 gap-2 text-xs">
-                  <div><span className="text-muted-foreground">{t('gramsPerBowl', lang)}</span><p className="font-medium">{store.settings.sessionDefaults?.defaultGramsPerBowl ?? 0.25}g</p></div>
-                  <div><span className="text-muted-foreground">{t('totalBowls', lang)}</span><p className="font-medium">{Math.floor(store.sessionProduct.amount / (store.settings.sessionDefaults?.defaultGramsPerBowl ?? 0.25))}</p></div>
-                  <div><span className="text-muted-foreground">{t('bowlsPerPerson', lang)}</span><p className="font-medium">{Math.floor(store.sessionProduct.amount / (store.settings.sessionDefaults?.defaultGramsPerBowl ?? 0.25) / sessionPeople)}</p></div>
-                </div>
-              </Card>
-
-              {/* Session Notes */}
               <div className="space-y-1">
-                <Label className="text-xs">{t('sessionNotes', lang)}</Label>
-                <Textarea value={sessionNotes} onChange={(e) => setSessionNotes(e.target.value)} placeholder={t('sessionNotesPlaceholder', lang)} rows={2} />
+                <Label className="text-xs font-medium">{t('sessionNotes', lang)}</Label>
+                <Textarea value={sessionNotes} onChange={(e) => setSessionNotes(e.target.value)} placeholder={t('sessionNotesPlaceholder', lang)} rows={2} className="rounded-lg" />
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => store.closeAllModals()}>{t('cancel', lang)}</Button>
+            <Button variant="outline" onClick={() => store.closeAllModals()} className="rounded-lg">{t('cancel', lang)}</Button>
             <Button onClick={handleSubmitSession} disabled={createSession.isPending}
-              className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white">
-              {t('finishSession', lang)}
-            </Button>
+              className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-lg">{t('finishSession', lang)}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1420,186 +1225,127 @@ export default function Home() {
       <Sheet open={store.settingsOpen} onOpenChange={(open) => { if (!open) store.closeAllModals() }}>
         <SheetContent className="w-[400px] sm:max-w-[400px] overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>{t('settings', lang)}</SheetTitle>
+            <SheetTitle className="text-lg font-black">{t('settings', lang)}</SheetTitle>
             <SheetDescription />
           </SheetHeader>
           <div className="mt-4">
-            <Tabs value={settingsTab} onValueChange={(v) => setSettingsTab(v as 'personalization' | 'danger')}>
+            <Tabs value={settingsTab} onValueChange={(v) => setSettingsTab(v as 'personalization' | 'stats' | 'danger')}>
               <TabsList className="w-full">
-                <TabsTrigger value="personalization" className="flex-1">{t('personalization', lang)}</TabsTrigger>
-                <TabsTrigger value="danger" className="flex-1">{t('dangerZone', lang)}</TabsTrigger>
+                <TabsTrigger value="personalization" className="flex-1 text-xs">{t('personalization', lang)}</TabsTrigger>
+                <TabsTrigger value="stats" className="flex-1 text-xs">{t('showStatToggles', lang)}</TabsTrigger>
+                <TabsTrigger value="danger" className="flex-1 text-xs">{t('dangerZone', lang)}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="personalization" className="space-y-4 mt-4">
-                {/* Language */}
-                <div className="space-y-1">
-                  <Label className="text-xs">{t('language', lang)}</Label>
+                <div className="space-y-1"><Label className="text-xs font-medium">{t('language', lang)}</Label>
                   <Select value={store.settings.language} onValueChange={(v) => updateSettings.mutate({ language: v })}>
-                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="es">Español</SelectItem>
-                      <SelectItem value="fr">Français</SelectItem>
-                      <SelectItem value="de">Deutsch</SelectItem>
-                      <SelectItem value="pt">Português</SelectItem>
-                    </SelectContent>
+                    <SelectTrigger className="h-9 rounded-lg"><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="en">English</SelectItem><SelectItem value="es">Español</SelectItem><SelectItem value="fr">Français</SelectItem><SelectItem value="de">Deutsch</SelectItem><SelectItem value="pt">Português</SelectItem></SelectContent>
                   </Select>
                 </div>
-
-                {/* Theme */}
-                <div className="space-y-1">
-                  <Label className="text-xs">{t('theme', lang)}</Label>
+                <div className="space-y-1"><Label className="text-xs font-medium">{t('theme', lang)}</Label>
                   <Select value={store.settings.theme} onValueChange={(v) => updateSettings.mutate({ theme: v })}>
-                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="dark">{t('dark', lang)}</SelectItem>
-                      <SelectItem value="light">{t('light', lang)}</SelectItem>
-                    </SelectContent>
+                    <SelectTrigger className="h-9 rounded-lg"><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="dark">{t('dark', lang)}</SelectItem><SelectItem value="light">{t('light', lang)}</SelectItem></SelectContent>
                   </Select>
                 </div>
-
-                {/* Currency */}
-                <div className="space-y-1">
-                  <Label className="text-xs">{t('currency', lang)}</Label>
+                <div className="space-y-1"><Label className="text-xs font-medium">{t('currency', lang)}</Label>
                   <Select value={store.settings.currency} onValueChange={(v) => updateSettings.mutate({ currency: v })}>
-                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="$">$ USD</SelectItem>
-                      <SelectItem value="€">€ EUR</SelectItem>
-                      <SelectItem value="£">£ GBP</SelectItem>
-                      <SelectItem value="¥">¥ JPY</SelectItem>
-                      <SelectItem value="C$">C$ CAD</SelectItem>
-                    </SelectContent>
+                    <SelectTrigger className="h-9 rounded-lg"><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="$">$ USD</SelectItem><SelectItem value="€">€ EUR</SelectItem><SelectItem value="£">£ GBP</SelectItem><SelectItem value="¥">¥ JPY</SelectItem><SelectItem value="C$">C$ CAD</SelectItem></SelectContent>
                   </Select>
                 </div>
-
-                {/* Decimal Precision */}
-                <div className="space-y-1">
-                  <Label className="text-xs">{t('decimalPrecision', lang)}</Label>
+                <div className="space-y-1"><Label className="text-xs font-medium">{t('decimalPrecision', lang)}</Label>
                   <Select value={String(store.settings.decimalPrecision)} onValueChange={(v) => updateSettings.mutate({ decimalPrecision: parseInt(v) })}>
-                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1</SelectItem>
-                      <SelectItem value="2">2</SelectItem>
-                      <SelectItem value="3">3</SelectItem>
-                    </SelectContent>
+                    <SelectTrigger className="h-9 rounded-lg"><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="1">1</SelectItem><SelectItem value="2">2</SelectItem><SelectItem value="3">3</SelectItem></SelectContent>
                   </Select>
                 </div>
-
-                {/* Low Stock Threshold */}
-                <div className="space-y-1">
-                  <Label className="text-xs">{t('lowStockThreshold', lang)}</Label>
-                  <Input type="number" step="0.5" value={store.settings.lowStockThreshold}
-                    onChange={(e) => updateSettings.mutate({ lowStockThreshold: parseFloat(e.target.value) || 3 })} />
-                  <p className="text-xs text-muted-foreground">{t('lowStockThresholdHint', lang)}</p>
+                <div className="space-y-1"><Label className="text-xs font-medium">{t('lowStockThreshold', lang)}</Label>
+                  <Input type="number" step="0.5" value={store.settings.lowStockThreshold} onChange={(e) => updateSettings.mutate({ lowStockThreshold: parseFloat(e.target.value) || 3 })} className="rounded-lg" />
+                  <p className="text-[10px] text-muted-foreground">{t('lowStockThresholdHint', lang)}</p>
                 </div>
-
-                {/* Show Timer MS */}
                 <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-xs">{t('showTimerMs', lang)}</Label>
-                    <p className="text-xs text-muted-foreground">{t('showTimerMsHint', lang)}</p>
-                  </div>
+                  <div><Label className="text-xs font-medium">{t('showTimerMs', lang)}</Label><p className="text-[10px] text-muted-foreground">{t('showTimerMsHint', lang)}</p></div>
                   <Switch checked={store.settings.showTimerMs} onCheckedChange={(v) => updateSettings.mutate({ showTimerMs: v })} />
                 </div>
-
                 <Separator />
-
-                {/* Session Defaults */}
-                <p className="text-xs font-medium">{t('sessionDefaults', lang)}</p>
+                <p className="text-xs font-semibold uppercase tracking-wider">{t('sessionDefaults', lang)}</p>
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs">{t('defaultAmount', lang)}</Label>
-                    <Input type="number" step="0.1"
-                      value={store.settings.sessionDefaults?.defaultAmount ?? 0.5}
-                      onChange={(e) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, defaultAmount: parseFloat(e.target.value) || 0.5 } })} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">{t('defaultPeople', lang)}</Label>
-                    <Input type="number" step="1"
-                      value={store.settings.sessionDefaults?.defaultPeople ?? 2}
-                      onChange={(e) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, defaultPeople: parseInt(e.target.value) || 2 } })} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">{t('defaultHitTimer', lang)}</Label>
-                    <Input type="number" step="1"
-                      value={store.settings.sessionDefaults?.defaultHitTimer ?? 10}
-                      onChange={(e) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, defaultHitTimer: parseInt(e.target.value) || 10 } })} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">{t('defaultGramsPerBowl', lang)}</Label>
-                    <Input type="number" step="0.05"
-                      value={store.settings.sessionDefaults?.defaultGramsPerBowl ?? 0.25}
-                      onChange={(e) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, defaultGramsPerBowl: parseFloat(e.target.value) || 0.25 } })} />
-                  </div>
+                  <div className="space-y-1"><Label className="text-xs">{t('defaultAmount', lang)}</Label>
+                    <Input type="number" step="0.1" value={store.settings.sessionDefaults?.defaultAmount ?? 0.5} onChange={(e) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, defaultAmount: parseFloat(e.target.value) || 0.5 } })} className="rounded-lg" /></div>
+                  <div className="space-y-1"><Label className="text-xs">{t('defaultPeople', lang)}</Label>
+                    <Input type="number" step="1" value={store.settings.sessionDefaults?.defaultPeople ?? 2} onChange={(e) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, defaultPeople: parseInt(e.target.value) || 2 } })} className="rounded-lg" /></div>
+                  <div className="space-y-1"><Label className="text-xs">{t('defaultHitTimer', lang)}</Label>
+                    <Input type="number" step="1" value={store.settings.sessionDefaults?.defaultHitTimer ?? 10} onChange={(e) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, defaultHitTimer: parseInt(e.target.value) || 10 } })} className="rounded-lg" /></div>
                 </div>
                 <div className="flex items-center justify-between">
                   <Label className="text-xs">{t('rotationEnabled', lang)}</Label>
-                  <Switch checked={store.settings.sessionDefaults?.rotationEnabled ?? false}
-                    onCheckedChange={(v) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, rotationEnabled: v } })} />
+                  <Switch checked={store.settings.sessionDefaults?.rotationEnabled ?? false} onCheckedChange={(v) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, rotationEnabled: v } })} />
                 </div>
               </TabsContent>
 
+              <TabsContent value="stats" className="space-y-3 mt-4">
+                <p className="text-xs font-semibold uppercase tracking-wider">{t('showStatToggles', lang)}</p>
+                {[
+                  { key: 'totalProducts', label: t('totalProducts', lang), icon: Package, color: 'text-teal-400' },
+                  { key: 'totalAmount', label: t('totalAmount', lang), icon: Archive, color: 'text-emerald-400' },
+                  { key: 'averageRating', label: t('averageRating', lang), icon: Star, color: 'text-amber-400' },
+                  { key: 'averageTHC', label: t('averageTHC', lang), icon: Zap, color: 'text-purple-400' },
+                  { key: 'totalValue', label: t('totalValue', lang), icon: DollarSign, color: 'text-green-400' },
+                  { key: 'totalSessions', label: t('totalSessions', lang), icon: Users, color: 'text-cyan-400' },
+                ].map(({ key, label, icon: Icon, color }) => (
+                  <div key={key} className="flex items-center justify-between py-1">
+                    <div className="flex items-center gap-2">
+                      <Icon className={`size-4 ${color}`} />
+                      <span className="text-sm">{label}</span>
+                    </div>
+                    <Switch
+                      checked={statsVis[key] !== false}
+                      onCheckedChange={(v) => {
+                        const newVis = { ...statsVis, [key]: v }
+                        updateSettings.mutate({ statsVisibility: newVis })
+                      }}
+                    />
+                  </div>
+                ))}
+              </TabsContent>
+
               <TabsContent value="danger" className="space-y-4 mt-4">
-                {/* Backup */}
                 <div className="space-y-2">
-                  <p className="text-xs font-medium">{t('dataBackup', lang)}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider">{t('dataBackup', lang)}</p>
                   <p className="text-xs text-muted-foreground">{t('dataBackupHint', lang)}</p>
                   <div className="grid grid-cols-2 gap-2">
-                    <Button variant="outline" size="sm" className="h-8 text-xs" onClick={handleExportJson}>
-                      <Download className="size-3 mr-1" />{t('exportData', lang)}
-                    </Button>
-                    <Button variant="outline" size="sm" className="h-8 text-xs" onClick={handleExportCsv}>
-                      <Download className="size-3 mr-1" />{t('exportCsv', lang)}
-                    </Button>
-                    <Button variant="outline" size="sm" className="h-8 text-xs" onClick={handleCopyBackup}>
-                      <Copy className="size-3 mr-1" />{t('copyToClipboard', lang)}
-                    </Button>
-                    <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => handleImportBackup('replace')}>
-                      <Upload className="size-3 mr-1" />{t('importData', lang)}
-                    </Button>
+                    <Button variant="outline" size="sm" className="h-8 text-xs rounded-lg" onClick={handleExportJson}><Download className="size-3 mr-1" />{t('exportData', lang)}</Button>
+                    <Button variant="outline" size="sm" className="h-8 text-xs rounded-lg" onClick={handleExportCsv}><Download className="size-3 mr-1" />{t('exportCsv', lang)}</Button>
+                    <Button variant="outline" size="sm" className="h-8 text-xs rounded-lg" onClick={handleCopyBackup}><Copy className="size-3 mr-1" />{t('copyToClipboard', lang)}</Button>
+                    <Button variant="outline" size="sm" className="h-8 text-xs rounded-lg" onClick={() => handleImportBackup('replace')}><Upload className="size-3 mr-1" />{t('importData', lang)}</Button>
                   </div>
-                  <Button variant="outline" size="sm" className="h-8 text-xs w-full" onClick={() => handleImportBackup('merge')}>
+                  <Button variant="outline" size="sm" className="h-8 text-xs w-full rounded-lg" onClick={() => handleImportBackup('merge')}>
                     <Upload className="size-3 mr-1" />{t('importMerge', lang)}
                   </Button>
-                  <p className="text-xs text-muted-foreground">{t('importMergeHint', lang)}</p>
+                  <p className="text-[10px] text-muted-foreground">{t('importMergeHint', lang)}</p>
                 </div>
-
                 <Separator />
-
-                {/* PIN Lock */}
                 <div className="space-y-2">
-                  <p className="text-xs font-medium">{t('pinLock', lang)}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider">{t('pinLock', lang)}</p>
                   <p className="text-xs text-muted-foreground">{t('pinLockHint', lang)}</p>
                   {!showPinSetup ? (
-                    <Button variant="outline" size="sm" className="h-8 text-xs"
-                      onClick={() => setShowPinSetup(true)}>
+                    <Button variant="outline" size="sm" className="h-8 text-xs rounded-lg" onClick={() => setShowPinSetup(true)}>
                       {store.settings.pinEnabled ? <Unlock className="size-3 mr-1" /> : <Lock className="size-3 mr-1" />}
                       {store.settings.pinEnabled ? t('disablePin', lang) : t('enablePin', lang)}
                     </Button>
                   ) : (
                     <div className="space-y-2">
-                      <Input type="password" maxLength={6} value={pinInput} onChange={(e) => setPinInput(e.target.value.replace(/\D/g, ''))}
-                        placeholder={t('enterPin', lang)} className="h-9" />
-                      <Input type="password" maxLength={6} value={pinConfirm} onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, ''))}
-                        placeholder={t('enterCurrentPin', lang)} className="h-9" />
+                      <Input type="password" maxLength={6} value={pinInput} onChange={(e) => setPinInput(e.target.value.replace(/\D/g, ''))} placeholder={t('enterPin', lang)} className="h-9 rounded-lg" />
+                      <Input type="password" maxLength={6} value={pinConfirm} onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, ''))} placeholder={t('enterCurrentPin', lang)} className="h-9 rounded-lg" />
                       {pinInput && pinInput.length < 4 && <p className="text-xs text-destructive">{t('pinLengthError', lang)}</p>}
                       {pinInput && pinConfirm && pinInput !== pinConfirm && <p className="text-xs text-destructive">{t('pinMismatch', lang)}</p>}
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => { setShowPinSetup(false); setPinInput(''); setPinConfirm('') }}>
-                          {t('cancel', lang)}
-                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => { setShowPinSetup(false); setPinInput(''); setPinConfirm('') }} className="rounded-lg">{t('cancel', lang)}</Button>
                         <Button size="sm" disabled={pinInput.length < 4 || pinInput !== pinConfirm}
-                          onClick={() => {
-                            if (store.settings.pinEnabled) {
-                              updateSettings.mutate({ pinEnabled: false, pinHash: '' })
-                            } else {
-                              updateSettings.mutate({ pinEnabled: true, pinHash: pinInput })
-                            }
-                            setShowPinSetup(false); setPinInput(''); setPinConfirm('')
-                          }}>
-                          {store.settings.pinEnabled ? t('disablePin', lang) : t('enablePin', lang)}
-                        </Button>
+                          onClick={() => { updateSettings.mutate(store.settings.pinEnabled ? { pinEnabled: false, pinHash: '' } : { pinEnabled: true, pinHash: pinInput }); setShowPinSetup(false); setPinInput(''); setPinConfirm('') }}
+                          className="rounded-lg">{store.settings.pinEnabled ? t('disablePin', lang) : t('enablePin', lang)}</Button>
                       </div>
                     </div>
                   )}
@@ -1612,17 +1358,14 @@ export default function Home() {
 
       {/* ═══ DELETE CONFIRM ═══ */}
       <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>{t('areYouSure', lang)}</AlertDialogTitle>
             <AlertDialogDescription>{t('thisActionCannot', lang)}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('cancel', lang)}</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deleteConfirm && deleteProduct.mutate(deleteConfirm)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              {t('delete', lang)}
-            </AlertDialogAction>
+            <AlertDialogCancel className="rounded-lg">{t('cancel', lang)}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deleteConfirm && deleteProduct.mutate(deleteConfirm)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg">{t('delete', lang)}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -1630,57 +1373,52 @@ export default function Home() {
   )
 }
 
-// ═══ PRODUCT CARD — Grid Layout ═══════════════════════════════════════════
+// ═══ PRODUCT CARD — Grid ══════════════════════════════════════════════════
 function ProductCardGrid({ product: p, lang, currency, onEdit, onConsume, onSell, onSession, onFavorite, onDelete }: {
   product: Product; lang: string; currency: string;
   onEdit: () => void; onConsume: () => void; onSell: () => void; onSession: () => void; onFavorite: () => void; onDelete: () => void;
 }) {
   return (
-    <Card className="group relative overflow-hidden transition-shadow hover:shadow-lg cursor-pointer" onClick={onEdit}>
+    <Card className={`group relative overflow-hidden transition-all hover:shadow-xl cursor-pointer rounded-xl ${getTypeGlow(p.type)} ${getTypeStripe(p.type)}`}
+      onClick={onEdit}>
       {p.picture && (
-        <div className="w-full h-28 overflow-hidden">
-          <img src={p.picture} alt={p.name} className="w-full h-full object-cover" />
-        </div>
+        <div className="w-full h-28 overflow-hidden"><img src={p.picture} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /></div>
       )}
       <CardContent className="p-3">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <h3 className="font-semibold text-sm truncate">{p.name}</h3>
+            <h3 className="font-bold text-sm truncate">{p.name}</h3>
             {p.brand && <p className="text-[10px] text-muted-foreground truncate">{p.brand}</p>}
           </div>
-          <button onClick={(e) => { e.stopPropagation(); onFavorite() }}
-            className="shrink-0 transition-transform hover:scale-125">
-            <Heart className={`size-3.5 ${p.favorite ? 'fill-red-400 text-red-400' : 'text-muted-foreground/40'}`} />
+          <button onClick={(e) => { e.stopPropagation(); onFavorite() }} className="shrink-0 transition-transform hover:scale-125">
+            <Heart className={`size-3.5 ${p.favorite ? 'fill-red-400 text-red-400' : 'text-muted-foreground/30'}`} />
           </button>
         </div>
         <div className="flex items-center gap-1.5 mt-1.5">
-          <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${getTypeColor(p.type)}`}>
-            {p.type}
-          </Badge>
+          <Badge variant="outline" className={`text-[9px] px-1.5 py-0 rounded-full ${getTypeColor(p.type)}`}>{p.type}</Badge>
           {p.thc > 0 && <span className="text-[9px] text-muted-foreground">{p.thc}%</span>}
-          {p.cbd > 0 && <span className="text-[9px] text-muted-foreground">{t('cbd', lang)} {p.cbd}%</span>}
         </div>
         <div className="flex items-center justify-between mt-1.5">
-          <span className="text-xs font-medium">{p.amount.toFixed(1)}g</span>
+          <span className="text-xs font-bold">{p.amount.toFixed(1)}g</span>
           {p.price > 0 && <span className="text-[10px] text-muted-foreground">{currency}{p.price.toFixed(0)}</span>}
         </div>
         <div className="flex items-center justify-between mt-0.5">
           <StarRating value={p.rating} readonly />
-          <span className="text-[9px] text-muted-foreground">{formatRelativeTime(p.lastConsumed, lang)}</span>
+          {p.lastConsumed && <span className="text-[9px] text-muted-foreground">{formatRelativeTime(p.lastConsumed, lang)}</span>}
         </div>
         <div className="flex items-center gap-1 mt-2" onClick={(e) => e.stopPropagation()}>
-          <Button size="sm" variant="outline" className="h-6 text-[10px] flex-1 px-0" onClick={onConsume}>
-            <Flame className="size-2.5 mr-0.5" />{t('consume', lang)}
+          <Button size="sm" variant="outline" className="h-6 text-[10px] flex-1 px-0 rounded-full" onClick={onConsume}>
+            <Flame className="size-2.5 mr-0.5 text-teal-400" />{t('consume', lang)}
           </Button>
-          <Button size="sm" variant="outline" className="h-6 text-[10px] flex-1 px-0" onClick={onSession}>
-            <Users className="size-2.5 mr-0.5" />{t('session', lang)}
+          <Button size="sm" variant="outline" className="h-6 text-[10px] flex-1 px-0 rounded-full" onClick={onSession}>
+            <Users className="size-2.5 mr-0.5" />
           </Button>
-          <Button size="sm" variant="outline" className="h-6 text-[10px] flex-1 px-0" onClick={onSell}>
-            <DollarSign className="size-2.5 mr-0.5" />{t('sell', lang)}
+          <Button size="sm" variant="outline" className="h-6 text-[10px] flex-1 px-0 rounded-full" onClick={onSell}>
+            <DollarSign className="size-2.5 mr-0.5 text-green-400" />{t('sell', lang)}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="ghost" className="h-6 w-6 p-0"><MoreVertical className="size-2.5" /></Button>
+              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 rounded-full"><span className="text-muted-foreground text-xs">···</span></Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={onEdit}><Edit3 className="size-3 mr-2" />{t('editProduct', lang)}</DropdownMenuItem>
@@ -1693,51 +1431,41 @@ function ProductCardGrid({ product: p, lang, currency, onEdit, onConsume, onSell
   )
 }
 
-// ═══ PRODUCT CARD — List Layout ═══════════════════════════════════════════
+// ═══ PRODUCT CARD — List ══════════════════════════════════════════════════
 function ProductCardList({ product: p, lang, currency, onEdit, onConsume, onSell, onSession, onFavorite, onDelete }: {
   product: Product; lang: string; currency: string;
   onEdit: () => void; onConsume: () => void; onSell: () => void; onSession: () => void; onFavorite: () => void; onDelete: () => void;
 }) {
   return (
-    <Card className="p-2.5 flex items-center gap-2.5 cursor-pointer hover:shadow-md transition-shadow" onClick={onEdit}>
+    <Card className={`p-2.5 flex items-center gap-3 cursor-pointer hover:shadow-lg transition-all rounded-xl ${getTypeStripe(p.type)}`} onClick={onEdit}>
       {p.picture ? (
-        <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0">
-          <img src={p.picture} alt={p.name} className="w-full h-full object-cover" />
-        </div>
+        <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0"><img src={p.picture} alt={p.name} className="w-full h-full object-cover" /></div>
       ) : (
-        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-          <Leaf className="size-4 text-muted-foreground/40" />
-        </div>
+        <div className="w-11 h-11 rounded-xl bg-muted/50 flex items-center justify-center shrink-0"><Leaf className="size-4 text-muted-foreground/30" /></div>
       )}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <h3 className="font-semibold text-sm truncate">{p.name}</h3>
-          <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${getTypeColor(p.type)}`}>{p.type}</Badge>
+          <h3 className="font-bold text-sm truncate">{p.name}</h3>
+          <Badge variant="outline" className={`text-[8px] px-1.5 py-0 rounded-full ${getTypeColor(p.type)}`}>{p.type}</Badge>
           <button onClick={(e) => { e.stopPropagation(); onFavorite() }} className="shrink-0">
-            <Heart className={`size-3 ${p.favorite ? 'fill-red-400 text-red-400' : 'text-muted-foreground/40'}`} />
+            <Heart className={`size-3 ${p.favorite ? 'fill-red-400 text-red-400' : 'text-muted-foreground/30'}`} />
           </button>
         </div>
         <div className="flex items-center gap-2 mt-0.5">
           {p.brand && <span className="text-[10px] text-muted-foreground">{p.brand}</span>}
           {p.thc > 0 && <span className="text-[10px] text-muted-foreground">{p.thc}%</span>}
-          <span className="text-[10px] font-medium">{p.amount.toFixed(1)}g</span>
+          <span className="text-[10px] font-bold">{p.amount.toFixed(1)}g</span>
           {p.price > 0 && <span className="text-[10px] text-muted-foreground">{currency}{p.price.toFixed(0)}</span>}
           <StarRating value={p.rating} readonly />
         </div>
       </div>
       <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-        <Button size="sm" variant="outline" className="h-6 w-6 p-0" onClick={onConsume}>
-          <Flame className="size-2.5" />
-        </Button>
-        <Button size="sm" variant="outline" className="h-6 w-6 p-0" onClick={onSession}>
-          <Users className="size-2.5" />
-        </Button>
-        <Button size="sm" variant="outline" className="h-6 w-6 p-0" onClick={onSell}>
-          <DollarSign className="size-2.5" />
-        </Button>
+        <Button size="sm" variant="outline" className="h-7 w-7 p-0 rounded-full" onClick={onConsume}><Flame className="size-2.5 text-teal-400" /></Button>
+        <Button size="sm" variant="outline" className="h-7 w-7 p-0 rounded-full" onClick={onSession}><Users className="size-2.5" /></Button>
+        <Button size="sm" variant="outline" className="h-7 w-7 p-0 rounded-full" onClick={onSell}><DollarSign className="size-2.5 text-green-400" /></Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="sm" variant="ghost" className="h-6 w-6 p-0"><MoreVertical className="size-2.5" /></Button>
+            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 rounded-full"><span className="text-muted-foreground text-xs">···</span></Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={onEdit}><Edit3 className="size-3 mr-2" />{t('editProduct', lang)}</DropdownMenuItem>
@@ -1749,30 +1477,30 @@ function ProductCardList({ product: p, lang, currency, onEdit, onConsume, onSell
   )
 }
 
-// ═══ PRODUCT CARD — Compact Layout ═══════════════════════════════════════
-function ProductCardCompact({ product: p, lang, currency, onEdit, onConsume, onSession, onFavorite }: {
+// ═══ PRODUCT CARD — Compact ══════════════════════════════════════════════
+function ProductCardCompact({ product: p, lang, currency, onEdit, onConsume, onSell, onFavorite }: {
   product: Product; lang: string; currency: string;
-  onEdit: () => void; onConsume: () => void; onSession: () => void; onFavorite: () => void;
+  onEdit: () => void; onConsume: () => void; onSell: () => void; onFavorite: () => void;
 }) {
   return (
-    <Card className="p-2 cursor-pointer hover:shadow-md transition-shadow" onClick={onEdit}>
+    <Card className={`p-2 cursor-pointer hover:shadow-lg transition-all rounded-xl ${getTypeStripe(p.type)}`} onClick={onEdit}>
       <div className="flex items-center justify-between mb-0.5">
-        <h3 className="text-[10px] font-semibold truncate">{p.name}</h3>
+        <h3 className="text-[10px] font-bold truncate">{p.name}</h3>
         <button onClick={(e) => { e.stopPropagation(); onFavorite() }}>
           <Heart className={`size-2.5 ${p.favorite ? 'fill-red-400 text-red-400' : 'text-muted-foreground/30'}`} />
         </button>
       </div>
-      <Badge variant="outline" className={`text-[8px] px-1 py-0 mb-0.5 ${getTypeColor(p.type)}`}>{p.type}</Badge>
+      <Badge variant="outline" className={`text-[8px] px-1 py-0 rounded-full mb-0.5 ${getTypeColor(p.type)}`}>{p.type}</Badge>
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-medium">{p.amount.toFixed(1)}g</span>
-        <StarRating value={p.rating} readonly />
+        <span className="text-[10px] font-bold">{p.amount.toFixed(1)}g</span>
+        {p.price > 0 && <span className="text-[9px] text-muted-foreground">{currency}{p.price.toFixed(0)}</span>}
       </div>
-      <div className="flex items-center gap-0.5 mt-1" onClick={(e) => e.stopPropagation()}>
-        <Button size="sm" variant="outline" className="h-5 text-[8px] flex-1 px-0" onClick={onConsume}>
-          <Flame className="size-2" />
+      <div className="flex items-center gap-0.5 mt-1.5" onClick={(e) => e.stopPropagation()}>
+        <Button size="sm" variant="outline" className="h-5 text-[7px] flex-1 px-0 rounded-full" onClick={onConsume}>
+          <Flame className="size-2 text-teal-400" />
         </Button>
-        <Button size="sm" variant="outline" className="h-5 text-[8px] flex-1 px-0" onClick={onSession}>
-          <Users className="size-2" />
+        <Button size="sm" variant="outline" className="h-5 text-[7px] flex-1 px-0 rounded-full" onClick={onSell}>
+          <DollarSign className="size-2 text-green-400" />
         </Button>
       </div>
     </Card>

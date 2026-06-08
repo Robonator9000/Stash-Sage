@@ -89,6 +89,7 @@ interface UIState {
   sortBy: string
   filterBy: string
   layout: 'grid' | 'list' | 'compact'
+  pageSize: number
 
   // Modal states
   addProductOpen: boolean
@@ -104,6 +105,7 @@ interface UIState {
   setSortBy: (s: string) => void
   setFilterBy: (f: string) => void
   setLayout: (l: UIState['layout']) => void
+  setPageSize: (s: number) => void
   openAddProduct: () => void
   openEditProduct: (p: Product) => void
   openConsume: (p: Product) => void
@@ -131,6 +133,7 @@ export const useStore = create<StoreState>((set) => ({
   sortBy: 'newest',
   filterBy: 'all',
   layout: 'grid',
+  pageSize: 20,
 
   addProductOpen: false,
   editingProduct: null,
@@ -145,6 +148,7 @@ export const useStore = create<StoreState>((set) => ({
   setSortBy: (s) => set({ sortBy: s }),
   setFilterBy: (f) => set({ filterBy: f }),
   setLayout: (l) => set({ layout: l }),
+  setPageSize: (s) => set({ pageSize: s }),
 
   openAddProduct: () =>
     set({

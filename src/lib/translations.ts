@@ -62,6 +62,10 @@ const translations: Record<string, Record<string, string>> = {
     totalSpent: 'Total Spent', thisMonth: 'This Month', budgetRemaining: 'Budget Remaining',
     effects: 'Effects', tags: 'Tags', confirm: 'Confirm', areYouSure: 'Are you sure?',
     thisActionCannot: 'This action cannot be undone.',
+    timePerHit: 'Time per Hit (s)', sessionStart: 'Start Session', sessionPause: 'Pause',
+    personNext: 'Next Person', currentPerson: 'Current', timeRemaining: 'Time Remaining',
+    sessionActive: 'Session Active', sessionIdle: 'Ready to Start',
+    pageSize: 'Page Size', showStatToggles: 'Show/Hide Stats',
   },
   es: {
     totalProducts: 'Productos', totalAmount: 'Cantidad Total', totalSessions: 'Sesiones',
@@ -123,6 +127,10 @@ const translations: Record<string, Record<string, string>> = {
     totalSpent: 'Total Gastado', thisMonth: 'Este Mes', budgetRemaining: 'Presupuesto Restante',
     effects: 'Efectos', tags: 'Etiquetas', confirm: 'Confirmar', areYouSure: '¿Estás seguro?',
     thisActionCannot: 'Esta acción no se puede deshacer.',
+    timePerHit: 'Tiempo por turno (s)', sessionStart: 'Iniciar Sesión', sessionPause: 'Pausa',
+    personNext: 'Siguiente Persona', currentPerson: 'Actual', timeRemaining: 'Tiempo Restante',
+    sessionActive: 'Sesión Activa', sessionIdle: 'Listo para Iniciar',
+    pageSize: 'Tamaño de Página', showStatToggles: 'Mostrar/Ocultar Stats',
   },
   fr: {
     totalProducts: 'Produits', totalAmount: 'Quantité Totale', totalSessions: 'Sessions',
@@ -187,6 +195,10 @@ const translations: Record<string, Record<string, string>> = {
     totalSpent: 'Total Dépensé', thisMonth: 'Ce Mois', budgetRemaining: 'Budget Restant',
     effects: 'Effets', tags: 'Tags', confirm: 'Confirmer', areYouSure: 'Êtes-vous sûr ?',
     thisActionCannot: 'Cette action ne peut pas être annulée.',
+    timePerHit: 'Temps par tour (s)', sessionStart: 'Démarrer Session', sessionPause: 'Pause',
+    personNext: 'Personne Suivante', currentPerson: 'Actuel', timeRemaining: 'Temps Restant',
+    sessionActive: 'Session Active', sessionIdle: 'Prêt à Démarrer',
+    pageSize: 'Taille de Page', showStatToggles: 'Afficher/Masquer Stats',
   },
   de: {
     totalProducts: 'Produkte', totalAmount: 'Gesamtmenge', totalSessions: 'Sitzungen',
@@ -248,6 +260,10 @@ const translations: Record<string, Record<string, string>> = {
     totalSpent: 'Gesamtausgaben', thisMonth: 'Dieser Monat', budgetRemaining: 'Budget verbleibend',
     effects: 'Effekte', tags: 'Tags', confirm: 'Bestätigen', areYouSure: 'Sind Sie sicher?',
     thisActionCannot: 'Diese Aktion kann nicht rückgängig gemacht werden.',
+    timePerHit: 'Zeit pro Zug (s)', sessionStart: 'Sitzung Starten', sessionPause: 'Pause',
+    personNext: 'Nächste Person', currentPerson: 'Aktuell', timeRemaining: 'Verbleibende Zeit',
+    sessionActive: 'Sitzung Aktiv', sessionIdle: 'Bereit zum Starten',
+    pageSize: 'Seitengröße', showStatToggles: 'Stats Anzeigen/Verbergen',
   },
   pt: {
     totalProducts: 'Produtos', totalAmount: 'Quantidade Total', totalSessions: 'Sessões',
@@ -314,6 +330,10 @@ const translations: Record<string, Record<string, string>> = {
     totalSpent: 'Total Gasto', thisMonth: 'Este Mês', budgetRemaining: 'Orçamento Restante',
     effects: 'Efeitos', tags: 'Tags', confirm: 'Confirmar', areYouSure: 'Tem certeza?',
     thisActionCannot: 'Esta ação não pode ser desfeita.',
+    timePerHit: 'Tempo por turno (s)', sessionStart: 'Iniciar Sessão', sessionPause: 'Pausar',
+    personNext: 'Próxima Pessoa', currentPerson: 'Atual', timeRemaining: 'Tempo Restante',
+    sessionActive: 'Sessão Ativa', sessionIdle: 'Pronto para Iniciar',
+    pageSize: 'Tamanho da Página', showStatToggles: 'Mostrar/Ocultar Stats',
   },
 } as const;
 
