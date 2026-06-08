@@ -37,7 +37,6 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
   };
 
   const quickAmounts = [0.1, 0.25, 0.5, 1, 2];
-  const [quickAddMode, setQuickAddMode] = useState(false);
 
   return (
     <div
