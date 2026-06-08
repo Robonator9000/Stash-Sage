@@ -116,15 +116,28 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
   };
 
   const getStrainColor = (strainType: string) => {
-    switch (strainType.toLowerCase()) {
-      case 'indica':
-        return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
-      case 'sativa':
-        return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-      case 'hybrid':
-        return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
-      default:
-        return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+    if (isDark) {
+      switch (strainType.toLowerCase()) {
+        case 'indica':
+          return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+        case 'sativa':
+          return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+        case 'hybrid':
+          return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+        default:
+          return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+      }
+    } else {
+      switch (strainType.toLowerCase()) {
+        case 'indica':
+          return 'bg-purple-100 text-purple-700 border-purple-300';
+        case 'sativa':
+          return 'bg-amber-100 text-amber-700 border-amber-300';
+        case 'hybrid':
+          return 'bg-emerald-100 text-emerald-700 border-emerald-300';
+        default:
+          return 'bg-slate-100 text-slate-700 border-slate-300';
+      }
     }
   };
 

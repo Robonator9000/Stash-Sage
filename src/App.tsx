@@ -51,10 +51,14 @@ export default function App() {
     }
   }, [settings.pinEnabled, settings.pinHash]);
 
-  // Dynamic lang attribute
+  // Dynamic lang attribute + dark class + theme-color
   useEffect(() => {
-    document.documentElement.lang = settings.language;
-  }, [settings.language]);
+    const root = document.documentElement;
+    root.lang = settings.language;
+    root.classList.toggle('dark', isDark);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', isDark ? '#0b1120' : '#f0f4f8');
+  }, [settings.language, isDark]);
 
   // Filter, search, and sort products
   const filteredProducts = useMemo(() => {

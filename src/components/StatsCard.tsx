@@ -61,8 +61,8 @@ export function StatsCard({ products, isDark = true }: StatsCardProps) {
   return (
     <div className={`rounded-2xl transition-all ${
       isDark
-        ? 'bg-leather/80 border border-leather-lighter'
-        : 'bg-white border border-gray-200 shadow-card'
+        ? 'bg-midnight/80 border border-edge'
+        : 'bg-white border border-gray-200'
     }`}>
       <div className="flex flex-wrap gap-px">
         {visibleStats.map((stat) => {
@@ -72,21 +72,21 @@ export function StatsCard({ products, isDark = true }: StatsCardProps) {
               key={stat.key}
               className={`flex-1 min-w-[100px] p-3 text-center transition-all hover:scale-[1.02] ${
                 isDark
-                  ? 'hover:bg-leather-light/60'
+                  ? 'hover:bg-surface/60'
                   : 'hover:bg-gray-50'
               }`}
             >
               <div className={`w-8 h-8 rounded-lg mx-auto mb-2 flex items-center justify-center ${
-                isDark ? 'bg-herb/10' : 'bg-emerald-50'
+                isDark ? 'bg-cyanx/10' : 'bg-cyan-50'
               }`}>
-                <Icon className={`w-4 h-4 ${isDark ? 'text-herb' : 'text-emerald-600'}`} />
+                <Icon className={`w-4 h-4 ${isDark ? 'text-cyanx' : 'text-cyan-600'}`} />
               </div>
-              <div className={`font-heading text-xl font-bold tracking-tight ${
-                isDark ? 'text-parchment' : 'text-gray-900'
+              <div className={`text-xl font-bold tracking-tight ${
+                isDark ? 'text-frost' : 'text-gray-900'
               }`}>
                 {stat.value}{stat.suffix}
               </div>
-              <div className={`text-xs mt-0.5 ${isDark ? 'text-stone' : 'text-gray-500'}`}>
+              <div className={`text-xs mt-0.5 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
                 {stat.label}
               </div>
             </div>

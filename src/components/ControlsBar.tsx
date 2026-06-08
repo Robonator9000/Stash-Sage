@@ -35,10 +35,10 @@ export function ControlsBar({
     `flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
       active
         ? isDark
-          ? 'bg-herb/15 text-herb'
-          : 'bg-emerald-50 text-emerald-600'
+          ? 'bg-cyanx/10 text-cyanx'
+          : 'bg-cyan-50 text-cyan-600'
         : isDark
-          ? 'bg-leather-light text-stone hover:bg-leather-lighter hover:text-parchment'
+          ? 'bg-midnight text-mist hover:bg-surface hover:text-frost'
           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
     }`;
 
@@ -59,7 +59,7 @@ export function ControlsBar({
           {showSortDropdown && (
             <div className={`absolute top-full left-0 mt-2 w-48 rounded-xl shadow-xl z-10 overflow-hidden ${
               isDark
-                ? 'bg-leather border border-leather-lighter'
+                ? 'bg-surface border border-edge'
                 : 'bg-white border border-gray-200'
             }`}>
               {sortOptions.map((option) => (
@@ -71,8 +71,8 @@ export function ControlsBar({
                   }}
                   className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
                     sortBy === option.value
-                      ? isDark ? 'bg-herb/10 text-herb' : 'bg-emerald-50 text-emerald-600'
-                      : isDark ? 'hover:bg-leather-light text-parchment' : 'hover:bg-gray-100 text-gray-900'
+                      ? isDark ? 'bg-cyanx/10 text-cyanx' : 'bg-cyan-50 text-cyan-600'
+                      : isDark ? 'hover:bg-midnight text-frost' : 'hover:bg-gray-100 text-gray-900'
                   }`}
                 >
                   {t(option.labelKey, lang)}
@@ -99,7 +99,7 @@ export function ControlsBar({
           {showFilterDropdown && (
             <div className={`absolute top-full left-0 mt-2 w-48 rounded-xl shadow-xl z-10 overflow-hidden ${
               isDark
-                ? 'bg-leather border border-leather-lighter'
+                ? 'bg-surface border border-edge'
                 : 'bg-white border border-gray-200'
             }`}>
               {filterOptions.map((option) => (
@@ -111,8 +111,8 @@ export function ControlsBar({
                   }}
                   className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
                     filterBy === option.value
-                      ? isDark ? 'bg-herb/10 text-herb' : 'bg-emerald-50 text-emerald-600'
-                      : isDark ? 'hover:bg-leather-light text-parchment' : 'hover:bg-gray-100 text-gray-900'
+                      ? isDark ? 'bg-cyanx/10 text-cyanx' : 'bg-cyan-50 text-cyan-600'
+                      : isDark ? 'hover:bg-midnight text-frost' : 'hover:bg-gray-100 text-gray-900'
                   }`}
                 >
                   {(option as any).display || t(option.labelKey, lang)}
@@ -134,8 +134,8 @@ export function ControlsBar({
             onClick={() => onLayoutChange(value)}
             className={`p-2 rounded-lg transition-all ${
               layout === value
-                ? isDark ? 'bg-herb/15 text-herb' : 'bg-emerald-100 text-emerald-600'
-                : isDark ? 'text-ash hover:text-parchment' : 'text-gray-400 hover:text-gray-900'
+                ? isDark ? 'bg-cyanx/10 text-cyanx' : 'bg-cyan-100 text-cyan-600'
+                : isDark ? 'text-haze hover:text-frost' : 'text-gray-400 hover:text-gray-900'
             }`}
             aria-label={label}
           >
