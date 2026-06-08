@@ -119,6 +119,17 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // Log activity
+    await db.activityLog.create({
+      data: {
+        type: 'product_created',
+        entityId: product.id,
+        entityType: 'product',
+        productName: product.name,
+        details: JSON.stringify({ name: product.name, type: product.type, amount: product.amount, price: product.price }),
+      },
+    })
+
     return NextResponse.json(product, { status: 201 })
   } catch (error) {
     console.error('Error creating product:', error)

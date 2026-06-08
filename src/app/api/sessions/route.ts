@@ -77,6 +77,17 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    // Log activity
+    await db.activityLog.create({
+      data: {
+        type: 'session_completed',
+        entityId: session.id,
+        entityType: 'session',
+        productName: product.name,
+        details: JSON.stringify({ amount: body.amount ?? 0, people: body.people ?? 1, notes: body.notes ?? null }),
+      },
+    })
+
     return NextResponse.json(session, { status: 201 })
   } catch (error) {
     console.error('Error creating session:', error)

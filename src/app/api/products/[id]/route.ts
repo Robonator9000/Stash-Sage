@@ -63,6 +63,21 @@ export async function PUT(
       },
     })
 
+    // Log activity — determine what changed
+    const changedFields = Object.keys(body).filter(k => body[k] !== (existing as Record<string, unknown>)[k])
+    if (changedFields.length > 0) {
+      const isFavoriteToggle = changedFields.length === 1 && changedFields[0] === 'favorite'
+      await db.activityLog.create({
+        data: {
+          type: isFavoriteToggle ? 'favorite_toggled' : 'product_updated',
+          entityId: id,
+          entityType: 'product',
+          productName: product.name,
+          details: JSON.stringify({ changedFields, favorite: body.favorite }),
+        },
+      })
+    }
+
     return NextResponse.json(product)
   } catch (error) {
     console.error('Error updating product:', error)
@@ -89,6 +104,17 @@ export async function DELETE(
     }
 
     await db.product.delete({ where: { id } })
+
+    // Log activity (after delete since we already have the product name)
+    await db.activityLog.create({
+      data: {
+        type: 'product_deleted',
+        entityId: id,
+        entityType: 'product',
+        productName: existing.name,
+        details: JSON.stringify({ name: existing.name, type: existing.type, amount: existing.amount }),
+      },
+    })
 
     return NextResponse.json({ success: true })
   } catch (error) {

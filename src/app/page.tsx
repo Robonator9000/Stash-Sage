@@ -63,6 +63,16 @@ interface ConsumptionLog {
   product: Product
 }
 
+interface ActivityLog {
+  id: string
+  type: string
+  entityId: string
+  entityType: string
+  details: string
+  productName: string
+  createdAt: string
+}
+
 // ── API helpers ──────────────────────────────────────────────────────────────
 const api = {
   get: async (url: string) => {
@@ -261,6 +271,11 @@ export default function Home() {
     queryFn: () => api.get(`/api/consumption?page=${historyPage}&limit=20${historyFrom ? `&from=${historyFrom}` : ''}${historyTo ? `&to=${historyTo}` : ''}`),
   })
 
+  const activityQuery = useQuery({
+    queryKey: ['activity', historyPage, historyFrom, historyTo],
+    queryFn: () => api.get(`/api/activity?page=${historyPage}&limit=20${historyFrom ? `&from=${historyFrom}` : ''}${historyTo ? `&to=${historyTo}` : ''}`) as Promise<{ logs: ActivityLog[]; total: number; page: number; totalPages: number }>,
+  })
+
   // ── Sync settings ────────────────────────────────────────────────────────
   useEffect(() => {
     if (settingsQuery.data) store.setSettings(settingsQuery.data)
@@ -288,19 +303,19 @@ export default function Home() {
   // ── Mutations ────────────────────────────────────────────────────────────
   const createProduct = useMutation({
     mutationFn: (data: Record<string, unknown>) => api.post('/api/products', data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['products'] }); queryClient.invalidateQueries({ queryKey: ['stats'] }); store.closeAllModals(); toast.success('Product added!') },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['products'] }); queryClient.invalidateQueries({ queryKey: ['stats'] }); queryClient.invalidateQueries({ queryKey: ['activity'] }); store.closeAllModals(); toast.success('Product added!') },
     onError: () => toast.error('Failed to add product'),
   })
 
   const updateProduct = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => api.put(`/api/products/${id}`, data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['products'] }); queryClient.invalidateQueries({ queryKey: ['stats'] }); store.closeAllModals(); toast.success('Product updated!') },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['products'] }); queryClient.invalidateQueries({ queryKey: ['stats'] }); queryClient.invalidateQueries({ queryKey: ['activity'] }); store.closeAllModals(); toast.success('Product updated!') },
     onError: () => toast.error('Failed to update product'),
   })
 
   const deleteProduct = useMutation({
     mutationFn: (id: string) => api.del(`/api/products/${id}`),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['products'] }); queryClient.invalidateQueries({ queryKey: ['stats'] }); setDeleteConfirm(null); store.closeAllModals(); toast.success('Product deleted') },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['products'] }); queryClient.invalidateQueries({ queryKey: ['stats'] }); queryClient.invalidateQueries({ queryKey: ['activity'] }); setDeleteConfirm(null); store.closeAllModals(); toast.success('Product deleted') },
     onError: () => toast.error('Failed to delete product'),
   })
 
@@ -330,6 +345,7 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['products'] })
       queryClient.invalidateQueries({ queryKey: ['stats'] })
       queryClient.invalidateQueries({ queryKey: ['consumption'] })
+      queryClient.invalidateQueries({ queryKey: ['activity'] })
       triggerSmokeEffect()
       toast.success(`Consumed ${consumeAmount}g`)
       // Delay close so user sees animation start
@@ -348,6 +364,7 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['products'] })
       queryClient.invalidateQueries({ queryKey: ['stats'] })
       queryClient.invalidateQueries({ queryKey: ['consumption'] })
+      queryClient.invalidateQueries({ queryKey: ['activity'] })
       triggerDollarEffect()
       toast.success('Sold successfully!')
       setTimeout(() => store.closeAllModals(), 100)
@@ -369,7 +386,7 @@ export default function Home() {
 
   const createSession = useMutation({
     mutationFn: (data: Record<string, unknown>) => api.post('/api/sessions', data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['products'] }); queryClient.invalidateQueries({ queryKey: ['stats'] }); queryClient.invalidateQueries({ queryKey: ['consumption'] }); store.closeAllModals(); toast.success('Session completed!') },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['products'] }); queryClient.invalidateQueries({ queryKey: ['stats'] }); queryClient.invalidateQueries({ queryKey: ['consumption'] }); queryClient.invalidateQueries({ queryKey: ['activity'] }); store.closeAllModals(); toast.success('Session completed!') },
     onError: () => toast.error('Failed to create session'),
   })
 
@@ -437,6 +454,8 @@ export default function Home() {
   const stats = statsQuery.data
   const consumptionLogs = consumptionQuery.data?.logs || []
   const consumptionTotalPages = consumptionQuery.data?.totalPages || 1
+  const activityLogs = activityQuery.data?.logs || []
+  const activityTotalPages = activityQuery.data?.totalPages || 1
 
   const sellTotalGrams = useMemo(() => parseFloat(sellGramsPerPortion || '0') * parseFloat(sellNumPortions || '0'), [sellGramsPerPortion, sellNumPortions])
   const sellTotalValue = useMemo(() => parseFloat(sellPricePerPortion || '0') * parseFloat(sellNumPortions || '0'), [sellPricePerPortion, sellNumPortions])
@@ -564,17 +583,17 @@ export default function Home() {
       {/* ═══ HEADER ═══ */}
       <header className="sticky top-0 z-40 border-b border-border/50 bg-background/90 backdrop-blur-xl">
         <div className="px-6 lg:px-10 py-2">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <h1 className="text-lg font-black gradient-text flex items-center gap-1.5 shrink-0 tracking-tight">
               <Leaf className="size-5" /> STASH
             </h1>
-            {/* Search with preview dropdown */}
-            <div ref={searchContainerRef} className="relative flex-1 max-w-md">
+            {/* Search with preview dropdown — centered and grown */}
+            <div ref={searchContainerRef} className="relative flex-1 max-w-2xl mx-auto">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/60" />
               <Input value={searchInput} onChange={(e) => handleSearch(e.target.value)}
                 onFocus={() => { if (searchInput) setSearchPreviewOpen(true) }}
                 placeholder={t('searchPlaceholder', lang)}
-                className="pl-8 h-8 bg-muted/40 border-0 text-sm rounded-full focus-visible:ring-1" />
+                className="pl-8 h-8 bg-muted/40 border-0 text-sm rounded-full focus-visible:ring-1 w-full" />
               {/* Search preview dropdown */}
               {searchPreviewOpen && searchInput && products.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-xl shadow-2xl overflow-hidden z-50 max-h-80 overflow-y-auto">
@@ -601,7 +620,7 @@ export default function Home() {
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 shrink-0">
               <Button size="sm" onClick={handleOpenAddProduct}
                 className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white hover:from-teal-600 hover:to-emerald-600 h-8 text-xs rounded-full px-3 shadow-md shadow-teal-500/20">
                 <Plus className="size-3.5 mr-0.5" />{t('addProduct', lang)}
@@ -620,9 +639,9 @@ export default function Home() {
       <main className="flex-1 w-full px-8 lg:px-16 xl:px-24 py-6">
         <Tabs value={store.activeTab} onValueChange={(v) => store.setActiveTab(v as 'inventory' | 'dashboard' | 'history')}>
           <TabsList className="mb-6 w-full justify-start gap-2 bg-transparent p-0 h-auto border-0 shadow-none">
-            <TabsTrigger value="inventory" className="text-sm gap-1.5 rounded-none px-3 py-2 border-0 bg-transparent shadow-none hover:bg-muted/40 underline-offset-4 data-[state=active]:bg-transparent data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400 data-[state=active]:shadow-none"><Package className="size-4" />{t('inventory', lang)}</TabsTrigger>
-            <TabsTrigger value="dashboard" className="text-sm gap-1.5 rounded-none px-3 py-2 border-0 bg-transparent shadow-none hover:bg-muted/40 underline-offset-4 data-[state=active]:bg-transparent data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400 data-[state=active]:shadow-none"><BarChart3 className="size-4" />{t('dashboard', lang)}</TabsTrigger>
-            <TabsTrigger value="history" className="text-sm gap-1.5 rounded-none px-3 py-2 border-0 bg-transparent shadow-none hover:bg-muted/40 underline-offset-4 data-[state=active]:bg-transparent data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400 data-[state=active]:shadow-none"><Clock className="size-4" />{t('history', lang)}</TabsTrigger>
+            <TabsTrigger value="inventory" className="text-sm gap-1.5 rounded-none px-3 py-2 border-0 bg-transparent shadow-none hover:outline hover:outline-1 hover:outline-border/50 underline-offset-4 data-[state=active]:bg-transparent dark:data-[state=active]:bg-transparent dark:data-[state=active]:border-transparent data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400 data-[state=active]:shadow-none data-[state=active]:outline-0"><Package className="size-4" />{t('inventory', lang)}</TabsTrigger>
+            <TabsTrigger value="dashboard" className="text-sm gap-1.5 rounded-none px-3 py-2 border-0 bg-transparent shadow-none hover:outline hover:outline-1 hover:outline-border/50 underline-offset-4 data-[state=active]:bg-transparent dark:data-[state=active]:bg-transparent dark:data-[state=active]:border-transparent data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400 data-[state=active]:shadow-none data-[state=active]:outline-0"><BarChart3 className="size-4" />{t('dashboard', lang)}</TabsTrigger>
+            <TabsTrigger value="history" className="text-sm gap-1.5 rounded-none px-3 py-2 border-0 bg-transparent shadow-none hover:outline hover:outline-1 hover:outline-border/50 underline-offset-4 data-[state=active]:bg-transparent dark:data-[state=active]:bg-transparent dark:data-[state=active]:border-transparent data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400 data-[state=active]:shadow-none data-[state=active]:outline-0"><Clock className="size-4" />{t('history', lang)}</TabsTrigger>
           </TabsList>
 
           {/* ═══ INVENTORY ═══ */}
@@ -907,37 +926,52 @@ export default function Home() {
                   </Button>
                 )}
               </div>
-              {consumptionQuery.isLoading ? (
+              {activityQuery.isLoading ? (
                 <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <Card key={i} className="p-3 rounded-xl"><Skeleton className="h-12 w-full rounded-lg" /></Card>)}</div>
-              ) : consumptionLogs.length === 0 ? (
+              ) : activityLogs.length === 0 ? (
                 <div className="flex flex-col items-center py-20 text-center">
                   <Activity className="size-16 text-muted-foreground/20 mb-4" />
                   <h3 className="text-lg font-semibold">{t('noActivity', lang)}</h3>
                 </div>
               ) : (
                 <div className="space-y-1.5">
-                  {consumptionLogs.map((log: ConsumptionLog) => (
-                    <Card key={log.id} className="p-3 flex items-center gap-3 rounded-xl glass-card">
-                      <div className={`p-2 rounded-xl ${log.type === 'sell' ? 'bg-green-500/10' : 'bg-teal-500/10'}`}>
-                        {log.type === 'sell' ? <DollarSign className="size-4 text-green-400" /> : <Flame className="size-4 text-teal-400" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{log.product?.name || 'Unknown'}</p>
-                        <p className="text-xs text-muted-foreground">{log.type === 'sell' ? t('sell', lang) : t('consume', lang)} — {log.amount}g{log.note ? ` — ${log.note}` : ''}</p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-xs text-muted-foreground">{new Date(log.consumedAt).toLocaleDateString()}</p>
-                        <p className="text-[10px] text-muted-foreground">{new Date(log.consumedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                      </div>
-                    </Card>
-                  ))}
+                  {activityLogs.map((log: ActivityLog) => {
+                    const details = (() => { try { return JSON.parse(log.details) } catch { return {} } })()
+                    const { icon: Icon, color, bg, label } = (() => {
+                      switch (log.type) {
+                        case 'product_created': return { icon: Plus, color: 'text-teal-400', bg: 'bg-teal-500/10', label: 'Added' }
+                        case 'product_updated': return { icon: Edit3, color: 'text-amber-400', bg: 'bg-amber-500/10', label: 'Updated' }
+                        case 'product_deleted': return { icon: Trash2, color: 'text-red-400', bg: 'bg-red-500/10', label: 'Deleted' }
+                        case 'consumed': return { icon: Flame, color: 'text-teal-400', bg: 'bg-teal-500/10', label: `Consumed ${details.amount ? `${details.amount}g` : ''}` }
+                        case 'sold': return { icon: DollarSign, color: 'text-green-400', bg: 'bg-green-500/10', label: `Sold ${details.amount ? `${details.amount}g` : ''}` }
+                        case 'session_completed': return { icon: Users, color: 'text-purple-400', bg: 'bg-purple-500/10', label: `Session (${details.people ?? '?'} people)` }
+                        case 'favorite_toggled': return { icon: Heart, color: 'text-red-400', bg: 'bg-red-500/10', label: details.favorite ? 'Favorited' : 'Unfavorited' }
+                        default: return { icon: Activity, color: 'text-muted-foreground', bg: 'bg-muted/50', label: log.type }
+                      }
+                    })()
+                    return (
+                      <Card key={log.id} className="p-3 flex items-center gap-3 rounded-xl glass-card">
+                        <div className={`p-2 rounded-xl ${bg}`}>
+                          <Icon className={`size-4 ${color}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{log.productName || 'Unknown'}</p>
+                          <p className="text-xs text-muted-foreground">{label}{details.changedFields && log.type === 'product_updated' ? ` — ${details.changedFields.join(', ')}` : ''}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleDateString()}</p>
+                          <p className="text-[10px] text-muted-foreground">{new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
+                      </Card>
+                    )
+                  })}
                 </div>
               )}
-              {consumptionTotalPages > 1 && (
+              {activityTotalPages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-4">
                   <Button variant="outline" size="icon" className="size-8 rounded-full" disabled={historyPage <= 1} onClick={() => setHistoryPage(p => p - 1)}><ChevronLeft className="size-4" /></Button>
-                  <span className="text-sm text-muted-foreground">{historyPage} / {consumptionTotalPages}</span>
-                  <Button variant="outline" size="icon" className="size-8 rounded-full" disabled={historyPage >= consumptionTotalPages} onClick={() => setHistoryPage(p => p + 1)}><ChevronRight className="size-4" /></Button>
+                  <span className="text-sm text-muted-foreground">{historyPage} / {activityTotalPages}</span>
+                  <Button variant="outline" size="icon" className="size-8 rounded-full" disabled={historyPage >= activityTotalPages} onClick={() => setHistoryPage(p => p + 1)}><ChevronRight className="size-4" /></Button>
                 </div>
               )}
             </div>
@@ -1272,7 +1306,7 @@ export default function Home() {
 
       {/* ═══ SETTINGS SHEET ═══ */}
       <Sheet open={store.settingsOpen} onOpenChange={(open) => { if (!open) store.closeAllModals() }}>
-        <SheetContent className="w-[400px] sm:max-w-[400px] overflow-y-auto">
+        <SheetContent className="w-[420px] sm:max-w-[420px] overflow-y-auto">
           <SheetHeader>
             <SheetTitle className="text-lg font-black">{t('settings', lang)}</SheetTitle>
             <SheetDescription />
@@ -1285,79 +1319,91 @@ export default function Home() {
                 <TabsTrigger value="danger" className="flex-1 text-xs">{t('dangerZone', lang)}</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="personalization" className="space-y-4 mt-4">
-                <div className="space-y-1"><Label className="text-xs font-medium">{t('language', lang)}</Label>
-                  <Select value={store.settings.language} onValueChange={(v) => updateSettings.mutate({ language: v })}>
-                    <SelectTrigger className="h-9 rounded-lg"><SelectValue /></SelectTrigger>
-                    <SelectContent><SelectItem value="en">English</SelectItem><SelectItem value="es">Español</SelectItem><SelectItem value="fr">Français</SelectItem><SelectItem value="de">Deutsch</SelectItem><SelectItem value="pt">Português</SelectItem></SelectContent>
-                  </Select>
+              <TabsContent value="personalization" className="space-y-3 mt-4">
+                {/* Row 1: Language + Theme */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1"><Label className="text-xs font-medium">{t('language', lang)}</Label>
+                    <Select value={store.settings.language} onValueChange={(v) => updateSettings.mutate({ language: v })}>
+                      <SelectTrigger className="h-9 rounded-lg"><SelectValue /></SelectTrigger>
+                      <SelectContent><SelectItem value="en">English</SelectItem><SelectItem value="es">Español</SelectItem><SelectItem value="fr">Français</SelectItem><SelectItem value="de">Deutsch</SelectItem><SelectItem value="pt">Português</SelectItem></SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1"><Label className="text-xs font-medium">{t('theme', lang)}</Label>
+                    <Select value={store.settings.theme} onValueChange={(v) => updateSettings.mutate({ theme: v })}>
+                      <SelectTrigger className="h-9 rounded-lg"><SelectValue /></SelectTrigger>
+                      <SelectContent><SelectItem value="dark">{t('dark', lang)}</SelectItem><SelectItem value="light">{t('light', lang)}</SelectItem></SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div className="space-y-1"><Label className="text-xs font-medium">{t('theme', lang)}</Label>
-                  <Select value={store.settings.theme} onValueChange={(v) => updateSettings.mutate({ theme: v })}>
-                    <SelectTrigger className="h-9 rounded-lg"><SelectValue /></SelectTrigger>
-                    <SelectContent><SelectItem value="dark">{t('dark', lang)}</SelectItem><SelectItem value="light">{t('light', lang)}</SelectItem></SelectContent>
-                  </Select>
+                {/* Row 2: Currency + Decimal Precision */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1"><Label className="text-xs font-medium">{t('currency', lang)}</Label>
+                    <Select value={store.settings.currency} onValueChange={(v) => updateSettings.mutate({ currency: v })}>
+                      <SelectTrigger className="h-9 rounded-lg"><SelectValue /></SelectTrigger>
+                      <SelectContent><SelectItem value="$">$ USD</SelectItem><SelectItem value="€">€ EUR</SelectItem><SelectItem value="£">£ GBP</SelectItem><SelectItem value="¥">¥ JPY</SelectItem><SelectItem value="C$">C$ CAD</SelectItem></SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1"><Label className="text-xs font-medium">{t('decimalPrecision', lang)}</Label>
+                    <Select value={String(store.settings.decimalPrecision)} onValueChange={(v) => updateSettings.mutate({ decimalPrecision: parseInt(v) })}>
+                      <SelectTrigger className="h-9 rounded-lg"><SelectValue /></SelectTrigger>
+                      <SelectContent><SelectItem value="1">1</SelectItem><SelectItem value="2">2</SelectItem><SelectItem value="3">3</SelectItem></SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div className="space-y-1"><Label className="text-xs font-medium">{t('currency', lang)}</Label>
-                  <Select value={store.settings.currency} onValueChange={(v) => updateSettings.mutate({ currency: v })}>
-                    <SelectTrigger className="h-9 rounded-lg"><SelectValue /></SelectTrigger>
-                    <SelectContent><SelectItem value="$">$ USD</SelectItem><SelectItem value="€">€ EUR</SelectItem><SelectItem value="£">£ GBP</SelectItem><SelectItem value="¥">¥ JPY</SelectItem><SelectItem value="C$">C$ CAD</SelectItem></SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1"><Label className="text-xs font-medium">{t('decimalPrecision', lang)}</Label>
-                  <Select value={String(store.settings.decimalPrecision)} onValueChange={(v) => updateSettings.mutate({ decimalPrecision: parseInt(v) })}>
-                    <SelectTrigger className="h-9 rounded-lg"><SelectValue /></SelectTrigger>
-                    <SelectContent><SelectItem value="1">1</SelectItem><SelectItem value="2">2</SelectItem><SelectItem value="3">3</SelectItem></SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1"><Label className="text-xs font-medium">{t('lowStockThreshold', lang)}</Label>
-                  <Input type="number" step="0.5" value={store.settings.lowStockThreshold} onChange={(e) => updateSettings.mutate({ lowStockThreshold: parseFloat(e.target.value) || 3 })} className="rounded-lg" />
-                  <p className="text-[10px] text-muted-foreground">{t('lowStockThresholdHint', lang)}</p>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div><Label className="text-xs font-medium">{t('showTimerMs', lang)}</Label><p className="text-[10px] text-muted-foreground">{t('showTimerMsHint', lang)}</p></div>
-                  <Switch checked={store.settings.showTimerMs} onCheckedChange={(v) => updateSettings.mutate({ showTimerMs: v })} />
+                {/* Row 3: Low Stock Threshold + Show Timer Ms */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1"><Label className="text-xs font-medium">{t('lowStockThreshold', lang)}</Label>
+                    <Input type="number" step="0.5" value={store.settings.lowStockThreshold} onChange={(e) => updateSettings.mutate({ lowStockThreshold: parseFloat(e.target.value) || 3 })} className="h-9 rounded-lg" />
+                    <p className="text-[10px] text-muted-foreground">{t('lowStockThresholdHint', lang)}</p>
+                  </div>
+                  <div className="space-y-1 flex flex-col justify-between">
+                    <div><Label className="text-xs font-medium">{t('showTimerMs', lang)}</Label><p className="text-[10px] text-muted-foreground">{t('showTimerMsHint', lang)}</p></div>
+                    <Switch checked={store.settings.showTimerMs} onCheckedChange={(v) => updateSettings.mutate({ showTimerMs: v })} />
+                  </div>
                 </div>
                 <Separator />
                 <p className="text-xs font-semibold uppercase tracking-wider">{t('sessionDefaults', lang)}</p>
-                <div className="grid grid-cols-2 gap-2">
+                {/* Session defaults in 2x2 grid */}
+                <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1"><Label className="text-xs">{t('defaultAmount', lang)}</Label>
-                    <Input type="number" step="0.1" value={store.settings.sessionDefaults?.defaultAmount ?? 0.5} onChange={(e) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, defaultAmount: parseFloat(e.target.value) || 0.5 } })} className="rounded-lg" /></div>
+                    <Input type="number" step="0.1" value={store.settings.sessionDefaults?.defaultAmount ?? 0.5} onChange={(e) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, defaultAmount: parseFloat(e.target.value) || 0.5 } })} className="h-9 rounded-lg" /></div>
                   <div className="space-y-1"><Label className="text-xs">{t('defaultPeople', lang)}</Label>
-                    <Input type="number" step="1" value={store.settings.sessionDefaults?.defaultPeople ?? 2} onChange={(e) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, defaultPeople: parseInt(e.target.value) || 2 } })} className="rounded-lg" /></div>
+                    <Input type="number" step="1" value={store.settings.sessionDefaults?.defaultPeople ?? 2} onChange={(e) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, defaultPeople: parseInt(e.target.value) || 2 } })} className="h-9 rounded-lg" /></div>
                   <div className="space-y-1"><Label className="text-xs">{t('defaultHitTimer', lang)}</Label>
-                    <Input type="number" step="1" value={store.settings.sessionDefaults?.defaultHitTimer ?? 10} onChange={(e) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, defaultHitTimer: parseInt(e.target.value) || 10 } })} className="rounded-lg" /></div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs">{t('rotationEnabled', lang)}</Label>
-                  <Switch checked={store.settings.sessionDefaults?.rotationEnabled ?? false} onCheckedChange={(v) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, rotationEnabled: v } })} />
+                    <Input type="number" step="1" value={store.settings.sessionDefaults?.defaultHitTimer ?? 10} onChange={(e) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, defaultHitTimer: parseInt(e.target.value) || 10 } })} className="h-9 rounded-lg" /></div>
+                  <div className="space-y-1 flex flex-col justify-between">
+                    <Label className="text-xs">{t('rotationEnabled', lang)}</Label>
+                    <Switch checked={store.settings.sessionDefaults?.rotationEnabled ?? false} onCheckedChange={(v) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, rotationEnabled: v } })} />
+                  </div>
                 </div>
               </TabsContent>
 
-              <TabsContent value="stats" className="space-y-3 mt-4">
+              <TabsContent value="stats" className="space-y-2 mt-4">
                 <p className="text-xs font-semibold uppercase tracking-wider">{t('showStatToggles', lang)}</p>
-                {[
-                  { key: 'totalProducts', label: t('totalProducts', lang), icon: Package, color: 'text-teal-400' },
-                  { key: 'totalAmount', label: t('totalAmount', lang), icon: Archive, color: 'text-emerald-400' },
-                  { key: 'averageRating', label: t('averageRating', lang), icon: Star, color: 'text-amber-400' },
-                  { key: 'averageTHC', label: t('averageTHC', lang), icon: Zap, color: 'text-purple-400' },
-                  { key: 'totalValue', label: t('totalValue', lang), icon: DollarSign, color: 'text-green-400' },
-                  { key: 'totalSessions', label: t('totalSessions', lang), icon: Users, color: 'text-cyan-400' },
-                ].map(({ key, label, icon: Icon, color }) => (
-                  <div key={key} className="flex items-center justify-between py-1">
-                    <div className="flex items-center gap-2">
-                      <Icon className={`size-4 ${color}`} />
-                      <span className="text-sm">{label}</span>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                  {[
+                    { key: 'totalProducts', label: t('totalProducts', lang), icon: Package, color: 'text-teal-400' },
+                    { key: 'totalAmount', label: t('totalAmount', lang), icon: Archive, color: 'text-emerald-400' },
+                    { key: 'averageRating', label: t('averageRating', lang), icon: Star, color: 'text-amber-400' },
+                    { key: 'averageTHC', label: t('averageTHC', lang), icon: Zap, color: 'text-purple-400' },
+                    { key: 'totalValue', label: t('totalValue', lang), icon: DollarSign, color: 'text-green-400' },
+                    { key: 'totalSessions', label: t('totalSessions', lang), icon: Users, color: 'text-cyan-400' },
+                  ].map(({ key, label, icon: Icon, color }) => (
+                    <div key={key} className="flex items-center justify-between py-1">
+                      <div className="flex items-center gap-2">
+                        <Icon className={`size-3.5 ${color}`} />
+                        <span className="text-xs">{label}</span>
+                      </div>
+                      <Switch
+                        checked={statsVis[key] !== false}
+                        onCheckedChange={(v) => {
+                          const newVis = { ...statsVis, [key]: v }
+                          updateSettings.mutate({ statsVisibility: newVis })
+                        }}
+                      />
                     </div>
-                    <Switch
-                      checked={statsVis[key] !== false}
-                      onCheckedChange={(v) => {
-                        const newVis = { ...statsVis, [key]: v }
-                        updateSettings.mutate({ statsVisibility: newVis })
-                      }}
-                    />
-                  </div>
-                ))}
+                  ))}
+                </div>
               </TabsContent>
 
               <TabsContent value="danger" className="space-y-4 mt-4">
@@ -1386,8 +1432,10 @@ export default function Home() {
                     </Button>
                   ) : (
                     <div className="space-y-2">
-                      <Input type="password" maxLength={6} value={pinInput} onChange={(e) => setPinInput(e.target.value.replace(/\D/g, ''))} placeholder={t('enterPin', lang)} className="h-9 rounded-lg" />
-                      <Input type="password" maxLength={6} value={pinConfirm} onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, ''))} placeholder={t('enterCurrentPin', lang)} className="h-9 rounded-lg" />
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input type="password" maxLength={6} value={pinInput} onChange={(e) => setPinInput(e.target.value.replace(/\D/g, ''))} placeholder={t('enterPin', lang)} className="h-9 rounded-lg" />
+                        <Input type="password" maxLength={6} value={pinConfirm} onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, ''))} placeholder={t('enterCurrentPin', lang)} className="h-9 rounded-lg" />
+                      </div>
                       {pinInput && pinInput.length < 4 && <p className="text-xs text-destructive">{t('pinLengthError', lang)}</p>}
                       {pinInput && pinConfirm && pinInput !== pinConfirm && <p className="text-xs text-destructive">{t('pinMismatch', lang)}</p>}
                       <div className="flex gap-2">

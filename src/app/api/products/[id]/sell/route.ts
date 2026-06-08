@@ -47,6 +47,17 @@ export async function POST(
       },
     })
 
+    // Log activity
+    await db.activityLog.create({
+      data: {
+        type: 'sold',
+        entityId: id,
+        entityType: 'product',
+        productName: product.name,
+        details: JSON.stringify({ amount: sellAmount, newAmount, note: body.note ?? null }),
+      },
+    })
+
     const settings = await db.appSettings.findUnique({ where: { id: 'app' } })
     const threshold = settings?.lowStockThreshold ?? 3
     const lowStock = newAmount > 0 && newAmount <= threshold

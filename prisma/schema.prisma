@@ -62,6 +62,16 @@ model ConsumptionLog {
   createdAt   DateTime @default(now())
 }
 
+model ActivityLog {
+  id         String   @id @default(cuid())
+  type       String   // "product_created", "product_updated", "product_deleted", "consumed", "sold", "session_completed", "favorite_toggled"
+  entityId   String   // product ID or session ID
+  entityType String   // "product" or "session"
+  details    String   @default("{}") // JSON string with change details
+  productName String  @default("") // denormalized for quick display even if product is deleted
+  createdAt  DateTime @default(now())
+}
+
 model AppSettings {
   id                String  @id @default("app")
   language          String  @default("en")
