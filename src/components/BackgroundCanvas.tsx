@@ -24,10 +24,10 @@ interface BackgroundCanvasProps {
 
 const TEXTURES = [
   { url: 'https://w-img.b-cdn.net/lil-darkie/textures/dust.png', adj: 1.0 },
-  { url: 'https://w-img.b-cdn.net/lil-darkie/textures/concrete-wall-2.png', adj: 0.8 },
-  { url: 'https://w-img.b-cdn.net/lil-darkie/textures/old-wall.png', adj: 0.7 },
-  { url: 'https://w-img.b-cdn.net/lil-darkie/textures/concrete-wall.png', adj: 0.8 },
-  { url: 'https://w-img.b-cdn.net/lil-darkie/textures/asfalt-dark.png', adj: 0.4 },
+  { url: 'https://w-img.b-cdn.net/lil-darkie/textures/concrete-wall-2.png', adj: 0.9 },
+  { url: 'https://w-img.b-cdn.net/lil-darkie/textures/old-wall.png', adj: 0.85 },
+  { url: 'https://w-img.b-cdn.net/lil-darkie/textures/concrete-wall.png', adj: 0.9 },
+  { url: 'https://w-img.b-cdn.net/lil-darkie/textures/asfalt-dark.png', adj: 0.6 },
 ];
 
 export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
@@ -173,7 +173,7 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
     return () => clearInterval(interval);
   }, []);
 
-  const targetOpacity = isDark ? 0.15 : 0.08;
+  const targetOpacity = isDark ? 0.5 : 0.3;
 
   return (
     <>
@@ -189,7 +189,6 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
           className="fixed inset-0 pointer-events-none"
           style={{
             zIndex: 1,
-            filter: 'invert(1)',
             opacity: i === activeIdx ? targetOpacity * t.adj : 0,
             transition: 'opacity 1s ease-in-out',
             backgroundImage: `url(${t.url})`,
