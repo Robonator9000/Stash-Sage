@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface Orb {
   x: number;
@@ -23,11 +23,11 @@ interface BackgroundCanvasProps {
 }
 
 const TEXTURES = [
-  'https://w-img.b-cdn.net/lil-darkie/textures/dust.png',
-  'https://w-img.b-cdn.net/lil-darkie/textures/concrete-wall-2.png',
-  'https://w-img.b-cdn.net/lil-darkie/textures/old-wall.png',
-  'https://w-img.b-cdn.net/lil-darkie/textures/concrete-wall.png',
-  'https://w-img.b-cdn.net/lil-darkie/textures/asfalt-dark.png',
+  { url: 'https://w-img.b-cdn.net/lil-darkie/textures/dust.png', adj: 1.0 },
+  { url: 'https://w-img.b-cdn.net/lil-darkie/textures/concrete-wall-2.png', adj: 0.8 },
+  { url: 'https://w-img.b-cdn.net/lil-darkie/textures/old-wall.png', adj: 0.7 },
+  { url: 'https://w-img.b-cdn.net/lil-darkie/textures/concrete-wall.png', adj: 0.8 },
+  { url: 'https://w-img.b-cdn.net/lil-darkie/textures/asfalt-dark.png', adj: 0.4 },
 ];
 
 export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
@@ -162,6 +162,19 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
     };
   }, [isDark]);
 
+  const [activeIdx, setActiveIdx] = useState(0);
+  const idxRef = useRef(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      idxRef.current = (idxRef.current + 1) % TEXTURES.length;
+      setActiveIdx(idxRef.current);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const targetOpacity = isDark ? 0.15 : 0.08;
+
   return (
     <>
       <canvas
@@ -170,28 +183,20 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
         className="fixed inset-0 pointer-events-none"
         style={{ zIndex: 0 }}
       />
-      {/* Photo-texture overlay — real surface photographs cycling like lildarkie.com */}
-      <div
-        className="fixed inset-0 pointer-events-none"
-        style={{
-          zIndex: 1,
-          filter: 'invert(1)',
-          opacity: isDark ? 0.15 : 0.08,
-          backgroundImage: `url(${TEXTURES[0]})`,
-          backgroundRepeat: 'repeat',
-          animation: 'cycleTextures 0.75s step-end infinite alternate-reverse',
-        }}
-      />
-      <style>{`
-        @keyframes cycleTextures {
-          0% { background-image: url(${TEXTURES[0]}); }
-          20% { background-image: url(${TEXTURES[1]}); }
-          40% { background-image: url(${TEXTURES[2]}); }
-          60% { background-image: url(${TEXTURES[3]}); }
-          80% { background-image: url(${TEXTURES[4]}); }
-          100% { background-image: url(${TEXTURES[2]}); }
-        }
-      `}</style>
+      {TEXTURES.map((t, i) => (
+        <div
+          key={i}
+          className="fixed inset-0 pointer-events-none"
+          style={{
+            zIndex: 1,
+            filter: 'invert(1)',
+            opacity: i === activeIdx ? targetOpacity * t.adj : 0,
+            transition: 'opacity 1s ease-in-out',
+            backgroundImage: `url(${t.url})`,
+            backgroundRepeat: 'repeat',
+          }}
+        />
+      ))}
     </>
   );
 }
