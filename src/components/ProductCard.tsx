@@ -80,14 +80,14 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
               </span>
             </div>
             {product.brand && (
-              <p className={`text-sm truncate ${isDark ? 'text-mist' : 'text-gray-500'}`}>From {product.brand}</p>
+              <p className={`text-sm truncate ${isDark ? 'text-mist' : 'text-gray-500'}`}>{t('from', lang)} {product.brand}</p>
             )}
             <div className="flex items-center gap-3 mt-1">
               <span className={`text-sm font-medium bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent`}>
                 {amountString}
               </span>
               {product.thc > 0 && (
-                <span className={`text-xs ${isDark ? 'text-haze' : 'text-gray-400'}`}>THC: {product.thc}%</span>
+                <span className={`text-xs ${isDark ? 'text-haze' : 'text-gray-400'}`}>{t('thc', lang)}: {product.thc}%</span>
               )}
               {product.rating > 0 && (
                 <div className="flex items-center gap-1">
@@ -108,14 +108,14 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
             </button>
             <button
               onClick={(e) => buttonAction(e, onSell)}
-              aria-label="Sell"
+              aria-label={t('sell', lang)}
               className={`p-2 rounded-lg transition-all ${isDark ? 'bg-amberx/12 text-amberx hover:bg-amberx/20' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'}`}
             >
               <DollarSign className="w-4 h-4" />
             </button>
             <button
               onClick={(e) => buttonAction(e, onToggleFavorite)}
-              aria-label={product.favorite ? t('filterFavorites', lang) : 'Add to favourites'}
+aria-label={product.favorite ? t('filterFavorites', lang) : t('addToFavorites', lang)}
               className={`p-2 rounded-lg transition-all ${product.favorite ? 'text-amberx' : isDark ? 'text-haze hover:text-amberx' : 'text-gray-400 hover:text-amber-500'}`}
             >
               <Heart className={`w-4 h-4 ${product.favorite ? 'fill-current' : ''}`} />
@@ -224,20 +224,20 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1 min-w-0">
               <h3 className={`font-bold text-lg truncate ${isDark ? 'text-frost' : 'text-gray-900'}`}>{product.name}</h3>
-              {product.brand && <p className={`text-sm truncate ${isDark ? 'text-mist' : 'text-gray-500'}`}>From {product.brand}</p>}
+              {product.brand && <p className={`text-sm truncate ${isDark ? 'text-mist' : 'text-gray-500'}`}>{t('from', lang)} {product.brand}</p>}
             </div>
           </div>
 
           <div className="flex items-center gap-3 mb-3">
             {product.thc > 0 && (
               <div className="flex items-center gap-1">
-                <span className={`text-xs font-medium ${isDark ? 'text-haze' : 'text-gray-400'}`}>THC</span>
+                <span className={`text-xs font-medium ${isDark ? 'text-haze' : 'text-gray-400'}`}>{t('thc', lang)}</span>
                 <span className={`text-sm font-bold ${isDark ? 'text-frost' : 'text-gray-900'}`}>{product.thc}%</span>
               </div>
             )}
             {product.cbd > 0 && (
               <div className="flex items-center gap-1">
-                <span className={`text-xs font-medium ${isDark ? 'text-haze' : 'text-gray-400'}`}>CBD</span>
+                <span className={`text-xs font-medium ${isDark ? 'text-haze' : 'text-gray-400'}`}>{t('cbd', lang)}</span>
                 <span className={`text-sm font-bold ${isDark ? 'text-frost' : 'text-gray-900'}`}>{product.cbd}%</span>
               </div>
             )}
@@ -290,7 +290,7 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
             }`}
           >
             <DollarSign className="w-4 h-4" />
-            <span className="text-sm">Sell</span>
+            <span className="text-sm">{t('sell', lang)}</span>
           </button>
           <button
             onClick={(e) => buttonAction(e, onToggleFavorite)}

@@ -63,9 +63,9 @@ def run_tests():
         check("Search bar with Spanish placeholder",
             page.locator('input[placeholder*="buscar" i]').first.is_visible())
         check("Settings button visible",
-            page.get_by_role('button', name='Settings').is_visible())
+            page.get_by_role('button', name='Configuración').is_visible())
         check("Add Product button visible",
-            page.get_by_role('button', name='Add Product').first.is_visible())
+            page.get_by_role('button', name='Agregar Producto').first.is_visible())
         check("Product grid/filters visible",
             page.locator('button:has-text("Todos")').first.is_visible())
 

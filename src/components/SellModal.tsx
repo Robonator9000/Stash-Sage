@@ -66,7 +66,7 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
       onClick={handleClose}
       role="dialog"
       aria-modal="true"
-      aria-label={`Sell ${product.name}`}
+      aria-label={`${t('sell', lang)} ${product.name}`}
     >
       <div
         className={`w-full max-w-sm rounded-2xl border-2 shadow-2xl transition-all duration-200 ${
@@ -78,12 +78,12 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
           isDark ? 'border-slate-800' : 'border-gray-200'
         }`}>
           <div>
-            <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              Sell {product.name}
+              <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {t('sell', lang)} {product.name}
             </h2>
             <div className={`flex items-center gap-3 text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
               <span>{t('amount', lang)}: {formatPrecision(product.amount, settings.decimalPrecision)}g</span>
-              {product.price > 0 && <span>Paid: {settings.currency}{formatPrecision(product.price, 2)}</span>}
+              {product.price > 0 && <span>{t('paid', lang)}: {settings.currency}{formatPrecision(product.price, 2)}</span>}
             </div>
           </div>
           <button
@@ -102,7 +102,7 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
             <div className="flex items-center gap-2 mb-3">
               <Package className={`w-4 h-4 ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`} />
               <label className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                Divide into Portions
+                {t('divideIntoPortions', lang)}
               </label>
             </div>
             <div className="flex flex-wrap gap-2 mb-3">
@@ -142,7 +142,7 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
                 }`}
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>Custom</span>
+                <span>{t('custom', lang)}</span>
               </button>
             </div>
             {showCustom && (
@@ -151,7 +151,7 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
                   type="number"
                   value={customPortion}
                   onChange={(e) => { setCustomPortion(e.target.value); setSelectedPortion(null); }}
-                  placeholder="grams"
+                  placeholder={t('grams', lang)}
                   min="0"
                   step="0.1"
                   autoFocus
@@ -172,7 +172,7 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
               <div className="flex items-center gap-2 mb-3">
                 <DollarSign className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                 <label className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                  Price per Portion
+                  {t('pricePerPortion', lang)}
                 </label>
               </div>
               <input
@@ -190,17 +190,17 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
               />
               <div className="space-y-1.5">
                 <div className="flex justify-between text-sm">
-                  <span className={isDark ? 'text-slate-400' : 'text-gray-500'}>Portions:</span>
+                  <span className={isDark ? 'text-slate-400' : 'text-gray-500'}>{t('portions', lang)}:</span>
                   <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{numberOfPortions}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className={isDark ? 'text-slate-400' : 'text-gray-500'}>Per portion:</span>
+                  <span className={isDark ? 'text-slate-400' : 'text-gray-500'}>{t('perPortion', lang)}:</span>
                   <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     {formatPrecision(portionGrams, settings.decimalPrecision)}g
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className={isDark ? 'text-slate-400' : 'text-gray-500'}>Sale value:</span>
+                  <span className={isDark ? 'text-slate-400' : 'text-gray-500'}>{t('saleValue', lang)}:</span>
                   <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     {settings.currency}{formatPrecision(totalSaleValue, 2)}
                   </span>
@@ -210,7 +210,7 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
                     isDark ? 'border-slate-700' : 'border-gray-200'
                   }`}>
                     <span className={isDark ? 'text-slate-400' : 'text-gray-500'}>
-                      {profit >= 0 ? 'Profit' : 'Loss'}:
+                      {profit >= 0 ? t('profit', lang) : t('loss', lang)}:
                     </span>
                     <span className={`font-bold flex items-center gap-1 ${
                       profit >= 0 ? 'text-emerald-400' : 'text-red-400'
@@ -226,11 +226,11 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
 
           <div>
             <label className={`block text-sm font-medium mb-3 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-              Quick Sell
-            </label>
-            <div className="grid grid-cols-2 gap-3 mb-3">
-              <div>
-                <span className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>Grams per portion</span>
+                {t('quickSell', lang)}
+              </label>
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                  <span className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('gramsPerPortion', lang)}</span>
                 <input
                   type="number"
                   value={quickSellGrams}
@@ -246,7 +246,7 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
                 />
               </div>
               <div>
-                <span className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>Number of portions</span>
+                  <span className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('numberOfPortions', lang)}</span>
                 <input
                   type="number"
                   value={quickSellPortions}
@@ -264,17 +264,17 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
             </div>
             <div className={`p-3 rounded-xl ${isDark ? 'bg-slate-800/50' : 'bg-gray-100'}`}>
               <div className="flex justify-between items-center">
-                <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                  Total to sell:
-                </span>
-                <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {formatPrecision(quickSellTotal, settings.decimalPrecision)}g
-                </span>
-              </div>
-              <div className="flex justify-between items-center mt-1">
-                <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                  Remaining after:
-                </span>
+                  <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                    {t('totalToSell', lang)}:
+                  </span>
+                  <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {formatPrecision(quickSellTotal, settings.decimalPrecision)}g
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mt-1">
+                  <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                    {t('remainingAfter', lang)}:
+                  </span>
                 <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {formatPrecision(Math.max(0, product.amount - quickSellTotal), settings.decimalPrecision)}g
                 </span>
@@ -299,7 +299,7 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
           <button
             onClick={handleSell}
             disabled={!canQuickSell}
-            aria-label="Sell"
+            aria-label={t('sell', lang)}
             className={`flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${
               canQuickSell
                 ? isDark
@@ -309,7 +309,7 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
             }`}
           >
             <DollarSign className="w-4 h-4" />
-            Sell
+            {t('sell', lang)}
           </button>
         </div>
       </div>

@@ -125,10 +125,10 @@ export function ControlsBar({
 
       <div className="flex items-center gap-1 p-1 rounded-xl">
         {([
-          { value: 'grid' as const, icon: Grid, label: 'Grid view' },
-          { value: 'list' as const, icon: List, label: 'List view' },
-          { value: 'compact' as const, icon: Layout, label: 'Compact view' },
-        ]).map(({ value, icon: Icon, label }) => (
+          { value: 'grid' as const, icon: Grid, labelKey: 'gridView' },
+          { value: 'list' as const, icon: List, labelKey: 'listView' },
+          { value: 'compact' as const, icon: Layout, labelKey: 'compactView' },
+        ]).map(({ value, icon: Icon, labelKey }) => (
           <button
             key={value}
             onClick={() => onLayoutChange(value)}
@@ -137,7 +137,7 @@ export function ControlsBar({
                 ? isDark ? 'bg-cyanx/10 text-cyanx' : 'bg-cyan-100 text-cyan-600'
                 : isDark ? 'text-haze hover:text-frost' : 'text-gray-400 hover:text-gray-900'
             }`}
-            aria-label={label}
+            aria-label={t(labelKey, lang)}
           >
             <Icon className="w-4 h-4" />
           </button>

@@ -1,6 +1,7 @@
 import { SearchBar } from './SearchBar';
 import { ControlsBar } from './ControlsBar';
 import { SortOption, FilterType } from '../types';
+import { t } from '../utils/translations';
 import { Plus, Settings } from 'lucide-react';
 
 interface AppHeaderProps {
@@ -51,7 +52,7 @@ export function AppHeader({
             <p className={`text-sm ${
               isDark ? 'text-mist' : 'text-gray-500'
             }`}>
-              Manage your consumption
+              {t('manageConsumption', lang)}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -62,17 +63,17 @@ export function AppHeader({
                   ? 'bg-surface text-mist hover:bg-surface-light hover:text-frost'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
-              aria-label="Settings"
+              aria-label={t('settings', lang)}
             >
               <Settings className="w-5 h-5" />
             </button>
             <button
               onClick={onAddProduct}
               className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all bg-gradient-to-r from-cyanx to-emera text-white hover:from-cyanx-dark hover:to-emera-dark active:scale-[0.97]"
-              aria-label="Add Product"
+              aria-label={t('addProduct', lang)}
             >
               <Plus className="w-5 h-5" />
-              <span className="text-sm">Add Product</span>
+              <span className="text-sm">{t('addProduct', lang)}</span>
             </button>
           </div>
         </div>

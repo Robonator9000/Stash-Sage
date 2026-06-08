@@ -33,13 +33,13 @@ export function StatsCard({ products, isDark = true }: StatsCardProps) {
     ? (() => {
         const diffMs = Date.now() - lastConsumedDate.getTime();
         const diffMins = Math.floor(diffMs / 60000);
-        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffMins < 60) return t('minutesAgo', settings.language).replace('{n}', diffMins.toString());
         const diffHours = Math.floor(diffMins / 60);
-        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffHours < 24) return t('hoursAgo', settings.language).replace('{n}', diffHours.toString());
         const diffDays = Math.floor(diffHours / 24);
-        if (diffDays < 30) return `${diffDays}d ago`;
+        if (diffDays < 30) return t('daysAgo', settings.language).replace('{n}', diffDays.toString());
         const diffMonths = Math.floor(diffDays / 30);
-        return `${diffMonths}mo ago`;
+        return t('monthsAgo', settings.language).replace('{n}', diffMonths.toString());
       })()
     : '—';
 

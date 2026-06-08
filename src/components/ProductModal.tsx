@@ -154,7 +154,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
       onClick={handleClose}
       role="dialog"
       aria-modal="true"
-      aria-label={product ? `Edit ${product.name}` : 'Add New Product'}
+      aria-label={product ? `${t('editProduct', lang)} ${product.name}` : t('addProduct', lang)}
     >
       <div 
         className={`w-full max-w-md rounded-2xl border-2 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col transition-all duration-200 ${
@@ -188,7 +188,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                 <div className={`w-20 h-20 rounded-xl overflow-hidden border-2 ${
                   isDark ? 'border-slate-700' : 'border-gray-200'
                 }`}>
-                  <img src={picture} alt="Product" className="w-full h-full object-cover" />
+                  <img src={picture} alt={product?.name || t('addProduct', lang)} className="w-full h-full object-cover" />
                 </div>
               ) : (
                 <div 
@@ -220,7 +220,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                 }`}
               >
                 <Upload className="w-4 h-4 inline mr-2" />
-                {picture ? 'Change Picture' : 'Upload Picture'}
+                {picture ? t('changePicture', lang) : t('uploadPicture', lang)}
               </button>
             </div>
           </div>
@@ -228,13 +228,13 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
           {/* Strain Name */}
           <div>
             <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-              Strain Name *
+              {t('strainName', lang)} *
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Blue Dream"
+              placeholder={t('strainNamePlaceholder', lang)}
               className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
                 isDark 
                   ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' 
@@ -246,7 +246,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
           {/* Brand Dropdown */}
           <div ref={brandDropdownRef}>
             <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-              Brand / Dispensary
+              {t('brandDispensary', lang)}
             </label>
             <div className="relative">
               <button
@@ -259,7 +259,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                 } outline-none`}
               >
                 <span className={brand ? '' : isDark ? 'text-slate-500' : 'text-gray-400'}>
-                  {brand || 'Select or add brand...'}
+                  {brand || t('selectBrand', lang)}
                 </span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${isBrandDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -274,7 +274,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                       type="text"
                       value={brandSearchQuery}
                       onChange={(e) => setBrandSearchQuery(e.target.value)}
-                      placeholder="Search brands..."
+                      placeholder={t('searchBrands', lang)}
                       className={`w-full px-3 py-2 rounded-lg text-sm ${
                         isDark 
                           ? 'bg-slate-700 text-white placeholder-slate-400' 
@@ -324,7 +324,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                       }`}
                     >
                       <Plus className="w-4 h-4" />
-                      Add "{brandSearchQuery}"
+                      {t('addBrand', lang).replace('{query}', brandSearchQuery)}
                     </button>
                   )}
                 </div>
@@ -335,7 +335,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
           {/* Type */}
           <div>
             <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-              Strain Type
+              {t('strainType', lang)}
             </label>
             <div className="grid grid-cols-4 gap-2 mb-2">
               {(['indica', 'sativa', 'hybrid'] as const).map((t) => (
@@ -366,7 +366,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                 }`}
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>Custom</span>
+                <span>{t('custom', lang)}</span>
               </button>
             </div>
             {showCustomType && (
@@ -374,7 +374,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                 type="text"
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                placeholder="Type custom strain..."
+                placeholder={t('customStrainPlaceholder', lang)}
                 autoFocus
                 className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
                   isDark 
@@ -389,7 +389,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                THC %
+                {t('thcPercent', lang)}
               </label>
               <input
                 type="number"
@@ -408,7 +408,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
             </div>
             <div>
               <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                CBD %
+                {t('cbdPercent', lang)}
               </label>
               <input
                 type="number"
@@ -431,7 +431,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                Amount (grams)
+                {t('amountGrams', lang)}
               </label>
               <input
                 type="number"
@@ -439,7 +439,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                 min="0"
                 value={amount}
                 onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-                placeholder="e.g., 3.50"
+                placeholder={t('amountPlaceholder', lang)}
                 className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
                   isDark 
                     ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' 
@@ -449,7 +449,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
             </div>
             <div>
               <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                Price ({settings.currency})
+                {t('priceLabel', lang)} ({settings.currency})
               </label>
               <input
                 type="number"
@@ -469,9 +469,9 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
 
           {/* Rating */}
           <div>
-            <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-              Rating
-            </label>
+              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+                {t('rating', lang)}
+              </label>
             <div className="flex items-center gap-1">
               {[1, 2, 3, 4, 5].map((star) => {
                 const fillPercent = (hoveredStar || rating) >= star ? 100 : (hoveredStar || rating) >= star - 0.5 ? 50 : 0;
@@ -508,13 +508,13 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
 
           {/* Notes */}
           <div>
-            <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-              Notes
-            </label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Add personal notes..."
+              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+                {t('notesLabel', lang)}
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder={t('notesPlaceholder', lang)}
               rows={3}
               className={`w-full px-4 py-3 rounded-xl border-2 transition-colors resize-none ${
                 isDark 
