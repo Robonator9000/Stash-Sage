@@ -96,7 +96,6 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
     const images: HTMLImageElement[] = [];
     TEXTURES.forEach((t, i) => {
       const img = new Image();
-      img.crossOrigin = 'anonymous';
       img.src = t.url;
       images[i] = img;
     });
@@ -185,15 +184,9 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
       }
 
       if (currentImg && currentImg.complete && currentImg.naturalWidth > 0) {
-        const targetAlpha = isDark ? 0.2 : 0.1;
         ctx.save();
-        ctx.filter = 'invert(1)';
-        ctx.globalAlpha = targetAlpha * currentOpacity;
-        const pattern = ctx.createPattern(currentImg, 'repeat');
-        if (pattern) {
-          ctx.fillStyle = pattern;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
+        ctx.globalAlpha = 0.4;
+        ctx.drawImage(currentImg, 0, 0, canvas.width, canvas.height);
         ctx.restore();
       }
 
@@ -201,16 +194,9 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
       if (crossfadeFrame < crossfadeDuration && prevTextureIdx >= 0) {
         const prevImg = images[prevTextureIdx];
         if (prevImg && prevImg.complete && prevImg.naturalWidth > 0) {
-          const t = 1 - crossfadeFrame / crossfadeDuration;
-          const targetAlpha = isDark ? 0.2 : 0.1;
           ctx.save();
-          ctx.filter = 'invert(1)';
-          ctx.globalAlpha = targetAlpha * TEXTURES[prevTextureIdx].adj * t;
-          const pattern = ctx.createPattern(prevImg, 'repeat');
-          if (pattern) {
-            ctx.fillStyle = pattern;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-          }
+          ctx.globalAlpha = 0.4 * (1 - crossfadeFrame / crossfadeDuration);
+          ctx.drawImage(prevImg, 0, 0, canvas.width, canvas.height);
           ctx.restore();
         }
         crossfadeFrame++;
