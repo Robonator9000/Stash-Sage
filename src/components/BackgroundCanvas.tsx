@@ -67,6 +67,21 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
       });
     }
 
+    // Pre-generate noise texture for banding dither
+    const noiseCanvas = document.createElement('canvas');
+    noiseCanvas.width = 256;
+    noiseCanvas.height = 256;
+    const noiseCtx = noiseCanvas.getContext('2d')!;
+    const noiseData = noiseCtx.createImageData(256, 256);
+    for (let i = 0; i < noiseData.data.length; i += 4) {
+      const v = Math.random() * 255;
+      noiseData.data[i] = v;
+      noiseData.data[i + 1] = v;
+      noiseData.data[i + 2] = v;
+      noiseData.data[i + 3] = 6;
+    }
+    noiseCtx.putImageData(noiseData, 0, 0);
+
     const accentFrom = isDark ? 'rgba(6, 182, 212,' : 'rgba(6, 182, 212,';
     const accentMid = isDark ? 'rgba(16, 185, 129,' : 'rgba(16, 185, 129,';
     const accentTo = isDark ? 'rgba(56, 189, 248,' : 'rgba(14, 165, 233,';
@@ -126,6 +141,18 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
         }
         ctx.fill();
       }
+
+      // Noise overlay to dither gradient banding
+      ctx.globalAlpha = 0.5;
+      for (let i = 0; i < 6; i++) {
+        ctx.drawImage(
+          noiseCanvas,
+          Math.random() * (canvas.width - 256),
+          Math.random() * (canvas.height - 256),
+          256, 256
+        );
+      }
+      ctx.globalAlpha = 1;
 
       rafRef.current = requestAnimationFrame(animate);
     };

@@ -59,7 +59,7 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
         <div className="flex items-center gap-4 p-4" onClick={onClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}>
           <div className="relative flex-shrink-0">
             {product.picture ? (
-              <img src={product.picture} alt={product.name} className="w-16 h-16 rounded-lg object-cover" />
+              <img src={product.picture} alt={product.name} loading="lazy" decoding="async" className="w-16 h-16 rounded-lg object-cover" />
             ) : (
               <div className={`w-16 h-16 rounded-lg flex items-center justify-center ${isDark ? 'bg-surface' : 'bg-gray-100'}`}>
                 <Package className={`w-6 h-6 ${isDark ? 'text-haze' : 'text-gray-400'}`} />
@@ -138,7 +138,7 @@ aria-label={product.favorite ? t('filterFavorites', lang) : t('addToFavorites', 
       >
         <div className="aspect-square relative overflow-hidden rounded-t-xl">
           {product.picture ? (
-            <img src={product.picture} alt={product.name} className="w-full h-full object-cover" />
+            <img src={product.picture} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
           ) : (
             <div className={`w-full h-full flex items-center justify-center ${isDark ? 'bg-surface' : 'bg-gray-100'}`}>
               <Package className={`w-8 h-8 ${isDark ? 'text-haze' : 'text-gray-400'}`} />
@@ -196,7 +196,7 @@ aria-label={product.favorite ? t('filterFavorites', lang) : t('addToFavorites', 
     >
       <div className="relative aspect-video flex-shrink-0">
         {product.picture ? (
-          <img src={product.picture} alt={product.name} className="w-full h-full object-cover" />
+          <img src={product.picture} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
         ) : (
           <div className={`w-full h-full flex items-center justify-center ${isDark ? 'bg-surface' : 'bg-gray-100'}`}>
             <Package className={`w-12 h-12 ${isDark ? 'text-haze' : 'text-gray-400'}`} />
