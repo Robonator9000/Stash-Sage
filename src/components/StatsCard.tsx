@@ -1,9 +1,8 @@
 import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
-import { roundToHundredth } from '../utils/helpers';
+import { roundToHundredth, formatPrecision } from '../utils/helpers';
 import { Product } from '../types';
 import { Package, Scale, Flame, Star, Percent, DollarSign, Clock } from 'lucide-react';
-import { formatPrecision } from '../utils/helpers';
 
 interface StatsCardProps {
   products: Product[];
@@ -57,37 +56,37 @@ export function StatsCard({ products, isDark = true }: StatsCardProps) {
 
   const visibleStats = statItems.filter(s => s.visible);
 
-  if (visibleStats.length === 0) {
-    return null;
-  }
+  if (visibleStats.length === 0) return null;
 
   return (
-    <div className={`rounded-2xl border-2 p-4 transition-all ${
-      isDark 
-        ? 'bg-slate-900/80 border-slate-800 hover:border-slate-700' 
-        : 'bg-white border-gray-200 shadow-sm hover:shadow-md'
+    <div className={`rounded-2xl transition-all ${
+      isDark
+        ? 'bg-leather/80 border border-leather-lighter'
+        : 'bg-white border border-gray-200 shadow-card'
     }`}>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-px">
         {visibleStats.map((stat) => {
           const Icon = stat.icon;
           return (
             <div
               key={stat.key}
-              className={`flex-1 min-w-[100px] rounded-xl p-3 text-center transition-all hover:scale-[1.02] ${
-                isDark 
-                  ? 'bg-slate-800/50 hover:bg-slate-800' 
-                  : 'bg-gray-50 hover:bg-gray-100 hover:shadow-sm'
+              className={`flex-1 min-w-[100px] p-3 text-center transition-all hover:scale-[1.02] ${
+                isDark
+                  ? 'hover:bg-leather-light/60'
+                  : 'hover:bg-gray-50'
               }`}
             >
               <div className={`w-8 h-8 rounded-lg mx-auto mb-2 flex items-center justify-center ${
-                isDark ? 'bg-gradient-to-br from-cyan-500/20 to-emerald-500/20' : 'bg-gradient-to-br from-cyan-100 to-emerald-100'
+                isDark ? 'bg-herb/10' : 'bg-emerald-50'
               }`}>
-                <Icon className={`w-4 h-4 ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`} />
+                <Icon className={`w-4 h-4 ${isDark ? 'text-herb' : 'text-emerald-600'}`} />
               </div>
-              <div className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <div className={`font-heading text-xl font-bold tracking-tight ${
+                isDark ? 'text-parchment' : 'text-gray-900'
+              }`}>
                 {stat.value}{stat.suffix}
               </div>
-              <div className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+              <div className={`text-xs mt-0.5 ${isDark ? 'text-stone' : 'text-gray-500'}`}>
                 {stat.label}
               </div>
             </div>

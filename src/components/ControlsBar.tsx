@@ -31,6 +31,17 @@ export function ControlsBar({
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
+  const btnClass = (active: boolean) =>
+    `flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+      active
+        ? isDark
+          ? 'bg-herb/15 text-herb'
+          : 'bg-emerald-50 text-emerald-600'
+        : isDark
+          ? 'bg-leather-light text-stone hover:bg-leather-lighter hover:text-parchment'
+          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+    }`;
+
   return (
     <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
       <div className="flex items-center gap-2">
@@ -40,18 +51,16 @@ export function ControlsBar({
               setShowSortDropdown(!showSortDropdown);
               setShowFilterDropdown(false);
             }}
-            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-              isDark
-                ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
+            className={btnClass(showSortDropdown)}
           >
             <ArrowUpDown className="w-4 h-4" />
             {t(sortOptions.find(o => o.value === sortBy)?.labelKey || 'sortNewest', lang)}
           </button>
           {showSortDropdown && (
-            <div className={`absolute top-full left-0 mt-2 w-48 rounded-xl border-2 shadow-xl z-10 overflow-hidden ${
-              isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'
+            <div className={`absolute top-full left-0 mt-2 w-48 rounded-xl shadow-xl z-10 overflow-hidden ${
+              isDark
+                ? 'bg-leather border border-leather-lighter'
+                : 'bg-white border border-gray-200'
             }`}>
               {sortOptions.map((option) => (
                 <button
@@ -60,10 +69,10 @@ export function ControlsBar({
                     onSortChange(option.value as SortOption);
                     setShowSortDropdown(false);
                   }}
-                  className={`w-full px-4 py-2 text-left text-sm transition-colors ${
+                  className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
                     sortBy === option.value
-                      ? isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
-                      : isDark ? 'hover:bg-slate-700 text-white' : 'hover:bg-gray-100 text-gray-900'
+                      ? isDark ? 'bg-herb/10 text-herb' : 'bg-emerald-50 text-emerald-600'
+                      : isDark ? 'hover:bg-leather-light text-parchment' : 'hover:bg-gray-100 text-gray-900'
                   }`}
                 >
                   {t(option.labelKey, lang)}
@@ -79,11 +88,7 @@ export function ControlsBar({
               setShowFilterDropdown(!showFilterDropdown);
               setShowSortDropdown(false);
             }}
-            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-              isDark
-                ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
+            className={btnClass(showFilterDropdown)}
           >
             <Filter className="w-4 h-4" />
             {(() => {
@@ -92,8 +97,10 @@ export function ControlsBar({
             })()}
           </button>
           {showFilterDropdown && (
-            <div className={`absolute top-full left-0 mt-2 w-48 rounded-xl border-2 shadow-xl z-10 overflow-hidden ${
-              isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'
+            <div className={`absolute top-full left-0 mt-2 w-48 rounded-xl shadow-xl z-10 overflow-hidden ${
+              isDark
+                ? 'bg-leather border border-leather-lighter'
+                : 'bg-white border border-gray-200'
             }`}>
               {filterOptions.map((option) => (
                 <button
@@ -102,10 +109,10 @@ export function ControlsBar({
                     onFilterChange(option.value as FilterType);
                     setShowFilterDropdown(false);
                   }}
-                  className={`w-full px-4 py-2 text-left text-sm transition-colors ${
+                  className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
                     filterBy === option.value
-                      ? isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
-                      : isDark ? 'hover:bg-slate-700 text-white' : 'hover:bg-gray-100 text-gray-900'
+                      ? isDark ? 'bg-herb/10 text-herb' : 'bg-emerald-50 text-emerald-600'
+                      : isDark ? 'hover:bg-leather-light text-parchment' : 'hover:bg-gray-100 text-gray-900'
                   }`}
                 >
                   {(option as any).display || t(option.labelKey, lang)}
@@ -117,39 +124,24 @@ export function ControlsBar({
       </div>
 
       <div className="flex items-center gap-1 p-1 rounded-xl">
-        <button
-          onClick={() => onLayoutChange('grid')}
-          className={`p-2 rounded-lg transition-all ${
-            layout === 'grid'
-              ? isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-100 text-cyan-600'
-              : isDark ? 'text-slate-400 hover:text-white' : 'text-gray-400 hover:text-gray-900'
-          }`}
-          aria-label="Grid view"
-        >
-          <Grid className="w-4 h-4" />
-        </button>
-        <button
-          onClick={() => onLayoutChange('list')}
-          className={`p-2 rounded-lg transition-all ${
-            layout === 'list'
-              ? isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-100 text-cyan-600'
-              : isDark ? 'text-slate-400 hover:text-white' : 'text-gray-400 hover:text-gray-900'
-          }`}
-          aria-label="List view"
-        >
-          <List className="w-4 h-4" />
-        </button>
-        <button
-          onClick={() => onLayoutChange('compact')}
-          className={`p-2 rounded-lg transition-all ${
-            layout === 'compact'
-              ? isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-100 text-cyan-600'
-              : isDark ? 'text-slate-400 hover:text-white' : 'text-gray-400 hover:text-gray-900'
-          }`}
-          aria-label="Compact view"
-        >
-          <Layout className="w-4 h-4" />
-        </button>
+        {([
+          { value: 'grid' as const, icon: Grid, label: 'Grid view' },
+          { value: 'list' as const, icon: List, label: 'List view' },
+          { value: 'compact' as const, icon: Layout, label: 'Compact view' },
+        ]).map(({ value, icon: Icon, label }) => (
+          <button
+            key={value}
+            onClick={() => onLayoutChange(value)}
+            className={`p-2 rounded-lg transition-all ${
+              layout === value
+                ? isDark ? 'bg-herb/15 text-herb' : 'bg-emerald-100 text-emerald-600'
+                : isDark ? 'text-ash hover:text-parchment' : 'text-gray-400 hover:text-gray-900'
+            }`}
+            aria-label={label}
+          >
+            <Icon className="w-4 h-4" />
+          </button>
+        ))}
       </div>
     </div>
   );
