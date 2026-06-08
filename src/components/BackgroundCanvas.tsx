@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface Orb {
   x: number;
@@ -92,12 +92,29 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
           { pos: 0.75, r: 55, g: 120, b: 160, a: 0.02 },
         ];
 
+    // Preload texture images
+    const images: HTMLImageElement[] = [];
+    TEXTURES.forEach((t, i) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = t.url;
+      images[i] = img;
+    });
+
+    let textureIdx = 0;
+    let framesUntilSwap = 300;
+    let prevTextureIdx = -1;
+    let crossfadeFrame = 0;
+    const crossfadeDuration = 60; // frames (~1s at 60fps)
+    const cycleInterval = 300; // frames (~5s)
+
     let frame = 0;
 
     const animate = () => {
       frame++;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // Draw gradient orbs
       for (const orb of orbs) {
         orb.x += orb.vx + Math.sin(frame * 0.002 + orb.radius) * 0.3;
         orb.y += orb.vy + Math.cos(frame * 0.003 + orb.radius) * 0.3;
@@ -113,6 +130,7 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
+      // Extra pulsing orb
       const pulse = Math.sin(frame * 0.003) * 0.5 + 0.5;
       const ex = canvas.width * (0.5 + Math.sin(frame * 0.004) * 0.15);
       const ey = canvas.height * (0.5 + Math.cos(frame * 0.005) * 0.15);
@@ -128,16 +146,14 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
       ctx.fillStyle = extraGrad;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+      // Draw particles
       for (const p of particles) {
         p.x += p.vx;
         p.y += p.vy;
         p.alpha += (Math.random() - 0.5) * 0.003;
         p.alpha = Math.max(0.03, Math.min(0.35, p.alpha));
 
-        if (p.y < -10) {
-          p.y = canvas.height + 10;
-          p.x = Math.random() * canvas.width;
-        }
+        if (p.y < -10) { p.y = canvas.height + 10; p.x = Math.random() * canvas.width; }
         if (p.x < -10) p.x = canvas.width + 10;
         if (p.x > canvas.width + 10) p.x = -10;
 
@@ -151,6 +167,55 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
         ctx.fill();
       }
 
+      // Texture cycling
+      framesUntilSwap--;
+      if (framesUntilSwap <= 0) {
+        prevTextureIdx = textureIdx;
+        textureIdx = (textureIdx + 1) % TEXTURES.length;
+        crossfadeFrame = 0;
+        framesUntilSwap = cycleInterval;
+      }
+
+      // Draw current texture
+      const currentImg = images[textureIdx];
+      let currentOpacity = TEXTURES[textureIdx].adj;
+      if (crossfadeFrame < crossfadeDuration && prevTextureIdx >= 0) {
+        const t = crossfadeFrame / crossfadeDuration;
+        currentOpacity *= t;
+      }
+
+      if (currentImg && currentImg.complete && currentImg.naturalWidth > 0) {
+        const targetAlpha = isDark ? 0.2 : 0.1;
+        ctx.save();
+        ctx.filter = 'invert(1)';
+        ctx.globalAlpha = targetAlpha * currentOpacity;
+        const pattern = ctx.createPattern(currentImg, 'repeat');
+        if (pattern) {
+          ctx.fillStyle = pattern;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        ctx.restore();
+      }
+
+      // Draw previous texture fading out
+      if (crossfadeFrame < crossfadeDuration && prevTextureIdx >= 0) {
+        const prevImg = images[prevTextureIdx];
+        if (prevImg && prevImg.complete && prevImg.naturalWidth > 0) {
+          const t = 1 - crossfadeFrame / crossfadeDuration;
+          const targetAlpha = isDark ? 0.2 : 0.1;
+          ctx.save();
+          ctx.filter = 'invert(1)';
+          ctx.globalAlpha = targetAlpha * TEXTURES[prevTextureIdx].adj * t;
+          const pattern = ctx.createPattern(prevImg, 'repeat');
+          if (pattern) {
+            ctx.fillStyle = pattern;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+          }
+          ctx.restore();
+        }
+        crossfadeFrame++;
+      }
+
       rafRef.current = requestAnimationFrame(animate);
     };
     animate();
@@ -161,41 +226,12 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
     };
   }, [isDark]);
 
-  const [activeIdx, setActiveIdx] = useState(0);
-  const idxRef = useRef(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      idxRef.current = (idxRef.current + 1) % TEXTURES.length;
-      setActiveIdx(idxRef.current);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const targetOpacity = isDark ? 0.2 : 0.1;
-
   return (
-    <>
-      <canvas
-        id="bg-canvas"
-        ref={canvasRef}
-        className="fixed inset-0 pointer-events-none"
-        style={{ zIndex: 0 }}
-      />
-      {TEXTURES.map((t, i) => (
-        <div
-          key={i}
-          className="fixed inset-0 pointer-events-none"
-          style={{
-            zIndex: 0,
-            filter: 'invert(1)',
-            opacity: i === activeIdx ? targetOpacity * t.adj : 0,
-            transition: 'opacity 1s ease-in-out',
-            backgroundImage: `url(${t.url})`,
-            backgroundRepeat: 'repeat',
-          }}
-        />
-      ))}
-    </>
+    <canvas
+      id="bg-canvas"
+      ref={canvasRef}
+      className="fixed inset-0 pointer-events-none"
+      style={{ zIndex: 0 }}
+    />
   );
 }
