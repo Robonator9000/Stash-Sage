@@ -166,7 +166,7 @@ export default function App() {
       className="min-h-screen transition-colors"
       style={{
         backgroundColor: 'var(--bg)',
-        backgroundImage: `url(${isDark ? '/bg-dark.gif' : '/bg-light.gif'})`,
+        backgroundImage: `url(${import.meta.env.BASE_URL}${isDark ? 'bg-dark.gif' : 'bg-light.gif'})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
