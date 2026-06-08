@@ -51,7 +51,7 @@ export function StatsCard({ products, isDark = true }: StatsCardProps) {
     { key: 'totalSessions' as const, visible: stats.totalSessions, icon: Flame, label: t('totalSessions', settings.language), value: totalSessions.toString(), suffix: '' },
     { key: 'averageRating' as const, visible: stats.averageRating, icon: Star, label: t('averageRating', settings.language), value: formatPrecision(averageRating, dp), suffix: '/5' },
     { key: 'averageTHC' as const, visible: stats.averageTHC, icon: Percent, label: t('averageTHC', settings.language), value: formatPrecision(averageTHC, dp), suffix: '%' },
-    { key: 'totalValue' as const, visible: stats.totalValue, icon: DollarSign, label: t('totalValue', settings.language), value: formatPrecision(totalValue, dp), suffix: settings.currency },
+    { key: 'totalValue' as const, visible: stats.totalValue, icon: DollarSign, label: t('totalValue', settings.language), value: settings.currency + formatPrecision(totalValue, dp), suffix: '' },
     { key: 'lastConsumed' as const, visible: stats.lastConsumed, icon: Clock, label: t('lastConsumed', settings.language), value: lastConsumedStr, suffix: '' },
   ];
 
@@ -62,25 +62,25 @@ export function StatsCard({ products, isDark = true }: StatsCardProps) {
   }
 
   return (
-    <div className={`rounded-2xl border-2 p-4 transition-all duration-500 ${
+    <div className={`rounded-2xl border-2 p-4 transition-all ${
       isDark 
-        ? 'bg-slate-900/50 border-slate-800' 
-        : 'bg-white border-gray-200 shadow-sm'
+        ? 'bg-slate-900/80 border-slate-800 hover:border-slate-700' 
+        : 'bg-white border-gray-200 shadow-sm hover:shadow-md'
     }`}>
-      <div className="flex flex-wrap gap-3 transition-all duration-500">
+      <div className="flex flex-wrap gap-3">
         {visibleStats.map((stat) => {
           const Icon = stat.icon;
           return (
             <div
               key={stat.key}
-              className={`flex-1 min-w-[100px] rounded-xl p-3 text-center transition-all ${
+              className={`flex-1 min-w-[100px] rounded-xl p-3 text-center transition-all hover:scale-[1.02] ${
                 isDark 
                   ? 'bg-slate-800/50 hover:bg-slate-800' 
-                  : 'bg-gray-50 hover:bg-gray-100'
+                  : 'bg-gray-50 hover:bg-gray-100 hover:shadow-sm'
               }`}
             >
               <div className={`w-8 h-8 rounded-lg mx-auto mb-2 flex items-center justify-center ${
-                isDark ? 'bg-cyan-500/20' : 'bg-cyan-100'
+                isDark ? 'bg-gradient-to-br from-cyan-500/20 to-emerald-500/20' : 'bg-gradient-to-br from-cyan-100 to-emerald-100'
               }`}>
                 <Icon className={`w-4 h-4 ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`} />
               </div>

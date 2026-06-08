@@ -62,4 +62,3 @@ export interface Session {
 
 export type SortOption = 'newest' | 'oldest' | 'name' | 'rating' | 'thc' | 'amount' | 'price' | 'favorites';
 export type FilterType = string;
-export type ViewLayout = 'grid' | 'list' | 'compact';

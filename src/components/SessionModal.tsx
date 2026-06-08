@@ -27,6 +27,13 @@ export function SessionModal({
   defaultHitTimer = 10,
 }: SessionModalProps) {
   const { settings } = useSettings();
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), 10);
+    return () => clearTimeout(timer);
+  }, []);
+
   const [amountUsed, setAmountUsed] = useState(initialAmount);
   const [hitsCount, setHitsCount] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(autoStartTimer);
@@ -116,11 +123,19 @@ export function SessionModal({
     setIsTimerRunning(false);
   };
 
+  const handleClose = () => {
+    setIsVisible(false);
+    setTimeout(onClose, 200);
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className={`w-full max-w-md rounded-2xl border-2 overflow-hidden shadow-2xl flex flex-col max-h-[90vh] ${
+      <div className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-200 ${
+      isVisible ? 'bg-black/80 backdrop-blur-sm' : 'bg-black/0'
+    }`}
+    onClick={handleClose}>
+      <div className={`w-full max-w-md rounded-2xl border-2 overflow-hidden shadow-2xl flex flex-col max-h-[90vh] transition-all duration-200 ${
         isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
-      }`}>
+      } ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
         {/* Header - Fixed */}
         <div className={`flex items-center justify-between p-5 border-b flex-shrink-0 ${
           isDark ? 'border-slate-800' : 'border-gray-200'
@@ -469,7 +484,7 @@ export function SessionModal({
           isDark ? 'border-slate-800' : 'border-gray-200'
         }`}>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
               isDark 
                 ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Product, Settings } from '../types';
+import { Product } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { roundToHundredth, formatPrecision } from '../utils/helpers';
 import { X, Users, Minus, Plus, Play } from 'lucide-react';
@@ -228,7 +228,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
                 Remaining after:
               </span>
               <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {formatPrecision(Math.max(0, roundToHundredth(product.amount - amount)), settings.decimalPrecision)}g
+                {formatPrecision(Math.max(0, product.amount - amount), settings.decimalPrecision)}g
               </span>
             </div>
           </div>

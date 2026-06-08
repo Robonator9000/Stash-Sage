@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Product } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { generateId, roundToHundredth } from '../utils/helpers';
-import { X, Upload, Star, Camera, Heart, Plus, ChevronDown, Check } from 'lucide-react';
+import { X, Upload, Star, Camera, Heart, Plus, ChevronDown } from 'lucide-react';
 
 interface ProductModalProps {
   product?: Product | null;

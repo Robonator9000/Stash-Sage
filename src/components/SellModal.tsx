@@ -265,7 +265,7 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
                   Remaining after:
                 </span>
                 <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {formatPrecision(Math.max(0, roundToHundredth(product.amount - quickSellTotal)), settings.decimalPrecision)}g
+                  {formatPrecision(Math.max(0, product.amount - quickSellTotal), settings.decimalPrecision)}g
                 </span>
               </div>
             </div>

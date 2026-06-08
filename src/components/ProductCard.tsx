@@ -1,5 +1,5 @@
 import { Product } from '../types';
-import { formatDate, roundToHundredth, formatPrecision } from '../utils/helpers';
+import { formatDate, formatPrecision } from '../utils/helpers';
 import { Star, Heart, Flame, Clock, Package, DollarSign } from 'lucide-react';
 
 interface ProductCardProps {
@@ -14,8 +14,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavorite, isDark = true, layout = 'grid', precision = 2 }: ProductCardProps) {
-  const displayAmount = roundToHundredth(product.amount);
-  const amountString = `${formatPrecision(displayAmount, precision)}g`;
+  const amountString = `${formatPrecision(product.amount, precision)}g`;
 
   const getStrainColor = (strainType: string) => {
     switch (strainType.toLowerCase()) {
@@ -118,8 +117,8 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
               }}
               className={`p-2 rounded-lg transition-all ${
                 isDark 
-                  ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' 
-                  : 'bg-amber-50 text-amber-600 hover:bg-amber-100'
+                  ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 hover:scale-110' 
+                  : 'bg-amber-50 text-amber-600 hover:bg-amber-100 hover:scale-110'
               }`}
             >
               <DollarSign className="w-4 h-4" />
@@ -221,8 +220,8 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
     <div
       className={`group relative rounded-2xl border-2 transition-all cursor-pointer overflow-hidden ${
         isDark 
-          ? 'bg-slate-900/50 border-slate-800 hover:border-slate-700 hover:bg-slate-900 hover:shadow-xl hover:shadow-cyan-500/5' 
-          : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-xl'
+          ? 'bg-slate-900/50 border-slate-800 hover:border-cyan-500/30 hover:bg-slate-900 hover:shadow-xl hover:shadow-cyan-500/10' 
+          : 'bg-white border-gray-200 hover:border-cyan-400/50 hover:shadow-xl hover:shadow-cyan-500/10'
       } ${product.favorite ? 'ring-2 ring-amber-500/50' : ''}`}
       onClick={onClick}
     >
@@ -320,16 +319,18 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
           </div>
         )}
 
-        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-dashed border-slate-800">
+        <div className={`flex items-center gap-2 mt-4 pt-4 border-t border-dashed ${
+          isDark ? 'border-slate-800' : 'border-gray-200'
+        }`}>
           <button
             onClick={(e) => {
               e.stopPropagation();
               onConsume();
             }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl font-medium transition-all hover:scale-105 active:scale-95 ${
               isDark 
-                ? 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30' 
-                : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'
+                ? 'bg-gradient-to-r from-cyan-500/20 to-emerald-500/20 text-cyan-400 hover:from-cyan-500/30 hover:to-emerald-500/30' 
+                : 'bg-gradient-to-r from-cyan-50 to-emerald-50 text-cyan-600 hover:from-cyan-100 hover:to-emerald-100'
             }`}
           >
             <Flame className="w-4 h-4" />
@@ -340,10 +341,10 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
               e.stopPropagation();
               onSell();
             }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl font-medium transition-all hover:scale-105 active:scale-95 ${
               isDark 
-                ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' 
-                : 'bg-amber-50 text-amber-600 hover:bg-amber-100'
+                ? 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 hover:from-amber-500/30 hover:to-orange-500/30' 
+                : 'bg-gradient-to-r from-amber-50 to-orange-50 text-amber-600 hover:from-amber-100 hover:to-orange-100'
             }`}
           >
             <DollarSign className="w-4 h-4" />

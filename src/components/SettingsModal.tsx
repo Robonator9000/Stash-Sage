@@ -9,7 +9,6 @@ interface SettingsModalProps {
   onImport: (data: ImportResult) => void;
   onMergeImport: (data: ImportResult) => void;
   onClose: () => void;
-  onStatsChange?: () => void;
   isDark?: boolean;
 }
 

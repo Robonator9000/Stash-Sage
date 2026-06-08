@@ -22,7 +22,7 @@ function isValidProduct(value: unknown): value is Product {
     typeof p.id === 'string' &&
     typeof p.name === 'string' &&
     typeof p.strain === 'string' &&
-    (p.type === 'indica' || p.type === 'sativa' || p.type === 'hybrid') &&
+    typeof p.type === 'string' &&
     typeof p.amount === 'number' &&
     typeof p.favorite === 'boolean'
   );
@@ -103,7 +103,7 @@ export function downloadCsvExport(products: Product[]): void {
   const rows = products.map((p) => [
     escapeCsv(p.name),
     escapeCsv(p.strain),
-    p.type,
+    escapeCsv(p.type),
     p.thc,
     p.cbd,
     p.amount,

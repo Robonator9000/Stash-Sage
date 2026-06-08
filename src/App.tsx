@@ -159,8 +159,8 @@ export default function App() {
   return (
     <div className={`min-h-screen transition-colors ${isDark ? 'bg-slate-950' : 'bg-gray-50'}`}>
       {/* Header */}
-      <header className={`sticky top-0 z-40 border-b-2 backdrop-blur-xl ${
-        isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-white/80 border-gray-200'
+      <header className={`sticky top-0 z-40 backdrop-blur-xl ${
+        isDark ? 'bg-slate-950/80' : 'bg-white/80'
       }`}>
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
@@ -324,6 +324,7 @@ export default function App() {
             </div>
           </div>
         </div>
+        <div className="h-0.5 bg-gradient-to-r from-cyan-500 via-emerald-500 to-amber-500" />
       </header>
 
       {/* Main Content */}
