@@ -15,11 +15,12 @@ import { SessionModal } from './components/SessionModal';
 import { SettingsModal } from './components/SettingsModal';
 import { PinModal } from './components/PinModal';
 import { BackgroundCanvas } from './components/BackgroundCanvas';
+import { WelcomeModal } from './components/WelcomeModal';
 
 export default function App() {
   const { products, addProduct, updateProduct, deleteProduct, toggleFavorite, consumeProduct, replaceAllProducts } = useProducts();
   const { addSession } = useSessions();
-  const { settings, replaceSettings } = useSettings();
+  const { settings, updateSettings, replaceSettings } = useSettings();
 
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedQuery = useDebounce(searchQuery, 200);
@@ -160,6 +161,21 @@ export default function App() {
   ];
 
   const lang = settings.language;
+
+  if (!settings.onboardingDone) {
+    return (
+      <div
+        className="min-h-screen transition-colors"
+        style={{ backgroundColor: 'var(--bg)' }}
+      >
+        <BackgroundCanvas isDark={isDark} />
+        <WelcomeModal
+          onComplete={(language) => updateSettings({ language, onboardingDone: true })}
+          isDark={isDark}
+        />
+      </div>
+    );
+  }
 
   return (
     <div

@@ -21,6 +21,7 @@ export interface Product {
 export interface Settings {
   language: 'en' | 'es' | 'fr' | 'de' | 'pt';
   theme: 'dark' | 'light';
+  onboardingDone: boolean;
   currency: string;
   statsVisibility: {
     totalProducts: boolean;

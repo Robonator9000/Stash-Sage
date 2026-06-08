@@ -7,6 +7,7 @@ const SETTINGS_KEY = 'weed-settings';
 const defaultSettings: Settings = {
   language: 'en',
   theme: 'dark',
+  onboardingDone: false,
   currency: '$',
   decimalPrecision: 2,
   showTimerMs: false,
