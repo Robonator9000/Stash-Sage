@@ -5,7 +5,9 @@ import { useSessions } from './utils/useSessions';
 import { useSettings } from './utils/useSettings';
 import { useDebounce } from './hooks/useDebounce';
 import { ImportResult } from './utils/dataTransfer';
-import { searchProducts, sortProducts, filterProducts, generateId } from './utils/helpers';
+import { searchProducts, sortProducts, filterProducts, generateId, formatPrecision } from './utils/helpers';
+import { t } from './utils/translations';
+import { ToastContainer, showToast } from './components/Toast';
 import { AppHeader } from './components/AppHeader';
 import { ProductGrid } from './components/ProductGrid';
 import { ProductModal } from './components/ProductModal';
@@ -87,15 +89,29 @@ export default function App() {
     setEditingProduct(null);
   };
 
+  const checkLowStock = useCallback((product: Product, deducted: number) => {
+    const newAmount = Math.max(0, product.amount - deducted);
+    const lng = settings.language;
+    if (settings.lowStockThreshold > 0 && newAmount > 0 && newAmount <= settings.lowStockThreshold) {
+      showToast({
+        id: 'low-stock-' + product.id,
+        title: t('lowStockAlert', lng),
+        body: t('lowStockMessage', lng).replace('{name}', product.name).replace('{amount}', formatPrecision(newAmount, settings.decimalPrecision)),
+      });
+    }
+  }, [settings.lowStockThreshold, settings.decimalPrecision, settings.language]);
+
   const handleSell = useCallback((amount: number) => {
     if (sellingProduct) {
+      checkLowStock(sellingProduct, amount);
       consumeProduct(sellingProduct.id, amount);
       setSellingProduct(null);
     }
-  }, [sellingProduct, consumeProduct]);
+  }, [sellingProduct, consumeProduct, checkLowStock]);
 
   const handleConsume = (amount: number, startSession: boolean, people: number, consumedAt?: Date) => {
     if (consumingProduct) {
+      checkLowStock(consumingProduct, amount);
       consumeProduct(consumingProduct.id, amount, consumedAt);
       setConsumingProduct(null);
       if (startSession) {
@@ -279,6 +295,9 @@ export default function App() {
           isDark={isDark}
         />
       )}
+
+      {/* Toast Notifications */}
+      <ToastContainer isDark={isDark} />
 
       {/* Smoke Animation */}
       {showSmoke && (

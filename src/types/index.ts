@@ -45,6 +45,7 @@ export interface Settings {
     defaultGramsPerBowl: number;
     rotationEnabled: boolean;
   };
+  lowStockThreshold: number;
 }
 
 export interface Session {

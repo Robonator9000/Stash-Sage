@@ -5,7 +5,7 @@ import { useModalAnimation } from '../hooks/useModalAnimation';
 import { t } from '../utils/translations';
 import { hashPin } from '../utils/helpers';
 import { createExportData, downloadExport, downloadCsvExport, copyExportToClipboard, parseImportData, ImportResult } from '../utils/dataTransfer';
-import { X, Globe, Palette, BarChart3, ChevronDown, Check, Download, Upload, Database, FileSpreadsheet, Clipboard, Merge, Clock, Users, Scale, RotateCcw, DollarSign, Lock, Hash } from 'lucide-react';
+import { X, Globe, Palette, BarChart3, ChevronDown, Check, Download, Upload, Database, FileSpreadsheet, Clipboard, Merge, Clock, Users, Scale, RotateCcw, DollarSign, Lock, Hash, AlertTriangle } from 'lucide-react';
 interface SettingsModalProps {
   products: Product[];
   onImport: (data: ImportResult) => void;
@@ -560,6 +560,29 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Low Stock Threshold */}
+                <div>
+                  <label className={sectionLabel}>
+                    <AlertTriangle className="w-4 h-4" />
+                    {t('lowStockThreshold', settings.language)}
+                  </label>
+                  <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+                    {t('lowStockThresholdHint', settings.language)}
+                  </p>
+                  <input
+                    type="number"
+                    value={settings.lowStockThreshold}
+                    onChange={(e) => updateSettings({ lowStockThreshold: Math.max(0, parseFloat(e.target.value) || 0) })}
+                    min="0"
+                    step="0.5"
+                    className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none ${
+                      isDark
+                        ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
+                        : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
+                    }`}
+                  />
                 </div>
 
                 {/* Show Timer Milliseconds */}

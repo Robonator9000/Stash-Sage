@@ -31,6 +31,7 @@ const defaultSettings: Settings = {
     defaultGramsPerBowl: 0.25,
     rotationEnabled: false,
   },
+  lowStockThreshold: 3,
 };
 
 function loadSettings(): Settings {

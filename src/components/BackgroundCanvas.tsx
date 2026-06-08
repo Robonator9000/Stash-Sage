@@ -80,10 +80,8 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
       for (const orb of orbs) {
         orb.x += orb.vx + Math.sin(frame * 0.002 + orb.radius) * 0.3;
         orb.y += orb.vy + Math.cos(frame * 0.003 + orb.radius) * 0.3;
-        if (orb.x < -orb.radius) orb.x = canvas.width + orb.radius;
-        if (orb.x > canvas.width + orb.radius) orb.x = -orb.radius;
-        if (orb.y < -orb.radius) orb.y = canvas.height + orb.radius;
-        if (orb.y > canvas.height + orb.radius) orb.y = -orb.radius;
+        orb.x = Math.max(orb.radius * 0.5, Math.min(canvas.width - orb.radius * 0.5, orb.x));
+        orb.y = Math.max(orb.radius * 0.5, Math.min(canvas.height - orb.radius * 0.5, orb.y));
 
         const grad = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.radius);
         grad.addColorStop(0, `${accentFrom} 0.05)`);
