@@ -1,4 +1,4 @@
-# Stash Tracker
+# 🌿 Stash Tracker
 
 Manage your cannabis collection offline, on any device.
 
@@ -6,35 +6,24 @@ Manage your cannabis collection offline, on any device.
 
 ---
 
-## Features
+## ✨ Features
 
-**Inventory** — strains with name, brand, type (Indica/Sativa/Hybrid or custom), THC/CBD, rating, price, notes, photos. Sort/filter by name, rating, THC, amount, price, favorites, stock status.
+| | |
+|---|---|
+| **Inventory** | Strains with name, brand, type (Indica/Sativa/Hybrid or custom), THC/CBD, rating, price, notes, photos. Sort/filter by name, rating, THC, amount, price, favorites, stock status. |
+| **Consumption** | Quick-add buttons (+0.1g to +2g) or manual input. Backdate consumption time. Track remaining amounts and last-consumed dates. |
+| **Low Stock Alerts** | Set a gram threshold — a toast appears when a product drops below it. |
+| **Session Mode** | Timed sessions with hit timer, bowl calculator, session notes, and rotation tracking per person. |
+| **Stats Dashboard** | Totals for products, amount, sessions, avg rating, THC, value, last-consumed. Toggle visibility per stat. |
+| **Favorites** | Star products, filter by favorites, always sorted first. |
+| **Data Backup** | Export/import JSON. Merge imports, export CSV, copy to clipboard. |
+| **PIN Lock** | 4-6 digit PIN to secure your data. |
+| **Multi-Language** | English, Español, Français, Deutsch, Português. |
+| **Themes** | Dark and light modes. |
+| **Customization** | Currency ($/€/£/¥/₿), decimal precision (0-3), stat visibility, session defaults, low stock threshold. |
+| **PWA** | Install on phone or desktop. Works offline. |
 
-**Consumption** — quick-add buttons (+0.1g, +0.25g, +0.5g, +1g, +2g) or manual input. Backdate consumption time. Track remaining amounts and last-consumed dates.
-
-**Low Stock Alerts** — set a gram threshold; a toast appears when a product drops below it.
-
-**Session Mode** — timed sessions with hit timer, bowl calculator, grams-per-bowl, session notes, rotation tracking per person.
-
-**Stats** — totals for products, amount, sessions, avg rating, THC, value, last-consumed. Toggle visibility per stat.
-
-**Favorites** — star products, filter by favorites, always sorted first.
-
-**Data Backup** — export/import JSON. Merge imports, export CSV, copy to clipboard.
-
-**PIN Lock** — secure data with 4-6 digit PIN.
-
-**Multi-Language** — English, Español, Français, Deutsch, Português.
-
-**Dark & Light Themes** — toggle in settings.
-
-**Customization** — currency ($/€/£/¥/₿), decimal precision (0-3), stat visibility, session defaults, low stock threshold.
-
-**PWA** — install on phone/desktop. Works offline via service worker.
-
----
-
-## Quick Start
+## 🚀 Quick Start
 
 ```bash
 npm install
@@ -43,16 +32,16 @@ npm run dev
 
 Open http://localhost:5173
 
-## Build
+## 🏗️ Build
 
 ```bash
 npm run build          # production build to dist/
 npm run build:pages    # GitHub Pages build
 ```
 
-Deploys automatically from `main` via `.github/workflows/deploy-pages.yml`.
+Auto-deploys from `main` via `.github/workflows/deploy-pages.yml`.
 
-## Testing
+## 🧪 Testing
 
 ```bash
 pip install playwright
@@ -64,8 +53,12 @@ python scripts/with_server.py \
 
 64 assertions covering: welcome modal, language selection, products CRUD, consume/sell, low stock alerts, settings, filters, search, favorites, theme toggle, empty state.
 
-## Tech Stack
+## 🧑‍💻 Tech Stack
 
 React 19, TypeScript, Vite, Tailwind CSS, localStorage, Lucide React, Playwright.
 
 All data stays on your device.
+
+---
+
+<p align="center">Made with 💚 for the community</p>
