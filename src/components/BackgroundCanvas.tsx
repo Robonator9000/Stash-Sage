@@ -32,6 +32,23 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Dither noise tile — rendered once, tiled each frame
+    const tileSize = 128;
+    const tile = document.createElement('canvas');
+    tile.width = tileSize;
+    tile.height = tileSize;
+    const tc = tile.getContext('2d')!;
+    const td = tc.createImageData(tileSize, tileSize);
+    for (let i = 0; i < td.data.length; i += 4) {
+      const v = Math.floor(Math.random() * 256);
+      td.data[i] = v;
+      td.data[i + 1] = v;
+      td.data[i + 2] = v;
+      td.data[i + 3] = 255;
+    }
+    tc.putImageData(td, 0, 0);
+    const pattern = ctx.createPattern(tile, 'repeat')!;
+
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -145,6 +162,13 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
         }
         ctx.fill();
       }
+
+      // Dither overlay to break up gradient banding
+      ctx.save();
+      ctx.globalAlpha = isDark ? 0.025 : 0.018;
+      ctx.fillStyle = pattern;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.restore();
 
       rafRef.current = requestAnimationFrame(animate);
     };
