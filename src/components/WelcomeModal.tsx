@@ -3,17 +3,34 @@ import { useState } from 'react';
 interface WelcomeModalProps {
   onComplete: (language: 'en' | 'es' | 'fr' | 'de' | 'pt') => void;
   isDark: boolean;
+  browserLang: string;
 }
 
-const LANGUAGES: { code: 'en' | 'es' | 'fr' | 'de' | 'pt'; name: string; flag: string; native: string }[] = [
-  { code: 'en', name: 'English', flag: '🇬🇧', native: 'English' },
-  { code: 'es', name: 'Español', flag: '🇪🇸', native: 'Español' },
-  { code: 'fr', name: 'Français', flag: '🇫🇷', native: 'Français' },
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪', native: 'Deutsch' },
-  { code: 'pt', name: 'Português', flag: '🇧🇷', native: 'Português' },
+const LANGUAGES: { code: 'en' | 'es' | 'fr' | 'de' | 'pt'; flag: string }[] = [
+  { code: 'en', flag: '🇬🇧' },
+  { code: 'es', flag: '🇪🇸' },
+  { code: 'fr', flag: '🇫🇷' },
+  { code: 'de', flag: '🇩🇪' },
+  { code: 'pt', flag: '🇧🇷' },
 ];
 
-export function WelcomeModal({ onComplete, isDark }: WelcomeModalProps) {
+const LANGUAGE_NAMES: Record<string, Record<string, string>> = {
+  en: { en: 'English', es: 'Spanish', fr: 'French', de: 'German', pt: 'Portuguese' },
+  es: { en: 'Inglés', es: 'Español', fr: 'Francés', de: 'Alemán', pt: 'Portugués' },
+  fr: { en: 'Anglais', es: 'Espagnol', fr: 'Français', de: 'Allemand', pt: 'Portugais' },
+  de: { en: 'Englisch', es: 'Spanisch', fr: 'Französisch', de: 'Deutsch', pt: 'Portugiesisch' },
+  pt: { en: 'Inglês', es: 'Espanhol', fr: 'Francês', de: 'Alemão', pt: 'Português' },
+};
+
+const NATIVE_NAMES: Record<string, string> = {
+  en: 'English',
+  es: 'Español',
+  fr: 'Français',
+  de: 'Deutsch',
+  pt: 'Português',
+};
+
+export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalProps) {
   const [selected, setSelected] = useState<'en' | 'es' | 'fr' | 'de' | 'pt'>('en');
 
   return (
@@ -53,9 +70,9 @@ export function WelcomeModal({ onComplete, isDark }: WelcomeModalProps) {
             >
               <span className="text-3xl">{lang.flag}</span>
               <div className="text-left">
-                <div className="font-semibold">{lang.native}</div>
+                <div className="font-semibold">{NATIVE_NAMES[lang.code]}</div>
                 <div className={`text-xs mt-0.5 ${isDark ? 'text-haze' : 'text-gray-400'}`}>
-                  {lang.name}
+                  {LANGUAGE_NAMES[browserLang]?.[lang.code] || LANGUAGE_NAMES.en[lang.code]}
                 </div>
               </div>
               {selected === lang.code && (

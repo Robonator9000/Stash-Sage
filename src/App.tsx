@@ -42,6 +42,13 @@ export default function App() {
 
   const isDark = settings.theme === 'dark';
 
+  // Detect browser language
+  const browserLang = useMemo(() => {
+    const raw = navigator.language || 'en';
+    const code = raw.split('-')[0];
+    return (['en', 'es', 'fr', 'de', 'pt'] as const).includes(code as any) ? code as 'en' | 'es' | 'fr' | 'de' | 'pt' : 'en';
+  }, []);
+
   // Pin lock
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinUnlocked, setPinUnlocked] = useState(false);
@@ -188,6 +195,7 @@ export default function App() {
         <WelcomeModal
           onComplete={(language) => updateSettings({ language, onboardingDone: true })}
           isDark={isDark}
+          browserLang={browserLang}
         />
       </div>
     );
