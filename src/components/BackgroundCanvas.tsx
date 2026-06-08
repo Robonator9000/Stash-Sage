@@ -33,12 +33,8 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
     if (!ctx) return;
 
     const resize = () => {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      canvas.width = Math.round(w / 2);
-      canvas.height = Math.round(h / 2);
-      canvas.style.width = `${w}px`;
-      canvas.style.height = `${h}px`;
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     };
     resize();
     window.addEventListener('resize', resize);
@@ -71,9 +67,24 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
       });
     }
 
-    const accentFrom = isDark ? 'rgba(6, 182, 212,' : 'rgba(6, 182, 212,';
-    const accentMid = isDark ? 'rgba(16, 185, 129,' : 'rgba(16, 185, 129,';
-    const accentTo = isDark ? 'rgba(56, 189, 248,' : 'rgba(14, 165, 233,';
+    // Multi-stop gradient colors that weave through hues to break up banding
+    const orbStops = isDark
+      ? [
+          { pos: 0, r: 6, g: 182, b: 212, a: 0.08 },
+          { pos: 0.12, r: 6, g: 182, b: 212, a: 0.06 },
+          { pos: 0.25, r: 16, g: 185, b: 129, a: 0.04 },
+          { pos: 0.4, r: 16, g: 185, b: 129, a: 0.03 },
+          { pos: 0.55, r: 56, g: 189, b: 248, a: 0.02 },
+          { pos: 0.75, r: 56, g: 189, b: 248, a: 0.01 },
+        ]
+      : [
+          { pos: 0, r: 6, g: 182, b: 212, a: 0.07 },
+          { pos: 0.12, r: 6, g: 182, b: 212, a: 0.05 },
+          { pos: 0.25, r: 16, g: 185, b: 129, a: 0.035 },
+          { pos: 0.4, r: 16, g: 185, b: 129, a: 0.025 },
+          { pos: 0.55, r: 14, g: 165, b: 233, a: 0.015 },
+          { pos: 0.75, r: 14, g: 165, b: 233, a: 0.008 },
+        ];
 
     let frame = 0;
 
@@ -88,22 +99,21 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
         orb.y = Math.max(orb.radius * 0.5, Math.min(canvas.height - orb.radius * 0.5, orb.y));
 
         const grad = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.radius);
-        grad.addColorStop(0, `${accentFrom} 0.05)`);
-        grad.addColorStop(0.4, `${accentMid} 0.025)`);
+        for (const stop of orbStops) {
+          grad.addColorStop(stop.pos, `rgba(${stop.r},${stop.g},${stop.b},${stop.a})`);
+        }
         grad.addColorStop(1, 'transparent');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
-      const extraGrad = ctx.createRadialGradient(
-        canvas.width * (0.5 + Math.sin(frame * 0.004) * 0.15),
-        canvas.height * (0.5 + Math.cos(frame * 0.005) * 0.15),
-        0,
-        canvas.width * (0.5 + Math.sin(frame * 0.004) * 0.15),
-        canvas.height * (0.5 + Math.cos(frame * 0.005) * 0.15),
-        Math.max(canvas.width, canvas.height) * 0.6,
-      );
-      extraGrad.addColorStop(0, `${accentTo} 0.03)`);
+      // Third orb pulses as extra depth layer
+      const pulse = Math.sin(frame * 0.003) * 0.5 + 0.5;
+      const ex = canvas.width * (0.5 + Math.sin(frame * 0.004) * 0.15);
+      const ey = canvas.height * (0.5 + Math.cos(frame * 0.005) * 0.15);
+      const extraGrad = ctx.createRadialGradient(ex, ey, 0, ex, ey, Math.max(canvas.width, canvas.height) * 0.5);
+      extraGrad.addColorStop(0, `rgba(56,189,248,${0.025 * pulse})`);
+      extraGrad.addColorStop(0.3, `rgba(16,185,129,${0.015 * pulse})`);
       extraGrad.addColorStop(1, 'transparent');
       ctx.fillStyle = extraGrad;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
