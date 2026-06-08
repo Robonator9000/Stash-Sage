@@ -201,30 +201,27 @@ export default function App() {
 
   if (!settings.onboardingDone) {
     return (
-      <>
+      <div
+        className="min-h-screen transition-colors"
+        style={{ backgroundColor: 'var(--bg)' }}
+      >
         <BackgroundCanvas isDark={isDark} />
-        <div
-          className="min-h-screen transition-colors relative"
-          style={{ backgroundColor: 'var(--bg)', zIndex: 1 }}
-        >
-          <WelcomeModal
-            onComplete={(language) => updateSettings({ language, onboardingDone: true })}
-            isDark={isDark}
-            browserLang={browserLang}
-          />
-        </div>
-      </>
+        <WelcomeModal
+          onComplete={(language) => updateSettings({ language, onboardingDone: true })}
+          isDark={isDark}
+          browserLang={browserLang}
+        />
+      </div>
     );
   }
 
   return (
-    <>
+    <div
+      className="min-h-screen transition-colors"
+      style={{ backgroundColor: 'var(--bg)' }}
+    >
       <BackgroundCanvas isDark={isDark} />
-      <div
-        className="min-h-screen transition-colors relative"
-        style={{ backgroundColor: 'var(--bg)', zIndex: 1 }}
-      >
-        <AppHeader
+      <AppHeader
         isDark={isDark}
         lang={lang}
         searchQuery={searchQuery}
@@ -386,6 +383,5 @@ export default function App() {
         </div>
       )}
       </div>
-    </>
-  );
-}
+    );
+  }
