@@ -135,7 +135,8 @@ export function SessionModal({
     onClick={handleClose}>
       <div className={`w-full max-w-md rounded-2xl border-2 overflow-hidden shadow-2xl flex flex-col max-h-[90vh] transition-all duration-200 ${
         isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
-      } ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+      } ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+      onClick={(e) => e.stopPropagation()}>
         {/* Header - Fixed */}
         <div className={`flex items-center justify-between p-5 border-b flex-shrink-0 ${
           isDark ? 'border-slate-800' : 'border-gray-200'
@@ -149,7 +150,7 @@ export function SessionModal({
             </p>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className={`p-2 rounded-xl transition-colors ${
               isDark 
                 ? 'hover:bg-slate-800 text-slate-400 hover:text-white' 
