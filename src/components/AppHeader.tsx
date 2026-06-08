@@ -38,18 +38,18 @@ export function AppHeader({
 }: AppHeaderProps) {
   return (
     <header className={`sticky top-0 z-40 backdrop-blur-xl ${
-      isDark ? 'bg-ink/80' : 'bg-white/80'
+      isDark ? 'bg-deep/80' : 'bg-white/80'
     }`}>
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className={`font-heading text-2xl font-bold tracking-tight ${
-              isDark ? 'text-parchment' : 'text-gray-900'
+            <h1 className={`text-2xl font-bold tracking-tight ${
+              isDark ? 'text-frost' : 'text-gray-900'
             }`}>
               🌿 Stash Tracker
             </h1>
-            <p className={`text-sm font-body ${
-              isDark ? 'text-stone' : 'text-gray-500'
+            <p className={`text-sm ${
+              isDark ? 'text-mist' : 'text-gray-500'
             }`}>
               Manage your consumption
             </p>
@@ -59,7 +59,7 @@ export function AppHeader({
               onClick={onOpenSettings}
               className={`p-2 rounded-xl transition-all ${
                 isDark
-                  ? 'bg-leather-light text-stone hover:bg-leather-lighter hover:text-parchment'
+                  ? 'bg-surface text-mist hover:bg-surface-light hover:text-frost'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
               aria-label="Settings"
@@ -68,7 +68,7 @@ export function AppHeader({
             </button>
             <button
               onClick={onAddProduct}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all bg-herb text-parchment hover:bg-herb-dark active:scale-[0.97]"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all bg-gradient-to-r from-cyanx to-emera text-white hover:from-cyanx-dark hover:to-emera-dark active:scale-[0.97]"
               aria-label="Add Product"
             >
               <Plus className="w-5 h-5" />
@@ -99,7 +99,7 @@ export function AppHeader({
       </div>
       <div className={`h-px ${
         isDark
-          ? 'bg-gradient-to-r from-transparent via-herb/40 to-transparent'
+          ? 'bg-gradient-to-r from-transparent via-cyanx/30 via-emera/30 to-transparent'
           : 'bg-gradient-to-r from-transparent via-gray-300 to-transparent'
       }`} />
     </header>

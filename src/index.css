@@ -4,64 +4,58 @@
 
 @layer base {
   :root {
-    --bg: #f5f0ea;
+    --bg: #f0f4f8;
+    --bg-alt: #e2e8f0;
     --surface: #ffffff;
-    --surface-elevated: #faf7f3;
-    --border: #e0d8cf;
-    --border-light: #ece5dc;
-    --text-primary: #1a1512;
-    --text-secondary: #7a6f64;
-    --text-muted: #a89b8e;
-    --accent-emerald: #1a7a3e;
-    --accent-emerald-glow: rgba(26, 122, 62, 0.15);
-    --accent-copper: #b8743a;
-    --accent-amber: #c4863a;
-    --accent-purple: #6b4f8a;
-    --font-heading: 'Playfair Display', Georgia, serif;
-    --font-body: 'DM Sans', system-ui, sans-serif;
+    --surface-alt: #f8fafc;
+    --border: #cbd5e1;
+    --border-light: #e2e8f0;
+    --text: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --accent-from: #06b6d4;
+    --accent-to: #10b981;
+    --accent-glow: rgba(6, 182, 212, 0.15);
   }
 
   .dark {
-    --bg: #0d0a08;
-    --surface: #16110e;
-    --surface-elevated: #1e1814;
-    --border: #2a221d;
-    --border-light: #3a3028;
-    --text-primary: #ece6df;
-    --text-secondary: #8a7d72;
-    --text-muted: #5c5248;
-    --accent-emerald: #2d8a4e;
-    --accent-emerald-glow: rgba(45, 138, 78, 0.25);
-    --accent-copper: #c47f3c;
-    --accent-amber: #d4924a;
-    --accent-purple: #8b6fc9;
+    --bg: #0b1120;
+    --bg-alt: #0f172a;
+    --surface: #111827;
+    --surface-alt: #1a2332;
+    --border: #1e293b;
+    --border-light: #334155;
+    --text: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-from: #06b6d4;
+    --accent-to: #10b981;
+    --accent-glow: rgba(6, 182, 212, 0.2);
   }
 
   body {
     margin: 0;
-    font-family: var(--font-body);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: var(--bg);
-    color: var(--text-primary);
+    color: var(--text);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-heading);
-  }
 }
 
-/* Noise texture overlay */
-#root::after {
-  content: '';
+/* Animated background */
+#bg-canvas {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: 0;
   pointer-events: none;
-  opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 256px 256px;
+  transition: opacity 0.6s;
+}
+
+/* Content sits above background */
+#root {
+  position: relative;
+  z-index: 1;
 }
 
 /* Custom scrollbar */
@@ -104,75 +98,40 @@
   pointer-events: none;
 }
 
-/* Utility classes */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  33% { transform: translateY(-30px) translateX(20px); }
+  66% { transform: translateY(-15px) translateX(-15px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
 @layer utilities {
   .bg-noise {
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
     background-repeat: repeat;
     background-size: 256px 256px;
   }
-
-  .font-heading {
-    font-family: var(--font-heading);
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradientShift 8s ease infinite;
   }
-
-  .font-body {
-    font-family: var(--font-body);
+  .animate-float {
+    animation: float 12s ease-in-out infinite;
   }
-
-  .text-balance {
-    text-wrap: balance;
+  .animate-pulse-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
   }
-
-  .shadow-card {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.06);
-  }
-
-  .shadow-card-hover {
-    box-shadow: 0 8px 24px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.08);
-  }
-
-  .dark .shadow-card {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2);
-  }
-
-  .dark .shadow-card-hover {
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.25);
-  }
-
-  .glow-emerald {
-    box-shadow: 0 0 20px var(--accent-emerald-glow);
-  }
-
-  .bg-surface {
-    background-color: var(--surface);
-  }
-
-  .bg-surface-elevated {
-    background-color: var(--surface-elevated);
-  }
-
-  .border-surface {
-    border-color: var(--border);
-  }
-
-  .text-secondary {
-    color: var(--text-secondary);
-  }
-
-  .text-muted {
-    color: var(--text-muted);
-  }
-
-  .accent-emerald {
-    color: var(--accent-emerald);
-  }
-
-  .accent-copper {
-    color: var(--accent-copper);
-  }
-
-  .accent-amber {
-    color: var(--accent-amber);
+  .bg-glow {
+    box-shadow: 0 0 24px var(--accent-glow);
   }
 }

@@ -14,6 +14,7 @@ import { SellModal } from './components/SellModal';
 import { SessionModal } from './components/SessionModal';
 import { SettingsModal } from './components/SettingsModal';
 import { PinModal } from './components/PinModal';
+import { BackgroundCanvas } from './components/BackgroundCanvas';
 
 export default function App() {
   const { products, addProduct, updateProduct, deleteProduct, toggleFavorite, consumeProduct, replaceAllProducts } = useProducts();
@@ -157,7 +158,18 @@ export default function App() {
   const lang = settings.language;
 
   return (
-    <div className={`min-h-screen transition-colors ${isDark ? 'bg-slate-950' : 'bg-gray-50'}`}>
+    <div
+      className="min-h-screen transition-colors"
+      style={{
+        backgroundColor: 'var(--bg)',
+        backgroundImage: `url(${isDark ? '/bg-dark.gif' : '/bg-light.gif'})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+        backgroundBlendMode: 'overlay',
+      }}
+    >
+      <BackgroundCanvas isDark={isDark} />
       <AppHeader
         isDark={isDark}
         lang={lang}
