@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Product } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { useModalAnimation } from '../hooks/useModalAnimation';
 import { roundToHundredth, formatPrecision } from '../utils/helpers';
-import { X, DollarSign, Package, TrendingUp, TrendingDown } from 'lucide-react';
+import { X, DollarSign, Package, TrendingUp, TrendingDown, Plus } from 'lucide-react';
 import { t } from '../utils/translations';
 
 interface SellModalProps {
@@ -35,14 +35,10 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
 
   const [selectedPortion, setSelectedPortion] = useState<number | null>(null);
   const [customPortion, setCustomPortion] = useState('');
+  const [showCustom, setShowCustom] = useState(false);
   const [pricePerPortion, setPricePerPortion] = useState('');
   const [quickSellGrams, setQuickSellGrams] = useState('');
   const [quickSellPortions, setQuickSellPortions] = useState('');
-
-  const availablePortions = useMemo(
-    () => PORTION_SIZES.filter((p) => p.grams <= product.amount),
-    [product.amount]
-  );
 
   const portionGrams = selectedPortion !== null ? selectedPortion : (parseFloat(customPortion) || 0);
   const numberOfPortions = portionGrams > 0 ? Math.floor(product.amount / portionGrams) : 0;
@@ -110,40 +106,63 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
               </label>
             </div>
             <div className="flex flex-wrap gap-2 mb-3">
-              {availablePortions.map((p) => (
-                <button
-                  key={p.grams}
-                  onClick={() => { setSelectedPortion(p.grams); setCustomPortion(''); }}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    selectedPortion === p.grams
-                      ? isDark
-                        ? 'bg-cyan-500/20 text-cyan-400 border-2 border-cyan-500/30'
-                        : 'bg-cyan-50 text-cyan-600 border-2 border-cyan-500/30'
-                      : isDark
-                        ? 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-2">
-              <span className={`text-sm ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>Custom:</span>
-              <input
-                type="number"
-                value={customPortion}
-                onChange={(e) => { setCustomPortion(e.target.value); setSelectedPortion(null); }}
-                placeholder="grams"
-                min="0"
-                step="0.1"
-                className={`flex-1 px-3 py-2 rounded-xl border-2 outline-none text-sm ${
-                  isDark
-                    ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
-                    : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
+              {PORTION_SIZES.map((p) => {
+                const disabled = p.grams > product.amount;
+                return (
+                  <button
+                    key={p.grams}
+                    onClick={() => { if (!disabled) { setSelectedPortion(p.grams); setCustomPortion(''); setShowCustom(false); } }}
+                    disabled={disabled}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      disabled
+                        ? isDark ? 'text-slate-600 cursor-not-allowed' : 'text-gray-300 cursor-not-allowed'
+                        : selectedPortion === p.grams
+                          ? isDark
+                            ? 'bg-cyan-500/20 text-cyan-400 border-2 border-cyan-500/30'
+                            : 'bg-cyan-50 text-cyan-600 border-2 border-cyan-500/30'
+                          : isDark
+                            ? 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                );
+              })}
+              <button
+                onClick={() => { setShowCustom(!showCustom); setSelectedPortion(null); setCustomPortion(''); }}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 ${
+                  showCustom
+                    ? isDark
+                      ? 'bg-cyan-500/20 text-cyan-400 border-2 border-cyan-500/30'
+                      : 'bg-cyan-50 text-cyan-600 border-2 border-cyan-500/30'
+                    : isDark
+                      ? 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
-              />
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Custom</span>
+              </button>
             </div>
+            {showCustom && (
+              <div className="flex items-center gap-2 mb-1">
+                <input
+                  type="number"
+                  value={customPortion}
+                  onChange={(e) => { setCustomPortion(e.target.value); setSelectedPortion(null); }}
+                  placeholder="grams"
+                  min="0"
+                  step="0.1"
+                  autoFocus
+                  className={`flex-1 px-3 py-2 rounded-xl border-2 outline-none text-sm ${
+                    isDark
+                      ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
+                      : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
+                  }`}
+                />
+              </div>
+            )}
           </div>
 
           {portionGrams > 0 && (

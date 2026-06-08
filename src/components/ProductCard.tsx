@@ -187,14 +187,14 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
 
   return (
     <div
-      className={`group relative rounded-2xl transition-all cursor-pointer overflow-hidden ${
+      className={`group relative rounded-2xl transition-all cursor-pointer overflow-hidden flex flex-col ${
         isDark
           ? 'bg-midnight border border-edge hover:border-cyanx/30'
           : 'bg-white border border-gray-200 hover:border-cyan-400/50'
       } ${product.favorite ? 'ring-1 ring-amberx/40' : ''}`}
       onClick={onClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}
     >
-      <div className="relative aspect-video">
+      <div className="relative aspect-video flex-shrink-0">
         {product.picture ? (
           <img src={product.picture} alt={product.name} className="w-full h-full object-cover" />
         ) : (
@@ -219,53 +219,55 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
         </div>
       </div>
 
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-2">
-          <div className="flex-1 min-w-0">
-            <h3 className={`font-bold text-lg truncate ${isDark ? 'text-frost' : 'text-gray-900'}`}>{product.name}</h3>
-            {product.brand && <p className={`text-sm truncate ${isDark ? 'text-mist' : 'text-gray-500'}`}>From {product.brand}</p>}
+      <div className="p-4 flex flex-col flex-1">
+        <div className="flex-1">
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex-1 min-w-0">
+              <h3 className={`font-bold text-lg truncate ${isDark ? 'text-frost' : 'text-gray-900'}`}>{product.name}</h3>
+              {product.brand && <p className={`text-sm truncate ${isDark ? 'text-mist' : 'text-gray-500'}`}>From {product.brand}</p>}
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-3 mb-3">
-          {product.thc > 0 && (
-            <div className="flex items-center gap-1">
-              <span className={`text-xs font-medium ${isDark ? 'text-haze' : 'text-gray-400'}`}>THC</span>
-              <span className={`text-sm font-bold ${isDark ? 'text-frost' : 'text-gray-900'}`}>{product.thc}%</span>
-            </div>
-          )}
-          {product.cbd > 0 && (
-            <div className="flex items-center gap-1">
-              <span className={`text-xs font-medium ${isDark ? 'text-haze' : 'text-gray-400'}`}>CBD</span>
-              <span className={`text-sm font-bold ${isDark ? 'text-frost' : 'text-gray-900'}`}>{product.cbd}%</span>
-            </div>
-          )}
-        </div>
+          <div className="flex items-center gap-3 mb-3">
+            {product.thc > 0 && (
+              <div className="flex items-center gap-1">
+                <span className={`text-xs font-medium ${isDark ? 'text-haze' : 'text-gray-400'}`}>THC</span>
+                <span className={`text-sm font-bold ${isDark ? 'text-frost' : 'text-gray-900'}`}>{product.thc}%</span>
+              </div>
+            )}
+            {product.cbd > 0 && (
+              <div className="flex items-center gap-1">
+                <span className={`text-xs font-medium ${isDark ? 'text-haze' : 'text-gray-400'}`}>CBD</span>
+                <span className={`text-sm font-bold ${isDark ? 'text-frost' : 'text-gray-900'}`}>{product.cbd}%</span>
+              </div>
+            )}
+          </div>
 
-        {product.rating > 0 && (
-          <div className="flex items-center gap-0 mb-3">
-            {[1, 2, 3, 4, 5].map((star) => {
-              const fillPercent = product.rating >= star ? 100 : product.rating >= star - 0.5 ? 50 : 0;
-              return (
-                <div key={star} className="relative w-4 h-4">
-                  <Star className={`w-4 h-4 absolute inset-0 ${isDark ? 'text-edge' : 'text-gray-300'}`} />
-                  <div className="absolute inset-0 overflow-hidden" style={{ width: `${fillPercent}%` }}>
-                    <Star className="w-4 h-4 text-amberx fill-amberx" />
+          {product.rating > 0 && (
+            <div className="flex items-center gap-0 mb-3">
+              {[1, 2, 3, 4, 5].map((star) => {
+                const fillPercent = product.rating >= star ? 100 : product.rating >= star - 0.5 ? 50 : 0;
+                return (
+                  <div key={star} className="relative w-4 h-4">
+                    <Star className={`w-4 h-4 absolute inset-0 ${isDark ? 'text-edge' : 'text-gray-300'}`} />
+                    <div className="absolute inset-0 overflow-hidden" style={{ width: `${fillPercent}%` }}>
+                      <Star className="w-4 h-4 text-amberx fill-amberx" />
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                );
+              })}
+            </div>
+          )}
 
-        {product.lastConsumed && (
-          <div className={`flex items-center gap-1.5 text-xs ${isDark ? 'text-haze' : 'text-gray-400'}`}>
-            <Clock className="w-3 h-3" />
-            {t('lastConsumed', lang)}: {formatDate(product.lastConsumed)}
-          </div>
-        )}
+          {product.lastConsumed && (
+            <div className={`flex items-center gap-1.5 text-xs ${isDark ? 'text-haze' : 'text-gray-400'}`}>
+              <Clock className="w-3 h-3" />
+              {t('lastConsumed', lang)}: {formatDate(product.lastConsumed)}
+            </div>
+          )}
+        </div>
 
-        <div className={`flex items-center gap-2 mt-4 pt-4 border-t border-dashed ${isDark ? 'border-edge' : 'border-gray-200'}`}>
+        <div className={`flex items-center gap-2 mt-auto pt-4 border-t border-dashed ${isDark ? 'border-edge' : 'border-gray-200'}`}>
           <button
             onClick={(e) => buttonAction(e, onConsume)}
             aria-label={t('consume', lang)}

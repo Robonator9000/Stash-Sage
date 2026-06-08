@@ -35,6 +35,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
 
   const [name, setName] = useState(product?.name || '');
   const [type, setType] = useState<string>(product?.type || 'hybrid');
+  const [showCustomType, setShowCustomType] = useState(false);
   const [thc, setThc] = useState(product?.thc || 0);
   const [cbd, setCbd] = useState(product?.cbd || 0);
   const [amount, setAmount] = useState(product?.amount || 0);
@@ -336,13 +337,13 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
             <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
               Strain Type
             </label>
-            <div className="grid grid-cols-3 gap-2 mb-2">
+            <div className="grid grid-cols-4 gap-2 mb-2">
               {(['indica', 'sativa', 'hybrid'] as const).map((t) => (
                 <button
                   key={t}
-                  onClick={() => setType(t)}
+                  onClick={() => { setType(t); setShowCustomType(false); }}
                   className={`py-2 px-3 rounded-xl text-sm font-medium transition-all border-2 capitalize ${
-                    type === t
+                    type === t && !showCustomType
                       ? getStrainColor(t) + ' border-current'
                       : isDark 
                         ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
@@ -352,18 +353,36 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                   {t}
                 </button>
               ))}
+              <button
+                onClick={() => { setShowCustomType(!showCustomType); if (!showCustomType) setType(''); }}
+                className={`py-2 px-3 rounded-xl text-sm font-medium transition-all border-2 flex items-center justify-center gap-1 ${
+                  showCustomType
+                    ? isDark
+                      ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
+                      : 'bg-cyan-50 text-cyan-600 border-cyan-500/30'
+                    : isDark 
+                      ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
+                      : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300'
+                }`}
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Custom</span>
+              </button>
             </div>
-            <input
-              type="text"
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              placeholder="Or type a custom strain type..."
-              className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
-                isDark 
-                  ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' 
-                  : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-              } outline-none`}
-            />
+            {showCustomType && (
+              <input
+                type="text"
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                placeholder="Type custom strain..."
+                autoFocus
+                className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
+                  isDark 
+                    ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' 
+                    : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
+                } outline-none`}
+              />
+            )}
           </div>
 
           {/* THC & CBD */}
