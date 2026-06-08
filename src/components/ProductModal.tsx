@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { Product } from '../types';
 import { useSettings } from '../utils/useSettings';
+import { useModalAnimation } from '../hooks/useModalAnimation';
 import { generateId, roundToHundredth } from '../utils/helpers';
 import { X, Upload, Star, Camera, Heart, Plus, ChevronDown } from 'lucide-react';
+import { t } from '../utils/translations';
 
 interface ProductModalProps {
   product?: Product | null;
@@ -27,6 +29,7 @@ const POPULAR_BRANDS = [
 
 export function ProductModal({ product, onSave, onDelete, onClose, isDark = true }: ProductModalProps) {
   const { settings, addFavoriteBrand, removeFavoriteBrand, addRecentBrand } = useSettings();
+  const lang = settings.language;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const brandDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -43,15 +46,10 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
   const [brand, setBrand] = useState(product?.brand || '');
   const [isBrandDropdownOpen, setIsBrandDropdownOpen] = useState(false);
   const [brandSearchQuery, setBrandSearchQuery] = useState('');
-  const [isVisible, setIsVisible] = useState(false);
+  const { isVisible, handleClose } = useModalAnimation(onClose);
 
   const favoriteBrands = settings.favoriteBrands || [];
   const recentBrands = settings.recentBrands || [];
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 10);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -86,11 +84,6 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
     } else {
       addFavoriteBrand(brandName);
     }
-  };
-
-  const handleClose = () => {
-    setIsVisible(false);
-    setTimeout(onClose, 200);
   };
 
   const handleSubmit = () => {
@@ -145,6 +138,9 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
         isVisible ? 'bg-black/80 backdrop-blur-sm' : 'bg-black/0'
       }`}
       onClick={handleClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={product ? `Edit ${product.name}` : 'Add New Product'}
     >
       <div 
         className={`w-full max-w-md rounded-2xl border-2 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col transition-all duration-200 ${
@@ -157,7 +153,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
           isDark ? 'border-slate-800' : 'border-gray-200'
         }`}>
           <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            {product ? 'Edit Product' : 'Add New Product'}
+            {product ? t('editProduct', lang) : t('addProduct', lang)}
           </h2>
           <button
             onClick={handleClose}
@@ -513,7 +509,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                   : 'bg-red-50 text-red-600 hover:bg-red-100'
               }`}
             >
-              Delete
+              {t('delete', lang)}
             </button>
           )}
           <div className="flex-1" />
@@ -525,7 +521,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            Cancel
+            {t('cancel', lang)}
           </button>
           <button
             onClick={handleSubmit}
@@ -538,7 +534,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
             }`}
           >
-            {product ? 'Save Changes' : 'Add Product'}
+            {product ? t('save', lang) : t('addProduct', lang)}
           </button>
         </div>
       </div>

@@ -1,8 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Product } from '../types';
 import { useSettings } from '../utils/useSettings';
+import { useModalAnimation } from '../hooks/useModalAnimation';
 import { roundToHundredth, formatPrecision } from '../utils/helpers';
 import { X, DollarSign, Package, TrendingUp, TrendingDown } from 'lucide-react';
+import { t } from '../utils/translations';
 
 interface SellModalProps {
   product: Product;
@@ -28,23 +30,14 @@ const PORTION_SIZES = [
 
 export function SellModal({ product, onSell, onClose, isDark = true }: SellModalProps) {
   const { settings } = useSettings();
-  const [isVisible, setIsVisible] = useState(false);
+  const { isVisible, handleClose } = useModalAnimation(onClose);
+  const lang = settings.language;
 
   const [selectedPortion, setSelectedPortion] = useState<number | null>(null);
   const [customPortion, setCustomPortion] = useState('');
   const [pricePerPortion, setPricePerPortion] = useState('');
   const [quickSellGrams, setQuickSellGrams] = useState('');
   const [quickSellPortions, setQuickSellPortions] = useState('');
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 10);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const handleClose = () => {
-    setIsVisible(false);
-    setTimeout(onClose, 200);
-  };
 
   const availablePortions = useMemo(
     () => PORTION_SIZES.filter((p) => p.grams <= product.amount),
@@ -75,6 +68,9 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
         isVisible ? 'bg-black/80 backdrop-blur-sm' : 'bg-black/0'
       }`}
       onClick={handleClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Sell ${product.name}`}
     >
       <div
         className={`w-full max-w-sm rounded-2xl border-2 shadow-2xl transition-all duration-200 ${
@@ -82,7 +78,6 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
         } ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className={`flex items-center justify-between p-5 border-b ${
           isDark ? 'border-slate-800' : 'border-gray-200'
         }`}>
@@ -91,12 +86,13 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
               Sell {product.name}
             </h2>
             <div className={`flex items-center gap-3 text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-              <span>Available: {formatPrecision(product.amount, settings.decimalPrecision)}g</span>
+              <span>{t('amount', lang)}: {formatPrecision(product.amount, settings.decimalPrecision)}g</span>
               {product.price > 0 && <span>Paid: {settings.currency}{formatPrecision(product.price, 2)}</span>}
             </div>
           </div>
           <button
             onClick={handleClose}
+            aria-label={t('cancel', lang)}
             className={`p-2 rounded-xl transition-all ${
               isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'
             }`}
@@ -105,9 +101,7 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-5 space-y-5">
-          {/* Divide into portions */}
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Package className={`w-4 h-4 ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`} />
@@ -152,7 +146,6 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
             </div>
           </div>
 
-          {/* Pricing & Profit */}
           {portionGrams > 0 && (
             <div className={`p-4 rounded-xl border-2 ${
               isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'
@@ -212,7 +205,6 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
             </div>
           )}
 
-          {/* Quick Sell */}
           <div>
             <label className={`block text-sm font-medium mb-3 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
               Quick Sell
@@ -272,7 +264,6 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
           </div>
         </div>
 
-        {/* Footer */}
         <div className={`flex items-center gap-3 p-5 border-t ${
           isDark ? 'border-slate-800' : 'border-gray-200'
         }`}>
@@ -284,11 +275,12 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            Cancel
+            {t('cancel', lang)}
           </button>
           <button
             onClick={handleSell}
             disabled={!canQuickSell}
+            aria-label="Sell"
             className={`flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${
               canQuickSell
                 ? isDark

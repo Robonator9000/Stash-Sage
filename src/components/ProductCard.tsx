@@ -1,6 +1,8 @@
 import { Product } from '../types';
 import { formatDate, formatPrecision } from '../utils/helpers';
 import { Star, Heart, Flame, Clock, Package, DollarSign } from 'lucide-react';
+import { t } from '../utils/translations';
+import { useSettings } from '../utils/useSettings';
 
 interface ProductCardProps {
   product: Product;
@@ -14,7 +16,9 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavorite, isDark = true, layout = 'grid', precision = 2 }: ProductCardProps) {
+  const { settings } = useSettings();
   const amountString = `${formatPrecision(product.amount, precision)}g`;
+  const lang = settings.language;
 
   const getStrainColor = (strainType: string) => {
     switch (strainType.toLowerCase()) {
@@ -31,16 +35,28 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
 
   const strainColors = getStrainColor(product.type);
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
+  const buttonAction = (e: React.MouseEvent, action: () => void) => {
+    e.stopPropagation();
+    action();
+  };
+
   if (layout === 'list') {
     return (
       <div
         className={`group relative rounded-xl border-2 transition-all cursor-pointer ${
-          isDark 
-            ? 'bg-slate-900/50 border-slate-800 hover:border-slate-700 hover:bg-slate-900' 
+          isDark
+            ? 'bg-slate-900/50 border-slate-800 hover:border-slate-700 hover:bg-slate-900'
             : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-lg'
         } ${product.favorite ? 'ring-2 ring-amber-500/50' : ''}`}
       >
-        <div className="flex items-center gap-4 p-4" onClick={onClick}>
+        <div className="flex items-center gap-4 p-4" onClick={onClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}>
           <div className="relative flex-shrink-0">
             {product.picture ? (
               <img
@@ -98,36 +114,30 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
 
           <div className="flex items-center gap-2">
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onConsume();
-              }}
+              onClick={(e) => buttonAction(e, onConsume)}
+              aria-label={t('consume', lang)}
               className={`p-2 rounded-lg transition-all ${
-                isDark 
-                  ? 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30' 
+                isDark
+                  ? 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30'
                   : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'
               }`}
             >
               <Flame className="w-4 h-4" />
             </button>
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onSell();
-              }}
+              onClick={(e) => buttonAction(e, onSell)}
+              aria-label="Sell"
               className={`p-2 rounded-lg transition-all ${
-                isDark 
-                  ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 hover:scale-110' 
+                isDark
+                  ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 hover:scale-110'
                   : 'bg-amber-50 text-amber-600 hover:bg-amber-100 hover:scale-110'
               }`}
             >
               <DollarSign className="w-4 h-4" />
             </button>
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleFavorite();
-              }}
+              onClick={(e) => buttonAction(e, onToggleFavorite)}
+              aria-label={product.favorite ? t('filterFavorites', lang) : 'Add to favorites'}
               className={`p-2 rounded-lg transition-all ${
                 product.favorite
                   ? 'text-amber-400'
@@ -146,11 +156,15 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
     return (
       <div
         className={`group relative rounded-xl border-2 transition-all cursor-pointer ${
-          isDark 
-            ? 'bg-slate-900/50 border-slate-800 hover:border-cyan-500/30 hover:bg-slate-900 hover:shadow-xl hover:shadow-cyan-500/10' 
+          isDark
+            ? 'bg-slate-900/50 border-slate-800 hover:border-cyan-500/30 hover:bg-slate-900 hover:shadow-xl hover:shadow-cyan-500/10'
             : 'bg-white border-gray-200 hover:border-cyan-400/50 hover:shadow-xl hover:shadow-cyan-500/10'
         } ${product.favorite ? 'ring-2 ring-amber-500/50' : ''}`}
         onClick={onClick}
+        onKeyDown={handleKeyDown}
+        role="button"
+        tabIndex={0}
+        aria-label={product.name}
       >
         <div className="aspect-square relative">
           {product.picture ? (
@@ -166,7 +180,7 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
               <Package className={`w-8 h-8 ${isDark ? 'text-slate-600' : 'text-gray-400'}`} />
             </div>
           )}
-          
+
           <div className={`absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-bold ${strainColors.bg} ${strainColors.text}`}>
             {product.type}
           </div>
@@ -200,36 +214,30 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
 
         <div className="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onConsume();
-            }}
+            onClick={(e) => buttonAction(e, onConsume)}
+            aria-label={t('consume', lang)}
             className={`p-1.5 rounded-lg ${
-              isDark 
-                ? 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30' 
+              isDark
+                ? 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30'
                 : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'
             }`}
           >
             <Flame className="w-3.5 h-3.5" />
           </button>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onSell();
-            }}
+            onClick={(e) => buttonAction(e, onSell)}
+            aria-label="Sell"
             className={`p-1.5 rounded-lg ${
-              isDark 
-                ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' 
+              isDark
+                ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30'
                 : 'bg-amber-50 text-amber-600 hover:bg-amber-100'
             }`}
           >
             <DollarSign className="w-3.5 h-3.5" />
           </button>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleFavorite();
-            }}
+            onClick={(e) => buttonAction(e, onToggleFavorite)}
+            aria-label={product.favorite ? t('filterFavorites', lang) : 'Add to favorites'}
             className={`p-1.5 rounded-lg ${
               product.favorite
                 ? 'text-amber-400'
@@ -243,15 +251,18 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
     );
   }
 
-  // Default Grid Layout
   return (
     <div
       className={`group relative rounded-2xl border-2 transition-all cursor-pointer overflow-hidden ${
-        isDark 
-          ? 'bg-slate-900/50 border-slate-800 hover:border-cyan-500/30 hover:bg-slate-900 hover:shadow-xl hover:shadow-cyan-500/10' 
+        isDark
+          ? 'bg-slate-900/50 border-slate-800 hover:border-cyan-500/30 hover:bg-slate-900 hover:shadow-xl hover:shadow-cyan-500/10'
           : 'bg-white border-gray-200 hover:border-cyan-400/50 hover:shadow-xl hover:shadow-cyan-500/10'
       } ${product.favorite ? 'ring-2 ring-amber-500/50' : ''}`}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label={product.name}
     >
       <div className="relative aspect-video">
         {product.picture ? (
@@ -267,7 +278,7 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
             <Package className={`w-12 h-12 ${isDark ? 'text-slate-600' : 'text-gray-400'}`} />
           </div>
         )}
-        
+
         <div className={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold border ${strainColors.bg} ${strainColors.text} ${strainColors.border}`}>
           {product.type}
         </div>
@@ -279,8 +290,8 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
         )}
 
         <div className={`absolute bottom-3 right-3 px-3 py-1.5 rounded-lg font-bold text-sm ${
-          isDark 
-            ? 'bg-slate-900/90 text-cyan-400 backdrop-blur-sm' 
+          isDark
+            ? 'bg-slate-900/90 text-cyan-400 backdrop-blur-sm'
             : 'bg-white/90 text-cyan-600 backdrop-blur-sm'
         }`}>
           {amountString}
@@ -343,7 +354,7 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
         {product.lastConsumed && (
           <div className={`flex items-center gap-1.5 text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
             <Clock className="w-3 h-3" />
-            Last: {formatDate(product.lastConsumed)}
+            {t('lastConsumed', lang)}: {formatDate(product.lastConsumed)}
           </div>
         )}
 
@@ -351,27 +362,23 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
           isDark ? 'border-slate-800' : 'border-gray-200'
         }`}>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onConsume();
-            }}
+            onClick={(e) => buttonAction(e, onConsume)}
+            aria-label={t('consume', lang)}
             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl font-medium transition-all hover:scale-105 active:scale-95 ${
-              isDark 
-                ? 'bg-gradient-to-r from-cyan-500/20 to-emerald-500/20 text-cyan-400 hover:from-cyan-500/30 hover:to-emerald-500/30' 
+              isDark
+                ? 'bg-gradient-to-r from-cyan-500/20 to-emerald-500/20 text-cyan-400 hover:from-cyan-500/30 hover:to-emerald-500/30'
                 : 'bg-gradient-to-r from-cyan-50 to-emerald-50 text-cyan-600 hover:from-cyan-100 hover:to-emerald-100'
             }`}
           >
             <Flame className="w-4 h-4" />
-            <span className="text-sm">Consume</span>
+            <span className="text-sm">{t('consume', lang)}</span>
           </button>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onSell();
-            }}
+            onClick={(e) => buttonAction(e, onSell)}
+            aria-label="Sell"
             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl font-medium transition-all hover:scale-105 active:scale-95 ${
-              isDark 
-                ? 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 hover:from-amber-500/30 hover:to-orange-500/30' 
+              isDark
+                ? 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 hover:from-amber-500/30 hover:to-orange-500/30'
                 : 'bg-gradient-to-r from-amber-50 to-orange-50 text-amber-600 hover:from-amber-100 hover:to-orange-100'
             }`}
           >
@@ -379,15 +386,13 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
             <span className="text-sm">Sell</span>
           </button>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleFavorite();
-            }}
+            onClick={(e) => buttonAction(e, onToggleFavorite)}
+            aria-label={product.favorite ? t('filterFavorites', lang) : 'Add to favorites'}
             className={`p-2 rounded-xl transition-all ${
               product.favorite
                 ? 'bg-amber-500/20 text-amber-400'
-                : isDark 
-                  ? 'bg-slate-800 text-slate-400 hover:text-amber-400 hover:bg-amber-500/10' 
+                : isDark
+                  ? 'bg-slate-800 text-slate-400 hover:text-amber-400 hover:bg-amber-500/10'
                   : 'bg-gray-100 text-gray-400 hover:text-amber-500 hover:bg-amber-50'
             }`}
           >

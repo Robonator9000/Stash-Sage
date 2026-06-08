@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { t } from '../utils/translations';
+import { hashPin } from '../utils/helpers';
 import { Lock } from 'lucide-react';
 
 interface PinModalProps {
@@ -13,6 +14,7 @@ export function PinModal({ pinHash, onSuccess, isDark = true, language }: PinMod
   const [pinValue, setPinValue] = useState('');
   const [error, setError] = useState('');
   const [isVisible, setIsVisible] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -21,12 +23,22 @@ export function PinModal({ pinHash, onSuccess, isDark = true, language }: PinMod
     return () => clearTimeout(timer);
   }, []);
 
-  const handleSubmit = () => {
-    if (btoa(pinValue) === pinHash) {
-      onSuccess();
-    } else {
+  const handleSubmit = async () => {
+    if (isVerifying) return;
+    setIsVerifying(true);
+    try {
+      const hash = await hashPin(pinValue);
+      if (hash === pinHash) {
+        onSuccess();
+      } else {
+        setError(t('pinMismatch', language));
+        setPinValue('');
+      }
+    } catch {
       setError(t('pinMismatch', language));
       setPinValue('');
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -60,6 +72,7 @@ export function PinModal({ pinHash, onSuccess, isDark = true, language }: PinMod
           }}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); }}
           placeholder="• • • • • •"
+          aria-label={t('enterPin', language)}
           className={`w-full px-4 py-4 rounded-xl border-2 text-center text-2xl tracking-[0.5em] font-mono outline-none mb-4 ${
             isDark
               ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-600'
@@ -75,14 +88,15 @@ export function PinModal({ pinHash, onSuccess, isDark = true, language }: PinMod
 
         <button
           onClick={handleSubmit}
-          disabled={pinValue.length < 4}
+          disabled={pinValue.length < 4 || isVerifying}
+          aria-label={t('unlock', language)}
           className={`w-full py-3 rounded-xl font-bold transition-all ${
-            pinValue.length >= 4
+            pinValue.length >= 4 && !isVerifying
               ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white hover:from-cyan-400 hover:to-emerald-400'
               : isDark ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
           }`}
         >
-          {t('unlock', language)}
+          {isVerifying ? '...' : t('unlock', language)}
         </button>
       </div>
     </div>

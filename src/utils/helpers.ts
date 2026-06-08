@@ -1,8 +1,31 @@
 import { Product, SortOption, FilterType } from '../types';
 
 // Generate unique ID
+export function safeSetItem(key: string, value: string): boolean {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (e) {
+    if (e instanceof DOMException && (e.name === 'QuotaExceededError' || e.code === 22)) {
+      console.warn('localStorage quota exceeded for key:', key);
+    } else {
+      console.warn('localStorage write failed for key:', key, e);
+    }
+    return false;
+  }
+}
+
 export function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// Hash a PIN using SHA-256 (replaces insecure btoa)
+export async function hashPin(pin: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(pin);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 // Round to hundredths
@@ -30,13 +53,19 @@ export function formatDate(date: Date | string): string {
   return `${Math.floor(diffDays / 365)} years ago`;
 }
 
+function tryParseDate(value: unknown): Date | undefined {
+  if (!value) return undefined;
+  const d = new Date(value as string | number | Date);
+  return isNaN(d.getTime()) ? undefined : d;
+}
+
 // Parse dates in product
 export function parseProductDates(product: Product): Product {
   return {
     ...product,
-    createdAt: product.createdAt ? new Date(product.createdAt) : new Date(),
-    updatedAt: product.updatedAt ? new Date(product.updatedAt) : new Date(),
-    lastConsumed: product.lastConsumed ? new Date(product.lastConsumed) : undefined,
+    createdAt: tryParseDate(product.createdAt) || new Date(),
+    updatedAt: tryParseDate(product.updatedAt) || new Date(),
+    lastConsumed: tryParseDate(product.lastConsumed),
   };
 }
 

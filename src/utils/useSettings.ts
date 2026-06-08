@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Settings } from '../types';
+import { safeSetItem } from './helpers';
 
 const SETTINGS_KEY = 'weed-settings';
 
@@ -64,7 +65,7 @@ export function useSettings() {
 
   const updateSettings = useCallback((updates: Partial<Settings>) => {
     _settings = { ..._settings, ...updates };
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(_settings));
+    safeSetItem(SETTINGS_KEY, JSON.stringify(_settings));
     notifyListeners();
   }, []);
 
@@ -76,7 +77,7 @@ export function useSettings() {
         [stat]: !_settings.statsVisibility[stat],
       },
     };
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(_settings));
+    safeSetItem(SETTINGS_KEY, JSON.stringify(_settings));
     notifyListeners();
   }, []);
 
@@ -87,7 +88,7 @@ export function useSettings() {
         ? _settings.favoriteBrands
         : [..._settings.favoriteBrands, brand],
     };
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(_settings));
+    safeSetItem(SETTINGS_KEY, JSON.stringify(_settings));
     notifyListeners();
   }, []);
 
@@ -96,7 +97,7 @@ export function useSettings() {
       ..._settings,
       favoriteBrands: _settings.favoriteBrands.filter((b) => b !== brand),
     };
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(_settings));
+    safeSetItem(SETTINGS_KEY, JSON.stringify(_settings));
     notifyListeners();
   }, []);
 
@@ -105,13 +106,13 @@ export function useSettings() {
       ..._settings,
       recentBrands: [brand, ..._settings.recentBrands.filter((b) => b !== brand)].slice(0, 10),
     };
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(_settings));
+    safeSetItem(SETTINGS_KEY, JSON.stringify(_settings));
     notifyListeners();
   }, []);
 
   const replaceSettings = useCallback((nextSettings: Settings) => {
     _settings = { ...defaultSettings, ...nextSettings };
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(_settings));
+    safeSetItem(SETTINGS_KEY, JSON.stringify(_settings));
     notifyListeners();
   }, []);
 

@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Product, Settings } from '../types';
 import { useSettings } from '../utils/useSettings';
+import { useModalAnimation } from '../hooks/useModalAnimation';
 import { t } from '../utils/translations';
+import { hashPin } from '../utils/helpers';
 import { createExportData, downloadExport, downloadCsvExport, copyExportToClipboard, parseImportData, ImportResult } from '../utils/dataTransfer';
 import { X, Globe, Palette, BarChart3, ChevronDown, Check, Download, Upload, Database, FileSpreadsheet, Clipboard, Merge, Clock, Users, Scale, RotateCcw, DollarSign, Lock, Hash } from 'lucide-react';
 interface SettingsModalProps {
@@ -24,31 +26,22 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
   const { settings, updateSettings, toggleStatVisibility } = useSettings();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mergeFileInputRef = useRef<HTMLInputElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const { isVisible, handleClose } = useModalAnimation(onClose);
   const [activeTab, setActiveTab] = useState<'personalization' | 'dangerZone'>('personalization');
   const [pinSetupValue, setPinSetupValue] = useState('');
   const [pinDisableValue, setPinDisableValue] = useState('');
   const [showPinSetup, setShowPinSetup] = useState(false);
   const [showPinDisable, setShowPinDisable] = useState(false);
   const [pinError, setPinError] = useState('');
+  const [isPinProcessing, setIsPinProcessing] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 10);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     if (!feedback) return;
     const timer = setTimeout(() => setFeedback(null), 4000);
     return () => clearTimeout(timer);
   }, [feedback]);
-
-  const handleClose = () => {
-    setIsVisible(false);
-    setTimeout(onClose, 200);
-  };
 
   const handleStatToggle = (key: keyof Settings['statsVisibility']) => {
     toggleStatVisibility(key);
@@ -149,13 +142,15 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
     }`;
 
   return (
-    <>
-      <div
-        className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-200 ${
-          isVisible ? 'bg-black/80 backdrop-blur-sm' : 'bg-black/0'
-        }`}
-        onClick={handleClose}
-      >
+    <div
+      className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-200 ${
+        isVisible ? 'bg-black/80 backdrop-blur-sm' : 'bg-black/0'
+      }`}
+      onClick={handleClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('settings', settings.language)}
+    >
         <div
           className={`w-full max-w-md max-h-[90vh] flex flex-col rounded-2xl border-2 shadow-2xl transition-all duration-200 ${
             isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
@@ -189,8 +184,8 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
                   : isDark ? 'text-slate-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'
               }`}
             >
-              Personalization
-              {activeTab === 'personalization' && (
+                {t('personalization', settings.language)}
+                {activeTab === 'personalization' && (
                 <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-full" />
               )}
             </button>
@@ -333,17 +328,26 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
                               {t('cancel', settings.language)}
                             </button>
                             <button
-                              onClick={() => {
+                              onClick={async () => {
                                 if (pinSetupValue.length < 4) {
                                   setPinError(t('pinLengthError', settings.language));
                                   return;
                                 }
-                                updateSettings({ pinEnabled: true, pinHash: btoa(pinSetupValue) });
-                                setShowPinSetup(false);
-                                setPinSetupValue('');
+                                if (isPinProcessing) return;
+                                setIsPinProcessing(true);
+                                try {
+                                  const hash = await hashPin(pinSetupValue);
+                                  updateSettings({ pinEnabled: true, pinHash: hash });
+                                  setShowPinSetup(false);
+                                  setPinSetupValue('');
+                                } catch {
+                                  setPinError(t('importError', settings.language));
+                                } finally {
+                                  setIsPinProcessing(false);
+                                }
                               }}
                               className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                                pinSetupValue.length >= 4
+                                pinSetupValue.length >= 4 && !isPinProcessing
                                   ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white'
                                   : isDark ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                               }`}
@@ -398,17 +402,26 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
                               {t('cancel', settings.language)}
                             </button>
                             <button
-                              onClick={() => {
-                                if (btoa(pinDisableValue) !== settings.pinHash) {
-                                  setPinError(t('pinMismatch', settings.language));
-                                  return;
+                              onClick={async () => {
+                                if (isPinProcessing) return;
+                                setIsPinProcessing(true);
+                                try {
+                                  const hash = await hashPin(pinDisableValue);
+                                  if (hash !== settings.pinHash) {
+                                    setPinError(t('pinMismatch', settings.language));
+                                    return;
+                                  }
+                                  updateSettings({ pinEnabled: false, pinHash: '' });
+                                  setShowPinDisable(false);
+                                  setPinDisableValue('');
+                                } catch {
+                                  setPinError(t('importError', settings.language));
+                                } finally {
+                                  setIsPinProcessing(false);
                                 }
-                                updateSettings({ pinEnabled: false, pinHash: '' });
-                                setShowPinDisable(false);
-                                setPinDisableValue('');
                               }}
                               className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                                pinDisableValue.length >= 4
+                                pinDisableValue.length >= 4 && !isPinProcessing
                                   ? 'bg-gradient-to-r from-red-500 to-rose-500 text-white'
                                   : isDark ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                               }`}
@@ -718,8 +731,6 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
             )}
           </div>
         </div>
-      </div>
-
-    </>
+    </div>
   );
 }

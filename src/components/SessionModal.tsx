@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Product, Session } from '../types';
 import { useSettings } from '../utils/useSettings';
+import { useModalAnimation } from '../hooks/useModalAnimation';
 import { t } from '../utils/translations';
 import { X, Users, Clock, Play, Pause, RotateCcw, Calculator, ArrowRight } from 'lucide-react';
 import { formatPrecision } from '../utils/helpers';
@@ -27,14 +28,9 @@ export function SessionModal({
   defaultHitTimer = 10,
 }: SessionModalProps) {
   const { settings } = useSettings();
-  const [isVisible, setIsVisible] = useState(false);
+  const { isVisible, handleClose } = useModalAnimation(onClose);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 10);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const [amountUsed, setAmountUsed] = useState(initialAmount);
+  const [amountUsed] = useState(initialAmount);
   const [hitsCount, setHitsCount] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(autoStartTimer);
   const [timerSeconds, setTimerSeconds] = useState(defaultHitTimer);
@@ -67,28 +63,36 @@ export function SessionModal({
   const gramsPerPerson = people > 0 ? amountUsed / people : 0;
   const bowlsPerPerson = gramsPerPerson / gramsPerBowl;
 
-  // Timer logic
+  // Timer logic — clean tick without side effects in updaters
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
-    if (isTimerRunning && timerSeconds > 0) {
-      const ms = settings.showTimerMs ? 100 : 1000;
-      interval = setInterval(() => {
-        if (settings.showTimerMs) {
-          setTimerMs((prev) => {
-            const next = prev - 100;
-            if (next <= 0) {
-              setTimerSeconds((s) => s - 1);
-              return 1000 + next;
-            }
-            return next;
-          });
-        } else {
-          setTimerSeconds((prev) => prev - 1);
-        }
-      }, ms);
-    }
+    if (!isTimerRunning || timerSeconds <= 0) return;
+    const ms = settings.showTimerMs ? 100 : 1000;
+    const interval = setInterval(() => {
+      if (settings.showTimerMs) {
+        setTimerMs((prev) => {
+          const next = prev - ms;
+          return next <= 0 ? next + 1000 : next;
+        });
+      }
+      setTimerSeconds((prev) => prev - 1);
+    }, ms);
     return () => clearInterval(interval);
   }, [isTimerRunning, timerSeconds, settings.showTimerMs]);
+
+  // Separate effect: when timer hits zero, handle the hit
+  const handleHitRef = useRef(handleHit);
+  handleHitRef.current = handleHit;
+  const customTimerDurationRef = useRef(customTimerDuration);
+  customTimerDurationRef.current = customTimerDuration;
+
+  useEffect(() => {
+    if (isTimerRunning && timerSeconds <= 0) {
+      setIsTimerRunning(false);
+      handleHitRef.current();
+      setTimerSeconds(customTimerDurationRef.current);
+      setTimerMs(0);
+    }
+  }, [isTimerRunning, timerSeconds]);
 
   const handleFinishSession = () => {
     const session: Session = {
@@ -123,16 +127,14 @@ export function SessionModal({
     setIsTimerRunning(false);
   };
 
-  const handleClose = () => {
-    setIsVisible(false);
-    setTimeout(onClose, 200);
-  };
-
   return (
       <div className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-200 ${
       isVisible ? 'bg-black/80 backdrop-blur-sm' : 'bg-black/0'
     }`}
-    onClick={handleClose}>
+    onClick={handleClose}
+    role="dialog"
+    aria-modal="true"
+    aria-label={`Session - ${product.name}`}>
       <div className={`w-full max-w-md rounded-2xl border-2 overflow-hidden shadow-2xl flex flex-col max-h-[90vh] transition-all duration-200 ${
         isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
       } ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}

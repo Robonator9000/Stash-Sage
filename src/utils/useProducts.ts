@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Product } from '../types';
-import { parseProductDates } from './helpers';
+import { parseProductDates, safeSetItem } from './helpers';
 
 const PRODUCTS_KEY = 'weed-products';
 
@@ -16,7 +16,7 @@ export function useProducts() {
   });
 
   useEffect(() => {
-    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+    safeSetItem(PRODUCTS_KEY, JSON.stringify(products));
   }, [products]);
 
   const addProduct = useCallback((product: Product) => {

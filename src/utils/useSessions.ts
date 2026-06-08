@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Session } from '../types';
+import { safeSetItem } from './helpers';
 
 const SESSIONS_KEY = 'weed-sessions';
 
@@ -24,7 +25,7 @@ export function useSessions() {
   const addSession = useCallback((session: Session) => {
     setSessions((prev) => {
       const updated = [session, ...prev];
-      localStorage.setItem(SESSIONS_KEY, JSON.stringify(updated));
+      safeSetItem(SESSIONS_KEY, JSON.stringify(updated));
       return updated;
     });
   }, []);

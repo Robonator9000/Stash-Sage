@@ -9,7 +9,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['icon.svg', '.nojekyll'],
       manifest: {
         name: 'Stash Tracker',
@@ -43,7 +43,7 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api/],
       },
       devOptions: {
-        enabled: true,
+        enabled: false,
       },
     }),
   ],
