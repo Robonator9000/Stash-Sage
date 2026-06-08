@@ -549,121 +549,127 @@ export default function Home() {
 
       {/* ═══ HEADER ═══ */}
       <header className="sticky top-0 z-40 border-b border-border/50 bg-background/90 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 py-2.5">
-          <div className="flex items-center gap-3 mb-2">
+        <div className="px-6 lg:px-10 py-2">
+          <div className="flex items-center gap-3">
             <h1 className="text-lg font-black gradient-text flex items-center gap-1.5 shrink-0 tracking-tight">
               <Leaf className="size-5" /> STASH
             </h1>
-            <div className="flex-1 relative max-w-sm">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/60" />
-              <Input value={searchInput} onChange={(e) => handleSearch(e.target.value)}
-                placeholder={t('searchPlaceholder', lang)}
-                className="pl-8 h-8 bg-muted/40 border-0 text-sm rounded-full focus-visible:ring-1" />
-            </div>
-            <div className="flex items-center gap-1">
+            {/* Spacer */}
+            <div className="flex-1" />
+            {/* Right-aligned compact controls */}
+            <div className="flex items-center gap-2">
+              <div className="relative w-44">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3 text-muted-foreground/60" />
+                <Input value={searchInput} onChange={(e) => handleSearch(e.target.value)}
+                  placeholder={t('searchPlaceholder', lang)}
+                  className="pl-7 h-7 bg-muted/40 border-0 text-[11px] rounded-full focus-visible:ring-1" />
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1 rounded-full px-2">
+                    <ArrowUpDown className="size-2.5" />
+                    {t(`sort${store.sortBy.charAt(0).toUpperCase() + store.sortBy.slice(1)}`, lang)}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  {['newest', 'oldest', 'name', 'rating', 'thc', 'amount', 'price', 'favorites'].map(s => (
+                    <DropdownMenuItem key={s} onClick={() => store.setSortBy(s)}>
+                      {t(`sort${s.charAt(0).toUpperCase() + s.slice(1)}`, lang)}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1 rounded-full px-2">
+                    <Filter className="size-2.5" />
+                    {t(`filter${store.filterBy.charAt(0).toUpperCase() + store.filterBy.slice(1)}`, lang) || 'Filter'}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  {['all', 'indica', 'sativa', 'hybrid', 'favorites', 'inStock', 'lowStock', 'outOfStock'].map(f => (
+                    <DropdownMenuItem key={f} onClick={() => { store.setFilterBy(f); setPage(1) }}>
+                      {t(`filter${f.charAt(0).toUpperCase() + f.slice(1)}`, lang) || f}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <div className="flex items-center border rounded-full overflow-hidden">
+                {([['grid', LayoutGrid], ['list', List], ['compact', Grid3X3]] as const).map(([l, Icon]) => (
+                  <Button key={l} variant="ghost" size="icon"
+                    className={`size-7 rounded-none ${store.layout === l ? 'bg-muted' : ''}`}
+                    onClick={() => store.setLayout(l as 'grid' | 'list' | 'compact')}>
+                    <Icon className="size-3" />
+                  </Button>
+                ))}
+              </div>
+              <Select value={String(store.pageSize)} onValueChange={(v) => { store.setPageSize(parseInt(v)); setPage(1) }}>
+                <SelectTrigger className="h-7 w-[58px] text-[10px] rounded-full border px-1.5">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[20, 50, 100].map(s => <SelectItem key={s} value={String(s)}>{s}/p</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <span className="text-[10px] text-muted-foreground tabular-nums">
+                {totalProductsCount}
+              </span>
+              <div className="w-px h-4 bg-border/50" />
               <Button size="sm" onClick={handleOpenAddProduct}
-                className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white hover:from-teal-600 hover:to-emerald-600 h-8 text-xs rounded-full px-3 shadow-lg shadow-teal-500/20">
-                <Plus className="size-3.5 mr-0.5" />{t('addProduct', lang)}
+                className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white hover:from-teal-600 hover:to-emerald-600 h-7 text-[10px] rounded-full px-2.5 shadow-md shadow-teal-500/20">
+                <Plus className="size-3 mr-0.5" />{t('addProduct', lang)}
               </Button>
-              <Button variant="ghost" size="icon" className="size-8 rounded-full" onClick={() => store.openSettings()}>
+              <Button variant="ghost" size="icon" className="size-7 rounded-full" onClick={() => store.openSettings()}>
                 <Settings className="size-3.5" />
               </Button>
               <ThemeToggleButton resolvedTheme={resolvedTheme}
                 onToggle={() => { const next = resolvedTheme === 'dark' ? 'light' : 'dark'; setTheme(next); updateSettings.mutate({ theme: next }) }} />
             </div>
           </div>
-          {/* Filter row */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1 rounded-full px-2.5">
-                  <ArrowUpDown className="size-2.5" />
-                  {t(`sort${store.sortBy.charAt(0).toUpperCase() + store.sortBy.slice(1)}`, lang)}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                {['newest', 'oldest', 'name', 'rating', 'thc', 'amount', 'price', 'favorites'].map(s => (
-                  <DropdownMenuItem key={s} onClick={() => store.setSortBy(s)}>
-                    {t(`sort${s.charAt(0).toUpperCase() + s.slice(1)}`, lang)}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1 rounded-full px-2.5">
-                  <Filter className="size-2.5" />
-                  {t(`filter${store.filterBy.charAt(0).toUpperCase() + store.filterBy.slice(1)}`, lang) || 'Filter'}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                {['all', 'indica', 'sativa', 'hybrid', 'favorites', 'inStock', 'lowStock', 'outOfStock'].map(f => (
-                  <DropdownMenuItem key={f} onClick={() => { store.setFilterBy(f); setPage(1) }}>
-                    {t(`filter${f.charAt(0).toUpperCase() + f.slice(1)}`, lang) || f}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            {/* Layout toggles */}
-            <div className="flex items-center border rounded-full overflow-hidden">
-              {([['grid', LayoutGrid], ['list', List], ['compact', Grid3X3]] as const).map(([l, Icon]) => (
-                <Button key={l} variant="ghost" size="icon"
-                  className={`size-7 rounded-none ${store.layout === l ? 'bg-muted' : ''}`}
-                  onClick={() => store.setLayout(l as 'grid' | 'list' | 'compact')}>
-                  <Icon className="size-3" />
-                </Button>
-              ))}
-            </div>
-            {/* Page size selector */}
-            <Select value={String(store.pageSize)} onValueChange={(v) => { store.setPageSize(parseInt(v)); setPage(1) }}>
-              <SelectTrigger className="h-7 w-[70px] text-[11px] rounded-full border px-2">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[20, 50, 100].map(s => <SelectItem key={s} value={String(s)}>{s} {t('perPage', lang)}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <span className="text-[11px] text-muted-foreground ml-auto">
-              {totalProductsCount} {t('totalProducts', lang).toLowerCase()}
-            </span>
-          </div>
         </div>
       </header>
 
       {/* ═══ MAIN ═══ */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-4">
+      <main className="flex-1 w-full px-8 lg:px-16 xl:px-24 py-6">
         <Tabs value={store.activeTab} onValueChange={(v) => store.setActiveTab(v as 'inventory' | 'dashboard' | 'history')}>
-          <TabsList className="mb-3">
-            <TabsTrigger value="inventory" className="text-xs gap-1"><Package className="size-3" />{t('inventory', lang)}</TabsTrigger>
-            <TabsTrigger value="dashboard" className="text-xs gap-1"><BarChart3 className="size-3" />{t('dashboard', lang)}</TabsTrigger>
-            <TabsTrigger value="history" className="text-xs gap-1"><Clock className="size-3" />{t('history', lang)}</TabsTrigger>
+          <TabsList className="mb-6 w-full justify-start gap-1 bg-transparent p-0 h-auto">
+            <TabsTrigger value="inventory" className="text-sm gap-1.5 rounded-lg px-4 py-2 data-[state=active]:bg-muted data-[state=active]:shadow-sm underline-offset-4 data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400"><Package className="size-4" />{t('inventory', lang)}</TabsTrigger>
+            <TabsTrigger value="dashboard" className="text-sm gap-1.5 rounded-lg px-4 py-2 data-[state=active]:bg-muted data-[state=active]:shadow-sm underline-offset-4 data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400"><BarChart3 className="size-4" />{t('dashboard', lang)}</TabsTrigger>
+            <TabsTrigger value="history" className="text-sm gap-1.5 rounded-lg px-4 py-2 data-[state=active]:bg-muted data-[state=active]:shadow-sm underline-offset-4 data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400"><Clock className="size-4" />{t('history', lang)}</TabsTrigger>
           </TabsList>
 
           {/* ═══ INVENTORY ═══ */}
           <TabsContent value="inventory">
+            <h2 className="text-lg font-bold underline decoration-teal-400 decoration-2 underline-offset-4 mb-4">{t('inventory', lang)}</h2>
             {/* Stats Bar */}
-            {stats && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-4">
-                {[
-                  { key: 'totalProducts', value: stats.totalProducts, icon: Package, color: 'text-teal-400' },
-                  { key: 'totalAmount', value: `${stats.totalAmount.toFixed(1)}g`, icon: Archive, color: 'text-emerald-400' },
-                  { key: 'averageRating', value: stats.averageRating.toFixed(1), icon: Star, color: 'text-amber-400' },
-                  { key: 'averageTHC', value: `${stats.averageTHC.toFixed(1)}%`, icon: Zap, color: 'text-purple-400' },
-                  { key: 'totalValue', value: `${currency}${stats.totalValue.toFixed(0)}`, icon: DollarSign, color: 'text-green-400' },
-                  { key: 'totalSessions', value: stats.totalSessions, icon: Users, color: 'text-cyan-400' },
-                ].filter(({ key }) => statsVis[key] !== false).map(({ key, value, icon: Icon, color }) => (
-                  <Card key={key} className="glass-card py-2 px-3 rounded-xl">
-                    <div className="flex items-center gap-2">
-                      <div className="p-1.5 rounded-lg bg-muted/50"><Icon className={`size-3.5 ${color}`} /></div>
-                      <div>
-                        <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{t(key, lang)}</p>
-                        <p className="text-sm font-bold">{value}</p>
+            {stats && (() => {
+              const visibleStats = [
+                { key: 'totalProducts', value: stats.totalProducts, icon: Package, color: 'text-teal-400' },
+                { key: 'totalAmount', value: `${stats.totalAmount.toFixed(1)}g`, icon: Archive, color: 'text-emerald-400' },
+                { key: 'averageRating', value: stats.averageRating.toFixed(1), icon: Star, color: 'text-amber-400' },
+                { key: 'averageTHC', value: `${stats.averageTHC.toFixed(1)}%`, icon: Zap, color: 'text-purple-400' },
+                { key: 'totalValue', value: `${currency}${stats.totalValue.toFixed(0)}`, icon: DollarSign, color: 'text-green-400' },
+                { key: 'totalSessions', value: stats.totalSessions, icon: Users, color: 'text-cyan-400' },
+              ].filter(({ key }) => statsVis[key] !== false)
+              const count = visibleStats.length
+              // Determine cols to keep rows balanced: 1→1, 2→2, 3→3, 4→2, 5→3, 6→3
+              const cols = count <= 3 ? count : count === 4 ? 2 : 3
+              return (
+                <div className={`grid gap-3 mb-6`} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+                  {visibleStats.map(({ key, value, icon: Icon, color }) => (
+                    <Card key={key} className="glass-card py-3 px-4 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-muted/50"><Icon className={`size-4 ${color}`} /></div>
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{t(key, lang)}</p>
+                          <p className="text-base font-bold">{value}</p>
+                        </div>
                       </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
+                    </Card>
+                  ))}
+                </div>
+              )
+            })()}
 
             {/* Loading */}
             {productsQuery.isLoading && (
@@ -745,12 +751,13 @@ export default function Home() {
           {/* ═══ DASHBOARD ═══ */}
           <TabsContent value="dashboard">
             {statsQuery.isLoading ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                {Array.from({ length: 4 }).map((_, i) => <Card key={i} className="p-4 rounded-xl"><Skeleton className="h-64 w-full rounded-lg" /></Card>)}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {Array.from({ length: 4 }).map((_, i) => <Card key={i} className="p-6 rounded-xl"><Skeleton className="h-64 w-full rounded-lg" /></Card>)}
               </div>
             ) : stats ? (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="space-y-6">
+                <h2 className="text-lg font-bold underline decoration-teal-400 decoration-2 underline-offset-4">{t('dashboard', lang)}</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   {[
                     { label: t('totalProducts', lang), value: stats.totalProducts, icon: Package, color: 'text-teal-400', bg: 'bg-teal-500/10' },
                     { label: t('totalAmount', lang), value: `${stats.totalAmount.toFixed(1)}g`, icon: Archive, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
@@ -765,9 +772,9 @@ export default function Home() {
                     </Card>
                   ))}
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                  <Card className="p-4 rounded-xl">
-                    <CardHeader className="p-0 pb-2"><CardTitle className="text-xs font-semibold uppercase tracking-wider">{t('consumptionTrend', lang)}</CardTitle></CardHeader>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card className="p-5 rounded-xl">
+                    <CardHeader className="p-0 pb-3"><CardTitle className="text-sm font-bold underline decoration-teal-400 decoration-2 underline-offset-4">{t('consumptionTrend', lang)}</CardTitle></CardHeader>
                     <CardContent className="p-0">
                       <div className="h-56">
                         <ResponsiveContainer width="100%" height="100%">
@@ -782,8 +789,8 @@ export default function Home() {
                       </div>
                     </CardContent>
                   </Card>
-                  <Card className="p-4 rounded-xl">
-                    <CardHeader className="p-0 pb-2"><CardTitle className="text-xs font-semibold uppercase tracking-wider">{t('stockOverview', lang)}</CardTitle></CardHeader>
+                  <Card className="p-5 rounded-xl">
+                    <CardHeader className="p-0 pb-3"><CardTitle className="text-sm font-bold underline decoration-teal-400 decoration-2 underline-offset-4">{t('stockOverview', lang)}</CardTitle></CardHeader>
                     <CardContent className="p-0">
                       <div className="h-56 flex items-center justify-center">
                         {stats.stockDistribution.inStock + stats.stockDistribution.lowStock + stats.stockDistribution.outOfStock > 0 ? (
@@ -803,8 +810,8 @@ export default function Home() {
                       </div>
                     </CardContent>
                   </Card>
-                  <Card className="p-4 rounded-xl">
-                    <CardHeader className="p-0 pb-2"><CardTitle className="text-xs font-semibold uppercase tracking-wider">{t('topStrains', lang)}</CardTitle></CardHeader>
+                  <Card className="p-5 rounded-xl">
+                    <CardHeader className="p-0 pb-3"><CardTitle className="text-sm font-bold underline decoration-teal-400 decoration-2 underline-offset-4">{t('topStrains', lang)}</CardTitle></CardHeader>
                     <CardContent className="p-0">
                       <div className="h-56">
                         {stats.topStrains.length > 0 ? (
@@ -821,8 +828,8 @@ export default function Home() {
                       </div>
                     </CardContent>
                   </Card>
-                  <Card className="p-4 rounded-xl">
-                    <CardHeader className="p-0 pb-2"><CardTitle className="text-xs font-semibold uppercase tracking-wider">{t('totalSpent', lang)}</CardTitle></CardHeader>
+                  <Card className="p-5 rounded-xl">
+                    <CardHeader className="p-0 pb-3"><CardTitle className="text-sm font-bold underline decoration-teal-400 decoration-2 underline-offset-4">{t('totalSpent', lang)}</CardTitle></CardHeader>
                     <CardContent className="p-0">
                       <div className="h-56">
                         {stats.spendingByMonth.some(m => m.total > 0) ? (
@@ -846,7 +853,8 @@ export default function Home() {
 
           {/* ═══ HISTORY ═══ */}
           <TabsContent value="history">
-            <div className="space-y-3">
+            <div className="space-y-4">
+              <h2 className="text-lg font-bold underline decoration-teal-400 decoration-2 underline-offset-4">{t('history', lang)}</h2>
               <div className="flex items-center gap-2 flex-wrap">
                 <Label className="text-xs text-muted-foreground">{t('from', lang)}</Label>
                 <Input type="date" value={historyFrom} onChange={(e) => { setHistoryFrom(e.target.value); setHistoryPage(1) }} className="h-7 w-auto text-xs rounded-lg" />
@@ -897,7 +905,7 @@ export default function Home() {
       </main>
 
       {/* ═══ FOOTER ═══ */}
-      <footer className="mt-auto border-t border-border/30 py-3 text-center text-[10px] text-muted-foreground/50 uppercase tracking-widest">
+      <footer className="mt-auto border-t border-border/30 py-3 px-8 lg:px-16 xl:px-24 text-[10px] text-muted-foreground/50 uppercase tracking-widest">
         Stash Tracker
       </footer>
 
