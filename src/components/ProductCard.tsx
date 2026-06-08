@@ -1,8 +1,10 @@
+import { useState, useRef, useEffect } from 'react';
 import { Product } from '../types';
 import { formatDate, formatPrecision } from '../utils/helpers';
 import { Star, Heart, Flame, Clock, Package, DollarSign } from 'lucide-react';
 import { t } from '../utils/translations';
 import { useSettings } from '../utils/useSettings';
+import { showToast } from './Toast';
 
 interface ProductCardProps {
   product: Product;
@@ -15,10 +17,24 @@ interface ProductCardProps {
   precision?: number;
 }
 
+function gramsToOz(g: number): number {
+  return g / 28.3495;
+}
+
 export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavorite, isDark = true, layout = 'grid', precision = 2 }: ProductCardProps) {
   const { settings } = useSettings();
   const amountString = `${formatPrecision(product.amount, precision)}g`;
   const lang = settings.language;
+
+  const [imageHovered, setImageHovered] = useState(false);
+  const [strainHovered, setStrainHovered] = useState(false);
+  const [amountHovered, setAmountHovered] = useState(false);
+  const [showOz, setShowOz] = useState(false);
+  const ozTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    return () => { if (ozTimer.current) clearTimeout(ozTimer.current); };
+  }, []);
 
   const getStrainColor = (strainType: string) => {
     switch (strainType.toLowerCase()) {
@@ -35,6 +51,10 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
 
   const strainColors = getStrainColor(product.type);
 
+  const vibrantStrainColor = isDark
+    ? { bg: 'bg-cyan-500/30', text: 'text-cyan-300', border: 'border-cyan-400/60' }
+    : { bg: 'bg-cyan-200', text: 'text-cyan-800', border: 'border-cyan-500/60' };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -46,6 +66,26 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
     e.stopPropagation();
     action();
   };
+
+  const handleAmountClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!showOz) {
+      const ozVal = gramsToOz(product.amount);
+      const ozStr = formatPrecision(ozVal, precision);
+      setShowOz(true);
+      navigator.clipboard.writeText(ozStr).then(() => {
+        showToast({
+          id: 'oz-copy-' + product.id,
+          title: t('convertedToOz', lang).replace('{value}', ozStr),
+          body: t('copiedToClipboard', lang),
+        });
+      });
+      if (ozTimer.current) clearTimeout(ozTimer.current);
+      ozTimer.current = setTimeout(() => setShowOz(false), 3000);
+    }
+  };
+
+  const badgesHidden = imageHovered && !strainHovered && !amountHovered;
 
   if (layout === 'list') {
     return (
@@ -115,7 +155,7 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
             </button>
             <button
               onClick={(e) => buttonAction(e, onToggleFavorite)}
-aria-label={product.favorite ? t('filterFavorites', lang) : t('addToFavorites', lang)}
+              aria-label={product.favorite ? t('filterFavorites', lang) : t('addToFavorites', lang)}
               className={`p-2 rounded-lg transition-all ${product.favorite ? 'text-amberx' : isDark ? 'text-haze hover:text-amberx' : 'text-gray-400 hover:text-amber-500'}`}
             >
               <Heart className={`w-4 h-4 ${product.favorite ? 'fill-current' : ''}`} />
@@ -194,28 +234,96 @@ aria-label={product.favorite ? t('filterFavorites', lang) : t('addToFavorites', 
       } ${product.favorite ? 'ring-1 ring-amberx/40' : ''}`}
       onClick={onClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}
     >
-      <div className="relative aspect-video flex-shrink-0">
+      {/* Image Section */}
+      <div
+        className="relative aspect-video flex-shrink-0"
+        onMouseEnter={() => setImageHovered(true)}
+        onMouseLeave={() => setImageHovered(false)}
+      >
         {product.picture ? (
-          <img src={product.picture} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+          <img
+            src={product.picture} alt={product.name}
+            loading="lazy" decoding="async"
+            className={`w-full h-full object-cover transition-transform duration-500 ease-out ${imageHovered ? 'scale-110' : 'scale-100'}`}
+          />
         ) : (
           <div className={`w-full h-full flex items-center justify-center ${isDark ? 'bg-surface' : 'bg-gray-100'}`}>
             <Package className={`w-12 h-12 ${isDark ? 'text-haze' : 'text-gray-400'}`} />
           </div>
         )}
-        <div className={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-medium border ${strainColors.bg} ${strainColors.text} ${strainColors.border}`}>
-          {product.type}
-        </div>
-        {product.favorite && (
-          <div className="absolute top-3 right-3 w-8 h-8 bg-amberx rounded-full flex items-center justify-center shadow-lg">
-            <Heart className="w-4 h-4 text-white fill-white" />
-          </div>
+
+        {/* Card overlay when image hovered */}
+        {imageHovered && (
+          <div className="absolute inset-0 bg-black/40 transition-opacity duration-300 z-10" />
         )}
-        <div className={`absolute bottom-3 right-3 px-3 py-1.5 rounded-lg font-medium text-sm backdrop-blur-sm ${
-          isDark ? 'bg-deep/80' : 'bg-white/90'
-        }`}>
-          <span className="bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent">
-            {amountString}
+
+        {/* Strain Type Badge */}
+        <div
+          className={`absolute top-3 left-3 z-20 transition-all duration-200 ease-out ${
+            badgesHidden ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          } ${strainHovered ? vibrantStrainColor.bg + ' ' + vibrantStrainColor.text + ' ' + vibrantStrainColor.border + ' scale-110' : `${strainColors.bg} ${strainColors.text} ${strainColors.border}`}`}
+          onMouseEnter={() => setStrainHovered(true)}
+          onMouseLeave={() => setStrainHovered(false)}
+        >
+          <span className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors duration-200 ${
+            strainHovered
+              ? vibrantStrainColor.bg + ' ' + vibrantStrainColor.text + ' ' + vibrantStrainColor.border
+              : `${strainColors.bg} ${strainColors.text} ${strainColors.border}`
+          }`}>
+            {product.type}
           </span>
+        </div>
+
+        {/* Favorite Heart */}
+        <div
+          className={`absolute top-3 right-3 z-20 transition-all duration-200 ${
+            badgesHidden ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          }`}
+        >
+          {product.favorite ? (
+            <div className="w-8 h-8 bg-amberx rounded-full flex items-center justify-center shadow-lg"
+              onClick={(e) => buttonAction(e, onToggleFavorite)}
+            >
+              <Heart className="w-4 h-4 text-white fill-white" />
+            </div>
+          ) : (
+            <button
+              onClick={(e) => buttonAction(e, onToggleFavorite)}
+              className={`w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 ${
+                isDark ? 'bg-deep/80 text-mist hover:text-amberx' : 'bg-white/90 text-gray-400 hover:text-amber-500'
+              }`}
+              aria-label={t('addToFavorites', lang)}
+            >
+              <Heart className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Amount Badge */}
+        <div
+          className={`absolute bottom-3 right-3 z-20 transition-all duration-200 ease-out ${
+            badgesHidden ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          } ${amountHovered ? 'scale-110' : 'scale-100'}`}
+          onMouseEnter={() => setAmountHovered(true)}
+          onMouseLeave={() => setAmountHovered(false)}
+          onClick={handleAmountClick}
+        >
+          <div className={`px-3 py-1.5 rounded-lg font-medium text-sm backdrop-blur-sm cursor-pointer ${
+            isDark ? 'bg-deep/80' : 'bg-white/90'
+          }`}>
+            <span className={`bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent ${
+              amountHovered ? 'text-base' : 'text-sm'
+            }`}>
+              {showOz ? formatPrecision(gramsToOz(product.amount), precision) + 'oz' : amountString}
+            </span>
+          </div>
+          {amountHovered && !showOz && (
+            <div className={`absolute -top-8 right-0 px-2 py-1 rounded-md text-xs whitespace-nowrap shadow-lg ${
+              isDark ? 'bg-surface text-mist' : 'bg-gray-100 text-gray-600'
+            }`}>
+              Convert to oz
+            </div>
+          )}
         </div>
       </div>
 
@@ -271,11 +379,11 @@ aria-label={product.favorite ? t('filterFavorites', lang) : t('addToFavorites', 
           <button
             onClick={(e) => buttonAction(e, onConsume)}
             aria-label={t('consume', lang)}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98] ${
-                isDark
-                  ? 'bg-gradient-to-r from-cyanx/10 to-emera/10 text-cyanx hover:from-cyanx/20 hover:to-emera/20'
-                  : 'bg-gradient-to-r from-cyan-100 to-emerald-100 text-cyan-700 hover:from-cyan-200 hover:to-emerald-200'
-              }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98] ${
+              isDark
+                ? 'bg-gradient-to-r from-cyanx/10 to-emera/10 text-cyanx hover:from-cyanx/20 hover:to-emera/20'
+                : 'bg-gradient-to-r from-cyan-100 to-emerald-100 text-cyan-700 hover:from-cyan-200 hover:to-emerald-200'
+            }`}
           >
             <Flame className="w-4 h-4" />
             <span className="text-sm">{t('consume', lang)}</span>

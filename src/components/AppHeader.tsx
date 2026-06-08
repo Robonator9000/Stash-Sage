@@ -19,6 +19,8 @@ interface AppHeaderProps {
   onLayoutChange: (layout: 'grid' | 'list' | 'compact') => void;
   sortOptions: { value: string; labelKey: string }[];
   filterOptions: { value: string; labelKey: string; display?: string }[];
+  productsPerPage: number;
+  onProductsPerPageChange: (n: number) => void;
 }
 
 export function AppHeader({
@@ -36,6 +38,8 @@ export function AppHeader({
   onLayoutChange,
   sortOptions,
   filterOptions,
+  productsPerPage,
+  onProductsPerPageChange,
 }: AppHeaderProps) {
   return (
     <header className={`sticky top-0 z-40 backdrop-blur-xl ${
@@ -96,6 +100,8 @@ export function AppHeader({
           filterOptions={filterOptions}
           isDark={isDark}
           lang={lang}
+          productsPerPage={productsPerPage}
+          onProductsPerPageChange={onProductsPerPageChange}
         />
       </div>
       <div className={`h-px ${

@@ -14,6 +14,8 @@ interface ControlsBarProps {
   filterOptions: { value: string; labelKey: string; display?: string }[];
   isDark: boolean;
   lang: string;
+  productsPerPage: number;
+  onProductsPerPageChange: (n: number) => void;
 }
 
 export function ControlsBar({
@@ -27,9 +29,12 @@ export function ControlsBar({
   filterOptions,
   isDark,
   lang,
+  productsPerPage,
+  onProductsPerPageChange,
 }: ControlsBarProps) {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [showPerPageDropdown, setShowPerPageDropdown] = useState(false);
 
   const btnClass = (active: boolean) =>
     `flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
@@ -123,7 +128,41 @@ export function ControlsBar({
         </div>
       </div>
 
-      <div className="flex items-center gap-1 p-1 rounded-xl">
+      <div className="flex items-center gap-2">
+        {/* Per-page dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => { setShowPerPageDropdown(!showPerPageDropdown); setShowSortDropdown(false); setShowFilterDropdown(false); }}
+            className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+              isDark
+                ? 'bg-midnight text-mist hover:bg-surface hover:text-frost'
+                : 'bg-white text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            {productsPerPage} {t('perPage', lang)}
+          </button>
+          {showPerPageDropdown && (
+            <div className={`absolute top-full right-0 mt-2 w-32 rounded-xl shadow-xl z-10 overflow-hidden ${
+              isDark ? 'bg-surface border border-edge' : 'bg-white border border-gray-200'
+            }`}>
+              {[20, 50, 100].map((n) => (
+                <button
+                  key={n}
+                  onClick={() => { onProductsPerPageChange(n); setShowPerPageDropdown(false); }}
+                  className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
+                    productsPerPage === n
+                      ? isDark ? 'bg-cyanx/10 text-cyanx' : 'bg-cyan-50 text-cyan-600'
+                      : isDark ? 'hover:bg-midnight text-frost' : 'hover:bg-gray-100 text-gray-900'
+                  }`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1 p-1 rounded-xl">
         {([
           { value: 'grid' as const, icon: Grid, labelKey: 'gridView' },
           { value: 'list' as const, icon: List, labelKey: 'listView' },
@@ -142,6 +181,7 @@ export function ControlsBar({
             <Icon className="w-4 h-4" />
           </button>
         ))}
+      </div>
       </div>
     </div>
   );

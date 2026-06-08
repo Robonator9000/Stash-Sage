@@ -29,6 +29,8 @@ export default function App() {
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [filterBy, setFilterBy] = useState<FilterType>('all');
   const [layout, setLayout] = useState<'grid' | 'list' | 'compact'>('grid');
+  const [productsPerPage, setProductsPerPage] = useState(50);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -70,6 +72,11 @@ export default function App() {
     if (meta) meta.setAttribute('content', isDark ? '#0b1120' : '#f0f4f8');
   }, [settings.language, isDark]);
 
+  // Reset page on filter/search/sort change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedQuery, filterBy, sortBy, productsPerPage]);
+
   // Filter, search, and sort products
   const filteredProducts = useMemo(() => {
     let result = products;
@@ -86,6 +93,13 @@ export default function App() {
 
     return result;
   }, [products, debouncedQuery, filterBy, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / productsPerPage));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedProducts = useMemo(() => {
+    const start = (safePage - 1) * productsPerPage;
+    return filteredProducts.slice(start, start + productsPerPage);
+  }, [filteredProducts, safePage, productsPerPage]);
 
   const handleSaveProduct = (product: Product) => {
     if (editingProduct) {
@@ -222,11 +236,13 @@ export default function App() {
         onLayoutChange={setLayout}
         sortOptions={sortOptions}
         filterOptions={filterOptions}
+        productsPerPage={productsPerPage}
+        onProductsPerPageChange={(n) => { setProductsPerPage(n); setCurrentPage(1); }}
       />
 
       <ProductGrid
         products={products}
-        filteredProducts={filteredProducts}
+        filteredProducts={paginatedProducts}
         isDark={isDark}
         layout={layout}
         precision={settings.decimalPrecision}
@@ -236,6 +252,57 @@ export default function App() {
         onToggleFavorite={toggleFavorite}
         onAddProduct={() => setIsAddModalOpen(true)}
       />
+
+      {/* Page Navigation */}
+      {filteredProducts.length > productsPerPage && (
+        <div className="max-w-7xl mx-auto px-4 pb-6">
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => setCurrentPage(Math.max(1, safePage - 1))}
+              disabled={safePage <= 1}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                isDark
+                  ? 'bg-midnight text-mist hover:bg-surface hover:text-frost disabled:opacity-30'
+                  : 'bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-30'
+              }`}
+            >
+              &larr;
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(p => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
+              .map((p, idx, arr) => (
+                <span key={p} className="flex items-center gap-1">
+                  {idx > 0 && arr[idx - 1] !== p - 1 && (
+                    <span className={`px-1 ${isDark ? 'text-mist' : 'text-gray-400'}`}>...</span>
+                  )}
+                  <button
+                    onClick={() => setCurrentPage(p)}
+                    className={`w-8 h-8 rounded-lg text-sm font-medium transition-all ${
+                      p === safePage
+                        ? 'bg-gradient-to-r from-cyanx to-emera text-white'
+                        : isDark
+                          ? 'bg-midnight text-mist hover:bg-surface hover:text-frost'
+                          : 'bg-white text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                </span>
+              ))}
+            <button
+              onClick={() => setCurrentPage(Math.min(totalPages, safePage + 1))}
+              disabled={safePage >= totalPages}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                isDark
+                  ? 'bg-midnight text-mist hover:bg-surface hover:text-frost disabled:opacity-30'
+                  : 'bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-30'
+              }`}
+            >
+              &rarr;
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Pin Lock */}
       {showPinModal && (

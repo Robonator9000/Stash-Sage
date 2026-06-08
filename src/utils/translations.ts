@@ -153,6 +153,10 @@ const translations: Record<string, Record<string, string>> = {
     somethingWentWrong: 'Something went wrong',
     unexpectedError: 'An unexpected error occurred',
     tryAgain: 'Try Again',
+    perPage: 'Per page',
+    page: 'Page',
+    of: 'of',
+    convertedToOz: 'Converted to {value}oz',
   },
   es: {
     totalProducts: 'Productos',
@@ -308,6 +312,10 @@ const translations: Record<string, Record<string, string>> = {
     somethingWentWrong: 'Algo salió mal',
     unexpectedError: 'Ocurrió un error inesperado',
     tryAgain: 'Intentar de nuevo',
+    perPage: 'Por página',
+    page: 'Página',
+    of: 'de',
+    convertedToOz: 'Convertido a {value}oz',
   },
   fr: {
     totalProducts: 'Produits',
@@ -463,6 +471,10 @@ const translations: Record<string, Record<string, string>> = {
     somethingWentWrong: 'Quelque chose s\'est mal passé',
     unexpectedError: 'Une erreur inattendue est survenue',
     tryAgain: 'Réessayer',
+    perPage: 'Par page',
+    page: 'Page',
+    of: 'sur',
+    convertedToOz: 'Converti en {value}oz',
   },
   de: {
     totalProducts: 'Produkte',
@@ -618,6 +630,10 @@ const translations: Record<string, Record<string, string>> = {
     somethingWentWrong: 'Etwas ist schief gelaufen',
     unexpectedError: 'Ein unerwarteter Fehler ist aufgetreten',
     tryAgain: 'Erneut versuchen',
+    perPage: 'Pro Seite',
+    page: 'Seite',
+    of: 'von',
+    convertedToOz: 'Umgerechnet {value}oz',
   },
   pt: {
     totalProducts: 'Produtos',
@@ -773,6 +789,10 @@ const translations: Record<string, Record<string, string>> = {
     somethingWentWrong: 'Algo deu errado',
     unexpectedError: 'Ocorreu um erro inesperado',
     tryAgain: 'Tentar novamente',
+    perPage: 'Por página',
+    page: 'Página',
+    of: 'de',
+    convertedToOz: 'Convertido para {value}oz',
   },
 };
 
