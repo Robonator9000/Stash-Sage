@@ -36,10 +36,10 @@ export function ControlsBar({
       active
         ? isDark
           ? 'bg-cyanx/10 text-cyanx'
-          : 'bg-cyan-50 text-cyan-600'
+          : 'bg-cyan-100 text-cyan-700'
         : isDark
           ? 'bg-midnight text-mist hover:bg-surface hover:text-frost'
-          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
     }`;
 
   return (
@@ -135,7 +135,7 @@ export function ControlsBar({
             className={`p-2 rounded-lg transition-all ${
               layout === value
                 ? isDark ? 'bg-cyanx/10 text-cyanx' : 'bg-cyan-100 text-cyan-600'
-                : isDark ? 'text-haze hover:text-frost' : 'text-gray-400 hover:text-gray-900'
+                : isDark ? 'text-haze hover:text-frost' : 'text-gray-400 hover:text-gray-700'
             }`}
             aria-label={t(labelKey, lang)}
           >

@@ -39,7 +39,7 @@ export function AppHeader({
 }: AppHeaderProps) {
   return (
     <header className={`sticky top-0 z-40 backdrop-blur-xl ${
-      isDark ? 'bg-deep/80' : 'bg-white/80'
+      isDark ? 'bg-deep/80' : 'bg-slate-100/85'
     }`}>
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between mb-4">
@@ -61,7 +61,7 @@ export function AppHeader({
               className={`p-2 rounded-xl transition-all ${
                 isDark
                   ? 'bg-surface text-mist hover:bg-surface-light hover:text-frost'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
               aria-label={t('settings', lang)}
             >

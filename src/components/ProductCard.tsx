@@ -271,11 +271,11 @@ aria-label={product.favorite ? t('filterFavorites', lang) : t('addToFavorites', 
           <button
             onClick={(e) => buttonAction(e, onConsume)}
             aria-label={t('consume', lang)}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98] ${
-              isDark
-                ? 'bg-gradient-to-r from-cyanx/10 to-emera/10 text-cyanx hover:from-cyanx/20 hover:to-emera/20'
-                : 'bg-gradient-to-r from-cyan-50 to-emerald-50 text-cyan-600 hover:from-cyan-100 hover:to-emerald-100'
-            }`}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                isDark
+                  ? 'bg-gradient-to-r from-cyanx/10 to-emera/10 text-cyanx hover:from-cyanx/20 hover:to-emera/20'
+                  : 'bg-gradient-to-r from-cyan-100 to-emerald-100 text-cyan-700 hover:from-cyan-200 hover:to-emerald-200'
+              }`}
           >
             <Flame className="w-4 h-4" />
             <span className="text-sm">{t('consume', lang)}</span>
@@ -286,7 +286,7 @@ aria-label={product.favorite ? t('filterFavorites', lang) : t('addToFavorites', 
             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98] ${
               isDark
                 ? 'bg-amberx/10 text-amberx hover:bg-amberx/20'
-                : 'bg-gradient-to-r from-amber-50 to-orange-50 text-amber-600 hover:from-amber-100 hover:to-orange-100'
+                : 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700 hover:from-amber-200 hover:to-orange-200'
             }`}
           >
             <DollarSign className="w-4 h-4" />

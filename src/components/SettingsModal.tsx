@@ -146,7 +146,7 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
         ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
         : isDark
           ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
-          : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
+          : 'bg-gray-200 border-gray-200 text-gray-700 hover:border-gray-400'
     }`;
 
   return (
