@@ -318,6 +318,42 @@ export default function App() {
     return result;
   }, [activityEntries, historyFilterType, historyDateFilter]);
 
+  const [isSelectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.size === paginatedProducts.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(paginatedProducts.map(p => p.id)));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    selectedIds.forEach(id => handleDeleteProduct(id));
+    setSelectedIds(new Set());
+    setSelectMode(false);
+  };
+
+  const handleBulkSession = () => {
+    const selected = products.filter(p => selectedIds.has(p.id));
+    if (selected.length === 1) {
+      setSessionProduct(selected[0]);
+      setSessionAmount(Math.min(selected[0].amount, 0.5));
+      setSessionPeople(2);
+    }
+    setSelectedIds(new Set());
+    setSelectMode(false);
+  };
+
   const sortOptions = [
     { value: 'newest', labelKey: 'sortNewest' },
     { value: 'oldest', labelKey: 'sortOldest' },
@@ -495,6 +531,54 @@ export default function App() {
 
             {/* Controls bar */}
             <div className={`flex flex-wrap items-center justify-center gap-2 mb-4`}>
+              {/* Select mode toggle */}
+              <button
+                onClick={() => { setSelectMode(!isSelectMode); if (isSelectMode) setSelectedIds(new Set()); }}
+                className={`p-1.5 rounded-lg text-xs font-medium transition-all ${
+                  isSelectMode
+                    ? 'bg-gradient-to-r from-cyanx to-emera text-white'
+                    : isDark ? 'text-mist hover:text-frost hover:bg-midnight' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {isSelectMode ? 'Done' : 'Select'}
+              </button>
+
+              {isSelectMode && selectedIds.size > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs font-medium ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+                    {selectedIds.size} selected
+                  </span>
+                  <button
+                    onClick={handleSelectAll}
+                    className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${
+                      isDark ? 'bg-midnight text-mist hover:bg-surface hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {selectedIds.size === paginatedProducts.length ? 'Deselect all' : 'Select all'}
+                  </button>
+                  <button
+                    onClick={handleBulkSession}
+                    disabled={selectedIds.size !== 1}
+                    title={selectedIds.size !== 1 ? 'Select exactly 1 item to start a session' : ''}
+                    className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${
+                      selectedIds.size === 1
+                        ? isDark ? 'bg-cyanx/12 text-cyanx hover:bg-cyanx/20' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'
+                        : isDark ? 'bg-midnight text-mist/40 cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    Session
+                  </button>
+                  <button
+                    onClick={handleBulkDelete}
+                    className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${
+                      isDark ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20' : 'bg-red-50 text-red-600 hover:bg-red-100'
+                    }`}
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+
               {/* Sort */}
               <div className="flex items-center gap-2">
                 <span className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'text-muted' : 'text-gray-400'}`}>Sort</span>
@@ -579,6 +663,9 @@ export default function App() {
               onSellProduct={setSellingProduct}
               onToggleFavorite={toggleFavorite}
               onAddProduct={() => setIsAddModalOpen(true)}
+              isSelectMode={isSelectMode}
+              selectedIds={selectedIds}
+              onToggleSelect={handleToggleSelect}
             />
 
             {/* Pagination */}

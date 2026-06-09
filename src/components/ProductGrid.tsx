@@ -13,6 +13,9 @@ interface ProductGridProps {
   onSellProduct: (product: Product) => void;
   onToggleFavorite: (id: string) => void;
   onAddProduct: () => void;
+  isSelectMode?: boolean;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string) => void;
 }
 
 export function ProductGrid({
@@ -26,6 +29,9 @@ export function ProductGrid({
   onSellProduct,
   onToggleFavorite,
   onAddProduct,
+  isSelectMode = false,
+  selectedIds,
+  onToggleSelect,
 }: ProductGridProps) {
   return (
     <main className="max-w-7xl mx-auto px-4 py-6">
@@ -56,6 +62,9 @@ export function ProductGrid({
                 isDark={isDark}
                 layout={layout}
                 precision={precision}
+                isSelectMode={isSelectMode}
+                selected={selectedIds?.has(product.id) || false}
+                onToggleSelect={() => onToggleSelect?.(product.id)}
               />
           ))}
         </div>

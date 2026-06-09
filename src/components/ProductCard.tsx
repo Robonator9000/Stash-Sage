@@ -16,9 +16,12 @@ interface ProductCardProps {
   isDark?: boolean;
   layout?: 'grid' | 'list' | 'compact';
   precision?: number;
+  isSelectMode?: boolean;
+  selected?: boolean;
+  onToggleSelect?: () => void;
 }
 
-export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavorite, isDark = true, layout = 'grid', precision = 2 }: ProductCardProps) {
+export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavorite, isDark = true, layout = 'grid', precision = 2, isSelectMode = false, selected = false, onToggleSelect }: ProductCardProps) {
   const { settings } = useSettings();
   const amountString = `${formatPrecision(product.amount, precision)}g`;
   const lang = settings.language;
@@ -54,8 +57,12 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      onClick();
+      if (isSelectMode) { onToggleSelect?.(); } else { onClick(); }
     }
+  };
+
+  const handleCardClick = () => {
+    if (isSelectMode) { onToggleSelect?.(); } else { onClick(); }
   };
 
   const buttonAction = (e: React.MouseEvent, action: () => void) => {
@@ -88,9 +95,24 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
           isDark
             ? 'bg-midnight border border-edge hover:border-surface-light'
             : 'bg-white border border-gray-200 hover:border-gray-300'
-        } ${product.favorite ? 'ring-1 ring-amberx/40' : ''}`}
+        } ${product.favorite ? 'ring-1 ring-amberx/40' : ''} ${selected ? (isDark ? 'ring-2 ring-cyanx' : 'ring-2 ring-cyan-500') : ''}`}
       >
-        <div className="flex items-center gap-4 p-4" onClick={onClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}>
+        <div className="flex items-center gap-4 p-4" onClick={handleCardClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}>
+          {isSelectMode && (
+            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+              selected
+                ? 'bg-cyanx border-cyanx'
+                : isDark ? 'border-slate-600' : 'border-gray-300'
+            }`}
+              onClick={(e) => { e.stopPropagation(); onToggleSelect?.(); }}
+            >
+              {selected && (
+                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+          )}
           <div className="relative flex-shrink-0">
             {(product.pictures?.[0] || product.picture) ? (
               <img src={(product.pictures?.[0] || product.picture)} alt={product.name} loading="lazy" decoding="async" className="w-16 h-16 rounded-lg object-cover" />
@@ -167,9 +189,24 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
           isDark
             ? 'bg-midnight border border-edge hover:border-cyanx/30'
             : 'bg-white border border-gray-200 hover:border-cyan-400/50'
-        } ${product.favorite ? 'ring-1 ring-amberx/40' : ''}`}
-        onClick={onClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}
+        } ${product.favorite ? 'ring-1 ring-amberx/40' : ''} ${selected ? (isDark ? 'ring-2 ring-cyanx' : 'ring-2 ring-cyan-500') : ''}`}
+        onClick={handleCardClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}
       >
+        {isSelectMode && (
+          <div className={`absolute top-2 left-2 z-30 w-5 h-5 rounded border-2 flex items-center justify-center ${
+            selected
+              ? 'bg-cyanx border-cyanx'
+              : isDark ? 'border-slate-600 bg-deep/80' : 'border-gray-300 bg-white/90'
+          }`}
+            onClick={(e) => { e.stopPropagation(); onToggleSelect?.(); }}
+          >
+            {selected && (
+              <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            )}
+          </div>
+        )}
         <div className="aspect-square relative overflow-hidden rounded-t-xl">
           {(product.pictures?.[0] || product.picture) ? (
             <img src={(product.pictures?.[0] || product.picture)} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
@@ -225,9 +262,24 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
         isDark
           ? 'bg-midnight border border-edge hover:border-cyanx/30'
           : 'bg-white border border-gray-200 hover:border-cyan-400/50'
-      } ${product.favorite ? 'ring-1 ring-amberx/40' : ''}`}
-      onClick={onClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}
+      } ${product.favorite ? 'ring-1 ring-amberx/40' : ''} ${selected ? (isDark ? 'ring-2 ring-cyanx' : 'ring-2 ring-cyan-500') : ''}`}
+      onClick={handleCardClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}
     >
+      {isSelectMode && (
+        <div className={`absolute top-3 left-3 z-30 w-6 h-6 rounded border-2 flex items-center justify-center ${
+          selected
+            ? 'bg-cyanx border-cyanx'
+            : isDark ? 'border-slate-600 bg-deep/80' : 'border-gray-300 bg-white/90'
+        }`}
+          onClick={(e) => { e.stopPropagation(); onToggleSelect?.(); }}
+        >
+          {selected && (
+            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          )}
+        </div>
+      )}
       {/* Image Section */}
       <div className="relative aspect-video flex-shrink-0">
         {(product.pictures?.[0] || product.picture) ? (
