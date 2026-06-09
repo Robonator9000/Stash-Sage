@@ -10,6 +10,7 @@ import { searchProducts, sortProducts, filterProducts, generateId, formatPrecisi
 import { t } from './utils/translations';
 import { ToastContainer, showToast } from './components/Toast';
 import { ProductGrid } from './components/ProductGrid';
+import { StatsCard } from './components/StatsCard';
 import { ProductModal } from './components/ProductModal';
 import { ConsumeModal } from './components/ConsumeModal';
 import { SellModal } from './components/SellModal';
@@ -222,27 +223,6 @@ export default function App() {
   const lang = settings.language;
 
   const totalValue = useMemo(() => products.reduce((s, p) => s + (p.price || 0) * p.amount, 0), [products]);
-  const avgRating = useMemo(() => {
-    const rated = products.filter(p => p.rating > 0);
-    return rated.length ? rated.reduce((s, p) => s + p.rating, 0) / rated.length : 0;
-  }, [products]);
-  const avgThc = useMemo(() => {
-    const withThc = products.filter(p => p.thc > 0);
-    return withThc.length ? withThc.reduce((s, p) => s + p.thc, 0) / withThc.length : 0;
-  }, [products]);
-
-  const lastConsumedDisplay = useMemo(() => {
-    const withDates = products.filter(p => p.lastConsumed).map(p => p.lastConsumed!).sort((a, b) => b.getTime() - a.getTime());
-    if (withDates.length === 0) return '\u2014';
-    const diff = Date.now() - withDates[0].getTime();
-    const hours = Math.floor(diff / 3600000);
-    if (hours < 1) return 'Just now';
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    if (days === 1) return 'Yesterday';
-    if (days < 30) return `${days}d ago`;
-    return withDates[0].toLocaleDateString();
-  }, [products]);
 
   const typeDistribution = useMemo(() => {
     const map = new Map<string, number>();
@@ -312,29 +292,6 @@ export default function App() {
     { value: 'lowStock', labelKey: 'filterLowStock' },
     { value: 'outOfStock', labelKey: 'filterOutOfStock' },
   ];
-
-  const statBar = (
-    <div className={`flex flex-wrap items-center gap-4 mb-5 px-4 py-3 rounded-2xl ${isDark ? 'bg-surface' : 'bg-white'} border ${isDark ? 'border-border' : 'border-gray-200'}`}>
-      {[
-        { label: t('totalProducts', lang), value: products.length.toString() },
-        { label: t('totalAmount', lang), value: `${formatPrecision(products.reduce((s, p) => s + p.amount, 0), 1)}g` },
-        { label: t('averageRating', lang), value: avgRating > 0 ? avgRating.toFixed(1) : '—' },
-        { label: t('averageTHC', lang), value: avgThc > 0 ? `${avgThc.toFixed(1)}%` : '—' },
-        { label: t('totalValue', lang), value: formatCurrency(totalValue, settings.currency) },
-        { label: t('totalSessions', lang), value: sessions.length.toString() },
-        { label: t('lastConsumed', lang), value: lastConsumedDisplay },
-      ].filter((_, idx) => {
-        const vis = settings.statsVisibility;
-        const keys: (keyof typeof vis)[] = ['totalProducts', 'totalAmount', 'averageRating', 'averageTHC', 'totalValue', 'totalSessions', 'lastConsumed'];
-        return vis[keys[idx]] !== false;
-      }).map((stat) => (
-        <div key={stat.label} className="flex items-center gap-2">
-          <span className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>{stat.label}</span>
-          <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{stat.value}</span>
-        </div>
-      ))}
-    </div>
-  );
 
   if (!settings.onboardingDone) {
     return (
@@ -482,8 +439,6 @@ export default function App() {
         {/* ==================== INVENTORY TAB ==================== */}
         {activeTab === 'inventory' && (
           <div>
-            {statBar}
-
             {/* Controls bar */}
             <div className={`flex flex-wrap items-center gap-2 mb-4 p-3 rounded-xl ${isDark ? 'bg-surface' : 'bg-white'} border ${isDark ? 'border-border' : 'border-gray-200'}`}>
               {/* Sort */}
@@ -626,7 +581,7 @@ export default function App() {
         {/* ==================== DASHBOARD TAB ==================== */}
         {activeTab === 'dashboard' && (
           <div>
-            {statBar}
+            <StatsCard products={products} isDark={isDark} />
 
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
