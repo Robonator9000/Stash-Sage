@@ -185,7 +185,7 @@ export default function Home() {
   const [searchInput, setSearchInput] = useState('')
   const [searchPreviewOpen, setSearchPreviewOpen] = useState(false)
   const searchContainerRef = useRef<HTMLDivElement>(null)
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>()
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const [page, setPage] = useState(1)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [historyFrom, setHistoryFrom] = useState('')
@@ -232,7 +232,7 @@ export default function Home() {
   const [sessionRotationIndex, setSessionRotationIndex] = useState(0)
   const [sessionNotes, setSessionNotes] = useState('')
   const [sessionStarted, setSessionStarted] = useState(false)
-  const sessionTimerRef = useRef<ReturnType<typeof setInterval>>()
+  const sessionTimerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined)
 
   // Settings
   const [settingsTab, setSettingsTab] = useState<'personalization' | 'stats' | 'danger'>('personalization')
