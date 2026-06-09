@@ -19,6 +19,7 @@ import { SettingsSheet } from './components/SettingsSheet';
 import { PinModal } from './components/PinModal';
 import { BackgroundCanvas } from './components/BackgroundCanvas';
 import { WelcomeModal } from './components/WelcomeModal';
+import { CalendarHeatmap } from './components/CalendarHeatmap';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 const DASHBOARD_COLORS = ['#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
@@ -777,6 +778,11 @@ export default function App() {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Calendar Heatmap */}
+            <div className="mb-6">
+              <CalendarHeatmap sessions={sessions} isDark={isDark} />
             </div>
 
             {/* Budget Info */}
