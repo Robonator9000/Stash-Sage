@@ -316,7 +316,7 @@ export default function App() {
           {/* Logo */}
           <button
             onClick={() => setActiveTab('inventory')}
-            className="text-2xl font-extrabold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent hover:opacity-80 transition-opacity shrink-0"
+            className="text-2xl font-extrabold bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent hover:opacity-80 transition-opacity shrink-0"
           >
             🍃 STASH
           </button>
@@ -375,7 +375,7 @@ export default function App() {
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 transition-all shadow-lg shadow-cyan-500/20"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all shadow-lg shadow-cyanx/20"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />

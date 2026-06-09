@@ -37,16 +37,16 @@ export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalPr
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-gradient-to-br from-cyanx/10 via-transparent to-emera/10 pointer-events-none" />
       <div
-        className={`relative w-full max-w-lg rounded-3xl p-8 shadow-2xl transition-all ${
+        className={`relative w-full max-w-lg rounded-2xl p-6 shadow-2xl transition-all ${
           isDark
-            ? 'bg-midnight border border-edge'
+            ? 'bg-midnight/80 border border-edge'
             : 'bg-white border border-gray-200'
         }`}
       >
         <div className="text-center mb-8">
-          <div className="text-5xl mb-4">🌿</div>
-          <h1 className={`text-2xl font-bold mb-2 ${isDark ? 'text-frost' : 'text-gray-900'}`}>
-            Stash Tracker
+          <div className="text-4xl mb-3">🍃</div>
+          <h1 className="text-2xl font-extrabold bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent mb-2">
+            STASH
           </h1>
           <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
             Choose your language to get started
