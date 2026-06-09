@@ -336,7 +336,7 @@ export default function App() {
                 placeholder={t('searchPlaceholder', lang)}
                 className={`w-full pl-10 pr-4 py-1.5 rounded-xl text-sm border transition-all outline-none
                   ${isDark
-                    ? 'bg-surface border-border text-white placeholder-muted focus:border-cyan-500'
+                    ? 'bg-midnight/80 border border-edge text-white placeholder-muted focus:border-cyan-500'
                     : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-cyan-400'}`}
               />
               {searchQuery && (
@@ -351,7 +351,7 @@ export default function App() {
             {/* Search preview dropdown */}
             {showSearchPreview && searchQuery.trim() && previewProducts.length > 0 && (
               <div className={`absolute top-full mt-1 left-0 right-0 rounded-xl shadow-xl border overflow-hidden z-50
-                ${isDark ? 'bg-surface border-border' : 'bg-white border-gray-200'}`}>
+                ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
                 {previewProducts.map(p => (
                   <button
                     key={p.id}
@@ -442,7 +442,7 @@ export default function App() {
             <StatsCard products={products} isDark={isDark} />
 
             {/* Controls bar */}
-            <div className={`flex flex-wrap items-center gap-2 mb-4 p-3 rounded-xl ${isDark ? 'bg-surface' : 'bg-white'} border ${isDark ? 'border-border' : 'border-gray-200'}`}>
+            <div className={`flex flex-wrap items-center gap-2 mb-4`}>
               {/* Sort */}
               <div className="flex items-center gap-2">
                 <span className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'text-muted' : 'text-gray-400'}`}>Sort</span>
@@ -590,7 +590,7 @@ export default function App() {
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
               {/* Type Distribution */}
-              <div className={`rounded-2xl p-5 border ${isDark ? 'bg-surface border-border' : 'bg-white border-gray-200'}`}>
+              <div className={`rounded-2xl p-5 border ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
                 <h3 className={`text-sm font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {t('stockOverview', lang)}
                 </h3>
@@ -638,7 +638,7 @@ export default function App() {
               </div>
 
               {/* Consumption Trend */}
-              <div className={`rounded-2xl p-6 border ${isDark ? 'bg-surface border-border' : 'bg-white border-gray-200'}`}>
+              <div className={`rounded-2xl p-6 border ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
                 <h3 className={`text-sm font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {t('consumptionTrend', lang)}
                 </h3>
@@ -668,7 +668,7 @@ export default function App() {
               </div>
 
               {/* Top Strains */}
-              <div className={`rounded-2xl p-6 border ${isDark ? 'bg-surface border-border' : 'bg-white border-gray-200'}`}>
+              <div className={`rounded-2xl p-6 border ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
                 <h3 className={`text-sm font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {t('topStrains', lang)}
                 </h3>
@@ -698,7 +698,7 @@ export default function App() {
               </div>
 
               {/* Total Spent */}
-              <div className={`rounded-2xl p-6 border ${isDark ? 'bg-surface border-border' : 'bg-white border-gray-200'}`}>
+              <div className={`rounded-2xl p-6 border ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
                 <h3 className={`text-sm font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {t('totalSpent', lang)}
                 </h3>
@@ -730,7 +730,7 @@ export default function App() {
 
             {/* Budget Info */}
             {settings.budgetLimit > 0 && (
-              <div className={`rounded-2xl p-6 border mb-6 ${isDark ? 'bg-surface border-border' : 'bg-white border-gray-200'}`}>
+              <div className={`rounded-2xl p-6 border mb-6 ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
                 <div className="flex items-center justify-between mb-2">
                   <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     {t('budgetLimit', lang)} ({settings.budgetPeriod})
@@ -761,7 +761,7 @@ export default function App() {
         {activeTab === 'history' && (
           <div>
             {/* Filters */}
-            <div className={`flex flex-wrap items-center gap-2 mb-4 p-3 rounded-xl ${isDark ? 'bg-surface' : 'bg-white'} border ${isDark ? 'border-border' : 'border-gray-200'}`}>
+            <div className={`flex flex-wrap items-center gap-2 mb-4`}>
               <span className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'text-muted' : 'text-gray-400'}`}>
                 {t('filterByType', lang)}
               </span>
@@ -808,7 +808,7 @@ export default function App() {
 
             {/* Activity Table */}
             {filteredHistory.length > 0 ? (
-              <div className={`rounded-2xl border overflow-hidden ${isDark ? 'bg-surface border-border' : 'bg-white border-gray-200'}`}>
+              <div className={`rounded-2xl border overflow-hidden ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
@@ -854,7 +854,7 @@ export default function App() {
                 </div>
               </div>
             ) : (
-              <div className={`text-center py-16 rounded-2xl border ${isDark ? 'bg-surface border-border text-muted' : 'bg-white border-gray-200 text-gray-400'}`}>
+              <div className={`text-center py-16 rounded-2xl border ${isDark ? 'bg-midnight/80 border border-edge text-muted' : 'bg-white border-gray-200 text-gray-400'}`}>
                 <svg className="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
