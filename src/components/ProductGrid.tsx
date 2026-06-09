@@ -1,6 +1,5 @@
 import { Product } from '../types';
 import { ProductCard } from './ProductCard';
-import { StatsCard } from './StatsCard';
 import { EmptyState } from './EmptyState';
 
 interface ProductGridProps {
@@ -30,11 +29,7 @@ export function ProductGrid({
 }: ProductGridProps) {
   return (
     <main className="max-w-7xl mx-auto px-4 py-6">
-      {products.length > 0 && (
-        <div className="mb-6">
-          <StatsCard products={products} isDark={isDark} />
-        </div>
-      )}
+
 
       {filteredProducts.length === 0 ? (
         <EmptyState

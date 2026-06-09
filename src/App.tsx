@@ -439,6 +439,8 @@ export default function App() {
         {/* ==================== INVENTORY TAB ==================== */}
         {activeTab === 'inventory' && (
           <div>
+            <StatsCard products={products} isDark={isDark} />
+
             {/* Controls bar */}
             <div className={`flex flex-wrap items-center gap-2 mb-4 p-3 rounded-xl ${isDark ? 'bg-surface' : 'bg-white'} border ${isDark ? 'border-border' : 'border-gray-200'}`}>
               {/* Sort */}
@@ -581,7 +583,9 @@ export default function App() {
         {/* ==================== DASHBOARD TAB ==================== */}
         {activeTab === 'dashboard' && (
           <div>
-            <StatsCard products={products} isDark={isDark} />
+            <div className="mb-6">
+              <StatsCard products={products} isDark={isDark} />
+            </div>
 
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
