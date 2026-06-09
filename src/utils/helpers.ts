@@ -66,6 +66,7 @@ export function parseProductDates(product: Product): Product {
     createdAt: tryParseDate(product.createdAt) || new Date(),
     updatedAt: tryParseDate(product.updatedAt) || new Date(),
     lastConsumed: tryParseDate(product.lastConsumed),
+    purchasedAt: tryParseDate(product.purchasedAt),
   };
 }
 
@@ -131,6 +132,10 @@ export function filterProducts(products: Product[], filterBy: FilterType): Produ
     case 'outOfStock':
       return products.filter((p) => p.amount <= 0);
     default:
+      if (filterBy.startsWith('brand:')) {
+        const brand = filterBy.slice(6).toLowerCase();
+        return products.filter((p) => p.brand && p.brand.toLowerCase() === brand);
+      }
       return products.filter((p) => p.type.toLowerCase() === filterBy.toLowerCase());
   }
 }

@@ -101,8 +101,34 @@ export default function App() {
   }, [settings.language, isDark]);
 
   useEffect(() => {
+    if (!settings.themeAuto) return;
+    const mq = window.matchMedia('(prefers-color-scheme: light)');
+    const handler = (e: MediaQueryListEvent) => {
+      updateSettings({ theme: e.matches ? 'light' : 'dark' });
+    };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [settings.themeAuto, updateSettings]);
+
+  useEffect(() => {
     setCurrentPage(1);
   }, [debouncedQuery, filterBy, sortBy, productsPerPage]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        const input = document.querySelector<HTMLInputElement>('input[type="text"]');
+        input?.focus();
+      }
+      if (e.key === 'n' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
+        e.preventDefault();
+        setIsAddModalOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   const filteredProducts = useMemo(() => {
     let result = products;
@@ -135,12 +161,24 @@ export default function App() {
 
   const handleDeleteProduct = (id: string) => {
     const p = products.find(x => x.id === id);
+    if (!p) return;
     deleteProduct(id);
-    if (p) {
-      addActivityEntry({
-        id: generateId(), type: 'delete', productId: id, productName: p.name, timestamp: new Date(),
-      });
-    }
+    addActivityEntry({
+      id: generateId(), type: 'delete', productId: id, productName: p.name, timestamp: new Date(),
+    });
+    const lng = settings.language;
+    showToast({
+      id: 'undo-delete-' + id,
+      title: t('productDeleted', lng),
+      body: p.name,
+      action: {
+        label: t('undo', lng),
+        onClick: () => {
+          addProduct(p);
+        },
+      },
+      variant: 'info',
+    });
   };
 
   const checkLowStock = useCallback((product: Product, deducted: number) => {
@@ -230,6 +268,16 @@ export default function App() {
     return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
   }, [products]);
 
+  const spendingByType = useMemo(() => {
+    const map = new Map<string, number>();
+    products.forEach(p => map.set(p.type, (map.get(p.type) || 0) + (p.price || 0) * p.amount));
+    return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
+  }, [products]);
+
+  const brandList = useMemo(() => {
+    return [...new Set(products.map(p => p.brand).filter((b): b is string => !!b))].sort();
+  }, [products]);
+
   const topStrains = useMemo(() => {
     return [...products].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 5);
   }, [products]);
@@ -291,6 +339,7 @@ export default function App() {
     { value: 'inStock', labelKey: 'filterInStock' },
     { value: 'lowStock', labelKey: 'filterLowStock' },
     { value: 'outOfStock', labelKey: 'filterOutOfStock' },
+    ...brandList.map(b => ({ value: `brand:${b}`, labelKey: b, display: b })),
   ];
 
   if (!settings.onboardingDone) {
@@ -392,7 +441,7 @@ export default function App() {
               </svg>
             </button>
             <button
-              onClick={() => updateSettings({ theme: isDark ? 'light' : 'dark' })}
+              onClick={() => updateSettings({ theme: isDark ? 'light' : 'dark', themeAuto: false })}
               className={`p-2 rounded-xl transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}
             >
               {isDark ? (
@@ -704,9 +753,9 @@ export default function App() {
                 <h3 className={`text-sm font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {t('totalSpent', lang)}
                 </h3>
-                {typeDistribution.length > 0 ? (
+                {spendingByType.length > 0 ? (
                   <ResponsiveContainer width="100%" height={260}>
-                    <BarChart data={typeDistribution}>
+                    <BarChart data={spendingByType}>
                       <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e5e7eb'} />
                       <XAxis dataKey="name" tick={{ fill: isDark ? '#64748b' : '#94a3b8', fontSize: 12 }} />
                       <YAxis tick={{ fill: isDark ? '#64748b' : '#94a3b8', fontSize: 12 }} />
@@ -717,7 +766,7 @@ export default function App() {
                           borderRadius: '12px',
                           color: isDark ? '#e2e8f0' : '#0f172a',
                         }}
-                        formatter={(value: any) => [`${formatPrecision(Number(value), 1)}g`, '']}
+                        formatter={(value: any) => [formatCurrency(Number(value), settings.currency), '']}
                       />
                       <Bar dataKey="value" fill="#f59e0b" radius={[4, 4, 0, 0]} />
                     </BarChart>

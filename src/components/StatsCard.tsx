@@ -22,7 +22,9 @@ export function StatsCard({ products, isDark = true }: StatsCardProps) {
   const averageTHC = products.filter(p => p.thc > 0).length > 0
     ? roundToHundredth(products.filter(p => p.thc > 0).reduce((sum, p) => sum + p.thc, 0) / products.filter(p => p.thc > 0).length)
     : 0;
-  const totalValue = roundToHundredth(products.reduce((sum, p) => sum + (p.price || 0), 0));
+  const totalValue = roundToHundredth(products.reduce((sum, p) => sum + (p.price || 0) * p.amount, 0));
+
+  const pricePerGram = totalAmount > 0 ? roundToHundredth(totalValue / totalAmount) : 0;
 
   const lastConsumedDate = products.reduce<Date | null>((latest, p) => {
     if (!p.lastConsumed) return latest;
@@ -51,6 +53,7 @@ export function StatsCard({ products, isDark = true }: StatsCardProps) {
     { key: 'averageRating' as const, visible: stats.averageRating, icon: Star, label: t('averageRating', settings.language), value: formatPrecision(averageRating, dp), suffix: '/5' },
     { key: 'averageTHC' as const, visible: stats.averageTHC, icon: Percent, label: t('averageTHC', settings.language), value: formatPrecision(averageTHC, dp), suffix: '%' },
     { key: 'totalValue' as const, visible: stats.totalValue, icon: DollarSign, label: t('totalValue', settings.language), value: settings.currency + formatPrecision(totalValue, dp), suffix: '' },
+    { key: 'pricePerGram' as const, visible: stats.pricePerGram && totalAmount > 0, icon: DollarSign, label: t('pricePerGram', settings.language), value: settings.currency + formatPrecision(pricePerGram, dp), suffix: '/g' },
     { key: 'lastConsumed' as const, visible: stats.lastConsumed, icon: Clock, label: t('lastConsumed', settings.language), value: lastConsumedStr, suffix: '' },
   ];
 

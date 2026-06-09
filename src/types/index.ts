@@ -8,6 +8,7 @@ export interface Product {
   amount: number; // Always in grams
   price: number;
   picture?: string;
+  pictures?: string[];
   notes?: string;
   rating: number;
   brand?: string;
@@ -15,6 +16,7 @@ export interface Product {
   effects?: string;
   consumptionCount: number;
   lastConsumed?: Date;
+  purchasedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
   favorite: boolean;
@@ -23,6 +25,7 @@ export interface Product {
 export interface Settings {
   language: 'en' | 'es' | 'fr' | 'de' | 'pt';
   theme: 'dark' | 'light';
+  themeAuto: boolean;
   onboardingDone: boolean;
   currency: string;
   statsVisibility: {
@@ -32,6 +35,7 @@ export interface Settings {
     averageRating: boolean;
     averageTHC: boolean;
     totalValue: boolean;
+    pricePerGram: boolean;
     lastConsumed: boolean;
   };
   decimalPrecision: number;

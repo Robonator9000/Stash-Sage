@@ -51,6 +51,9 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
   const [isBrandDropdownOpen, setIsBrandDropdownOpen] = useState(false);
   const [brandSearchQuery, setBrandSearchQuery] = useState('');
   const [showOz, setShowOz] = useState(false);
+  const [purchasedAt, setPurchasedAt] = useState(
+    product?.purchasedAt ? new Date(product.purchasedAt).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)
+  );
   const { isVisible, handleClose } = useModalAnimation(onClose);
 
   const favoriteBrands = settings.favoriteBrands || [];
@@ -113,6 +116,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
       effects: effects.trim(),
       consumptionCount: product?.consumptionCount || 0,
       lastConsumed: product?.lastConsumed,
+      purchasedAt: purchasedAt ? new Date(purchasedAt) : undefined,
       createdAt: product?.createdAt || new Date(),
       updatedAt: new Date(),
       favorite: product?.favorite || false,
@@ -480,6 +484,23 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                 } outline-none`}
               />
             </div>
+          </div>
+
+          {/* Purchase Date */}
+          <div>
+            <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+              Purchase Date
+            </label>
+            <input
+              type="date"
+              value={purchasedAt}
+              onChange={(e) => setPurchasedAt(e.target.value)}
+              className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
+                isDark
+                  ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
+                  : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
+              } outline-none`}
+            />
           </div>
 
           {/* Rating */}
