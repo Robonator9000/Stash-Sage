@@ -313,43 +313,24 @@ export default function App() {
     { value: 'outOfStock', labelKey: 'filterOutOfStock' },
   ];
 
-  const statGrid = (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3 mb-6">
+  const statBar = (
+    <div className={`flex flex-wrap items-center gap-4 mb-5 px-4 py-3 rounded-2xl ${isDark ? 'bg-surface' : 'bg-white'} border ${isDark ? 'border-border' : 'border-gray-200'}`}>
       {[
-        { label: t('totalProducts', lang), value: products.length.toString(), icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-        { label: t('totalAmount', lang), value: `${formatPrecision(products.reduce((s, p) => s + p.amount, 0), 1)}g`, icon: 'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3' },
-        { label: t('averageRating', lang), value: avgRating > 0 ? avgRating.toFixed(1) : '—', icon: 'M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z' },
-        { label: t('averageTHC', lang), value: avgThc > 0 ? `${avgThc.toFixed(1)}%` : '—', icon: 'M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z' },
-        { label: t('totalValue', lang), value: formatCurrency(totalValue, settings.currency), icon: 'M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
-        { label: t('totalSessions', lang), value: sessions.length.toString(), icon: 'M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z' },
-        { label: t('lastConsumed', lang), value: lastConsumedDisplay, icon: 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z' },
+        { label: t('totalProducts', lang), value: products.length.toString() },
+        { label: t('totalAmount', lang), value: `${formatPrecision(products.reduce((s, p) => s + p.amount, 0), 1)}g` },
+        { label: t('averageRating', lang), value: avgRating > 0 ? avgRating.toFixed(1) : '—' },
+        { label: t('averageTHC', lang), value: avgThc > 0 ? `${avgThc.toFixed(1)}%` : '—' },
+        { label: t('totalValue', lang), value: formatCurrency(totalValue, settings.currency) },
+        { label: t('totalSessions', lang), value: sessions.length.toString() },
+        { label: t('lastConsumed', lang), value: lastConsumedDisplay },
       ].filter((_, idx) => {
         const vis = settings.statsVisibility;
-        if (idx === 0 && vis.totalProducts === false) return false;
-        if (idx === 1 && vis.totalAmount === false) return false;
-        if (idx === 2 && vis.averageRating === false) return false;
-        if (idx === 3 && vis.averageTHC === false) return false;
-        if (idx === 4 && vis.totalValue === false) return false;
-        if (idx === 5 && vis.totalSessions === false) return false;
-        if (idx === 6 && vis.lastConsumed === false) return false;
-        return true;
+        const keys: (keyof typeof vis)[] = ['totalProducts', 'totalAmount', 'averageRating', 'averageTHC', 'totalValue', 'totalSessions', 'lastConsumed'];
+        return vis[keys[idx]] !== false;
       }).map((stat) => (
-        <div
-          key={stat.label}
-          className={`relative overflow-hidden rounded-2xl p-5 border transition-all
-            ${isDark ? 'bg-surface border-border' : 'bg-white border-gray-200'}`}
-        >
-          <div className="flex items-center justify-between mb-3">
-            <span className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'text-muted' : 'text-gray-400'}`}>
-              {stat.label}
-            </span>
-            <svg className={`w-4 h-4 ${isDark ? 'text-muted' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d={stat.icon} />
-            </svg>
-          </div>
-          <div className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            {stat.value}
-          </div>
+        <div key={stat.label} className="flex items-center gap-2">
+          <span className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>{stat.label}</span>
+          <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{stat.value}</span>
         </div>
       ))}
     </div>
@@ -501,7 +482,7 @@ export default function App() {
         {/* ==================== INVENTORY TAB ==================== */}
         {activeTab === 'inventory' && (
           <div>
-            {statGrid}
+            {statBar}
 
             {/* Controls bar */}
             <div className={`flex flex-wrap items-center gap-2 mb-4 p-3 rounded-xl ${isDark ? 'bg-surface' : 'bg-white'} border ${isDark ? 'border-border' : 'border-gray-200'}`}>
@@ -645,7 +626,7 @@ export default function App() {
         {/* ==================== DASHBOARD TAB ==================== */}
         {activeTab === 'dashboard' && (
           <div>
-            {statGrid}
+            {statBar}
 
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
