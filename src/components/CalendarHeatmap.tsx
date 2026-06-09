@@ -1,9 +1,11 @@
 import { useMemo } from 'react';
 import { Session } from '../types';
+import { t } from '../utils/translations';
 
 interface CalendarHeatmapProps {
   sessions: Session[];
   isDark?: boolean;
+  lang?: string;
 }
 
 const DAYS = ['Mon', '', 'Wed', '', 'Fri', '', ''];
@@ -18,7 +20,7 @@ function getIntensity(value: number, max: number): number {
   return 4;
 }
 
-export function CalendarHeatmap({ sessions, isDark = true }: CalendarHeatmapProps) {
+export function CalendarHeatmap({ sessions, isDark = true, lang = 'en' }: CalendarHeatmapProps) {
   const { weeks, maxAmount } = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -70,13 +72,13 @@ export function CalendarHeatmap({ sessions, isDark = true }: CalendarHeatmapProp
 
   const monthLabels = useMemo(() => {
     const labels: { index: number; label: string }[] = [];
+    let lastMonth = -1;
     weeks.forEach((week, wi) => {
-      const firstDay = week.find((d) => d.date.getDate() <= 7 && d.date.getDate() > 0);
-      if (firstDay) {
-        const m = firstDay.date.getMonth();
-        if (!labels.find((l) => l.label === MONTHS[m])) {
-          labels.push({ index: wi, label: MONTHS[m] });
-        }
+      const midIdx = Math.floor(week.length / 2);
+      const m = week[midIdx].date.getMonth();
+      if (m !== lastMonth) {
+        labels.push({ index: wi, label: MONTHS[m] });
+        lastMonth = m;
       }
     });
     return labels;
@@ -93,17 +95,17 @@ export function CalendarHeatmap({ sessions, isDark = true }: CalendarHeatmapProp
   return (
     <div className={`rounded-2xl p-5 border ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
       <h3 className={`text-sm font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-        Activity
+        {t('activity', lang)}
       </h3>
 
       {/* Month labels */}
-      <div className="flex ml-8 mb-1" style={{ gap: '0px' }}>
+      <div className="flex ml-8 mb-1 overflow-hidden">
         {weeks.map((_, wi) => {
           const label = monthLabels.find((l) => l.index === wi);
           return (
             <div
               key={wi}
-              className={`text-[10px] leading-none ${isDark ? 'text-slate-500' : 'text-gray-400'}`}
+              className={`text-[10px] leading-none flex-shrink-0 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}
               style={{ width: `${100 / weeks.length}%`, visibility: label ? 'visible' : 'hidden' }}
             >
               {label?.label || ''}
@@ -112,9 +114,9 @@ export function CalendarHeatmap({ sessions, isDark = true }: CalendarHeatmapProp
         })}
       </div>
 
-      <div className="flex gap-[3px]">
+      <div className="flex gap-0.5">
         {/* Day labels */}
-        <div className="flex flex-col gap-[3px] mr-1">
+        <div className="flex flex-col gap-0.5 mr-1">
           {DAYS.map((day, i) => (
             <div
               key={i}
@@ -129,14 +131,14 @@ export function CalendarHeatmap({ sessions, isDark = true }: CalendarHeatmapProp
         </div>
 
         {/* Grid */}
-        <div className="flex gap-[3px] overflow-x-auto">
+        <div className="flex gap-0.5 overflow-x-auto">
           {weeks.map((week, wi) => (
-            <div key={wi} className="flex flex-col gap-[3px]">
+            <div key={wi} className="flex flex-col gap-0.5">
               {week.map((day, di) => (
                 <div
                   key={di}
                   className={`w-[13px] h-[13px] rounded-sm ${getColor(getIntensity(day.amount, maxAmount))}`}
-                  title={`${day.date.toLocaleDateString()}: ${day.amount.toFixed(1)}g`}
+                  title={day.amount > 0 ? `${day.date.toLocaleDateString()}: ${day.amount.toFixed(1)}g` : day.date.toLocaleDateString()}
                 />
               ))}
             </div>
@@ -146,11 +148,11 @@ export function CalendarHeatmap({ sessions, isDark = true }: CalendarHeatmapProp
 
       {/* Legend */}
       <div className="flex items-center justify-end gap-1 mt-3">
-        <span className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>Less</span>
+        <span className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('less', lang)}</span>
         {[0, 1, 2, 3, 4].map((i) => (
           <div key={i} className={`w-[13px] h-[13px] rounded-sm ${getColor(i)}`} />
         ))}
-        <span className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>More</span>
+        <span className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('more', lang)}</span>
       </div>
     </div>
   );

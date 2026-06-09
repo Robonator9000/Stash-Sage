@@ -73,6 +73,7 @@ export default function App() {
 
   const [historyFilterType, setHistoryFilterType] = useState<string>('all');
   const [historyDateFilter, setHistoryDateFilter] = useState<string>('all');
+  const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
 
   const isDark = settings.theme === 'dark';
 
@@ -338,7 +339,27 @@ export default function App() {
   };
 
   const handleBulkDelete = () => {
-    selectedIds.forEach(id => handleDeleteProduct(id));
+    const selected = products.filter(p => selectedIds.has(p.id));
+    const deletedProducts = [...selected];
+    selected.forEach(p => deleteProduct(p.id));
+    selected.forEach(p => {
+      addActivityEntry({
+        id: generateId(), type: 'delete', productId: p.id, productName: p.name, timestamp: new Date(),
+      });
+    });
+    const lng = settings.language;
+    showToast({
+      id: 'bulk-delete',
+      title: `${deletedProducts.length} ${t('productDeleted', lng)}`,
+      body: deletedProducts.map(p => p.name).join(', '),
+      action: {
+        label: t('undo', lng),
+        onClick: () => {
+          deletedProducts.forEach(p => addProduct(p));
+        },
+      },
+      variant: 'info',
+    });
     setSelectedIds(new Set());
     setSelectMode(false);
   };
@@ -349,9 +370,9 @@ export default function App() {
       setSessionProduct(selected[0]);
       setSessionAmount(Math.min(selected[0].amount, 0.5));
       setSessionPeople(2);
+      setSelectedIds(new Set());
+      setSelectMode(false);
     }
-    setSelectedIds(new Set());
-    setSelectMode(false);
   };
 
   const sortOptions = [
@@ -546,7 +567,7 @@ export default function App() {
               {isSelectMode && selectedIds.size > 0 && (
                 <div className="flex items-center gap-2">
                   <span className={`text-xs font-medium ${isDark ? 'text-mist' : 'text-gray-500'}`}>
-                    {selectedIds.size} selected
+                    {t('itemsSelected', lang).replace('{count}', String(selectedIds.size))}
                   </span>
                   <button
                     onClick={handleSelectAll}
@@ -559,14 +580,30 @@ export default function App() {
                   <button
                     onClick={handleBulkSession}
                     disabled={selectedIds.size !== 1}
-                    title={selectedIds.size !== 1 ? 'Select exactly 1 item to start a session' : ''}
                     className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${
                       selectedIds.size === 1
                         ? isDark ? 'bg-cyanx/12 text-cyanx hover:bg-cyanx/20' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'
-                        : isDark ? 'bg-midnight text-mist/40 cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : isDark ? 'bg-midnight text-mist/40' : 'bg-gray-100 text-gray-400'
+                    }`}
+                    title={
+                      selectedIds.size === 0 ? 'Select a product' :
+                      selectedIds.size > 1 ? 'Select only 1 product for a session' :
+                      'Start a session'
+                    }
+                  >
+                    {selectedIds.size > 1 ? 'Session (1 only)' : 'Session'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      selectedIds.forEach(id => toggleFavorite(id));
+                      setSelectedIds(new Set());
+                      setSelectMode(false);
+                    }}
+                    className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${
+                      isDark ? 'bg-amberx/12 text-amberx hover:bg-amberx/20' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'
                     }`}
                   >
-                    Session
+                    Favorite
                   </button>
                   <button
                     onClick={handleBulkDelete}
@@ -574,7 +611,7 @@ export default function App() {
                       isDark ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20' : 'bg-red-50 text-red-600 hover:bg-red-100'
                     }`}
                   >
-                    Delete
+                    Delete ({selectedIds.size})
                   </button>
                 </div>
               )}
@@ -869,7 +906,7 @@ export default function App() {
 
             {/* Calendar Heatmap */}
             <div className="mb-6">
-              <CalendarHeatmap sessions={sessions} isDark={isDark} />
+              <CalendarHeatmap sessions={sessions} isDark={isDark} lang={lang} />
             </div>
 
             {/* Budget Info */}
@@ -961,7 +998,7 @@ export default function App() {
                         <th className="px-4 py-3 text-left">Product</th>
                         <th className="px-4 py-3 text-right">Amount</th>
                         <th className="px-4 py-3 text-right">Price</th>
-                        <th className="px-4 py-3 text-left">Notes</th>
+                        <th className="px-4 py-3 text-left">{t('notesLabel', lang)}</th>
                         <th className="px-4 py-3 text-right">When</th>
                       </tr>
                     </thead>
@@ -989,8 +1026,16 @@ export default function App() {
                           <td className={`px-4 py-3 text-right ${isDark ? 'text-mist' : 'text-gray-600'}`}>
                             {entry.price != null ? formatCurrency(entry.price, settings.currency) : '—'}
                           </td>
-                          <td className={`px-4 py-3 text-left text-xs max-w-[200px] truncate ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                            {entry.notes || '—'}
+                          <td className={`px-4 py-3 text-left text-xs max-w-[200px] ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                            {entry.notes ? (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setExpandedNotes(prev => { const next = new Set(prev); if (next.has(entry.id)) next.delete(entry.id); else next.add(entry.id); return next; }); }}
+                                className={`text-left ${expandedNotes.has(entry.id) ? '' : 'truncate block w-full'} hover:${isDark ? 'text-cyan-400' : 'text-cyan-600'}`}
+                                title={expandedNotes.has(entry.id) ? 'Collapse' : 'Click to expand'}
+                              >
+                                {entry.notes}
+                              </button>
+                            ) : '—'}
                           </td>
                           <td className={`px-4 py-3 text-right text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>
                             {formatActivityDate(entry.timestamp)}

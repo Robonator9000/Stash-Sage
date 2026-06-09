@@ -6,6 +6,7 @@ import { generateId, roundToHundredth } from '../utils/helpers';
 import { gramsToOz } from '../utils/convert';
 import { X, Star, Camera, Heart, Plus, ChevronDown } from 'lucide-react';
 import { t } from '../utils/translations';
+import { showToast } from './Toast';
 
 interface ProductModalProps {
   product?: Product | null;
@@ -73,6 +74,10 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
     const files = e.target.files;
     if (files) {
       Array.from(files).forEach((file) => {
+        if (file.size > 2 * 1024 * 1024) {
+          showToast({ id: 'photo-size', title: t('photoSizeWarning', lang), body: file.name, variant: 'danger' });
+          return;
+        }
         const reader = new FileReader();
         reader.onloadend = () => {
           setPictures((prev) => [...prev, reader.result as string]);
@@ -211,7 +216,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                   </div>
                   <button
                     onClick={() => setPictures((prev) => prev.filter((_, i) => i !== idx))}
-                    className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100 ${
+                    className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center transition-colors md:opacity-0 md:group-hover:opacity-100 ${
                       isDark ? 'bg-red-500 text-white hover:bg-red-400' : 'bg-red-600 text-white hover:bg-red-500'
                     }`}
                   >
@@ -221,13 +226,14 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
               ))}
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className={`w-full aspect-square rounded-xl border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors ${
+                className={`w-full aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors gap-1 ${
                   isDark
                     ? 'border-slate-700 hover:border-slate-600 bg-slate-800/50'
                     : 'border-gray-300 hover:border-gray-400 bg-gray-50'
                 }`}
               >
-                <Camera className={`w-6 h-6 ${isDark ? 'text-slate-500' : 'text-gray-400'}`} />
+                <Camera className={`w-5 h-5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`} />
+                <span className={`text-[10px] leading-tight ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('addPhoto', lang)}</span>
               </button>
             </div>
             <input
