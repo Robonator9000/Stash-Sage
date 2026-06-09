@@ -322,7 +322,7 @@ export default function App() {
           </button>
 
           {/* Search */}
-          <div className="relative flex-1 max-w-lg">
+          <div className="relative flex-1 max-w-2xl">
             <div className="relative">
               <svg className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-muted' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -444,14 +444,14 @@ export default function App() {
             </div>
 
             {/* Controls bar */}
-            <div className={`flex flex-wrap items-center gap-3 mb-4`}>
+            <div className={`flex flex-wrap items-center justify-center gap-2 mb-4`}>
               {/* Sort */}
               <div className="flex items-center gap-2">
                 <span className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'text-muted' : 'text-gray-400'}`}>Sort</span>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className={`text-sm rounded-lg px-3 py-1.5 border outline-none transition-colors
+                  className={`text-sm rounded-lg px-2 py-1 border outline-none transition-colors
                     ${isDark ? 'bg-midnight text-mist border-border' : 'bg-gray-50 text-gray-700 border-gray-200'}`}
                 >
                   {sortOptions.map(o => (
@@ -466,7 +466,7 @@ export default function App() {
                 <select
                   value={filterBy}
                   onChange={(e) => setFilterBy(e.target.value)}
-                  className={`text-sm rounded-lg px-3 py-1.5 border outline-none transition-colors
+                  className={`text-sm rounded-lg px-2 py-1 border outline-none transition-colors
                     ${isDark ? 'bg-midnight text-mist border-border' : 'bg-gray-50 text-gray-700 border-gray-200'}`}
                 >
                   {filterOptions.map(o => (
@@ -476,12 +476,12 @@ export default function App() {
               </div>
 
               {/* Layout */}
-              <div className="flex items-center gap-1 ml-auto">
+              <div className="flex items-center gap-1">
                 {(['grid', 'list', 'compact'] as const).map(l => (
                   <button
                     key={l}
                     onClick={() => setLayout(l)}
-                    className={`p-2 rounded-lg transition-all ${layout === l
+                    className={`p-1.5 rounded-lg transition-all ${layout === l
                       ? (isDark ? 'bg-gradient-to-r from-cyanx to-emera text-white' : 'bg-gray-800 text-white')
                       : isDark ? 'text-mist hover:text-frost hover:bg-midnight' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
                     title={l}
@@ -509,7 +509,7 @@ export default function App() {
                 <select
                   value={productsPerPage}
                   onChange={(e) => { setProductsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                  className={`text-sm rounded-lg px-2 py-1.5 border outline-none transition-colors
+                  className={`text-sm rounded-lg px-1.5 py-1 border outline-none transition-colors
                     ${isDark ? 'bg-midnight text-mist border-border' : 'bg-gray-50 text-gray-700 border-gray-200'}`}
                 >
                   {[10, 20, 50, 100].map(n => <option key={n} value={n}>{n}</option>)}
@@ -763,14 +763,14 @@ export default function App() {
         {activeTab === 'history' && (
           <div>
             {/* Filters */}
-            <div className={`flex flex-wrap items-center gap-3 mb-4`}>
+            <div className={`flex flex-wrap items-center justify-center gap-2 mb-4`}>
               <span className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'text-muted' : 'text-gray-400'}`}>
                 {t('filterByType', lang)}
               </span>
               <select
                 value={historyFilterType}
                 onChange={(e) => setHistoryFilterType(e.target.value)}
-                className={`text-sm rounded-lg px-3 py-1.5 border outline-none transition-colors
+                className={`text-sm rounded-lg px-2 py-1 border outline-none transition-colors
                   ${isDark ? 'bg-midnight text-mist border-border' : 'bg-gray-50 text-gray-700 border-gray-200'}`}
               >
                 <option value="all">{t('allTypes', lang)}</option>
@@ -788,7 +788,7 @@ export default function App() {
               <select
                 value={historyDateFilter}
                 onChange={(e) => setHistoryDateFilter(e.target.value)}
-                className={`text-sm rounded-lg px-3 py-1.5 border outline-none transition-colors
+                className={`text-sm rounded-lg px-2 py-1 border outline-none transition-colors
                   ${isDark ? 'bg-midnight text-mist border-border' : 'bg-gray-50 text-gray-700 border-gray-200'}`}
               >
                 <option value="all">{t('allDates', lang)}</option>
