@@ -439,10 +439,12 @@ export default function App() {
         {/* ==================== INVENTORY TAB ==================== */}
         {activeTab === 'inventory' && (
           <div>
-            <StatsCard products={products} isDark={isDark} />
+            <div className="mb-5">
+              <StatsCard products={products} isDark={isDark} />
+            </div>
 
             {/* Controls bar */}
-            <div className={`flex flex-wrap items-center gap-2 mb-4`}>
+            <div className={`flex flex-wrap items-center gap-3 mb-4`}>
               {/* Sort */}
               <div className="flex items-center gap-2">
                 <span className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'text-muted' : 'text-gray-400'}`}>Sort</span>
@@ -638,8 +640,8 @@ export default function App() {
               </div>
 
               {/* Consumption Trend */}
-              <div className={`rounded-2xl p-6 border ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
-                <h3 className={`text-sm font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <div className={`rounded-2xl p-5 border ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
+                <h3 className={`text-sm font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {t('consumptionTrend', lang)}
                 </h3>
                 {consumptionByMonth.length > 0 ? (
@@ -668,8 +670,8 @@ export default function App() {
               </div>
 
               {/* Top Strains */}
-              <div className={`rounded-2xl p-6 border ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
-                <h3 className={`text-sm font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <div className={`rounded-2xl p-5 border ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
+                <h3 className={`text-sm font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {t('topStrains', lang)}
                 </h3>
                 {topStrains.length > 0 ? (
@@ -698,8 +700,8 @@ export default function App() {
               </div>
 
               {/* Total Spent */}
-              <div className={`rounded-2xl p-6 border ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
-                <h3 className={`text-sm font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <div className={`rounded-2xl p-5 border ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
+                <h3 className={`text-sm font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {t('totalSpent', lang)}
                 </h3>
                 {typeDistribution.length > 0 ? (
@@ -730,7 +732,7 @@ export default function App() {
 
             {/* Budget Info */}
             {settings.budgetLimit > 0 && (
-              <div className={`rounded-2xl p-6 border mb-6 ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
+              <div className={`rounded-2xl p-5 border mb-6 ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
                 <div className="flex items-center justify-between mb-2">
                   <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     {t('budgetLimit', lang)} ({settings.budgetPeriod})
@@ -761,7 +763,7 @@ export default function App() {
         {activeTab === 'history' && (
           <div>
             {/* Filters */}
-            <div className={`flex flex-wrap items-center gap-2 mb-4`}>
+            <div className={`flex flex-wrap items-center gap-3 mb-4`}>
               <span className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'text-muted' : 'text-gray-400'}`}>
                 {t('filterByType', lang)}
               </span>
