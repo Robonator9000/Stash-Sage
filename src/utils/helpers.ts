@@ -79,6 +79,8 @@ export function searchProducts(products: Product[], query: string): Product[] {
     p.strain.toLowerCase().includes(q) ||
     (p.brand && p.brand.toLowerCase().includes(q)) ||
     (p.notes && p.notes.toLowerCase().includes(q)) ||
+    (p.tags && p.tags.toLowerCase().includes(q)) ||
+    (p.effects && p.effects.toLowerCase().includes(q)) ||
     p.type.toLowerCase().includes(q)
   );
 }

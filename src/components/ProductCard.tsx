@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Product } from '../types';
 import { formatDate, formatPrecision } from '../utils/helpers';
+import { gramsToOz } from '../utils/convert';
 import { Star, Heart, Flame, Clock, Package, DollarSign } from 'lucide-react';
 import { t } from '../utils/translations';
 import { useSettings } from '../utils/useSettings';
@@ -15,10 +16,6 @@ interface ProductCardProps {
   isDark?: boolean;
   layout?: 'grid' | 'list' | 'compact';
   precision?: number;
-}
-
-function gramsToOz(g: number): number {
-  return g / 28.3495;
 }
 
 export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavorite, isDark = true, layout = 'grid', precision = 2 }: ProductCardProps) {

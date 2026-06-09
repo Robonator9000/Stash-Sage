@@ -11,6 +11,8 @@ export interface Product {
   notes?: string;
   rating: number;
   brand?: string;
+  tags?: string;
+  effects?: string;
   consumptionCount: number;
   lastConsumed?: Date;
   createdAt: Date;

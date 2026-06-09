@@ -3,6 +3,7 @@ import { Product } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { useModalAnimation } from '../hooks/useModalAnimation';
 import { generateId, roundToHundredth } from '../utils/helpers';
+import { gramsToOz } from '../utils/convert';
 import { X, Upload, Star, Camera, Heart, Plus, ChevronDown } from 'lucide-react';
 import { t } from '../utils/translations';
 
@@ -45,8 +46,11 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
   const [rating, setRating] = useState(product?.rating || 0);
   const [hoveredStar, setHoveredStar] = useState(0);
   const [brand, setBrand] = useState(product?.brand || '');
+  const [tags, setTags] = useState(product?.tags || '');
+  const [effects, setEffects] = useState(product?.effects || '');
   const [isBrandDropdownOpen, setIsBrandDropdownOpen] = useState(false);
   const [brandSearchQuery, setBrandSearchQuery] = useState('');
+  const [showOz, setShowOz] = useState(false);
   const { isVisible, handleClose } = useModalAnimation(onClose);
 
   const favoriteBrands = settings.favoriteBrands || [];
@@ -105,6 +109,8 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
       notes: notes.trim(),
       rating,
       brand: brand.trim(),
+      tags: tags.trim(),
+      effects: effects.trim(),
       consumptionCount: product?.consumptionCount || 0,
       lastConsumed: product?.lastConsumed,
       createdAt: product?.createdAt || new Date(),
@@ -431,14 +437,23 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                {t('amountGrams', lang)}
+                {t('amountGrams', lang)}{' '}
+                <button
+                  type="button"
+                  onClick={() => setShowOz(!showOz)}
+                  className={`text-xs px-1.5 py-0.5 rounded font-medium transition-colors ${
+                    isDark ? 'text-slate-400 hover:text-cyan-400' : 'text-gray-500 hover:text-cyan-600'
+                  }`}
+                >
+                  {showOz ? 'g' : 'oz'}
+                </button>
               </label>
               <input
                 type="number"
                 step="0.01"
                 min="0"
-                value={amount}
-                onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+                value={showOz ? roundToHundredth(gramsToOz(amount)) : amount}
+                onChange={(e) => setAmount(showOz ? (parseFloat(e.target.value) || 0) * 28.3495 : (parseFloat(e.target.value) || 0))}
                 placeholder={t('amountPlaceholder', lang)}
                 className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
                   isDark 
@@ -503,6 +518,42 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                   {(hoveredStar || rating)}/5
                 </span>
               )}
+            </div>
+          </div>
+
+          {/* Tags & Effects */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+                {t('tags', lang)}
+              </label>
+              <input
+                type="text"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder={t('tagsPlaceholder', lang)}
+                className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
+                  isDark 
+                    ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' 
+                    : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
+                } outline-none`}
+              />
+            </div>
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+                {t('effects', lang)}
+              </label>
+              <input
+                type="text"
+                value={effects}
+                onChange={(e) => setEffects(e.target.value)}
+                placeholder={t('effectsPlaceholder', lang)}
+                className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
+                  isDark 
+                    ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' 
+                    : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
+                } outline-none`}
+              />
             </div>
           </div>
 
