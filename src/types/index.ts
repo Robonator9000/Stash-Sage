@@ -48,6 +48,8 @@ export interface Settings {
     rotationEnabled: boolean;
   };
   lowStockThreshold: number;
+  budgetLimit: number;
+  budgetPeriod: 'weekly' | 'monthly' | 'yearly';
 }
 
 export interface Session {

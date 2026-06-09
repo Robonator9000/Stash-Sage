@@ -32,6 +32,8 @@ const defaultSettings: Settings = {
     rotationEnabled: false,
   },
   lowStockThreshold: 3,
+  budgetLimit: 0,
+  budgetPeriod: 'monthly',
 };
 
 function loadSettings(): Settings {
@@ -43,6 +45,7 @@ function loadSettings(): Settings {
       ...defaultSettings,
       ...parsed,
       sessionDefaults: { ...defaultSettings.sessionDefaults, ...parsed.sessionDefaults },
+      statsVisibility: { ...defaultSettings.statsVisibility, ...parsed.statsVisibility },
     };
   } catch {
     return { ...defaultSettings };

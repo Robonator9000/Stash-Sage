@@ -122,11 +122,15 @@ export default function App() {
     }
   }, [settings.lowStockThreshold, settings.decimalPrecision, settings.language]);
 
+  const [showDollar, setShowDollar] = useState(false);
+
   const handleSell = useCallback((amount: number) => {
     if (sellingProduct) {
       checkLowStock(sellingProduct, amount);
       consumeProduct(sellingProduct.id, amount);
       setSellingProduct(null);
+      setShowDollar(true);
+      setTimeout(() => setShowDollar(false), 1600);
     }
   }, [sellingProduct, consumeProduct, checkLowStock]);
 
@@ -380,6 +384,17 @@ export default function App() {
           <span className="animate-smoke-puff text-7xl">💨</span>
           <span className="animate-smoke-puff-2 text-6xl ml-4">💨</span>
           <span className="animate-smoke-puff text-5xl ml-2" style={{ animationDelay: '0.2s' }}>💨</span>
+        </div>
+      )}
+      {/* Dollar Animation */}
+      {showDollar && (
+        <div className="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center">
+          <span className="animate-dollar-float text-5xl font-bold text-emerald-400">$</span>
+          <span className="animate-dollar-float text-4xl font-bold text-emerald-400 ml-6" style={{ animationDelay: '0.15s' }}>$</span>
+          <span className="animate-dollar-float text-5xl font-bold text-emerald-400 ml-8" style={{ animationDelay: '0.3s' }}>$</span>
+          <span className="animate-dollar-float text-4xl font-bold text-emerald-400 ml-4" style={{ animationDelay: '0.1s' }}>$</span>
+          <span className="animate-dollar-float text-5xl font-bold text-emerald-400 ml-6" style={{ animationDelay: '0.2s' }}>$</span>
+          <span className="animate-dollar-float text-4xl font-bold text-emerald-400 ml-6" style={{ animationDelay: '0.25s' }}>$</span>
         </div>
       )}
       </div>

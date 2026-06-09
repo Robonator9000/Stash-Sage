@@ -35,7 +35,7 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mergeFileInputRef = useRef<HTMLInputElement>(null);
   const { isVisible, handleClose } = useModalAnimation(onClose);
-  const [activeTab, setActiveTab] = useState<'personalization' | 'dangerZone'>('personalization');
+  const [activeTab, setActiveTab] = useState<'personalization' | 'stats' | 'dangerZone'>('personalization');
   const [pinSetupValue, setPinSetupValue] = useState('');
   const [pinDisableValue, setPinDisableValue] = useState('');
   const [showPinSetup, setShowPinSetup] = useState(false);
@@ -198,6 +198,19 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
               )}
             </button>
             <button
+              onClick={() => setActiveTab('stats')}
+              className={`flex-1 py-3 text-sm font-medium transition-colors relative ${
+                activeTab === 'stats'
+                  ? isDark ? 'text-purple-400' : 'text-purple-600'
+                  : isDark ? 'text-slate-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              {t('showStats', settings.language)}
+              {activeTab === 'stats' && (
+                <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
+              )}
+            </button>
+            <button
               onClick={() => setActiveTab('dangerZone')}
               className={`flex-1 py-3 text-sm font-medium transition-colors relative ${
                 activeTab === 'dangerZone'
@@ -214,6 +227,36 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
 
           {/* Content */}
           <div className="p-5 space-y-6 overflow-y-auto">
+            {activeTab === 'stats' && (
+              <>
+                <div>
+                  <label className={sectionLabel}>
+                    <BarChart3 className="w-4 h-4" />
+                    {t('statToggles', settings.language)}
+                  </label>
+                  <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+                    {t('statTogglesHint', settings.language)}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {statOptions.map((stat) => (
+                      <button
+                        key={stat.key}
+                        onClick={() => handleStatToggle(stat.key)}
+                        className={`py-2 px-3 rounded-xl text-sm font-medium transition-all border-2 text-left ${
+                          settings.statsVisibility[stat.key]
+                            ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
+                            : isDark
+                              ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
+                              : 'bg-gray-100 border-gray-200 text-gray-500 hover:border-gray-300'
+                        }`}
+                      >
+                        {stat.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
             {activeTab === 'dangerZone' && (
               <>
                 {/* Backup & Restore */}
@@ -617,6 +660,57 @@ export function SettingsModal({ products, onImport, onMergeImport, onClose, isDa
                       settings.showTimerMs ? 'translate-x-[1.375rem]' : 'translate-x-0.5'
                     }`} />
                   </button>
+                </div>
+
+                {/* Budget Limit */}
+                <div>
+                  <label className={sectionLabel}>
+                    <DollarSign className="w-4 h-4" />
+                    {t('budgetLimit', settings.language)}
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <input
+                        type="number"
+                        value={settings.budgetLimit || ''}
+                        onChange={(e) => updateSettings({ budgetLimit: Math.max(0, parseFloat(e.target.value) || 0) })}
+                        min="0"
+                        step="10"
+                        placeholder="0 = disabled"
+                        className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none ${
+                          isDark
+                            ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
+                            : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
+                        }`}
+                      />
+                    </div>
+                    <div>
+                      <div className={`flex rounded-xl border-2 overflow-hidden ${
+                        isDark ? 'border-slate-700' : 'border-gray-200'
+                      }`}>
+                        {(['weekly', 'monthly', 'yearly'] as const).map((period) => (
+                          <button
+                            key={period}
+                            onClick={() => updateSettings({ budgetPeriod: period })}
+                            className={`flex-1 py-3 text-xs font-medium transition-colors ${
+                              settings.budgetPeriod === period
+                                ? isDark
+                                  ? 'bg-cyan-500/20 text-cyan-400'
+                                  : 'bg-cyan-50 text-cyan-600'
+                                : isDark
+                                  ? 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                                  : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                            }`}
+                          >
+                            {period}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <p className={`text-xs mt-2 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+                    {t('budgetLimitHint', settings.language)}
+                  </p>
                 </div>
 
                 {/* Session Defaults */}
