@@ -47,14 +47,14 @@ export async function POST(
       },
     })
 
-    // Log activity
+    // Log activity with detailed change info
     await db.activityLog.create({
       data: {
         type: 'consumed',
         entityId: id,
         entityType: 'product',
         productName: product.name,
-        details: JSON.stringify({ amount: consumeAmount, newAmount }),
+        details: JSON.stringify({ amount: consumeAmount, remaining: newAmount, previousAmount: product.amount }),
       },
     })
 

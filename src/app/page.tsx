@@ -583,22 +583,22 @@ export default function Home() {
       {/* ═══ HEADER ═══ */}
       <header className="sticky top-0 z-40 border-b border-border/50 bg-background/90 backdrop-blur-xl">
         <div className="px-6 lg:px-10 py-2">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <h1 className="text-lg font-black gradient-text flex items-center gap-1.5 shrink-0 tracking-tight">
               <Leaf className="size-5" /> STASH
             </h1>
-            {/* Search with preview dropdown — centered and grown */}
-            <div ref={searchContainerRef} className="relative flex-1 max-w-2xl mx-auto">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/60" />
+            {/* Search with preview dropdown — centered, grown, takes available space */}
+            <div ref={searchContainerRef} className="relative flex-1 max-w-3xl mx-auto">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/60" />
               <Input value={searchInput} onChange={(e) => handleSearch(e.target.value)}
                 onFocus={() => { if (searchInput) setSearchPreviewOpen(true) }}
                 placeholder={t('searchPlaceholder', lang)}
-                className="pl-8 h-8 bg-muted/40 border-0 text-sm rounded-full focus-visible:ring-1 w-full" />
+                className="pl-9 h-9 bg-muted/40 border-0 text-sm rounded-full focus-visible:ring-1 focus-visible:ring-teal-400/50 w-full" />
               {/* Search preview dropdown */}
               {searchPreviewOpen && searchInput && products.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-xl shadow-2xl overflow-hidden z-50 max-h-80 overflow-y-auto">
                   {products.slice(0, 8).map((p: Product) => (
-                    <button key={p.id} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-muted/50 text-left transition-colors"
+                    <button key={p.id} className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted/50 text-left transition-colors"
                       onClick={() => { handleOpenEditProduct(p); setSearchInput(''); setSearchDebounced(''); setSearchPreviewOpen(false); }}>
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${p.type?.toLowerCase() === 'indica' ? 'bg-purple-500/10' : p.type?.toLowerCase() === 'sativa' ? 'bg-amber-500/10' : 'bg-emerald-500/10'}`}>
                         <Leaf className={`size-3.5 ${p.type?.toLowerCase() === 'indica' ? 'text-purple-400' : p.type?.toLowerCase() === 'sativa' ? 'text-amber-400' : 'text-emerald-400'}`} />
@@ -620,7 +620,8 @@ export default function Home() {
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-1.5 shrink-0">
+            {/* Right-aligned action buttons */}
+            <div className="flex items-center gap-1 shrink-0">
               <Button size="sm" onClick={handleOpenAddProduct}
                 className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white hover:from-teal-600 hover:to-emerald-600 h-8 text-xs rounded-full px-3 shadow-md shadow-teal-500/20">
                 <Plus className="size-3.5 mr-0.5" />{t('addProduct', lang)}
@@ -639,9 +640,9 @@ export default function Home() {
       <main className="flex-1 w-full px-8 lg:px-16 xl:px-24 py-6">
         <Tabs value={store.activeTab} onValueChange={(v) => store.setActiveTab(v as 'inventory' | 'dashboard' | 'history')}>
           <TabsList className="mb-6 w-full justify-start gap-2 bg-transparent p-0 h-auto border-0 shadow-none">
-            <TabsTrigger value="inventory" className="text-sm gap-1.5 rounded-none px-3 py-2 border-0 bg-transparent shadow-none hover:outline hover:outline-1 hover:outline-border/50 underline-offset-4 data-[state=active]:bg-transparent dark:data-[state=active]:bg-transparent dark:data-[state=active]:border-transparent data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400 data-[state=active]:shadow-none data-[state=active]:outline-0"><Package className="size-4" />{t('inventory', lang)}</TabsTrigger>
-            <TabsTrigger value="dashboard" className="text-sm gap-1.5 rounded-none px-3 py-2 border-0 bg-transparent shadow-none hover:outline hover:outline-1 hover:outline-border/50 underline-offset-4 data-[state=active]:bg-transparent dark:data-[state=active]:bg-transparent dark:data-[state=active]:border-transparent data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400 data-[state=active]:shadow-none data-[state=active]:outline-0"><BarChart3 className="size-4" />{t('dashboard', lang)}</TabsTrigger>
-            <TabsTrigger value="history" className="text-sm gap-1.5 rounded-none px-3 py-2 border-0 bg-transparent shadow-none hover:outline hover:outline-1 hover:outline-border/50 underline-offset-4 data-[state=active]:bg-transparent dark:data-[state=active]:bg-transparent dark:data-[state=active]:border-transparent data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400 data-[state=active]:shadow-none data-[state=active]:outline-0"><Clock className="size-4" />{t('history', lang)}</TabsTrigger>
+            <TabsTrigger value="inventory" className="text-sm gap-1.5 rounded-none px-3 py-2 border-0 bg-transparent shadow-none hover:bg-muted/30 underline-offset-4 data-[state=active]:bg-transparent data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400 data-[state=active]:shadow-none data-[state=active]:outline-0 data-[state=active]:border-0"><Package className="size-4" />{t('inventory', lang)}</TabsTrigger>
+            <TabsTrigger value="dashboard" className="text-sm gap-1.5 rounded-none px-3 py-2 border-0 bg-transparent shadow-none hover:bg-muted/30 underline-offset-4 data-[state=active]:bg-transparent data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400 data-[state=active]:shadow-none data-[state=active]:outline-0 data-[state=active]:border-0"><BarChart3 className="size-4" />{t('dashboard', lang)}</TabsTrigger>
+            <TabsTrigger value="history" className="text-sm gap-1.5 rounded-none px-3 py-2 border-0 bg-transparent shadow-none hover:bg-muted/30 underline-offset-4 data-[state=active]:bg-transparent data-[state=active]:underline data-[state=active]:decoration-2 data-[state=active]:decoration-teal-400 data-[state=active]:shadow-none data-[state=active]:outline-0 data-[state=active]:border-0"><Clock className="size-4" />{t('history', lang)}</TabsTrigger>
           </TabsList>
 
           {/* ═══ INVENTORY ═══ */}
@@ -914,7 +915,33 @@ export default function Home() {
           {/* ═══ HISTORY ═══ */}
           <TabsContent value="history">
             <div className="space-y-4">
-              <h2 className="text-lg font-bold underline decoration-teal-400 decoration-2 underline-offset-4">{t('history', lang)}</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold underline decoration-teal-400 decoration-2 underline-offset-4">{t('history', lang)}</h2>
+                {/* Filter by type */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {(['all', 'product_created', 'consumed', 'sold', 'product_updated', 'session_completed', 'favorite_toggled', 'product_deleted'] as const).map(filterType => {
+                    const { icon: FIcon, label: fLabel, color: fColor } = (() => {
+                      switch (filterType) {
+                        case 'all': return { icon: Activity, label: 'All', color: 'text-muted-foreground' }
+                        case 'product_created': return { icon: Plus, label: 'Added', color: 'text-teal-400' }
+                        case 'consumed': return { icon: Flame, label: 'Consumed', color: 'text-teal-400' }
+                        case 'sold': return { icon: DollarSign, label: 'Sold', color: 'text-green-400' }
+                        case 'product_updated': return { icon: Edit3, label: 'Edited', color: 'text-amber-400' }
+                        case 'session_completed': return { icon: Users, label: 'Session', color: 'text-purple-400' }
+                        case 'favorite_toggled': return { icon: Heart, label: 'Favorited', color: 'text-red-400' }
+                        case 'product_deleted': return { icon: Trash2, label: 'Deleted', color: 'text-red-400' }
+                      }
+                    })()
+                    return (
+                      <Button key={filterType} variant="ghost" size="sm"
+                        className="h-6 text-[10px] px-2 rounded-full gap-1"
+                        onClick={() => { /* TODO: filter by type */ }}>
+                        <FIcon className={`size-2.5 ${fColor}`} />{fLabel}
+                      </Button>
+                    )
+                  })}
+                </div>
+              </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <Label className="text-xs text-muted-foreground">{t('from', lang)}</Label>
                 <Input type="date" value={historyFrom} onChange={(e) => { setHistoryFrom(e.target.value); setHistoryPage(1) }} className="h-7 w-auto text-xs rounded-lg" />
@@ -937,16 +964,16 @@ export default function Home() {
                 <div className="space-y-1.5">
                   {activityLogs.map((log: ActivityLog) => {
                     const details = (() => { try { return JSON.parse(log.details) } catch { return {} } })()
-                    const { icon: Icon, color, bg, label } = (() => {
+                    const { icon: Icon, color, bg, label, detail } = (() => {
                       switch (log.type) {
-                        case 'product_created': return { icon: Plus, color: 'text-teal-400', bg: 'bg-teal-500/10', label: 'Added' }
-                        case 'product_updated': return { icon: Edit3, color: 'text-amber-400', bg: 'bg-amber-500/10', label: 'Updated' }
-                        case 'product_deleted': return { icon: Trash2, color: 'text-red-400', bg: 'bg-red-500/10', label: 'Deleted' }
-                        case 'consumed': return { icon: Flame, color: 'text-teal-400', bg: 'bg-teal-500/10', label: `Consumed ${details.amount ? `${details.amount}g` : ''}` }
-                        case 'sold': return { icon: DollarSign, color: 'text-green-400', bg: 'bg-green-500/10', label: `Sold ${details.amount ? `${details.amount}g` : ''}` }
-                        case 'session_completed': return { icon: Users, color: 'text-purple-400', bg: 'bg-purple-500/10', label: `Session (${details.people ?? '?'} people)` }
-                        case 'favorite_toggled': return { icon: Heart, color: 'text-red-400', bg: 'bg-red-500/10', label: details.favorite ? 'Favorited' : 'Unfavorited' }
-                        default: return { icon: Activity, color: 'text-muted-foreground', bg: 'bg-muted/50', label: log.type }
+                        case 'product_created': return { icon: Plus, color: 'text-teal-400', bg: 'bg-teal-500/10', label: 'Added', detail: details.amount ? `${details.amount}g · ${details.type || ''}` : '' }
+                        case 'product_updated': return { icon: Edit3, color: 'text-amber-400', bg: 'bg-amber-500/10', label: 'Updated', detail: details.changedFields ? details.changedFields.join(', ') : '' }
+                        case 'product_deleted': return { icon: Trash2, color: 'text-red-400', bg: 'bg-red-500/10', label: 'Deleted', detail: details.amount ? `Had ${details.amount}g remaining` : '' }
+                        case 'consumed': return { icon: Flame, color: 'text-teal-400', bg: 'bg-teal-500/10', label: 'Consumed', detail: `${details.amount ? `${details.amount}g` : ''}${details.remaining !== undefined ? ` → ${details.remaining.toFixed(1)}g left` : ''}` }
+                        case 'sold': return { icon: DollarSign, color: 'text-green-400', bg: 'bg-green-500/10', label: 'Sold', detail: `${details.amount ? `${details.amount}g` : ''}${details.revenue ? ` for ${currency}${details.revenue.toFixed(2)}` : ''}${details.remaining !== undefined ? ` → ${details.remaining.toFixed(1)}g left` : ''}` }
+                        case 'session_completed': return { icon: Users, color: 'text-purple-400', bg: 'bg-purple-500/10', label: 'Session', detail: `${details.people ?? '?'} people${details.amount ? ` · ${details.amount}g consumed` : ''}` }
+                        case 'favorite_toggled': return { icon: Heart, color: 'text-red-400', bg: 'bg-red-500/10', label: details.favorite ? 'Favorited' : 'Unfavorited', detail: '' }
+                        default: return { icon: Activity, color: 'text-muted-foreground', bg: 'bg-muted/50', label: log.type, detail: '' }
                       }
                     })()
                     return (
@@ -955,11 +982,17 @@ export default function Home() {
                           <Icon className={`size-4 ${color}`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{log.productName || 'Unknown'}</p>
-                          <p className="text-xs text-muted-foreground">{label}{details.changedFields && log.type === 'product_updated' ? ` — ${details.changedFields.join(', ')}` : ''}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium truncate">{log.productName || 'Unknown'}</p>
+                            <Badge variant="outline" className={`text-[8px] px-1.5 py-0 rounded-full ${color} border-current/20`}>{label}</Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {detail || log.type}
+                            {details.changedFields && log.type === 'product_updated' ? ` — ${details.changedFields.join(', ')}` : ''}
+                          </p>
                         </div>
                         <div className="text-right shrink-0">
-                          <p className="text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleDateString()}</p>
+                          <p className="text-xs text-muted-foreground">{formatRelativeTime(log.createdAt, lang) || new Date(log.createdAt).toLocaleDateString()}</p>
                           <p className="text-[10px] text-muted-foreground">{new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                         </div>
                       </Card>
@@ -1324,13 +1357,13 @@ export default function Home() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1"><Label className="text-xs font-medium">{t('language', lang)}</Label>
                     <Select value={store.settings.language} onValueChange={(v) => updateSettings.mutate({ language: v })}>
-                      <SelectTrigger className="h-9 rounded-lg"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="h-8 text-xs rounded-lg"><SelectValue /></SelectTrigger>
                       <SelectContent><SelectItem value="en">English</SelectItem><SelectItem value="es">Español</SelectItem><SelectItem value="fr">Français</SelectItem><SelectItem value="de">Deutsch</SelectItem><SelectItem value="pt">Português</SelectItem></SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-1"><Label className="text-xs font-medium">{t('theme', lang)}</Label>
                     <Select value={store.settings.theme} onValueChange={(v) => updateSettings.mutate({ theme: v })}>
-                      <SelectTrigger className="h-9 rounded-lg"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="h-8 text-xs rounded-lg"><SelectValue /></SelectTrigger>
                       <SelectContent><SelectItem value="dark">{t('dark', lang)}</SelectItem><SelectItem value="light">{t('light', lang)}</SelectItem></SelectContent>
                     </Select>
                   </div>
@@ -1339,26 +1372,39 @@ export default function Home() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1"><Label className="text-xs font-medium">{t('currency', lang)}</Label>
                     <Select value={store.settings.currency} onValueChange={(v) => updateSettings.mutate({ currency: v })}>
-                      <SelectTrigger className="h-9 rounded-lg"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="h-8 text-xs rounded-lg"><SelectValue /></SelectTrigger>
                       <SelectContent><SelectItem value="$">$ USD</SelectItem><SelectItem value="€">€ EUR</SelectItem><SelectItem value="£">£ GBP</SelectItem><SelectItem value="¥">¥ JPY</SelectItem><SelectItem value="C$">C$ CAD</SelectItem></SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-1"><Label className="text-xs font-medium">{t('decimalPrecision', lang)}</Label>
                     <Select value={String(store.settings.decimalPrecision)} onValueChange={(v) => updateSettings.mutate({ decimalPrecision: parseInt(v) })}>
-                      <SelectTrigger className="h-9 rounded-lg"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="h-8 text-xs rounded-lg"><SelectValue /></SelectTrigger>
                       <SelectContent><SelectItem value="1">1</SelectItem><SelectItem value="2">2</SelectItem><SelectItem value="3">3</SelectItem></SelectContent>
                     </Select>
                   </div>
                 </div>
-                {/* Row 3: Low Stock Threshold + Show Timer Ms */}
+                {/* Row 3: Low Stock + Show Timer Ms */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1"><Label className="text-xs font-medium">{t('lowStockThreshold', lang)}</Label>
-                    <Input type="number" step="0.5" value={store.settings.lowStockThreshold} onChange={(e) => updateSettings.mutate({ lowStockThreshold: parseFloat(e.target.value) || 3 })} className="h-9 rounded-lg" />
-                    <p className="text-[10px] text-muted-foreground">{t('lowStockThresholdHint', lang)}</p>
+                    <Input type="number" step="0.5" value={store.settings.lowStockThreshold} onChange={(e) => updateSettings.mutate({ lowStockThreshold: parseFloat(e.target.value) || 3 })} className="h-8 text-xs rounded-lg" />
+                    <p className="text-[9px] text-muted-foreground">{t('lowStockThresholdHint', lang)}</p>
                   </div>
-                  <div className="space-y-1 flex flex-col justify-between">
-                    <div><Label className="text-xs font-medium">{t('showTimerMs', lang)}</Label><p className="text-[10px] text-muted-foreground">{t('showTimerMsHint', lang)}</p></div>
-                    <Switch checked={store.settings.showTimerMs} onCheckedChange={(v) => updateSettings.mutate({ showTimerMs: v })} />
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between"><Label className="text-xs font-medium">{t('showTimerMs', lang)}</Label><Switch checked={store.settings.showTimerMs} onCheckedChange={(v) => updateSettings.mutate({ showTimerMs: v })} /></div>
+                    <p className="text-[9px] text-muted-foreground">{t('showTimerMsHint', lang)}</p>
+                  </div>
+                </div>
+                {/* Row 4: Budget Limit + Budget Period */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1"><Label className="text-xs font-medium">Budget Limit</Label>
+                    <Input type="number" step="10" value={store.settings.budgetLimit || ''} onChange={(e) => updateSettings.mutate({ budgetLimit: parseFloat(e.target.value) || 0 })} className="h-8 text-xs rounded-lg" placeholder="0 = disabled" />
+                    <p className="text-[9px] text-muted-foreground">Monthly spending limit</p>
+                  </div>
+                  <div className="space-y-1"><Label className="text-xs font-medium">Budget Period</Label>
+                    <Select value={store.settings.budgetPeriod || 'monthly'} onValueChange={(v) => updateSettings.mutate({ budgetPeriod: v })}>
+                      <SelectTrigger className="h-8 text-xs rounded-lg"><SelectValue /></SelectTrigger>
+                      <SelectContent><SelectItem value="weekly">Weekly</SelectItem><SelectItem value="monthly">Monthly</SelectItem><SelectItem value="yearly">Yearly</SelectItem></SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <Separator />
@@ -1366,12 +1412,12 @@ export default function Home() {
                 {/* Session defaults in 2x2 grid */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1"><Label className="text-xs">{t('defaultAmount', lang)}</Label>
-                    <Input type="number" step="0.1" value={store.settings.sessionDefaults?.defaultAmount ?? 0.5} onChange={(e) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, defaultAmount: parseFloat(e.target.value) || 0.5 } })} className="h-9 rounded-lg" /></div>
+                    <Input type="number" step="0.1" value={store.settings.sessionDefaults?.defaultAmount ?? 0.5} onChange={(e) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, defaultAmount: parseFloat(e.target.value) || 0.5 } })} className="h-8 text-xs rounded-lg" /></div>
                   <div className="space-y-1"><Label className="text-xs">{t('defaultPeople', lang)}</Label>
-                    <Input type="number" step="1" value={store.settings.sessionDefaults?.defaultPeople ?? 2} onChange={(e) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, defaultPeople: parseInt(e.target.value) || 2 } })} className="h-9 rounded-lg" /></div>
+                    <Input type="number" step="1" value={store.settings.sessionDefaults?.defaultPeople ?? 2} onChange={(e) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, defaultPeople: parseInt(e.target.value) || 2 } })} className="h-8 text-xs rounded-lg" /></div>
                   <div className="space-y-1"><Label className="text-xs">{t('defaultHitTimer', lang)}</Label>
-                    <Input type="number" step="1" value={store.settings.sessionDefaults?.defaultHitTimer ?? 10} onChange={(e) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, defaultHitTimer: parseInt(e.target.value) || 10 } })} className="h-9 rounded-lg" /></div>
-                  <div className="space-y-1 flex flex-col justify-between">
+                    <Input type="number" step="1" value={store.settings.sessionDefaults?.defaultHitTimer ?? 10} onChange={(e) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, defaultHitTimer: parseInt(e.target.value) || 10 } })} className="h-8 text-xs rounded-lg" /></div>
+                  <div className="space-y-1 flex items-center justify-between">
                     <Label className="text-xs">{t('rotationEnabled', lang)}</Label>
                     <Switch checked={store.settings.sessionDefaults?.rotationEnabled ?? false} onCheckedChange={(v) => updateSettings.mutate({ sessionDefaults: { ...store.settings.sessionDefaults, rotationEnabled: v } })} />
                   </div>
@@ -1419,7 +1465,7 @@ export default function Home() {
                   <Button variant="outline" size="sm" className="h-8 text-xs w-full rounded-lg" onClick={() => handleImportBackup('merge')}>
                     <Upload className="size-3 mr-1" />{t('importMerge', lang)}
                   </Button>
-                  <p className="text-[10px] text-muted-foreground">{t('importMergeHint', lang)}</p>
+                  <p className="text-[9px] text-muted-foreground">{t('importMergeHint', lang)}</p>
                 </div>
                 <Separator />
                 <div className="space-y-2">
@@ -1433,8 +1479,8 @@ export default function Home() {
                   ) : (
                     <div className="space-y-2">
                       <div className="grid grid-cols-2 gap-2">
-                        <Input type="password" maxLength={6} value={pinInput} onChange={(e) => setPinInput(e.target.value.replace(/\D/g, ''))} placeholder={t('enterPin', lang)} className="h-9 rounded-lg" />
-                        <Input type="password" maxLength={6} value={pinConfirm} onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, ''))} placeholder={t('enterCurrentPin', lang)} className="h-9 rounded-lg" />
+                        <Input type="password" maxLength={6} value={pinInput} onChange={(e) => setPinInput(e.target.value.replace(/\D/g, ''))} placeholder={t('enterPin', lang)} className="h-8 text-xs rounded-lg" />
+                        <Input type="password" maxLength={6} value={pinConfirm} onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, ''))} placeholder={t('enterCurrentPin', lang)} className="h-8 text-xs rounded-lg" />
                       </div>
                       {pinInput && pinInput.length < 4 && <p className="text-xs text-destructive">{t('pinLengthError', lang)}</p>}
                       {pinInput && pinConfirm && pinInput !== pinConfirm && <p className="text-xs text-destructive">{t('pinMismatch', lang)}</p>}

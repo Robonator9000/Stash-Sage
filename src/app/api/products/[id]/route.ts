@@ -63,17 +63,19 @@ export async function PUT(
       },
     })
 
-    // Log activity — determine what changed
+    // Log activity — determine what changed with old/new values
     const changedFields = Object.keys(body).filter(k => body[k] !== (existing as Record<string, unknown>)[k])
     if (changedFields.length > 0) {
       const isFavoriteToggle = changedFields.length === 1 && changedFields[0] === 'favorite'
+      const changes: Record<string, { from: unknown; to: unknown }> = {}
+      changedFields.forEach(k => { changes[k] = { from: (existing as Record<string, unknown>)[k], to: body[k] } })
       await db.activityLog.create({
         data: {
           type: isFavoriteToggle ? 'favorite_toggled' : 'product_updated',
           entityId: id,
           entityType: 'product',
           productName: product.name,
-          details: JSON.stringify({ changedFields, favorite: body.favorite }),
+          details: JSON.stringify({ changedFields, favorite: body.favorite, changes }),
         },
       })
     }

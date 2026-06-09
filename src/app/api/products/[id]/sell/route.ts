@@ -47,14 +47,14 @@ export async function POST(
       },
     })
 
-    // Log activity
+    // Log activity with detailed sale info
     await db.activityLog.create({
       data: {
         type: 'sold',
         entityId: id,
         entityType: 'product',
         productName: product.name,
-        details: JSON.stringify({ amount: sellAmount, newAmount, note: body.note ?? null }),
+        details: JSON.stringify({ amount: sellAmount, remaining: newAmount, previousAmount: product.amount, note: body.note ?? null }),
       },
     })
 
