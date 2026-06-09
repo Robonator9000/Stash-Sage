@@ -36,6 +36,8 @@ export async function GET(request: NextRequest) {
       where.amount = { gt: 0, lte: 3 }
     } else if (filter === 'outOfStock') {
       where.amount = { lte: 0 }
+    } else if (['indica', 'sativa', 'hybrid'].includes(filter)) {
+      where.type = filter
     }
 
     const total = await db.product.count({ where })

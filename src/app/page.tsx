@@ -191,6 +191,7 @@ export default function Home() {
   const [historyFrom, setHistoryFrom] = useState('')
   const [historyTo, setHistoryTo] = useState('')
   const [historyPage, setHistoryPage] = useState(1)
+  const [historyFilter, setHistoryFilter] = useState<string>('all')
 
   // Product form
   const [formName, setFormName] = useState('')
@@ -272,8 +273,8 @@ export default function Home() {
   })
 
   const activityQuery = useQuery({
-    queryKey: ['activity', historyPage, historyFrom, historyTo],
-    queryFn: () => api.get(`/api/activity?page=${historyPage}&limit=20${historyFrom ? `&from=${historyFrom}` : ''}${historyTo ? `&to=${historyTo}` : ''}`) as Promise<{ logs: ActivityLog[]; total: number; page: number; totalPages: number }>,
+    queryKey: ['activity', historyPage, historyFrom, historyTo, historyFilter],
+    queryFn: () => api.get(`/api/activity?page=${historyPage}&limit=20${historyFrom ? `&from=${historyFrom}` : ''}${historyTo ? `&to=${historyTo}` : ''}${historyFilter !== 'all' ? `&type=${historyFilter}` : ''}`) as Promise<{ logs: ActivityLog[]; total: number; page: number; totalPages: number }>,
   })
 
   // ── Sync settings ────────────────────────────────────────────────────────
@@ -934,8 +935,8 @@ export default function Home() {
                     })()
                     return (
                       <Button key={filterType} variant="ghost" size="sm"
-                        className="h-6 text-[10px] px-2 rounded-full gap-1"
-                        onClick={() => { /* TODO: filter by type */ }}>
+                        className={`h-6 text-[10px] px-2 rounded-full gap-1 ${historyFilter === filterType ? 'bg-muted font-semibold' : ''}`}
+                        onClick={() => { setHistoryFilter(filterType); setHistoryPage(1) }}>
                         <FIcon className={`size-2.5 ${fColor}`} />{fLabel}
                       </Button>
                     )
@@ -948,7 +949,7 @@ export default function Home() {
                 <Label className="text-xs text-muted-foreground">To</Label>
                 <Input type="date" value={historyTo} onChange={(e) => { setHistoryTo(e.target.value); setHistoryPage(1) }} className="h-7 w-auto text-xs rounded-lg" />
                 {(historyFrom || historyTo) && (
-                  <Button variant="ghost" size="sm" className="h-7 text-xs rounded-full" onClick={() => { setHistoryFrom(''); setHistoryTo(''); setHistoryPage(1) }}>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs rounded-full" onClick={() => { setHistoryFrom(''); setHistoryTo(''); setHistoryFilter('all'); setHistoryPage(1) }}>
                     <X className="size-3 mr-1" />Clear
                   </Button>
                 )}
