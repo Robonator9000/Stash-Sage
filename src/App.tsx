@@ -313,6 +313,50 @@ export default function App() {
     { value: 'outOfStock', labelKey: 'filterOutOfStock' },
   ];
 
+  const statItems = [
+    { label: t('totalProducts', lang), value: products.length.toString(), icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
+    { label: t('totalAmount', lang), value: `${formatPrecision(products.reduce((s, p) => s + p.amount, 0), 1)}g`, icon: 'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3' },
+    { label: t('averageRating', lang), value: avgRating > 0 ? avgRating.toFixed(1) : '—', icon: 'M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z' },
+    { label: t('averageTHC', lang), value: avgThc > 0 ? `${avgThc.toFixed(1)}%` : '—', icon: 'M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z' },
+    { label: t('totalValue', lang), value: formatCurrency(totalValue, settings.currency), icon: 'M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
+    { label: t('totalSessions', lang), value: sessions.length.toString(), icon: 'M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z' },
+    { label: t('lastConsumed', lang), value: lastConsumedDisplay, icon: 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z' },
+  ].filter((_, idx) => {
+    const vis = settings.statsVisibility;
+    if (idx === 0 && vis.totalProducts === false) return false;
+    if (idx === 1 && vis.totalAmount === false) return false;
+    if (idx === 2 && vis.averageRating === false) return false;
+    if (idx === 3 && vis.averageTHC === false) return false;
+    if (idx === 4 && vis.totalValue === false) return false;
+    if (idx === 5 && vis.totalSessions === false) return false;
+    if (idx === 6 && vis.lastConsumed === false) return false;
+    return true;
+  });
+
+  const statsCardsMarkup = (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-2 mb-4">
+      {statItems.map((stat) => (
+        <div
+          key={stat.label}
+          className={`relative overflow-hidden rounded-xl p-3 border transition-all
+            ${isDark ? 'bg-surface border-border' : 'bg-white border-gray-200'}`}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className={`text-[10px] font-medium uppercase tracking-wider ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+              {stat.label}
+            </span>
+            <svg className={`w-3.5 h-3.5 ${isDark ? 'text-muted' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d={stat.icon} />
+            </svg>
+          </div>
+          <div className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            {stat.value}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   if (!settings.onboardingDone) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
@@ -332,13 +376,13 @@ export default function App() {
 
       {/* Header */}
       <header className={`sticky top-0 z-50 border-b ${isDark ? 'bg-[#0b1120]/80 border-border' : 'bg-[#e2e8f0]/80 border-gray-200'} backdrop-blur-xl`}>
-        <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between gap-3">
+        <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between gap-2">
           {/* Logo */}
           <button
             onClick={() => setActiveTab('inventory')}
             className="text-2xl font-extrabold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent hover:opacity-80 transition-opacity shrink-0"
           >
-            STASH
+            🍃 STASH
           </button>
 
           {/* Search */}
@@ -354,7 +398,7 @@ export default function App() {
                 onFocus={() => setShowSearchPreview(true)}
                 onBlur={() => setTimeout(() => setShowSearchPreview(false), 200)}
                 placeholder={t('searchPlaceholder', lang)}
-                className={`w-full pl-10 pr-4 py-2 rounded-xl text-sm border transition-all outline-none
+                className={`w-full pl-10 pr-4 py-1.5 rounded-xl text-sm border transition-all outline-none
                   ${isDark
                     ? 'bg-surface border-border text-white placeholder-muted focus:border-cyan-500'
                     : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-cyan-400'}`}
@@ -432,8 +476,8 @@ export default function App() {
       {/* Tabs + Content */}
       <div className="max-w-7xl mx-auto px-4 py-4">
         {/* Tab bar */}
-        <div className="flex items-center justify-center mb-5">
-          <div className={`inline-flex items-center gap-1.5 p-1 rounded-2xl ${isDark ? 'bg-surface' : 'bg-gray-100'}`}>
+        <div className="flex items-center mb-4">
+          <div className={`flex w-full items-center gap-1 p-1 rounded-xl ${isDark ? 'bg-surface' : 'bg-gray-100'}`}>
             {[
               { id: 'inventory', label: t('inventory', lang), icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
               { id: 'dashboard', label: t('dashboard', lang), icon: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z' },
@@ -442,9 +486,9 @@ export default function App() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as 'inventory' | 'dashboard' | 'history')}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
                   ${activeTab === tab.id
-                    ? 'bg-gradient-to-r from-cyanx to-emera text-white shadow-lg shadow-cyan-500/20'
+                    ? 'bg-gradient-to-r from-cyanx to-emera text-white'
                     : isDark ? 'text-mist hover:text-frost' : 'text-gray-600 hover:text-gray-900'}`}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -459,29 +503,10 @@ export default function App() {
         {/* ==================== INVENTORY TAB ==================== */}
         {activeTab === 'inventory' && (
           <div>
-            {/* Compact Stats Bar */}
-            <div className={`flex flex-wrap items-center gap-4 mb-5 px-4 py-3 rounded-2xl ${isDark ? 'bg-surface' : 'bg-white'} border ${isDark ? 'border-border' : 'border-gray-200'}`}>
-              {[
-                { label: t('totalProducts', lang), value: products.length.toString() },
-                { label: t('totalAmount', lang), value: `${formatPrecision(products.reduce((s, p) => s + p.amount, 0), 1)}g` },
-                { label: t('averageRating', lang), value: avgRating > 0 ? avgRating.toFixed(1) : '\u2014' },
-                { label: t('averageTHC', lang), value: avgThc > 0 ? `${avgThc.toFixed(1)}%` : '\u2014' },
-                { label: t('totalValue', lang), value: formatCurrency(totalValue, settings.currency) },
-                { label: t('totalSessions', lang), value: sessions.length.toString() },
-              ].filter((_, idx) => {
-                const vis = settings.statsVisibility;
-                const keys: (keyof typeof vis)[] = ['totalProducts', 'totalAmount', 'averageRating', 'averageTHC', 'totalValue', 'totalSessions'];
-                return vis[keys[idx]] !== false;
-              }).map((stat) => (
-                <div key={stat.label} className="flex items-center gap-2">
-                  <span className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>{stat.label}</span>
-                  <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{stat.value}</span>
-                </div>
-              ))}
-            </div>
+            {statsCardsMarkup}
 
             {/* Controls bar */}
-            <div className={`flex flex-wrap items-center gap-3 mb-6 p-4 rounded-2xl ${isDark ? 'bg-surface' : 'bg-white'} border ${isDark ? 'border-border' : 'border-gray-200'}`}>
+            <div className={`flex flex-wrap items-center gap-2 mb-4 p-3 rounded-xl ${isDark ? 'bg-surface' : 'bg-white'} border ${isDark ? 'border-border' : 'border-gray-200'}`}>
               {/* Sort */}
               <div className="flex items-center gap-2">
                 <span className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'text-muted' : 'text-gray-400'}`}>Sort</span>
@@ -533,7 +558,7 @@ export default function App() {
                       </svg>
                     ) : (
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 13a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" />
                       </svg>
                     )}
                   </button>
@@ -622,46 +647,7 @@ export default function App() {
         {/* ==================== DASHBOARD TAB ==================== */}
         {activeTab === 'dashboard' && (
           <div>
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3 mb-6">
-              {[
-                { label: t('totalProducts', lang), value: products.length.toString(), icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-                { label: t('totalAmount', lang), value: `${formatPrecision(products.reduce((s, p) => s + p.amount, 0), 1)}g`, icon: 'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3' },
-                { label: t('averageRating', lang), value: avgRating > 0 ? avgRating.toFixed(1) : '—', icon: 'M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z' },
-                { label: t('averageTHC', lang), value: avgThc > 0 ? `${avgThc.toFixed(1)}%` : '—', icon: 'M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z' },
-                { label: t('totalValue', lang), value: formatCurrency(totalValue, settings.currency), icon: 'M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
-                { label: t('totalSessions', lang), value: sessions.length.toString(), icon: 'M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z' },
-                { label: t('lastConsumed', lang), value: lastConsumedDisplay, icon: 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z' },
-              ].filter((_, idx) => {
-                const vis = settings.statsVisibility;
-                if (idx === 0 && vis.totalProducts === false) return false;
-                if (idx === 1 && vis.totalAmount === false) return false;
-                if (idx === 2 && vis.averageRating === false) return false;
-                if (idx === 3 && vis.averageTHC === false) return false;
-                if (idx === 4 && vis.totalValue === false) return false;
-                if (idx === 5 && vis.totalSessions === false) return false;
-                if (idx === 6 && vis.lastConsumed === false) return false;
-                return true;
-              }).map((stat) => (
-                <div
-                  key={stat.label}
-                  className={`relative overflow-hidden rounded-2xl p-5 border transition-all
-                    ${isDark ? 'bg-surface border-border' : 'bg-white border-gray-200'}`}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'text-muted' : 'text-gray-400'}`}>
-                      {stat.label}
-                    </span>
-                    <svg className={`w-4 h-4 ${isDark ? 'text-muted' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d={stat.icon} />
-                    </svg>
-                  </div>
-                  <div className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    {stat.value}
-                  </div>
-                </div>
-              ))}
-            </div>
+            {statsCardsMarkup}
 
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
@@ -837,7 +823,7 @@ export default function App() {
         {activeTab === 'history' && (
           <div>
             {/* Filters */}
-            <div className={`flex flex-wrap items-center gap-3 mb-6 p-4 rounded-2xl ${isDark ? 'bg-surface' : 'bg-white'} border ${isDark ? 'border-border' : 'border-gray-200'}`}>
+            <div className={`flex flex-wrap items-center gap-2 mb-4 p-3 rounded-xl ${isDark ? 'bg-surface' : 'bg-white'} border ${isDark ? 'border-border' : 'border-gray-200'}`}>
               <span className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'text-muted' : 'text-gray-400'}`}>
                 {t('filterByType', lang)}
               </span>
