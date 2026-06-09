@@ -961,6 +961,7 @@ export default function App() {
                         <th className="px-4 py-3 text-left">Product</th>
                         <th className="px-4 py-3 text-right">Amount</th>
                         <th className="px-4 py-3 text-right">Price</th>
+                        <th className="px-4 py-3 text-left">Notes</th>
                         <th className="px-4 py-3 text-right">When</th>
                       </tr>
                     </thead>
@@ -987,6 +988,9 @@ export default function App() {
                           </td>
                           <td className={`px-4 py-3 text-right ${isDark ? 'text-mist' : 'text-gray-600'}`}>
                             {entry.price != null ? formatCurrency(entry.price, settings.currency) : '—'}
+                          </td>
+                          <td className={`px-4 py-3 text-left text-xs max-w-[200px] truncate ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                            {entry.notes || '—'}
                           </td>
                           <td className={`px-4 py-3 text-right text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>
                             {formatActivityDate(entry.timestamp)}
