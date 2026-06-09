@@ -4,7 +4,8 @@ import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { hashPin } from '../utils/helpers';
 import { createExportData, downloadExport, downloadCsvExport, copyExportToClipboard, parseImportData, ImportResult } from '../utils/dataTransfer';
-import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, Clipboard, Merge, Clock, Users, Scale, RotateCcw, DollarSign, Lock, Hash, AlertTriangle, Shield, Database } from 'lucide-react';
+import { exportProductsPdf } from '../utils/pdfExport';
+import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, Users, Scale, RotateCcw, DollarSign, Lock, Hash, AlertTriangle, Shield, Database } from 'lucide-react';
 
 interface SettingsSheetProps {
   products: Product[];
@@ -80,6 +81,15 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const handleExportCsv = () => {
     try {
       downloadCsvExport(products);
+      setFeedback({ type: 'success', message: t('exportSuccess', settings.language) });
+    } catch {
+      setFeedback({ type: 'error', message: t('importError', settings.language) });
+    }
+  };
+
+  const handleExportPdf = () => {
+    try {
+      exportProductsPdf(products, settings);
       setFeedback({ type: 'success', message: t('exportSuccess', settings.language) });
     } catch {
       setFeedback({ type: 'error', message: t('importError', settings.language) });
@@ -432,12 +442,15 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               <div>
                 <label className={sectionLabel}><Database className="w-4 h-4" />{t('dataBackup', lang)}</label>
                 <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('dataBackupHint', lang)}</p>
-                <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="grid grid-cols-4 gap-2 mb-3">
                   <button onClick={handleExport} className={actionButton(false)}>
                     <Download className="w-4 h-4" /><span className="text-[10px] leading-tight">{t('exportData', lang)}</span>
                   </button>
                   <button onClick={handleExportCsv} className={actionButton(false)}>
                     <FileSpreadsheet className="w-4 h-4" /><span className="text-[10px] leading-tight">{t('exportCsv', lang)}</span>
+                  </button>
+                  <button onClick={handleExportPdf} className={actionButton(false)}>
+                    <FileText className="w-4 h-4" /><span className="text-[10px] leading-tight">PDF</span>
                   </button>
                   <button onClick={handleCopyToClipboard} className={actionButton(false)}>
                     <Clipboard className="w-4 h-4" /><span className="text-[10px] leading-tight">{t('copyToClipboard', lang)}</span>
