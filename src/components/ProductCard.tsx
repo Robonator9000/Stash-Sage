@@ -92,8 +92,8 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
       >
         <div className="flex items-center gap-4 p-4" onClick={onClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}>
           <div className="relative flex-shrink-0">
-            {product.picture ? (
-              <img src={product.picture} alt={product.name} loading="lazy" decoding="async" className="w-16 h-16 rounded-lg object-cover" />
+            {(product.pictures?.[0] || product.picture) ? (
+              <img src={(product.pictures?.[0] || product.picture)} alt={product.name} loading="lazy" decoding="async" className="w-16 h-16 rounded-lg object-cover" />
             ) : (
               <div className={`w-16 h-16 rounded-lg flex items-center justify-center ${isDark ? 'bg-surface' : 'bg-gray-100'}`}>
                 <Package className={`w-6 h-6 ${isDark ? 'text-haze' : 'text-gray-400'}`} />
@@ -171,8 +171,8 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
         onClick={onClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}
       >
         <div className="aspect-square relative overflow-hidden rounded-t-xl">
-          {product.picture ? (
-            <img src={product.picture} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+          {(product.pictures?.[0] || product.picture) ? (
+            <img src={(product.pictures?.[0] || product.picture)} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
           ) : (
             <div className={`w-full h-full flex items-center justify-center ${isDark ? 'bg-surface' : 'bg-gray-100'}`}>
               <Package className={`w-8 h-8 ${isDark ? 'text-haze' : 'text-gray-400'}`} />
@@ -230,9 +230,9 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
     >
       {/* Image Section */}
       <div className="relative aspect-video flex-shrink-0">
-        {product.picture ? (
+        {(product.pictures?.[0] || product.picture) ? (
           <img
-            src={product.picture} alt={product.name}
+            src={(product.pictures?.[0] || product.picture)} alt={product.name}
             loading="lazy" decoding="async"
             className="w-full h-full object-cover"
           />

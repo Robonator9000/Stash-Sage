@@ -4,7 +4,7 @@ import { useSettings } from '../utils/useSettings';
 import { useModalAnimation } from '../hooks/useModalAnimation';
 import { generateId, roundToHundredth } from '../utils/helpers';
 import { gramsToOz } from '../utils/convert';
-import { X, Upload, Star, Camera, Heart, Plus, ChevronDown } from 'lucide-react';
+import { X, Star, Camera, Heart, Plus, ChevronDown } from 'lucide-react';
 import { t } from '../utils/translations';
 
 interface ProductModalProps {
@@ -41,7 +41,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
   const [cbd, setCbd] = useState(product?.cbd || 0);
   const [amount, setAmount] = useState(product?.amount || 0);
   const [price, setPrice] = useState(product?.price || 0);
-  const [picture, setPicture] = useState(product?.picture || '');
+  const [pictures, setPictures] = useState<string[]>(product?.pictures?.length ? product.pictures : (product?.picture ? [product.picture] : []));
   const [notes, setNotes] = useState(product?.notes || '');
   const [rating, setRating] = useState(product?.rating || 0);
   const [hoveredStar, setHoveredStar] = useState(0);
@@ -70,11 +70,15 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
   }, []);
 
   const handlePictureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setPicture(reader.result as string);
-      reader.readAsDataURL(file);
+    const files = e.target.files;
+    if (files) {
+      Array.from(files).forEach((file) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPictures((prev) => [...prev, reader.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
     }
   };
 
@@ -108,7 +112,8 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
       cbd,
       amount: roundedAmount,
       price,
-      picture,
+      picture: pictures[0] || '',
+      pictures: pictures,
       notes: notes.trim(),
       rating,
       brand: brand.trim(),
@@ -191,48 +196,48 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
 
         {/* Content */}
         <div className="p-5 space-y-4 overflow-y-auto flex-1">
-          {/* Picture Upload */}
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              {picture ? (
-                <div className={`w-20 h-20 rounded-xl overflow-hidden border-2 ${
-                  isDark ? 'border-slate-700' : 'border-gray-200'
-                }`}>
-                  <img src={picture} alt={product?.name || t('addProduct', lang)} className="w-full h-full object-cover" />
+          {/* Pictures */}
+          <div>
+            <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+              {t('photos', lang)}
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {pictures.map((pic, idx) => (
+                <div key={idx} className="relative group">
+                  <div className={`w-full aspect-square rounded-xl overflow-hidden border-2 ${
+                    isDark ? 'border-slate-700' : 'border-gray-200'
+                  }`}>
+                    <img src={pic} alt="" className="w-full h-full object-cover" />
+                  </div>
+                  <button
+                    onClick={() => setPictures((prev) => prev.filter((_, i) => i !== idx))}
+                    className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100 ${
+                      isDark ? 'bg-red-500 text-white hover:bg-red-400' : 'bg-red-600 text-white hover:bg-red-500'
+                    }`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
                 </div>
-              ) : (
-                <div 
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`w-20 h-20 rounded-xl border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors ${
-                    isDark 
-                      ? 'border-slate-700 hover:border-slate-600 bg-slate-800/50' 
-                      : 'border-gray-300 hover:border-gray-400 bg-gray-50'
-                  }`}
-                >
-                  <Camera className={`w-8 h-8 ${isDark ? 'text-slate-500' : 'text-gray-400'}`} />
-                </div>
-              )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handlePictureUpload}
-                className="hidden"
-              />
-            </div>
-            <div className="flex-1">
+              ))}
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className={`w-full py-2 px-4 rounded-xl text-sm font-medium transition-colors ${
-                  isDark 
-                    ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                className={`w-full aspect-square rounded-xl border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors ${
+                  isDark
+                    ? 'border-slate-700 hover:border-slate-600 bg-slate-800/50'
+                    : 'border-gray-300 hover:border-gray-400 bg-gray-50'
                 }`}
               >
-                <Upload className="w-4 h-4 inline mr-2" />
-                {picture ? t('changePicture', lang) : t('uploadPicture', lang)}
+                <Camera className={`w-6 h-6 ${isDark ? 'text-slate-500' : 'text-gray-400'}`} />
               </button>
             </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handlePictureUpload}
+              className="hidden"
+            />
           </div>
 
           {/* Strain Name */}
