@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
-import { Product } from '../types';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { Product, Session } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { useModalAnimation } from '../hooks/useModalAnimation';
 import { generateId, roundToHundredth } from '../utils/helpers';
 import { gramsToOz } from '../utils/convert';
-import { X, Star, Camera, Heart, Plus, ChevronDown } from 'lucide-react';
+import { X, Star, Camera, Heart, Plus, ChevronDown, History } from 'lucide-react';
 import { t } from '../utils/translations';
 import { showToast } from './Toast';
 
@@ -14,6 +14,7 @@ interface ProductModalProps {
   onDelete?: (id: string) => void;
   onClose: () => void;
   isDark?: boolean;
+  sessions?: Session[];
 }
 
 const POPULAR_BRANDS = [
@@ -29,7 +30,7 @@ const POPULAR_BRANDS = [
   'Purple Haze',
 ];
 
-export function ProductModal({ product, onSave, onDelete, onClose, isDark = true }: ProductModalProps) {
+export function ProductModal({ product, onSave, onDelete, onClose, isDark = true, sessions = [] }: ProductModalProps) {
   const { settings, addFavoriteBrand, removeFavoriteBrand, addRecentBrand } = useSettings();
   const lang = settings.language;
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -56,6 +57,13 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
     product?.purchasedAt ? new Date(product.purchasedAt).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)
   );
   const { isVisible, handleClose } = useModalAnimation(onClose);
+
+  const productSessions = useMemo(() => {
+    if (!product) return [];
+    return sessions.filter(s => s.productId === product.id);
+  }, [sessions, product]);
+
+  const [showHistory, setShowHistory] = useState(false);
 
   const favoriteBrands = settings.favoriteBrands || [];
   const recentBrands = settings.recentBrands || [];
@@ -191,6 +199,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
           </h2>
           <button
             onClick={handleClose}
+            aria-label={t('close', lang)}
             className={`p-2 rounded-xl transition-all ${
               isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'
             }`}
@@ -216,6 +225,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                   </div>
                   <button
                     onClick={() => setPictures((prev) => prev.filter((_, i) => i !== idx))}
+                    aria-label={t('removePhoto', lang)}
                     className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center transition-colors md:opacity-0 md:group-hover:opacity-100 ${
                       isDark ? 'bg-red-500 text-white hover:bg-red-400' : 'bg-red-600 text-white hover:bg-red-500'
                     }`}
@@ -528,12 +538,14 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                       onClick={() => setRating(star - 0.5)}
                       onMouseEnter={() => setHoveredStar(star - 0.5)}
                       onMouseLeave={() => setHoveredStar(0)}
+                      aria-label={`${star - 0.5} ${t('stars', lang)}`}
                       className="absolute left-0 top-0 w-1/2 h-full z-10 cursor-pointer"
                     />
                     <button
                       onClick={() => setRating(star)}
                       onMouseEnter={() => setHoveredStar(star)}
                       onMouseLeave={() => setHoveredStar(0)}
+                      aria-label={`${star} ${t('stars', lang)}`}
                       className="absolute right-0 top-0 w-1/2 h-full z-10 cursor-pointer"
                     />
                     <div className="relative w-7 h-7 pointer-events-none">
@@ -606,6 +618,43 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
               } outline-none`}
             />
           </div>
+
+          {/* Session History */}
+          {product && productSessions.length > 0 && (
+            <div>
+              <button
+                onClick={() => setShowHistory(!showHistory)}
+                className={`flex items-center gap-2 w-full p-3 rounded-xl transition-colors ${
+                  isDark ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-gray-100 text-gray-700'
+                }`}
+              >
+                <History className="w-4 h-4" />
+                <span className="text-sm font-medium">{t('sessionHistory', lang)} ({productSessions.length})</span>
+                <ChevronDown className={`w-4 h-4 ml-auto transition-transform ${showHistory ? 'rotate-180' : ''}`} />
+              </button>
+              {showHistory && (
+                <div className="mt-2 space-y-2 max-h-48 overflow-y-auto">
+                  {[...productSessions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((s) => (
+                    <div key={s.id} className={`p-3 rounded-xl text-sm ${
+                      isDark ? 'bg-slate-800/50' : 'bg-gray-50'
+                    }`}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className={`font-medium ${isDark ? 'text-slate-200' : 'text-gray-800'}`}>
+                          {new Date(s.date).toLocaleDateString()}
+                        </span>
+                        <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                          {s.amount}g · {s.people}p · {s.hitsCount}hits
+                        </span>
+                      </div>
+                      {s.notes && (
+                        <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-gray-500'} line-clamp-2`}>{s.notes}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -618,6 +667,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                 onDelete(product.id);
                 handleClose();
               }}
+              aria-label={t('delete', lang)}
               className={`px-4 py-2 rounded-xl font-medium transition-all ${
                 isDark 
                   ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' 
@@ -630,6 +680,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
           <div className="flex-1" />
           <button
             onClick={handleClose}
+            aria-label={t('cancel', lang)}
             className={`px-4 py-2 rounded-xl font-medium transition-all ${
               isDark 
                 ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' 
@@ -641,6 +692,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
           <button
             onClick={handleSubmit}
             disabled={!name.trim()}
+            aria-label={product ? t('save', lang) : t('addProduct', lang)}
             className={`px-6 py-2 rounded-xl font-bold transition-all ${
               name.trim()
                 ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white hover:from-cyan-400 hover:to-emerald-400'

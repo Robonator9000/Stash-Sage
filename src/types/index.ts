@@ -37,6 +37,8 @@ export interface Settings {
     totalValue: boolean;
     pricePerGram: boolean;
     lastConsumed: boolean;
+    consumptionRate: boolean;
+    projectedRunOut: boolean;
   };
   decimalPrecision: number;
   showTimerMs: boolean;

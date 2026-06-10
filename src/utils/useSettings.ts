@@ -23,6 +23,8 @@ const defaultSettings: Settings = {
     totalValue: true,
     pricePerGram: true,
     lastConsumed: true,
+    consumptionRate: true,
+    projectedRunOut: true,
   },
   favoriteBrands: [],
   recentBrands: [],

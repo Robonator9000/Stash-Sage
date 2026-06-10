@@ -139,7 +139,10 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
     { key: 'averageRating' as const, label: t('averageRating', settings.language) },
     { key: 'averageTHC' as const, label: t('averageTHC', settings.language) },
     { key: 'totalValue' as const, label: t('totalValue', settings.language) },
+    { key: 'pricePerGram' as const, label: t('pricePerGram', settings.language) },
     { key: 'lastConsumed' as const, label: t('lastConsumed', settings.language) },
+    { key: 'consumptionRate' as const, label: t('consumptionRate', settings.language) },
+    { key: 'projectedRunOut' as const, label: t('projectedRunOut', settings.language) },
   ];
 
   const sectionLabel = `flex items-center gap-2 text-sm font-medium mb-3 ${isDark ? 'text-slate-300' : 'text-gray-700'}`;

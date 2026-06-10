@@ -97,6 +97,7 @@ export function ToastContainer({ isDark = true }: ToastContainerProps) {
             </div>
             <button
               onClick={() => removeToast(toast.id)}
+              aria-label="Close notification"
               className={`p-1 rounded-lg transition-colors flex-shrink-0 ${
                 isInfo
                   ? isDark ? 'hover:bg-slate-700 text-slate-400' : 'hover:bg-gray-100 text-gray-400'

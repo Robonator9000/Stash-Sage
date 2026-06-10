@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Product, Session, SortOption, FilterType } from './types';
 import { useProducts } from './utils/useProducts';
 import { useSessions } from './utils/useSessions';
@@ -263,6 +263,25 @@ export default function App() {
   const lang = settings.language;
 
   const totalValue = useMemo(() => products.reduce((s, p) => s + (p.price || 0) * p.amount, 0), [products]);
+
+  const budgetAlertedRef = useRef<{ limit: number; period: string } | null>(null);
+  useEffect(() => {
+    if (settings.budgetLimit <= 0) return;
+    if (totalValue > settings.budgetLimit) {
+      const key = { limit: settings.budgetLimit, period: settings.budgetPeriod };
+      if (!budgetAlertedRef.current || budgetAlertedRef.current.limit !== key.limit || budgetAlertedRef.current.period !== key.period) {
+        budgetAlertedRef.current = key;
+        showToast({
+          id: 'budget-exceeded',
+          title: t('budgetExceeded', settings.language),
+          body: t('budgetExceededMessage', settings.language).replace('{amount}', formatCurrency(totalValue - settings.budgetLimit, settings.currency)),
+          variant: 'danger',
+        });
+      }
+    } else {
+      budgetAlertedRef.current = null;
+    }
+  }, [totalValue, settings.budgetLimit, settings.budgetPeriod, settings.language, settings.currency]);
 
   const typeDistribution = useMemo(() => {
     const map = new Map<string, number>();
@@ -547,7 +566,7 @@ export default function App() {
         {activeTab === 'inventory' && (
           <div>
             <div className="mb-5">
-              <StatsCard products={products} isDark={isDark} />
+              <StatsCard products={products} sessions={sessions} isDark={isDark} />
             </div>
 
             {/* Controls bar */}
@@ -760,7 +779,7 @@ export default function App() {
         {activeTab === 'dashboard' && (
           <div>
             <div className="mb-6">
-              <StatsCard products={products} isDark={isDark} />
+              <StatsCard products={products} sessions={sessions} isDark={isDark} />
             </div>
 
             {/* Charts */}
@@ -1072,6 +1091,7 @@ export default function App() {
       {(isAddModalOpen || editingProduct) && (
         <ProductModal
           product={editingProduct}
+          sessions={sessions}
           onSave={handleSaveProduct}
           onDelete={editingProduct ? handleDeleteProduct : undefined}
           onClose={() => { setIsAddModalOpen(false); setEditingProduct(null); }}

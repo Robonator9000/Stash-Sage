@@ -153,6 +153,7 @@ export function SessionModal({
           </div>
           <button
             onClick={handleClose}
+            aria-label="Close"
             className={`p-2 rounded-xl transition-colors ${
               isDark 
                 ? 'hover:bg-slate-800 text-slate-400 hover:text-white' 
@@ -245,6 +246,7 @@ export function SessionModal({
               <div className="flex items-center justify-center gap-2">
                 <button
                   onClick={() => setHitsCount(Math.max(0, hitsCount - 1))}
+                  aria-label={t('decrementHits', settings.language)}
                   className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold ${
                     isDark ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
@@ -253,6 +255,7 @@ export function SessionModal({
                 </button>
                 <button
                   onClick={() => setHitsCount(hitsCount + 1)}
+                  aria-label={t('incrementHits', settings.language)}
                   className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold ${
                     isDark ? 'bg-cyan-600 text-white hover:bg-cyan-500' : 'bg-cyan-500 text-white hover:bg-cyan-400'
                   }`}
@@ -488,6 +491,7 @@ export function SessionModal({
         }`}>
           <button
             onClick={handleClose}
+            aria-label={t('cancel', settings.language)}
             className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
               isDark 
                 ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' 
@@ -498,6 +502,7 @@ export function SessionModal({
           </button>
           <button
             onClick={handleFinishSession}
+            aria-label={t('finishSession', settings.language)}
             className={`flex-1 py-3 rounded-xl font-bold transition-all ${
               isDark 
                 ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white hover:from-cyan-400 hover:to-emerald-400' 

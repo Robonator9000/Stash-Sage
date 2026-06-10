@@ -1,15 +1,16 @@
 import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { roundToHundredth, formatPrecision } from '../utils/helpers';
-import { Product } from '../types';
-import { Package, Scale, Flame, Star, Percent, DollarSign, Clock } from 'lucide-react';
+import { Product, Session } from '../types';
+import { Package, Scale, Flame, Star, Percent, DollarSign, Clock, TrendingDown, CalendarDays } from 'lucide-react';
 
 interface StatsCardProps {
   products: Product[];
+  sessions: Session[];
   isDark?: boolean;
 }
 
-export function StatsCard({ products, isDark = true }: StatsCardProps) {
+export function StatsCard({ products, sessions, isDark = true }: StatsCardProps) {
   const { settings } = useSettings();
   const stats = settings.statsVisibility;
 
@@ -45,6 +46,20 @@ export function StatsCard({ products, isDark = true }: StatsCardProps) {
       })()
     : '—';
 
+  let consumptionRate = 0;
+  let projectedRunOut = '—';
+  if (sessions.length > 0) {
+    const sortedSessions = [...sessions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const firstSessionDate = new Date(sortedSessions[0].date);
+    const daysDiff = Math.max(1, (Date.now() - firstSessionDate.getTime()) / 86400000);
+    const totalConsumed = sessions.reduce((sum, s) => sum + Math.max(0, s.amount), 0);
+    consumptionRate = roundToHundredth(totalConsumed / daysDiff);
+    if (consumptionRate > 0 && totalAmount > 0) {
+      const daysLeft = Math.round(totalAmount / consumptionRate);
+      projectedRunOut = daysLeft.toString();
+    }
+  }
+
   const dp = settings.decimalPrecision;
   const statItems = [
     { key: 'totalProducts' as const, visible: stats.totalProducts, icon: Package, label: t('totalProducts', settings.language), value: totalProducts.toString(), suffix: '' },
@@ -55,6 +70,8 @@ export function StatsCard({ products, isDark = true }: StatsCardProps) {
     { key: 'totalValue' as const, visible: stats.totalValue, icon: DollarSign, label: t('totalValue', settings.language), value: settings.currency + formatPrecision(totalValue, dp), suffix: '' },
     { key: 'pricePerGram' as const, visible: stats.pricePerGram && totalAmount > 0, icon: DollarSign, label: t('pricePerGram', settings.language), value: settings.currency + formatPrecision(pricePerGram, dp), suffix: '/g' },
     { key: 'lastConsumed' as const, visible: stats.lastConsumed, icon: Clock, label: t('lastConsumed', settings.language), value: lastConsumedStr, suffix: '' },
+    { key: 'consumptionRate' as const, visible: stats.consumptionRate && consumptionRate > 0, icon: TrendingDown, label: t('consumptionRate', settings.language), value: formatPrecision(consumptionRate, dp), suffix: t('perDay', settings.language) },
+    { key: 'projectedRunOut' as const, visible: stats.projectedRunOut && projectedRunOut !== '—', icon: CalendarDays, label: t('projectedRunOut', settings.language), value: projectedRunOut, suffix: t('days', settings.language) },
   ];
 
   const visibleStats = statItems.filter(s => s.visible);
