@@ -452,7 +452,7 @@ export default function App() {
       )}
 
       {/* Header */}
-      <header className={`sticky top-0 z-50 border-b ${isDark ? 'bg-[#0b1120]/80 border-border' : 'bg-[#e2e8f0]/80 border-gray-200'} backdrop-blur-xl`}>
+      <header className={`sticky top-0 z-50 ${isDark ? 'bg-[#0b1120]/80' : 'bg-[#e2e8f0]/80'} backdrop-blur-xl`}>
         <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between gap-2">
           {/* Logo */}
           <button
@@ -662,7 +662,7 @@ export default function App() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className={`text-sm rounded-lg px-2 py-1 border outline-none transition-colors
+                  className={`text-sm rounded-lg px-2 py-1 border-0 outline-none transition-colors
                     ${isDark ? 'bg-midnight text-mist border-border' : 'bg-gray-50 text-gray-700 border-gray-200'}`}
                 >
                   {sortOptions.map(o => (
@@ -677,7 +677,7 @@ export default function App() {
                 <select
                   value={filterBy}
                   onChange={(e) => setFilterBy(e.target.value)}
-                  className={`text-sm rounded-lg px-2 py-1 border outline-none transition-colors
+                  className={`text-sm rounded-lg px-2 py-1 border-0 outline-none transition-colors
                     ${isDark ? 'bg-midnight text-mist border-border' : 'bg-gray-50 text-gray-700 border-gray-200'}`}
                 >
                   {filterOptions.map(o => (
@@ -720,7 +720,7 @@ export default function App() {
                 <select
                   value={productsPerPage}
                   onChange={(e) => { setProductsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                  className={`text-sm rounded-lg px-1.5 py-1 border outline-none transition-colors
+                  className={`text-sm rounded-lg px-1.5 py-1 border-0 outline-none transition-colors
                     ${isDark ? 'bg-midnight text-mist border-border' : 'bg-gray-50 text-gray-700 border-gray-200'}`}
                 >
                   {[10, 20, 50, 100].map(n => <option key={n} value={n}>{n}</option>)}
@@ -989,7 +989,7 @@ export default function App() {
               <select
                 value={historyFilterType}
                 onChange={(e) => setHistoryFilterType(e.target.value)}
-                className={`text-sm rounded-lg px-2 py-1 border outline-none transition-colors
+                className={`text-sm rounded-lg px-2 py-1 border-0 outline-none transition-colors
                   ${isDark ? 'bg-midnight text-mist border-border' : 'bg-gray-50 text-gray-700 border-gray-200'}`}
               >
                 <option value="all">{t('allTypes', lang)}</option>
@@ -1007,7 +1007,7 @@ export default function App() {
               <select
                 value={historyDateFilter}
                 onChange={(e) => setHistoryDateFilter(e.target.value)}
-                className={`text-sm rounded-lg px-2 py-1 border outline-none transition-colors
+                className={`text-sm rounded-lg px-2 py-1 border-0 outline-none transition-colors
                   ${isDark ? 'bg-midnight text-mist border-border' : 'bg-gray-50 text-gray-700 border-gray-200'}`}
               >
                 <option value="all">{t('allDates', lang)}</option>
@@ -1029,7 +1029,7 @@ export default function App() {
 
             {/* Activity Table */}
             {filteredHistory.length > 0 ? (
-              <div className={`rounded-2xl border overflow-hidden ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
+              <div className={`rounded-2xl overflow-hidden ${isDark ? 'bg-midnight/80' : 'bg-white'}`}>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
@@ -1087,7 +1087,7 @@ export default function App() {
                 </div>
               </div>
             ) : (
-              <div className={`text-center py-16 rounded-2xl border ${isDark ? 'bg-midnight/80 border border-edge text-muted' : 'bg-white border-gray-200 text-gray-400'}`}>
+              <div className={`text-center py-16 rounded-2xl ${isDark ? 'bg-midnight/80 text-muted' : 'bg-white text-gray-400'}`}>
                 <svg className="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
