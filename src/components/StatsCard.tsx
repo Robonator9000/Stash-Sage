@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { roundToHundredth, formatPrecision } from '../utils/helpers';
@@ -11,8 +12,9 @@ interface StatsCardProps {
 }
 
 export function StatsCard({ products, sessions, isDark = true }: StatsCardProps) {
-  const { settings } = useSettings();
+  const { settings, toggleStatVisibility } = useSettings();
   const stats = settings.statsVisibility;
+  const [hiddenHint, setHiddenHint] = useState<string | null>(null);
 
   const totalProducts = products.length;
   const totalAmount = roundToHundredth(products.reduce((sum, p) => sum + p.amount, 0));
@@ -78,35 +80,51 @@ export function StatsCard({ products, sessions, isDark = true }: StatsCardProps)
 
   if (visibleStats.length === 0) return null;
 
+  const handleContextMenu = (statKey: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    toggleStatVisibility(statKey as keyof typeof stats);
+    setHiddenHint(statKey);
+    setTimeout(() => setHiddenHint(null), 2000);
+  };
+
   return (
-    <div className={`rounded-2xl transition-all ${
+    <div className={`relative rounded-2xl transition-all ${
       isDark
         ? 'bg-midnight/80 border border-edge'
         : 'bg-white border border-gray-200'
     }`}>
-      <div className="flex flex-wrap gap-px">
+      {hiddenHint && (
+        <div className={`absolute -top-8 left-1/2 -translate-x-1/2 z-10 px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap ${
+          isDark ? 'bg-slate-800 text-cyan-400 border border-slate-700' : 'bg-white text-cyan-600 border border-gray-200'
+        }`}>
+          {t('statHiddenHint', settings.language)}
+        </div>
+      )}
+      <div className="flex flex-wrap gap-3 p-4">
         {visibleStats.map((stat) => {
           const Icon = stat.icon;
           return (
             <div
               key={stat.key}
-              className={`flex-1 min-w-[100px] p-3 text-center transition-all hover:scale-[1.02] ${
+              onContextMenu={(e) => handleContextMenu(stat.key, e)}
+              title={t('rightClickToHide', settings.language)}
+              className={`flex-1 min-w-[140px] p-4 rounded-xl text-center transition-all hover:scale-[1.02] cursor-context-menu ${
                 isDark
-                  ? 'hover:bg-surface/60'
-                  : 'hover:bg-gray-50'
+                  ? 'bg-surface/40 hover:bg-surface/80 border border-transparent hover:border-edge'
+                  : 'bg-gray-50 hover:bg-gray-100 border border-transparent hover:border-gray-200'
               }`}
             >
-              <div className={`w-8 h-8 rounded-lg mx-auto mb-2 flex items-center justify-center ${
+              <div className={`w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center ${
                 isDark ? 'bg-cyanx/10' : 'bg-cyan-50'
               }`}>
-                <Icon className={`w-4 h-4 ${isDark ? 'text-cyanx' : 'text-cyan-600'}`} />
+                <Icon className={`w-5 h-5 ${isDark ? 'text-cyanx' : 'text-cyan-600'}`} />
               </div>
-              <div className={`text-xl font-bold tracking-tight ${
+              <div className={`text-2xl font-bold tracking-tight ${
                 isDark ? 'text-frost' : 'text-gray-900'
               }`}>
                 {stat.value}{stat.suffix}
               </div>
-              <div className={`text-xs mt-0.5 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+              <div className={`text-xs mt-1 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
                 {stat.label}
               </div>
             </div>

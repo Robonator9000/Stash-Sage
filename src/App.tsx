@@ -16,6 +16,7 @@ import { ConsumeModal } from './components/ConsumeModal';
 import { SellModal } from './components/SellModal';
 import { SessionModal } from './components/SessionModal';
 import { SettingsSheet } from './components/SettingsSheet';
+import { CoachMarks } from './components/CoachMarks';
 import { PinModal } from './components/PinModal';
 import { BackgroundCanvas } from './components/BackgroundCanvas';
 import { WelcomeModal } from './components/WelcomeModal';
@@ -435,6 +436,15 @@ export default function App() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
       <BackgroundCanvas isDark={isDark} />
+
+      {!settings.coachMarksDone && (
+        <CoachMarks
+          language={settings.language}
+          isDark={isDark}
+          onComplete={() => updateSettings({ coachMarksDone: true })}
+          onSkip={() => updateSettings({ coachMarksDone: true })}
+        />
+      )}
 
       {/* Header */}
       <header className={`sticky top-0 z-50 border-b ${isDark ? 'bg-[#0b1120]/80 border-border' : 'bg-[#e2e8f0]/80 border-gray-200'} backdrop-blur-xl`}>

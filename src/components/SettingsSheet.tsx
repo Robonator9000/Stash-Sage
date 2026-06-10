@@ -5,7 +5,7 @@ import { t } from '../utils/translations';
 import { hashPin } from '../utils/helpers';
 import { createExportData, downloadExport, downloadCsvExport, copyExportToClipboard, parseImportData, ImportResult } from '../utils/dataTransfer';
 import { exportProductsPdf } from '../utils/pdfExport';
-import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, Users, Scale, RotateCcw, DollarSign, Lock, Hash, AlertTriangle, Shield, Database } from 'lucide-react';
+import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, Users, Scale, DollarSign, Lock, Hash, AlertTriangle, Database } from 'lucide-react';
 
 interface SettingsSheetProps {
   products: Product[];
@@ -214,146 +214,169 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
         <div className="flex-1 overflow-y-auto p-5 space-y-6">
           {activeTab === 'general' && (
             <>
-              {/* Language */}
+              {/* Appearance */}
               <div>
-                <label className={sectionLabel}><Globe className="w-4 h-4" />{t('language', lang)}</label>
-                <div className="relative">
-                  <button
-                    onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
-                    className={`w-full px-4 py-3 rounded-xl border-2 transition-colors text-left flex items-center justify-between ${
-                      isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'
-                    } outline-none`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <span className="text-lg">{LANGUAGES.find(l => l.code === settings.language)?.flag}</span>
-                      {LANGUAGE_NAMES[settings.language]?.[settings.language] || settings.language}
-                    </span>
-                    <ChevronDown className={`w-4 h-4 transition-transform ${showLanguageDropdown ? 'rotate-180' : ''}`} />
-                  </button>
-                  {showLanguageDropdown && (
-                    <div className={`absolute top-full left-0 right-0 mt-2 rounded-xl border-2 shadow-xl z-10 overflow-hidden ${
-                      isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'
+                <p className={`text-xs font-bold uppercase tracking-wider mb-3 ${isDark ? 'text-cyan-400/60' : 'text-cyan-600/60'}`}>
+                  {t('appearance', lang)}
+                </p>
+                {/* Language */}
+                <div className="mb-4">
+                  <label className={sectionLabel}><Globe className="w-4 h-4" />{t('language', lang)}</label>
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
+                      className={`w-full px-4 py-3 rounded-xl border-2 transition-colors text-left flex items-center justify-between ${
+                        isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'
+                      } outline-none`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="text-lg">{LANGUAGES.find(l => l.code === settings.language)?.flag}</span>
+                        {LANGUAGE_NAMES[settings.language]?.[settings.language] || settings.language}
+                      </span>
+                      <ChevronDown className={`w-4 h-4 transition-transform ${showLanguageDropdown ? 'rotate-180' : ''}`} />
+                    </button>
+                    {showLanguageDropdown && (
+                      <div className={`absolute top-full left-0 right-0 mt-2 rounded-xl border-2 shadow-xl z-10 overflow-hidden ${
+                        isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'
+                      }`}>
+                        {LANGUAGES.map((l) => (
+                          <button
+                            key={l.code}
+                            onClick={() => { updateSettings({ language: l.code as typeof settings.language }); setShowLanguageDropdown(false); }}
+                            className={`w-full px-4 py-3 text-left flex items-center justify-between transition-colors ${
+                              settings.language === l.code
+                                ? isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
+                                : isDark ? 'hover:bg-slate-700 text-white' : 'hover:bg-gray-100 text-gray-900'
+                            }`}
+                          >
+                            <span className="flex items-center gap-2">
+                              <span className="text-lg">{l.flag}</span>
+                              {LANGUAGE_NAMES[settings.language]?.[l.code] || l.code}
+                            </span>
+                            {settings.language === l.code && <Check className="w-4 h-4" />}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {/* Theme */}
+                <div>
+                  <label className={sectionLabel}><Palette className="w-4 h-4" />{t('theme', lang)}</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button onClick={() => handleThemeChange('dark')} className={actionButton(settings.theme === 'dark')}>{t('dark', lang)}</button>
+                    <button onClick={() => handleThemeChange('light')} className={actionButton(settings.theme === 'light')}>{t('light', lang)}</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Display */}
+              <div>
+                <p className={`text-xs font-bold uppercase tracking-wider mb-3 mt-6 ${isDark ? 'text-cyan-400/60' : 'text-cyan-600/60'}`}>
+                  {t('display', lang)}
+                </p>
+                {/* Decimal Precision */}
+                <div className="mb-4">
+                  <label className={sectionLabel}><Hash className="w-4 h-4" />{t('decimalPrecision', lang)}</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[0, 1, 2, 3].map(p => (
+                      <button key={p} onClick={() => updateSettings({ decimalPrecision: p })}
+                        className={`py-3 rounded-xl text-sm font-bold transition-all border-2 ${
+                          settings.decimalPrecision === p
+                            ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
+                            : isDark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
+                                    : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
+                        }`}>{p}</button>
+                    ))}
+                  </div>
+                </div>
+                {/* Show Timer Ms */}
+                <div className={`flex items-center justify-between p-3 rounded-xl border-2 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
+                  <div>
+                    <span className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{t('showTimerMs', lang)}</span>
+                    <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('showTimerMsHint', lang)}</p>
+                  </div>
+                  <button onClick={() => updateSettings({ showTimerMs: !settings.showTimerMs })}
+                    className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${
+                      settings.showTimerMs ? 'bg-gradient-to-r from-cyan-500 to-emerald-500' : isDark ? 'bg-slate-600' : 'bg-gray-300'
                     }`}>
-                      {LANGUAGES.map((l) => (
-                        <button
-                          key={l.code}
-                          onClick={() => { updateSettings({ language: l.code as typeof settings.language }); setShowLanguageDropdown(false); }}
-                          className={`w-full px-4 py-3 text-left flex items-center justify-between transition-colors ${
-                            settings.language === l.code
+                    <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform shadow ${
+                      settings.showTimerMs ? 'translate-x-[1.375rem]' : 'translate-x-0.5'
+                    }`} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Finance */}
+              <div>
+                <p className={`text-xs font-bold uppercase tracking-wider mb-3 mt-6 ${isDark ? 'text-cyan-400/60' : 'text-cyan-600/60'}`}>
+                  {t('finance', lang)}
+                </p>
+                {/* Currency */}
+                <div className="mb-4">
+                  <label className={sectionLabel}><DollarSign className="w-4 h-4" />{t('currency', lang)}</label>
+                  <div className="grid grid-cols-5 gap-2">
+                    {['$', '\u20ac', '\u00a3', '\u00a5', '\u20bf'].map((sym) => (
+                      <button key={sym} onClick={() => handleCurrencyChange(sym)}
+                        className={`py-3 rounded-xl text-lg font-bold transition-all border-2 ${
+                          settings.currency === sym
+                            ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
+                            : isDark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
+                                    : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
+                        }`}>{sym}</button>
+                    ))}
+                  </div>
+                </div>
+                {/* Budget Limit */}
+                <div>
+                  <label className={sectionLabel}><DollarSign className="w-4 h-4" />{t('budgetLimit', lang)}</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <input type="number" value={settings.budgetLimit || ''}
+                      onChange={(e) => updateSettings({ budgetLimit: Math.max(0, parseFloat(e.target.value) || 0) })}
+                      min="0" step="10" placeholder="0 = disabled"
+                      className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none ${
+                        isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
+                               : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
+                      }`} />
+                    <div className={`flex rounded-xl border-2 overflow-hidden ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
+                      {(['weekly', 'monthly', 'yearly'] as const).map(period => (
+                        <button key={period} onClick={() => updateSettings({ budgetPeriod: period })}
+                          className={`flex-1 py-3 text-xs font-medium transition-colors ${
+                            settings.budgetPeriod === period
                               ? isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
-                              : isDark ? 'hover:bg-slate-700 text-white' : 'hover:bg-gray-100 text-gray-900'
-                          }`}
-                        >
-                          <span className="flex items-center gap-2">
-                            <span className="text-lg">{l.flag}</span>
-                            {LANGUAGE_NAMES[settings.language]?.[l.code] || l.code}
-                          </span>
-                          {settings.language === l.code && <Check className="w-4 h-4" />}
-                        </button>
+                              : isDark ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                          }`}>{period}</button>
                       ))}
                     </div>
-                  )}
+                  </div>
+                  <p className={`text-xs mt-2 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('budgetLimitHint', lang)}</p>
                 </div>
               </div>
 
-              {/* Theme */}
+              {/* Notifications */}
               <div>
-                <label className={sectionLabel}><Palette className="w-4 h-4" />{t('theme', lang)}</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => handleThemeChange('dark')} className={actionButton(settings.theme === 'dark')}>{t('dark', lang)}</button>
-                  <button onClick={() => handleThemeChange('light')} className={actionButton(settings.theme === 'light')}>{t('light', lang)}</button>
-                </div>
-              </div>
-
-              {/* Currency */}
-              <div>
-                <label className={sectionLabel}><DollarSign className="w-4 h-4" />{t('currency', lang)}</label>
-                <div className="grid grid-cols-5 gap-2">
-                  {['$', '\u20ac', '\u00a3', '\u00a5', '\u20bf'].map((sym) => (
-                    <button key={sym} onClick={() => handleCurrencyChange(sym)}
-                      className={`py-3 rounded-xl text-lg font-bold transition-all border-2 ${
-                        settings.currency === sym
-                          ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
-                          : isDark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
-                                  : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
-                      }`}>{sym}</button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Decimal Precision */}
-              <div>
-                <label className={sectionLabel}><Hash className="w-4 h-4" />{t('decimalPrecision', lang)}</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {[0, 1, 2, 3].map(p => (
-                    <button key={p} onClick={() => updateSettings({ decimalPrecision: p })}
-                      className={`py-3 rounded-xl text-sm font-bold transition-all border-2 ${
-                        settings.decimalPrecision === p
-                          ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
-                          : isDark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
-                                  : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
-                      }`}>{p}</button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Low Stock Threshold */}
-              <div>
-                <label className={sectionLabel}><AlertTriangle className="w-4 h-4" />{t('lowStockThreshold', lang)}</label>
-                <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('lowStockThresholdHint', lang)}</p>
-                <input type="number" value={settings.lowStockThreshold}
-                  onChange={(e) => updateSettings({ lowStockThreshold: Math.max(0, parseFloat(e.target.value) || 0) })}
-                  min="0" step="0.5"
-                  className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none ${
-                    isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
-                           : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-                  }`} />
-              </div>
-
-              {/* Show Timer Ms */}
-              <div className={`flex items-center justify-between p-3 rounded-xl border-2 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
+                <p className={`text-xs font-bold uppercase tracking-wider mb-3 mt-6 ${isDark ? 'text-cyan-400/60' : 'text-cyan-600/60'}`}>
+                  {t('notifications', lang)}
+                </p>
+                {/* Low Stock Threshold */}
                 <div>
-                  <span className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{t('showTimerMs', lang)}</span>
-                  <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('showTimerMsHint', lang)}</p>
-                </div>
-                <button onClick={() => updateSettings({ showTimerMs: !settings.showTimerMs })}
-                  className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${
-                    settings.showTimerMs ? 'bg-gradient-to-r from-cyan-500 to-emerald-500' : isDark ? 'bg-slate-600' : 'bg-gray-300'
-                  }`}>
-                  <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform shadow ${
-                    settings.showTimerMs ? 'translate-x-[1.375rem]' : 'translate-x-0.5'
-                  }`} />
-                </button>
-              </div>
-
-              {/* Budget Limit */}
-              <div>
-                <label className={sectionLabel}><DollarSign className="w-4 h-4" />{t('budgetLimit', lang)}</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <input type="number" value={settings.budgetLimit || ''}
-                    onChange={(e) => updateSettings({ budgetLimit: Math.max(0, parseFloat(e.target.value) || 0) })}
-                    min="0" step="10" placeholder="0 = disabled"
+                  <label className={sectionLabel}><AlertTriangle className="w-4 h-4" />{t('lowStockThreshold', lang)}</label>
+                  <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('lowStockThresholdHint', lang)}</p>
+                  <input type="number" value={settings.lowStockThreshold}
+                    onChange={(e) => updateSettings({ lowStockThreshold: Math.max(0, parseFloat(e.target.value) || 0) })}
+                    min="0" step="0.5"
                     className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none ${
                       isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
                              : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
                     }`} />
-                  <div className={`flex rounded-xl border-2 overflow-hidden ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
-                    {(['weekly', 'monthly', 'yearly'] as const).map(period => (
-                      <button key={period} onClick={() => updateSettings({ budgetPeriod: period })}
-                        className={`flex-1 py-3 text-xs font-medium transition-colors ${
-                          settings.budgetPeriod === period
-                            ? isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
-                            : isDark ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
-                        }`}>{period}</button>
-                    ))}
-                  </div>
                 </div>
-                <p className={`text-xs mt-2 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('budgetLimitHint', lang)}</p>
               </div>
 
               {/* Session Defaults */}
               <div>
-                <label className={sectionLabel}><RotateCcw className="w-4 h-4" />{t('sessionDefaults', lang)}</label>
+                <p className={`text-xs font-bold uppercase tracking-wider mb-3 mt-6 ${isDark ? 'text-cyan-400/60' : 'text-cyan-600/60'}`}>
+                  {t('sessionDefaults', lang)}
+                </p>
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -423,7 +446,9 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
 
               {/* Stats Visibility */}
               <div>
-                <label className={sectionLabel}><Shield className="w-4 h-4" />{t('showStats', lang)}</label>
+                <p className={`text-xs font-bold uppercase tracking-wider mb-3 mt-6 ${isDark ? 'text-cyan-400/60' : 'text-cyan-600/60'}`}>
+                  {t('showStats', lang)}
+                </p>
                 <div className="grid grid-cols-2 gap-2">
                   {statOptions.map((stat) => (
                     <button key={stat.key} onClick={() => handleStatToggle(stat.key)}

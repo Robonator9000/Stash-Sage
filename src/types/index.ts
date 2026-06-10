@@ -27,6 +27,7 @@ export interface Settings {
   theme: 'dark' | 'light';
   themeAuto: boolean;
   onboardingDone: boolean;
+  coachMarksDone?: boolean;
   currency: string;
   statsVisibility: {
     totalProducts: boolean;

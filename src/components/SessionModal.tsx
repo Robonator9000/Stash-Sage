@@ -79,7 +79,7 @@ export function SessionModal({
     return () => clearInterval(interval);
   }, [isTimerRunning, timerSeconds, settings.showTimerMs]);
 
-  // Separate effect: when timer hits zero, handle the hit
+  // Separate effect: when timer hits zero, handle the hit and auto-restart in rotation mode
   const handleHitRef = useRef(handleHit);
   handleHitRef.current = handleHit;
   const customTimerDurationRef = useRef(customTimerDuration);
@@ -87,7 +87,6 @@ export function SessionModal({
 
   useEffect(() => {
     if (isTimerRunning && timerSeconds <= 0) {
-      setIsTimerRunning(false);
       handleHitRef.current();
       setTimerSeconds(customTimerDurationRef.current);
       setTimerMs(0);
