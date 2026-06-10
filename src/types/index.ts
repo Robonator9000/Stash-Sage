@@ -57,6 +57,7 @@ export interface Settings {
   lowStockThreshold: number;
   budgetLimit: number;
   budgetPeriod: 'weekly' | 'monthly' | 'yearly';
+  settingsVersion?: number;
 }
 
 export interface Session {

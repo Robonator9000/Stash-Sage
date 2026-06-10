@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Product } from '../types';
-import { parseProductDates, safeSetItem } from './helpers';
+import { parseProductDates, safeSetItem, roundToHundredth } from './helpers';
 
 const PRODUCTS_KEY = 'weed-products';
 
@@ -47,7 +47,7 @@ export function useProducts() {
         p.id === id
           ? {
               ...p,
-              amount: Math.max(0, p.amount - amountConsumed),
+              amount: roundToHundredth(Math.max(0, p.amount - amountConsumed)),
               consumptionCount: (p.consumptionCount || 0) + 1,
               lastConsumed: consumedAt || new Date(),
             }

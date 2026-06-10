@@ -6,7 +6,7 @@ import { useSettings } from './utils/useSettings';
 import { useDebounce } from './hooks/useDebounce';
 import { useActivity } from './utils/useActivity';
 import { ImportResult } from './utils/dataTransfer';
-import { searchProducts, sortProducts, filterProducts, generateId, formatPrecision } from './utils/helpers';
+import { searchProducts, sortProducts, filterProducts, generateId, formatPrecision, roundToHundredth } from './utils/helpers';
 import { t } from './utils/translations';
 import { playSmokeSound, playSellSound } from './utils/sounds';
 import { ToastContainer, showToast } from './components/Toast';
@@ -186,7 +186,7 @@ export default function App() {
   };
 
   const checkLowStock = useCallback((product: Product, deducted: number) => {
-    const newAmount = Math.max(0, product.amount - deducted);
+    const newAmount = Math.max(0, roundToHundredth(product.amount - deducted));
     const lng = settings.language;
     if (settings.lowStockThreshold > 0 && newAmount > 0 && newAmount <= settings.lowStockThreshold) {
       showToast({
@@ -557,7 +557,7 @@ export default function App() {
       <div className="max-w-7xl mx-auto px-4 py-4">
         {/* Tab bar */}
         <div className="flex items-center mb-4">
-          <div className={`flex w-full items-center gap-1 p-1 rounded-xl ${isDark ? 'bg-surface' : 'bg-gray-100'}`}>
+          <div className={`flex w-full items-center gap-0 ${isDark ? '' : ''}`}>
             {[
               { id: 'inventory', label: t('inventory', lang), icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
               { id: 'dashboard', label: t('dashboard', lang), icon: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z' },
@@ -566,15 +566,18 @@ export default function App() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as 'inventory' | 'dashboard' | 'history')}
-                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                className={`flex-1 flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium transition-all duration-200 relative
                   ${activeTab === tab.id
-                    ? 'bg-gradient-to-r from-cyanx to-emera text-white'
+                    ? isDark ? 'text-cyan-400' : 'text-cyan-600'
                     : isDark ? 'text-mist hover:text-frost' : 'text-gray-600 hover:text-gray-900'}`}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d={tab.icon} />
                 </svg>
                 {tab.label}
+                {activeTab === tab.id && (
+                  <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-cyanx to-emera rounded-full" />
+                )}
               </button>
             ))}
           </div>
@@ -1158,6 +1161,11 @@ export default function App() {
 
       {/* Toast */}
       <ToastContainer isDark={isDark} />
+
+      {/* Footer */}
+      <footer className={`text-center py-6 text-xs font-medium tracking-widest uppercase ${isDark ? 'text-slate-700' : 'text-gray-300'}`}>
+        STASH TRACKER
+      </footer>
 
       {/* Animations */}
       {showSmoke && (

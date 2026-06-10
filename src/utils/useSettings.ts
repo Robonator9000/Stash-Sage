@@ -4,6 +4,8 @@ import { safeSetItem } from './helpers';
 
 const SETTINGS_KEY = 'weed-settings';
 
+const SETTINGS_VERSION = 1;
+
 const defaultSettings: Settings = {
   language: 'en',
   theme: 'dark',
@@ -39,6 +41,7 @@ const defaultSettings: Settings = {
   lowStockThreshold: 0,
   budgetLimit: 0,
   budgetPeriod: 'monthly',
+  settingsVersion: SETTINGS_VERSION,
 };
 
 function loadSettings(): Settings {
@@ -46,12 +49,18 @@ function loadSettings(): Settings {
     const saved = localStorage.getItem(SETTINGS_KEY);
     if (!saved) return { ...defaultSettings };
     const parsed = JSON.parse(saved);
-    return {
+    const merged = {
       ...defaultSettings,
       ...parsed,
       sessionDefaults: { ...defaultSettings.sessionDefaults, ...parsed.sessionDefaults },
       statsVisibility: { ...defaultSettings.statsVisibility, ...parsed.statsVisibility },
     };
+    if (!parsed.settingsVersion || parsed.settingsVersion < SETTINGS_VERSION) {
+      merged.budgetLimit = 0;
+      merged.lowStockThreshold = 0;
+      merged.settingsVersion = SETTINGS_VERSION;
+    }
+    return merged;
   } catch {
     return { ...defaultSettings };
   }
