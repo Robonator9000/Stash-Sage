@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Session } from '../types';
 import { t } from '../utils/translations';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface CalendarHeatmapProps {
   sessions: Session[];
@@ -21,11 +22,18 @@ function getIntensity(value: number, max: number): number {
 }
 
 export function CalendarHeatmap({ sessions, isDark = true, lang = 'en' }: CalendarHeatmapProps) {
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+
   const { weeks, maxAmount } = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const startDate = new Date(today);
-    startDate.setDate(startDate.getDate() - 363);
+    const yearStart = new Date(selectedYear, 0, 1);
+    const yearEnd = new Date(selectedYear, 11, 31);
+    const endDate = yearEnd < today ? yearEnd : today;
+    endDate.setHours(0, 0, 0, 0);
+
+    const startDate = new Date(yearStart);
+    startDate.setHours(0, 0, 0, 0);
 
     const dayMap = new Map<string, number>();
     sessions.forEach((s) => {
@@ -46,7 +54,7 @@ export function CalendarHeatmap({ sessions, isDark = true, lang = 'en' }: Calend
       currentWeek.push({ date: d, amount: 0 });
     }
 
-    for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
       const key = d.toISOString().slice(0, 10);
       const amount = dayMap.get(key) || 0;
       if (amount > max) max = amount;
@@ -68,7 +76,7 @@ export function CalendarHeatmap({ sessions, isDark = true, lang = 'en' }: Calend
     }
 
     return { weeks: grid, maxAmount: max };
-  }, [sessions]);
+  }, [sessions, selectedYear]);
 
   const monthLabels = useMemo(() => {
     const labels: { index: number; label: string }[] = [];
@@ -94,9 +102,29 @@ export function CalendarHeatmap({ sessions, isDark = true, lang = 'en' }: Calend
 
   return (
     <div className={`rounded-2xl p-5 border ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
-      <h3 className={`text-sm font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-        {t('activity', lang)}
-      </h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          {t('activity', lang)}
+        </h3>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setSelectedYear(y => y - 1)}
+            className={`p-1 rounded-lg transition-colors ${isDark ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`}
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <span className={`text-xs font-medium px-2 ${isDark ? 'text-slate-300' : 'text-gray-600'}`}>
+            {selectedYear}
+          </span>
+          <button
+            onClick={() => setSelectedYear(y => Math.min(y + 1, currentYear))}
+            disabled={selectedYear >= currentYear}
+            className={`p-1 rounded-lg transition-colors ${selectedYear >= currentYear ? 'opacity-30 cursor-not-allowed' : ''} ${isDark ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`}
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
 
       {/* Month labels */}
       <div className="flex ml-8 mb-1 overflow-hidden">

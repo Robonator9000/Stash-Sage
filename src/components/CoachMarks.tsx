@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { t } from '../utils/translations';
 import { Plus, BarChart3, Search, Settings } from 'lucide-react';
 
@@ -7,75 +7,77 @@ interface CoachMarksProps {
   isDark: boolean;
   onComplete: () => void;
   onSkip: () => void;
+  onOpenSettings: () => void;
 }
 
 const STEPS = [
-  { icon: Plus, titleKey: 'coachAddTitle', descKey: 'coachAddDesc', position: 'top-right' as const },
-  { icon: BarChart3, titleKey: 'coachStatsTitle', descKey: 'coachStatsDesc', position: 'top-center' as const },
-  { icon: Search, titleKey: 'coachSearchTitle', descKey: 'coachSearchDesc', position: 'center' as const },
-  { icon: Settings, titleKey: 'coachSettingsTitle', descKey: 'coachSettingsDesc', position: 'top-right-2' as const },
+  { icon: Plus, titleKey: 'coachAddTitle', descKey: 'coachAddDesc', target: '[data-coach="add-btn"]', arrowDir: 'top' as const },
+  { icon: BarChart3, titleKey: 'coachStatsTitle', descKey: 'coachStatsDesc', target: '[data-coach="stats"]', arrowDir: 'top' as const },
+  { icon: Search, titleKey: 'coachSearchTitle', descKey: 'coachSearchDesc', target: '[data-coach="search"]', arrowDir: 'top' as const },
+  { icon: Settings, titleKey: 'coachSettingsTitle', descKey: 'coachSettingsDesc', target: '[data-coach="settings"]', arrowDir: 'top' as const },
 ];
 
-function getPositionClasses(position: string) {
-  switch (position) {
-    case 'top-right':
-      return 'top-20 right-6';
-    case 'top-right-2':
-      return 'top-20 right-20';
-    case 'top-center':
-      return 'top-48 left-1/2 -translate-x-1/2';
-    case 'center':
-      return 'top-72 left-1/2 -translate-x-1/2';
-    default:
-      return 'top-1/2 left-1/2';
-  }
-}
-
-function getArrowStyle(position: string) {
-  switch (position) {
-    case 'top-right':
-      return { top: '-6px', right: '30px', borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '6px solid' };
-    case 'top-right-2':
-      return { top: '-6px', right: '24px', borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '6px solid' };
-    case 'top-center':
-      return { top: '-6px', left: '50%', marginLeft: '-6px', borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '6px solid' };
-    case 'center':
-      return { top: '-6px', left: '50%', marginLeft: '-6px', borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '6px solid' };
-    default:
-      return {};
-  }
-}
-
-export function CoachMarks({ language, isDark, onComplete, onSkip }: CoachMarksProps) {
+export function CoachMarks({ language, isDark, onComplete, onSkip, onOpenSettings }: CoachMarksProps) {
   const [step, setStep] = useState(0);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
   const current = STEPS[step];
   const Icon = current.icon;
   const isLast = step === STEPS.length - 1;
 
+  const updatePosition = useCallback(() => {
+    const el = document.querySelector(current.target) as HTMLElement | null;
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      setPos({
+        top: rect.bottom + 8,
+        left: Math.max(8, Math.min(rect.left + rect.width / 2 - 144, window.innerWidth - 296)),
+      });
+    }
+  }, [current.target]);
+
+  useEffect(() => {
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    return () => window.removeEventListener('resize', updatePosition);
+  }, [updatePosition]);
+
+  const handleNext = () => {
+    if (isLast) {
+      onComplete();
+      onOpenSettings();
+    } else {
+      setStep(step + 1);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[150] pointer-events-none">
-      {/* Dim overlay */}
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
 
-      {/* Coach mark card */}
       <div
-        className={`pointer-events-auto absolute ${getPositionClasses(current.position)} w-72 p-4 rounded-xl shadow-2xl border-2 transition-all ${
+        className={`pointer-events-auto absolute w-72 p-4 rounded-xl shadow-2xl border-2 transition-all ${
           isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'
         }`}
+        style={{ top: pos.top, left: pos.left }}
       >
         {/* Arrow */}
         <div
           className="absolute w-0 h-0"
           style={{
-            ...getArrowStyle(current.position),
+            top: '-6px', left: '50%', marginLeft: '-6px',
+            borderLeft: '6px solid transparent',
+            borderRight: '6px solid transparent',
+            borderBottom: '6px solid',
             borderBottomColor: isDark ? '#334155' : '#e5e7eb',
           }}
         />
         <div
           className="absolute w-0 h-0"
           style={{
-            ...getArrowStyle(current.position),
-            top: '-5px',
+            top: '-5px', left: '50%', marginLeft: '-6px',
+            borderLeft: '6px solid transparent',
+            borderRight: '6px solid transparent',
+            borderBottom: '6px solid',
             borderBottomColor: isDark ? '#0f172a' : '#ffffff',
           }}
         />
@@ -96,7 +98,6 @@ export function CoachMarks({ language, isDark, onComplete, onSkip }: CoachMarksP
           </div>
         </div>
 
-        {/* Progress dots */}
         <div className="flex items-center justify-center gap-1.5 mb-3">
           {STEPS.map((_, idx) => (
             <div key={idx} className={`w-1.5 h-1.5 rounded-full transition-all ${
@@ -116,13 +117,7 @@ export function CoachMarks({ language, isDark, onComplete, onSkip }: CoachMarksP
           </button>
           <div className="flex-1" />
           <button
-            onClick={() => {
-              if (isLast) {
-                onComplete();
-              } else {
-                setStep(step + 1);
-              }
-            }}
+            onClick={handleNext}
             className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
               isDark
                 ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white'

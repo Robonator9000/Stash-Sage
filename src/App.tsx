@@ -8,6 +8,7 @@ import { useActivity } from './utils/useActivity';
 import { ImportResult } from './utils/dataTransfer';
 import { searchProducts, sortProducts, filterProducts, generateId, formatPrecision } from './utils/helpers';
 import { t } from './utils/translations';
+import { playSmokeSound, playSellSound } from './utils/sounds';
 import { ToastContainer, showToast } from './components/Toast';
 import { ProductGrid } from './components/ProductGrid';
 import { StatsCard } from './components/StatsCard';
@@ -207,6 +208,7 @@ export default function App() {
       });
       setSellingProduct(null);
       setShowDollar(true);
+      playSellSound();
       setTimeout(() => setShowDollar(false), 1600);
     }
   }, [sellingProduct, consumeProduct, checkLowStock, addActivityEntry]);
@@ -225,6 +227,7 @@ export default function App() {
         setSessionPeople(people);
       } else {
         setShowSmoke(true);
+        playSmokeSound();
         setTimeout(() => setShowSmoke(false), 1200);
       }
     }
@@ -443,6 +446,7 @@ export default function App() {
           isDark={isDark}
           onComplete={() => updateSettings({ coachMarksDone: true })}
           onSkip={() => updateSettings({ coachMarksDone: true })}
+          onOpenSettings={() => setIsSettingsOpen(true)}
         />
       )}
 
@@ -470,6 +474,7 @@ export default function App() {
                 onFocus={() => setShowSearchPreview(true)}
                 onBlur={() => setTimeout(() => setShowSearchPreview(false), 200)}
                 placeholder={t('searchPlaceholder', lang)}
+                data-coach="search"
                 className={`w-full pl-10 pr-4 py-1.5 rounded-xl text-sm border transition-all outline-none
                   ${isDark
                     ? 'bg-midnight/80 border border-edge text-white placeholder-muted focus:border-cyan-500'
@@ -510,6 +515,7 @@ export default function App() {
           {/* Buttons */}
           <div className="flex items-center gap-2 shrink-0">
             <button
+              data-coach="add-btn"
               onClick={() => setIsAddModalOpen(true)}
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all shadow-lg shadow-cyanx/20"
             >
@@ -519,6 +525,7 @@ export default function App() {
               {t('addProduct', lang)}
             </button>
             <button
+              data-coach="settings"
               onClick={() => setIsSettingsOpen(true)}
               className={`p-2 rounded-xl transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}
             >
@@ -575,7 +582,7 @@ export default function App() {
         {/* ==================== INVENTORY TAB ==================== */}
         {activeTab === 'inventory' && (
           <div>
-            <div className="mb-5">
+            <div className="mb-5" data-coach="stats">
               <StatsCard products={products} sessions={sessions} isDark={isDark} />
             </div>
 

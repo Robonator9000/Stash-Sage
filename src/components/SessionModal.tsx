@@ -3,6 +3,7 @@ import { Product, Session } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { useModalAnimation } from '../hooks/useModalAnimation';
 import { t } from '../utils/translations';
+import { playSessionBeep } from '../utils/sounds';
 import { X, Users, Clock, Play, Pause, RotateCcw, Calculator, ArrowRight } from 'lucide-react';
 import { formatPrecision } from '../utils/helpers';
 
@@ -90,6 +91,7 @@ export function SessionModal({
       handleHitRef.current();
       setTimerSeconds(customTimerDurationRef.current);
       setTimerMs(0);
+      playSessionBeep();
     }
   }, [isTimerRunning, timerSeconds]);
 

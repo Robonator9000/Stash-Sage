@@ -36,7 +36,7 @@ const defaultSettings: Settings = {
     defaultGramsPerBowl: 0.25,
     rotationEnabled: true,
   },
-  lowStockThreshold: 3,
+  lowStockThreshold: 0,
   budgetLimit: 0,
   budgetPeriod: 'monthly',
 };

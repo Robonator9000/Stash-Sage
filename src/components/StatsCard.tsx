@@ -100,7 +100,7 @@ export function StatsCard({ products, sessions, isDark = true }: StatsCardProps)
           {t('statHiddenHint', settings.language)}
         </div>
       )}
-      <div className="flex flex-wrap gap-3 p-4">
+      <div className="flex flex-wrap gap-2 p-3">
         {visibleStats.map((stat) => {
           const Icon = stat.icon;
           return (
@@ -108,23 +108,23 @@ export function StatsCard({ products, sessions, isDark = true }: StatsCardProps)
               key={stat.key}
               onContextMenu={(e) => handleContextMenu(stat.key, e)}
               title={t('rightClickToHide', settings.language)}
-              className={`flex-1 min-w-[140px] p-4 rounded-xl text-center transition-all hover:scale-[1.02] cursor-context-menu ${
+              className={`flex-1 min-w-[100px] p-3 rounded-xl text-center transition-all hover:scale-[1.02] cursor-context-menu ${
                 isDark
                   ? 'bg-surface/40 hover:bg-surface/80 border border-transparent hover:border-edge'
                   : 'bg-gray-50 hover:bg-gray-100 border border-transparent hover:border-gray-200'
               }`}
             >
-              <div className={`w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center ${
+              <div className={`w-8 h-8 rounded-lg mx-auto mb-2 flex items-center justify-center ${
                 isDark ? 'bg-cyanx/10' : 'bg-cyan-50'
               }`}>
-                <Icon className={`w-5 h-5 ${isDark ? 'text-cyanx' : 'text-cyan-600'}`} />
+                <Icon className={`w-4 h-4 ${isDark ? 'text-cyanx' : 'text-cyan-600'}`} />
               </div>
-              <div className={`text-2xl font-bold tracking-tight ${
+              <div className={`text-lg font-bold tracking-tight ${
                 isDark ? 'text-frost' : 'text-gray-900'
               }`}>
                 {stat.value}{stat.suffix}
               </div>
-              <div className={`text-xs mt-1 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+              <div className={`text-[11px] mt-0.5 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
                 {stat.label}
               </div>
             </div>
