@@ -188,26 +188,26 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
         </div>
 
         {/* Tabs */}
-        <div className={`flex border-b shrink-0 overflow-x-auto ${isDark ? 'border-slate-800' : 'border-gray-200'}`}>
+        <div className={`flex flex-wrap border-b shrink-0 ${isDark ? 'border-slate-800' : 'border-gray-200'}`}>
           {([
             { id: 'personalization', icon: Palette, label: t('personalization', lang) },
             { id: 'session', icon: Clock, label: t('sessionDefaults', lang) },
-            { id: 'stats', icon: /*ChartBar*/BarChart3, label: t('showStats', lang) },
+            { id: 'stats', icon: BarChart3, label: t('showStats', lang) },
             { id: 'data', icon: Database, label: t('dataBackup', lang) },
             { id: 'security', icon: Lock, label: t('pinLock', lang) },
           ] as const).map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`flex-1 py-3 text-sm font-medium transition-colors relative whitespace-nowrap ${
+              className={`flex-1 min-w-[33.33%] py-2.5 text-xs font-medium transition-colors relative ${
                 activeTab === tab.id
                   ? isDark ? 'text-cyan-400' : 'text-cyan-600'
                   : isDark ? 'text-slate-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'
               }`}
             >
-              <span className="flex items-center justify-center gap-1.5">
-                <tab.icon className="w-3.5 h-3.5" />
-                {tab.label.length > 8 ? tab.label.slice(0, 8) + '…' : tab.label}
+              <span className="flex flex-col items-center gap-0.5">
+                <tab.icon className="w-4 h-4" />
+                <span className="leading-tight">{tab.label}</span>
               </span>
               {activeTab === tab.id && (
                 <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-full" />
@@ -323,7 +323,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               <div className="mb-4">
                 <label className={sectionLabel}><DollarSign className="w-4 h-4" />{t('budgetLimit', lang)}</label>
                 <div className="grid grid-cols-2 gap-3">
-                  <input type="number" value={settings.budgetLimit || ''}
+                  <input type="number" value={settings.budgetLimit}
                     onChange={(e) => updateSettings({ budgetLimit: Math.max(0, parseFloat(e.target.value) || 0) })}
                     min="0" step="10" placeholder="0 = disabled"
                     className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none ${

@@ -227,7 +227,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
                 {t('amount', lang)}:
               </span>
               <span className={`font-bold ${isDark ? 'text-frost' : 'text-gray-900'}`}>
-                {formatPrecision(Math.max(0, product.amount - amount), settings.decimalPrecision)}g
+                {formatPrecision(Math.max(0, roundToHundredth(product.amount - amount)), settings.decimalPrecision)}g
               </span>
             </div>
           </div>

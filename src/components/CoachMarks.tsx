@@ -8,6 +8,7 @@ interface CoachMarksProps {
   onComplete: () => void;
   onSkip: () => void;
   onOpenSettings: () => void;
+  onCloseSettings: () => void;
 }
 
 const STEPS = [
@@ -17,7 +18,7 @@ const STEPS = [
   { icon: Settings, titleKey: 'coachSettingsTitle', descKey: 'coachSettingsDesc', target: '[data-coach="settings"]', arrowDir: 'top' as const },
 ];
 
-export function CoachMarks({ language, isDark, onComplete, onSkip, onOpenSettings }: CoachMarksProps) {
+export function CoachMarks({ language, isDark, onComplete, onSkip, onOpenSettings, onCloseSettings }: CoachMarksProps) {
   const [step, setStep] = useState(0);
   const [pos, setPos] = useState({ top: 0, left: 0 });
   const current = STEPS[step];
@@ -41,13 +42,24 @@ export function CoachMarks({ language, isDark, onComplete, onSkip, onOpenSetting
     return () => window.removeEventListener('resize', updatePosition);
   }, [updatePosition]);
 
+  useEffect(() => {
+    if (step === 2) {
+      onOpenSettings();
+    }
+  }, [step, onOpenSettings]);
+
   const handleNext = () => {
     if (isLast) {
+      onCloseSettings();
       onComplete();
-      onOpenSettings();
     } else {
       setStep(step + 1);
     }
+  };
+
+  const handleSkipAll = () => {
+    onCloseSettings();
+    onSkip();
   };
 
   return (
@@ -108,7 +120,7 @@ export function CoachMarks({ language, isDark, onComplete, onSkip, onOpenSetting
 
         <div className="flex items-center gap-2">
           <button
-            onClick={onSkip}
+            onClick={handleSkipAll}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
               isDark ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100'
             }`}

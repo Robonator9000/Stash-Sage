@@ -447,6 +447,7 @@ export default function App() {
           onComplete={() => updateSettings({ coachMarksDone: true })}
           onSkip={() => updateSettings({ coachMarksDone: true })}
           onOpenSettings={() => setIsSettingsOpen(true)}
+          onCloseSettings={() => setIsSettingsOpen(false)}
         />
       )}
 
