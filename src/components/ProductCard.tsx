@@ -22,12 +22,26 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavorite, isDark = true, layout = 'grid', precision = 2, isSelectMode = false, selected = false, onToggleSelect }: ProductCardProps) {
-  const { settings } = useSettings();
+  const { settings, updateSettings } = useSettings();
   const amountString = `${formatPrecision(product.amount, precision)}g`;
   const lang = settings.language;
 
   const [strainHovered, setStrainHovered] = useState(false);
   const [amountHovered, setAmountHovered] = useState(false);
+  const [pickingStrain, setPickingStrain] = useState<string | null>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const COLOR_PRESETS = ['#a855f7', '#f59e0b', '#10b981', '#ef4444', '#3b82f6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16'];
+
+  useEffect(() => {
+    if (!pickingStrain) return;
+    const handler = (e: MouseEvent) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+        setPickingStrain(null);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [pickingStrain]);
   const [showOz, setShowOz] = useState(false);
   const ozTimer = useRef<ReturnType<typeof setTimeout>>();
 
@@ -36,28 +50,25 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
   }, []);
 
   const getStrainColor = (strainType: string) => {
+    const custom = settings.customStrainColors?.[strainType];
+    if (custom && /^#[0-9a-f]{6}$/i.test(custom)) {
+      return { bg: '', text: '', border: '', customHex: custom };
+    }
     switch (strainType.toLowerCase()) {
       case 'indica':
-        return { bg: isDark ? 'bg-purple-500/15' : 'bg-purple-100', text: 'text-purple-400', border: 'border-purple-500/30' };
+        return { bg: isDark ? 'bg-purple-500/15' : 'bg-purple-100', text: 'text-purple-400', border: 'border-purple-500/30', customHex: '' };
       case 'sativa':
-        return { bg: isDark ? 'bg-amberx/15' : 'bg-amber-100', text: 'text-amberx', border: 'border-amberx/30' };
+        return { bg: isDark ? 'bg-amberx/15' : 'bg-amber-100', text: 'text-amberx', border: 'border-amberx/30', customHex: '' };
       case 'hybrid':
-        return { bg: isDark ? 'bg-emera/15' : 'bg-emerald-100', text: 'text-emera', border: 'border-emera/30' };
+        return { bg: isDark ? 'bg-emera/15' : 'bg-emerald-100', text: 'text-emera', border: 'border-emera/30', customHex: '' };
       default:
-        return { bg: isDark ? 'bg-mist/15' : 'bg-gray-100', text: 'text-mist', border: 'border-mist/30' };
+        return { bg: isDark ? 'bg-mist/15' : 'bg-gray-100', text: 'text-mist', border: 'border-mist/30', customHex: '' };
     }
   };
 
   const strainColors = getStrainColor(product.type);
 
   const highlight = (() => {
-    const known: Record<string, { borderClass: string; glowRgb: string }> = {
-      indica: { borderClass: 'border-purple-500/50', glowRgb: 'rgba(168,85,247,0.35)' },
-      sativa: { borderClass: 'border-amberx/50', glowRgb: 'rgba(245,158,11,0.35)' },
-      hybrid: { borderClass: 'border-emera/50', glowRgb: 'rgba(16,185,129,0.35)' },
-    };
-    const hit = known[product.type.toLowerCase()];
-    if (hit) return hit;
     const hex = settings.customStrainColors?.[product.type];
     if (hex && /^#[0-9a-f]{6}$/i.test(hex)) {
       const r = parseInt(hex.slice(1, 3), 16);
@@ -65,6 +76,13 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
       const b = parseInt(hex.slice(5, 7), 16);
       return { borderClass: '', glowRgb: `rgba(${r},${g},${b},0.35)` };
     }
+    const known: Record<string, { borderClass: string; glowRgb: string }> = {
+      indica: { borderClass: 'border-purple-500/50', glowRgb: 'rgba(168,85,247,0.35)' },
+      sativa: { borderClass: 'border-amberx/50', glowRgb: 'rgba(245,158,11,0.35)' },
+      hybrid: { borderClass: 'border-emera/50', glowRgb: 'rgba(16,185,129,0.35)' },
+    };
+    const hit = known[product.type.toLowerCase()];
+    if (hit) return hit;
     return { borderClass: 'border-mist/40', glowRgb: 'rgba(148,163,184,0.25)' };
   })();
 
@@ -72,6 +90,45 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
     boxShadow: `3px 0 22px -6px ${highlight.glowRgb}`,
     ...(!highlight.borderClass ? { borderLeftColor: settings.customStrainColors?.[product.type] || '#94a3b8' } : {}),
   };
+
+  const displayType = product.type.charAt(0).toUpperCase() + product.type.slice(1);
+
+  const renderColorPicker = () => pickingStrain === product.type && (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30" onClick={() => setPickingStrain(null)}>
+      <div ref={pickerRef} className="p-4 rounded-2xl flex gap-3 flex-wrap max-w-[280px]" style={{ backgroundColor: isDark ? '#1a2332' : '#fff' }} onClick={e => e.stopPropagation()}>
+        <div className="w-full text-xs font-medium mb-1" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>
+          Color for <strong>{displayType}</strong>
+        </div>
+        {COLOR_PRESETS.map(c => (
+          <button
+            key={c}
+            onClick={(e) => { e.stopPropagation(); updateSettings({ customStrainColors: { ...settings.customStrainColors, [product.type]: c } }); setPickingStrain(null); }}
+            className="w-8 h-8 rounded-full transition-transform hover:scale-125"
+            style={{ backgroundColor: c }}
+          />
+        ))}
+        <button
+          className="w-full text-xs mt-1 py-1 rounded-lg hover:opacity-80"
+          style={{ color: isDark ? '#94a3b8' : '#64748b' }}
+          onClick={(e) => {
+            e.stopPropagation();
+            const next = { ...settings.customStrainColors };
+            delete next[product.type];
+            updateSettings({ customStrainColors: next });
+            setPickingStrain(null);
+          }}
+        >
+          Reset to default
+        </button>
+      </div>
+    </div>
+  );
+
+  const strainBadge = (extraClass: string) => strainColors.customHex ? (
+    <span className={extraClass} style={{ backgroundColor: strainColors.customHex + '20', color: strainColors.customHex, borderColor: strainColors.customHex + '40' }}>{displayType}</span>
+  ) : (
+    <span className={extraClass}>{displayType}</span>
+  );
 
   const vibrantStrainColor = isDark
     ? { bg: 'bg-cyan-500/30', text: 'text-cyan-300', border: 'border-cyan-400/60' }
@@ -155,9 +212,10 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <h3 className={`font-bold truncate ${isDark ? 'text-frost' : 'text-gray-900'}`}>{product.name}</h3>
-              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${strainColors.bg} ${strainColors.text}`}>
-                {product.type}
+              <span onClick={(e) => { e.stopPropagation(); setPickingStrain(product.type); }}>
+                {strainBadge(`px-2 py-0.5 rounded-full text-xs font-medium ${strainColors.bg || ''} ${strainColors.text || ''}`)}
               </span>
+              {renderColorPicker()}
             </div>
             {product.brand && (
               <p className={`text-sm truncate ${isDark ? 'text-mist' : 'text-gray-500'}`}>{t('from', lang)} {product.brand}</p>
@@ -240,8 +298,11 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
               <Package className={`w-8 h-8 ${isDark ? 'text-haze' : 'text-gray-400'}`} />
             </div>
           )}
-          <div className={`absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-medium ${strainColors.bg} ${strainColors.text}`}>
-            {product.type}
+          <div className="absolute top-2 left-2">
+            <span onClick={(e) => { e.stopPropagation(); setPickingStrain(product.type); }}>
+              {strainBadge(`px-2 py-1 rounded-full text-xs font-medium ${strainColors.bg || ''} ${strainColors.text || ''}`)}
+            </span>
+            {renderColorPicker()}
           </div>
           {product.favorite && (
             <div className="absolute top-2 right-2 w-6 h-6 bg-amberx rounded-full flex items-center justify-center">
@@ -323,18 +384,19 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
         {/* Strain Type Badge */}
         <div
           className={`absolute top-3 left-3 z-20 transition-all duration-200 ease-out rounded-full ${
-            strainHovered ? vibrantStrainColor.bg + ' ' + vibrantStrainColor.text + ' ' + vibrantStrainColor.border + ' scale-110' : `${strainColors.bg} ${strainColors.text} ${strainColors.border}`
+            strainHovered && !strainColors.customHex ? vibrantStrainColor.bg + ' ' + vibrantStrainColor.text + ' ' + vibrantStrainColor.border + ' scale-110' : `${strainColors.bg || ''} ${strainColors.text || ''} ${strainColors.border || ''}`
           }`}
           onMouseEnter={() => setStrainHovered(true)}
           onMouseLeave={() => setStrainHovered(false)}
         >
-          <span className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors duration-200 ${
-            strainHovered
-              ? vibrantStrainColor.bg + ' ' + vibrantStrainColor.text + ' ' + vibrantStrainColor.border
-              : `${strainColors.bg} ${strainColors.text} ${strainColors.border}`
-          }`}>
-            {product.type}
+          <span onClick={(e) => { e.stopPropagation(); setPickingStrain(product.type); }}>
+            {strainBadge(`px-3 py-1 rounded-full text-xs font-medium border transition-colors duration-200 ${
+              strainHovered && !strainColors.customHex
+                ? vibrantStrainColor.bg + ' ' + vibrantStrainColor.text + ' ' + vibrantStrainColor.border
+                : `${strainColors.bg || ''} ${strainColors.text || ''} ${strainColors.border || ''}`
+            }`)}
           </span>
+          {renderColorPicker()}
         </div>
 
         {/* Favorite Heart */}

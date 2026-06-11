@@ -44,7 +44,7 @@ export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalPr
         }`}
       >
         <div className="text-center mb-8">
-          <div className="text-4xl mb-3">🍁</div>
+          <div className="text-4xl mb-3 bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent">🍁</div>
           <h1 className="text-2xl font-extrabold bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent mb-2">
             STASH
           </h1>

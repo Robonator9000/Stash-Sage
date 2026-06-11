@@ -459,7 +459,7 @@ export default function App() {
             onClick={() => setActiveTab('inventory')}
             className="text-2xl font-extrabold hover:opacity-80 transition-opacity shrink-0 flex items-center gap-1.5"
           >
-            <span className="text-2xl">🍁</span>
+            <span className="text-2xl bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent">🍁</span>
             <span className="bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent font-extrabold">STASH</span>
           </button>
 
