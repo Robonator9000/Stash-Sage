@@ -93,8 +93,8 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
       <div
         className={`group relative rounded-xl transition-all cursor-pointer ${
           isDark
-            ? 'bg-midnight border border-edge hover:border-surface-light'
-            : 'bg-white border border-gray-200 hover:border-gray-300'
+            ? `bg-midnight border ${strainColors.border} hover:border-surface-light`
+            : `bg-white border ${strainColors.border} hover:border-gray-300`
         } ${product.favorite ? 'ring-1 ring-amberx/40' : ''} ${selected ? (isDark ? 'ring-2 ring-cyanx' : 'ring-2 ring-cyan-500') : ''}`}
       >
         <div className="flex items-center gap-4 p-4" onClick={handleCardClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}>
@@ -187,8 +187,8 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
       <div
         className={`group relative rounded-xl transition-all cursor-pointer ${
           isDark
-            ? 'bg-midnight border border-edge hover:border-cyanx/30'
-            : 'bg-white border border-gray-200 hover:border-cyan-400/50'
+            ? `bg-midnight border ${strainColors.border} hover:border-cyanx/30`
+            : `bg-white border ${strainColors.border} hover:border-cyan-400/50`
         } ${product.favorite ? 'ring-1 ring-amberx/40' : ''} ${selected ? (isDark ? 'ring-2 ring-cyanx' : 'ring-2 ring-cyan-500') : ''}`}
         onClick={handleCardClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}
       >
@@ -260,8 +260,8 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
     <div
       className={`group relative rounded-2xl transition-all cursor-pointer overflow-hidden flex flex-col ${
         isDark
-          ? 'bg-midnight border border-edge hover:border-cyanx/30'
-          : 'bg-white border border-gray-200 hover:border-cyan-400/50'
+          ? `bg-midnight border ${strainColors.border} hover:border-cyanx/30`
+          : `bg-white border ${strainColors.border} hover:border-cyan-400/50`
       } ${product.favorite ? 'ring-1 ring-amberx/40' : ''} ${selected ? (isDark ? 'ring-2 ring-cyanx' : 'ring-2 ring-cyan-500') : ''}`}
       onClick={handleCardClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}
     >

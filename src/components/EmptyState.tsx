@@ -11,8 +11,8 @@ interface EmptyStateProps {
 function LeafIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.5 19 2c1 2 2 4.5 1 8-1.5 5.5-4 7-9 10z" />
-      <path d="M10.7 20.7c1.1-2.1 2.3-4.5 2.3-7.7" />
+      <path d="M12 2L10.5 7.5L6 4.5L7.5 10L3 10.5L6.5 13.5L4.5 18L9 15.5L12 21L15 15.5L19.5 18L17.5 13.5L21 10.5L16.5 10L18 4.5L13.5 7.5Z" />
+      <path d="M12 21V23" strokeWidth={2} />
     </svg>
   );
 }
