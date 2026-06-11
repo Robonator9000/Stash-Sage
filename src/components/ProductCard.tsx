@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Product } from '../types';
 import { formatDate, formatPrecision } from '../utils/helpers';
 import { gramsToOz } from '../utils/convert';
@@ -93,7 +94,7 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
 
   const displayType = product.type.charAt(0).toUpperCase() + product.type.slice(1);
 
-  const renderColorPicker = () => pickingStrain === product.type && (
+  const renderColorPicker = () => pickingStrain === product.type && createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30" onClick={() => setPickingStrain(null)}>
       <div ref={pickerRef} className="p-4 rounded-2xl flex gap-3 flex-wrap max-w-[280px]" style={{ backgroundColor: isDark ? '#1a2332' : '#fff' }} onClick={e => e.stopPropagation()}>
         <div className="w-full text-xs font-medium mb-1" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>
@@ -121,7 +122,8 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
           Reset to default
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 
   const strainBadge = (extraClass: string) => strainColors.customHex ? (
