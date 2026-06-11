@@ -31,7 +31,7 @@ const POPULAR_BRANDS = [
 ];
 
 export function ProductModal({ product, onSave, onDelete, onClose, isDark = true, sessions = [] }: ProductModalProps) {
-  const { settings, addFavoriteBrand, removeFavoriteBrand, addRecentBrand } = useSettings();
+  const { settings, updateSettings, addFavoriteBrand, removeFavoriteBrand, addRecentBrand } = useSettings();
   const lang = settings.language;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const brandDropdownRef = useRef<HTMLDivElement>(null);
@@ -39,6 +39,12 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
   const [name, setName] = useState(product?.name || '');
   const [type, setType] = useState<string>(product?.type || 'hybrid');
   const [showCustomType, setShowCustomType] = useState(false);
+  const [strainColor, setStrainColor] = useState(() => {
+    if (product?.type && !['indica', 'sativa', 'hybrid'].includes(product.type.toLowerCase())) {
+      return settings.customStrainColors?.[product.type] || '#a855f7';
+    }
+    return '#a855f7';
+  });
   const [thc, setThc] = useState(product?.thc || 0);
   const [cbd, setCbd] = useState(product?.cbd || 0);
   const [amount, setAmount] = useState(product?.amount || 0);
@@ -140,6 +146,15 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
       favorite: product?.favorite || false,
     };
 
+    const trimmedType = type.trim().toLowerCase();
+    if (!['indica', 'sativa', 'hybrid'].includes(trimmedType) && trimmedType) {
+      updateSettings({
+        customStrainColors: {
+          ...settings.customStrainColors,
+          [type.trim()]: strainColor,
+        },
+      });
+    }
     onSave(productData);
     handleClose();
   };
@@ -401,18 +416,39 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
               </button>
             </div>
             {showCustomType && (
-              <input
-                type="text"
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-                placeholder={t('customStrainPlaceholder', lang)}
-                autoFocus
-                className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
-                  isDark 
-                    ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' 
-                    : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-                } outline-none`}
-              />
+              <>
+                <input
+                  type="text"
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                  placeholder={t('customStrainPlaceholder', lang)}
+                  autoFocus
+                  className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
+                    isDark 
+                      ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' 
+                      : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
+                  } outline-none`}
+                />
+                {type && !['indica', 'sativa', 'hybrid'].includes(type.toLowerCase()) && (
+                  <div className="mt-2">
+                    <label className={`block text-xs font-medium mb-1.5 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                      Highlight Color
+                    </label>
+                    <div className="flex gap-2 flex-wrap">
+                      {['#a855f7', '#f59e0b', '#10b981', '#ef4444', '#3b82f6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16'].map(c => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => setStrainColor(c)}
+                          className={`w-7 h-7 rounded-full transition-all ${strainColor === c ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent scale-110' : ''}`}
+                          style={{ backgroundColor: c }}
+                          aria-label={c}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
 

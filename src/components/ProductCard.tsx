@@ -50,6 +50,29 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
 
   const strainColors = getStrainColor(product.type);
 
+  const highlight = (() => {
+    const known: Record<string, { borderClass: string; glowRgb: string }> = {
+      indica: { borderClass: 'border-purple-500/50', glowRgb: 'rgba(168,85,247,0.35)' },
+      sativa: { borderClass: 'border-amberx/50', glowRgb: 'rgba(245,158,11,0.35)' },
+      hybrid: { borderClass: 'border-emera/50', glowRgb: 'rgba(16,185,129,0.35)' },
+    };
+    const hit = known[product.type.toLowerCase()];
+    if (hit) return hit;
+    const hex = settings.customStrainColors?.[product.type];
+    if (hex && /^#[0-9a-f]{6}$/i.test(hex)) {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return { borderClass: '', glowRgb: `rgba(${r},${g},${b},0.35)` };
+    }
+    return { borderClass: 'border-mist/40', glowRgb: 'rgba(148,163,184,0.25)' };
+  })();
+
+  const glowStyle = {
+    boxShadow: `3px 0 22px -6px ${highlight.glowRgb}`,
+    ...(!highlight.borderClass ? { borderLeftColor: settings.customStrainColors?.[product.type] || '#94a3b8' } : {}),
+  };
+
   const vibrantStrainColor = isDark
     ? { bg: 'bg-cyan-500/30', text: 'text-cyan-300', border: 'border-cyan-400/60' }
     : { bg: 'bg-cyan-200', text: 'text-cyan-800', border: 'border-cyan-500/60' };
@@ -93,9 +116,10 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
       <div
         className={`group relative rounded-xl transition-all cursor-pointer ${
           isDark
-            ? `bg-midnight border ${strainColors.border} hover:border-surface-light`
-            : `bg-white border ${strainColors.border} hover:border-gray-300`
+            ? `bg-midnight border-0 border-l-[5px] ${highlight.borderClass} hover:border-l-surface-light`
+            : `bg-white border-0 border-l-[5px] ${highlight.borderClass} hover:border-l-gray-300`
         } ${product.favorite ? 'ring-1 ring-amberx/40' : ''} ${selected ? (isDark ? 'ring-2 ring-cyanx' : 'ring-2 ring-cyan-500') : ''}`}
+        style={glowStyle}
       >
         <div className="flex items-center gap-4 p-4" onClick={handleCardClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}>
           {isSelectMode && (
@@ -187,9 +211,10 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
       <div
         className={`group relative rounded-xl transition-all cursor-pointer ${
           isDark
-            ? `bg-midnight border ${strainColors.border} hover:border-cyanx/30`
-            : `bg-white border ${strainColors.border} hover:border-cyan-400/50`
+            ? `bg-midnight border-0 border-l-[5px] ${highlight.borderClass} hover:border-l-cyanx/30`
+            : `bg-white border-0 border-l-[5px] ${highlight.borderClass} hover:border-l-cyan-400/50`
         } ${product.favorite ? 'ring-1 ring-amberx/40' : ''} ${selected ? (isDark ? 'ring-2 ring-cyanx' : 'ring-2 ring-cyan-500') : ''}`}
+        style={glowStyle}
         onClick={handleCardClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}
       >
         {isSelectMode && (
@@ -260,9 +285,10 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
     <div
       className={`group relative rounded-2xl transition-all cursor-pointer overflow-hidden flex flex-col ${
         isDark
-          ? `bg-midnight border ${strainColors.border} hover:border-cyanx/30`
-          : `bg-white border ${strainColors.border} hover:border-cyan-400/50`
+          ? `bg-midnight border-0 border-l-[5px] ${highlight.borderClass} hover:border-l-cyanx/30`
+          : `bg-white border-0 border-l-[5px] ${highlight.borderClass} hover:border-l-cyan-400/50`
       } ${product.favorite ? 'ring-1 ring-amberx/40' : ''} ${selected ? (isDark ? 'ring-2 ring-cyanx' : 'ring-2 ring-cyan-500') : ''}`}
+      style={glowStyle}
       onClick={handleCardClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}
     >
       {isSelectMode && (

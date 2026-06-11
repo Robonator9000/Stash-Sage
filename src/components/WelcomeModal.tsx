@@ -44,18 +44,7 @@ export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalPr
         }`}
       >
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-3">
-            <svg viewBox="0 0 24 24" className="w-10 h-10" fill="none" stroke="url(#welcome-leaf)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-              <defs>
-                <linearGradient id="welcome-leaf" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#06b6d4" />
-                  <stop offset="100%" stopColor="#10b981" />
-                </linearGradient>
-              </defs>
-              <path d="M12 2L10.5 7.5L6 4.5L7.5 10L3 10.5L6.5 13.5L4.5 18L9 15.5L12 21L15 15.5L19.5 18L17.5 13.5L21 10.5L16.5 10L18 4.5L13.5 7.5Z" />
-              <path d="M12 21V23" strokeWidth={2} />
-            </svg>
-          </div>
+          <div className="text-4xl mb-3">🍁</div>
           <h1 className="text-2xl font-extrabold bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent mb-2">
             STASH
           </h1>

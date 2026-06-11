@@ -9,12 +9,7 @@ interface EmptyStateProps {
 }
 
 function LeafIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2L10.5 7.5L6 4.5L7.5 10L3 10.5L6.5 13.5L4.5 18L9 15.5L12 21L15 15.5L19.5 18L17.5 13.5L21 10.5L16.5 10L18 4.5L13.5 7.5Z" />
-      <path d="M12 21V23" strokeWidth={2} />
-    </svg>
-  );
+  return <span className={className}>🍁</span>;
 }
 
 export function EmptyState({ isDark = true, hasProducts, onAddProduct }: EmptyStateProps) {
@@ -28,7 +23,7 @@ export function EmptyState({ isDark = true, hasProducts, onAddProduct }: EmptySt
       <div className={`w-28 h-28 rounded-full flex items-center justify-center mb-6 ${
         isDark ? 'bg-emera/10 border border-emera/20' : 'bg-emerald-50 border border-emerald-100'
       }`}>
-        <LeafIcon className={`w-14 h-14 ${isDark ? 'text-emera' : 'text-emerald-400'}`} />
+        <LeafIcon className="text-6xl" />
       </div>
 
       {!hasProducts ? (

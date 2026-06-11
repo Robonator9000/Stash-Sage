@@ -42,6 +42,7 @@ const defaultSettings: Settings = {
   budgetLimit: 0,
   budgetPeriod: 'monthly',
   settingsVersion: SETTINGS_VERSION,
+  customStrainColors: {},
 };
 
 function loadSettings(): Settings {

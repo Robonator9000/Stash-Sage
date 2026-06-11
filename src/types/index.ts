@@ -58,6 +58,7 @@ export interface Settings {
   budgetLimit: number;
   budgetPeriod: 'weekly' | 'monthly' | 'yearly';
   settingsVersion?: number;
+  customStrainColors?: Record<string, string>;
 }
 
 export interface Session {
