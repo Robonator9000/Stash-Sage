@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { Product, Settings } from '../types';
 import { useSettings } from '../utils/useSettings';
-import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../utils/supabase';
 import { t } from '../utils/translations';
 import { hashPin } from '../utils/helpers';
 import { createExportData, downloadExport, downloadCsvExport, copyExportToClipboard, parseImportData, ImportResult } from '../utils/dataTransfer';
 import { exportProductsPdf } from '../utils/pdfExport';
-import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, Users, Scale, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, RefreshCw, Trash2, Wifi, WifiOff } from 'lucide-react';
+import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, Users, Scale, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3 } from 'lucide-react';
 
 interface SettingsSheetProps {
   products: Product[];
@@ -35,11 +33,9 @@ const LANGUAGE_NAMES: Record<string, Record<string, string>> = {
 
 export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDark = true }: SettingsSheetProps) {
   const { settings, updateSettings, toggleStatVisibility } = useSettings();
-  const { user, profile, syncStatus, updateProfile, deleteAccount, refreshProfile } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mergeFileInputRef = useRef<HTMLInputElement>(null);
-  const avatarInputRef = useRef<HTMLInputElement>(null);
-  const [activeTab, setActiveTab] = useState<'personalization' | 'session' | 'stats' | 'data' | 'account' | 'security'>('personalization');
+  const [activeTab, setActiveTab] = useState<'personalization' | 'session' | 'stats' | 'data' | 'security'>('personalization');
   const [pinSetupValue, setPinSetupValue] = useState('');
   const [pinDisableValue, setPinDisableValue] = useState('');
   const [showPinSetup, setShowPinSetup] = useState(false);
@@ -165,16 +161,6 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
     setTimeout(onClose, 200);
   };
 
-  const escHandlerRef = useRef(handleClose);
-  escHandlerRef.current = handleClose;
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') escHandlerRef.current();
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, []);
-
   return (
     <div className="fixed inset-0 z-50 flex justify-end" onClick={handleClose}>
       <div
@@ -208,7 +194,6 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
             { id: 'session', icon: Clock, label: t('sessionDefaults', lang) },
             { id: 'stats', icon: BarChart3, label: t('showStats', lang) },
             { id: 'data', icon: Database, label: t('dataBackup', lang) },
-            { id: 'account', icon: User, label: 'Account' },
             { id: 'security', icon: Lock, label: t('pinLock', lang) },
           ] as const).map(tab => (
             <button
@@ -492,151 +477,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                   </p>
                 )}
               </div>
-
-              {/* Manual Sync */}
-              {user && (
-                <div>
-                  <div className={`flex items-center justify-between p-3 rounded-xl border-2 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
-                    <div className="flex items-center gap-2">
-                      {syncStatus === 'synced' ? (
-                        <Wifi className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                      ) : syncStatus === 'syncing' ? (
-                        <RefreshCw className={`w-4 h-4 animate-spin ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`} />
-                      ) : (
-                        <WifiOff className={`w-4 h-4 ${isDark ? 'text-red-400' : 'text-red-600'}`} />
-                      )}
-                      <div>
-                        <span className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                          Cloud Sync
-                        </span>
-                        <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
-                          {syncStatus === 'synced' ? 'All data synced to cloud' : syncStatus === 'syncing' ? 'Syncing...' : 'Disconnected'}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={async () => {
-                        setFeedback({ type: 'success', message: 'Syncing...' });
-                        await refreshProfile();
-                        setFeedback({ type: 'success', message: 'Sync complete!' });
-                      }}
-                      className={`p-2 rounded-lg transition-all ${isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
-                      title="Sync now"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              )}
             </>
-          )}
-
-          {activeTab === 'account' && user && (
-            <>
-              <div>
-                <label className={sectionLabel}><User className="w-4 h-4" />Profile</label>
-                <div className="space-y-3">
-                  {/* Avatar */}
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold overflow-hidden flex-shrink-0 ${
-                        isDark ? 'bg-surface border border-edge' : 'bg-gray-100 border border-gray-200'
-                      }`}
-                    >
-                      {profile?.avatar_url ? (
-                        <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                      ) : (
-                        <User className={`w-6 h-6 ${isDark ? 'text-mist' : 'text-gray-400'}`} />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        placeholder="Display name"
-                        value={profile?.display_name || ''}
-                        onChange={(e) => updateProfile({ display_name: e.target.value })}
-                        className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-colors ${
-                          isDark
-                            ? 'bg-deep text-frost border border-edge focus:border-cyan-500 placeholder-muted'
-                            : 'bg-gray-50 text-gray-900 border border-gray-200 focus:border-cyan-400 placeholder-gray-400'
-                        }`}
-                      />
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => avatarInputRef.current?.click()}
-                    className={`w-full py-2 rounded-xl text-sm font-medium transition-all border-2 ${
-                      isDark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600' : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    Upload Avatar
-                  </button>
-                  <input
-                    ref={avatarInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      e.target.value = '';
-                      if (!file || !user) return;
-                      const ext = file.name.split('.').pop();
-                      const path = `${user.id}/avatar.${ext}`;
-                      const { error: uploadErr } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
-                      if (uploadErr) {
-                        setFeedback({ type: 'error', message: 'Failed to upload avatar' });
-                        return;
-                      }
-                      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
-                      await updateProfile({ avatar_url: publicUrl });
-                      setFeedback({ type: 'success', message: 'Avatar updated!' });
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Email */}
-              <div>
-                <label className={sectionLabel}><span className="text-sm">📧</span>Email</label>
-                <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{user.email}</p>
-              </div>
-
-              {/* Delete Account */}
-              <div className="pt-4 border-t border-dashed ${isDark ? 'border-slate-700' : 'border-gray-200'}">
-                <label className={`flex items-center gap-2 text-sm font-medium mb-3 ${isDark ? 'text-red-400' : 'text-red-600'}`}>
-                  <Trash2 className="w-4 h-4" />Danger Zone
-                </label>
-                <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
-                  Permanently delete your account and all associated data. This action cannot be undone.
-                </p>
-                <button
-                  onClick={async () => {
-                    if (!window.confirm('Are you sure you want to permanently delete your account? All data will be lost.')) return;
-                    if (!window.confirm('This is irreversible. Confirm account deletion?')) return;
-                    try {
-                      await deleteAccount();
-                      setFeedback({ type: 'success', message: 'Account deleted.' });
-                      setTimeout(() => { window.location.reload(); }, 1000);
-                    } catch {
-                      setFeedback({ type: 'error', message: 'Failed to delete account.' });
-                    }
-                  }}
-                  className={`w-full py-3 px-4 rounded-xl text-sm font-semibold transition-all border-2 ${
-                    isDark ? 'bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30'
-                           : 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100'
-                  }`}
-                >
-                  Delete Account
-                </button>
-              </div>
-            </>
-          )}
-
-          {activeTab === 'account' && !user && (
-            <div className={`text-center py-8 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
-              <User className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p>Sign in to manage your account.</p>
-            </div>
           )}
 
           {activeTab === 'security' && (

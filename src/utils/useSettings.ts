@@ -86,7 +86,6 @@ export function useSettings() {
 
   const syncSettings = useCallback((s: Settings) => {
     _settings = s;
-    notifyListeners();
     safeSetItem(SETTINGS_KEY, JSON.stringify(s));
     if (user) {
       supabase.from('settings').upsert(
