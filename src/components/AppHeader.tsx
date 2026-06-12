@@ -89,6 +89,8 @@ export function AppHeader({
           language={lang}
         />
 
+        <div className="mt-2" />
+
         <ControlsBar
           sortBy={sortBy}
           onSortChange={onSortChange}

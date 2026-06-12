@@ -48,8 +48,8 @@ export function ControlsBar({
     }`;
 
   return (
-    <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
-      <div className="flex items-center gap-2">
+    <div className="flex items-center justify-between mt-4 flex-wrap gap-3">
+      <div className="flex items-center gap-3">
         <div className="relative">
           <button
             onClick={() => {
@@ -128,7 +128,7 @@ export function ControlsBar({
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         {/* Per-page dropdown */}
         <div className="relative">
           <button

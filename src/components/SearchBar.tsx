@@ -10,7 +10,7 @@ interface SearchBarProps {
 
 export function SearchBar({ value, onChange, isDark = true, language = 'en' }: SearchBarProps) {
   return (
-    <div className="relative group">
+    <div className="relative group max-w-xl mx-auto">
       <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${
         isDark
           ? 'text-haze group-focus-within:text-cyanx'
@@ -21,7 +21,7 @@ export function SearchBar({ value, onChange, isDark = true, language = 'en' }: S
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={t('searchPlaceholder', language)}
-        className={`w-full pl-12 pr-10 py-3 rounded-xl transition-all outline-none ${
+        className={`w-full pl-12 pr-10 py-2.5 rounded-xl transition-all outline-none ${
           isDark
             ? 'bg-midnight border border-edge text-frost placeholder-haze focus:border-cyanx/50 focus:shadow-[0_0_0_3px_rgba(6,182,212,0.1)]'
             : 'bg-white border border-gray-200 text-gray-900 placeholder-gray-400 focus:border-cyan-400/50 focus:shadow-[0_0_0_3px_rgba(6,182,212,0.1)]'
