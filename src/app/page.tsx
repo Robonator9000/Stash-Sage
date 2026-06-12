@@ -7,6 +7,11 @@ import { t } from '@/lib/translations'
 import { useStore, type Product, type AppSettings, defaultSettings } from '@/lib/store'
 import { toast } from 'sonner'
 
+// ── Feature Components ──────────────────────────────────────────────────────
+import { WelcomeModal } from '@/components/WelcomeModal'
+import { PinModal } from '@/components/PinModal'
+import { hashPin } from '@/lib/crypto'
+
 // ── UI Components ────────────────────────────────────────────────────────────
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -227,12 +232,18 @@ export default function Home() {
   // Session form — new design: countdown timer with auto-rotation
   const [sessionPeople, setSessionPeople] = useState(2)
   const [sessionTimePerHit, setSessionTimePerHit] = useState(10) // seconds per hit
-  const [sessionCountdown, setSessionCountdown] = useState(0) // remaining seconds * 10 (for 100ms ticks)
+  const [sessionCountdown, setSessionCountdown] = useState(0) // remaining seconds
   const [sessionTimerRunning, setSessionTimerRunning] = useState(false)
   const [sessionRotationIndex, setSessionRotationIndex] = useState(0)
   const [sessionNotes, setSessionNotes] = useState('')
   const [sessionStarted, setSessionStarted] = useState(false)
   const sessionTimerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined)
+
+  // Onboarding
+  const [showWelcome, setShowWelcome] = useState(false)
+
+  // PIN unlock
+  const [pinUnlocked, setPinUnlocked] = useState(false)
 
   // Settings
   const [settingsTab, setSettingsTab] = useState<'personalization' | 'stats' | 'danger'>('personalization')
@@ -289,6 +300,13 @@ export default function Home() {
       setTheme(settingsQuery.data.theme)
     }
   }, [settingsQuery.data?.theme, setTheme])
+
+  // Show welcome modal if onboarding not done
+  useEffect(() => {
+    if (settingsQuery.data && !settingsQuery.data.onboardingDone) {
+      setShowWelcome(true)
+    }
+  }, [settingsQuery.data])
 
   // Close search preview on click outside
   useEffect(() => {
@@ -421,6 +439,7 @@ export default function Home() {
     const defaults = store.settings.sessionDefaults || defaultSettings.sessionDefaults
     setSessionPeople(defaults.defaultPeople)
     setSessionTimePerHit(defaults.defaultHitTimer)
+    countdownRef.current = 0
     setSessionCountdown(0)
     setSessionTimerRunning(false)
     setSessionRotationIndex(0)
@@ -429,24 +448,32 @@ export default function Home() {
     store.openSession(p)
   }, [store])
 
+  // ── Timer refs (declared before useCallback) ─────────────────────────────
+  const countdownRef = useRef(0)
+
   // ── Session countdown timer with auto-rotation ──────────────────────────
+  const sessionPeopleRef = useRef(sessionPeople)
+  sessionPeopleRef.current = sessionPeople
+  const sessionTimePerHitRef = useRef(sessionTimePerHit)
+  sessionTimePerHitRef.current = sessionTimePerHit
   useEffect(() => {
     if (sessionTimerRunning) {
       sessionTimerRef.current = setInterval(() => {
-        setSessionCountdown(prev => {
-          if (prev <= 1) {
-            // Timer expired — auto-rotate to next person and reset timer
-            setSessionRotationIndex(ri => (ri + 1) % sessionPeople)
-            return sessionTimePerHit * 10 // reset countdown (in 100ms ticks)
-          }
-          return prev - 1
-        })
-      }, 100)
+        const prev = countdownRef.current
+        if (prev <= 1) {
+          setSessionRotationIndex(ri => (ri + 1) % sessionPeopleRef.current)
+          countdownRef.current = sessionTimePerHitRef.current
+          setSessionCountdown(countdownRef.current)
+        } else {
+          countdownRef.current = prev - 1
+          setSessionCountdown(countdownRef.current)
+        }
+      }, 1000)
     } else {
       clearInterval(sessionTimerRef.current)
     }
     return () => clearInterval(sessionTimerRef.current)
-  }, [sessionTimerRunning, sessionPeople, sessionTimePerHit])
+  }, [sessionTimerRunning])
 
   // ── Computed values ──────────────────────────────────────────────────────
   const products = productsQuery.data?.products || []
@@ -466,11 +493,10 @@ export default function Home() {
     return sellTotalValue - (costPerGram * sellTotalGrams)
   }, [store.sellingProduct, sellTotalGrams, sellTotalValue])
 
-  const formatCountdown = (ticks: number) => {
-    const totalSecs = Math.ceil(ticks / 10)
-    const mins = Math.floor(totalSecs / 60)
-    const secs = totalSecs % 60
-    return `${mins}:${String(secs).padStart(2, '0')}`
+  const formatCountdown = (secs: number) => {
+    const mins = Math.floor(Math.max(0, secs) / 60)
+    const s = Math.max(0, secs) % 60
+    return `${mins}:${String(s).padStart(2, '0')}`
   }
 
   const currency = store.settings.currency || '$'
@@ -580,6 +606,19 @@ export default function Home() {
           <DollarSign className="size-7 text-emerald-400/70 font-bold" />
         </div>
       ))}
+
+      {/* ═══ WELCOME MODAL ═══ */}
+      {showWelcome && (
+        <WelcomeModal onComplete={(language) => {
+          updateSettings.mutate({ language, onboardingDone: true })
+          setShowWelcome(false)
+        }} />
+      )}
+
+      {/* ═══ PIN MODAL ═══ */}
+      {!showWelcome && store.settings.pinEnabled && !pinUnlocked && (
+        <PinModal pinHash={store.settings.pinHash || ''} onSuccess={() => setPinUnlocked(true)} />
+      )}
 
       {/* ═══ HEADER ═══ */}
       <header className="sticky top-0 z-40 border-b border-border/50 bg-background/90 backdrop-blur-xl">
@@ -1158,7 +1197,7 @@ export default function Home() {
                   {/* Timer controls */}
                   <div className="flex items-center justify-center gap-2">
                     {!sessionStarted ? (
-                      <Button onClick={() => { setSessionStarted(true); setSessionCountdown(sessionTimePerHit * 10); setSessionTimerRunning(true); setSessionRotationIndex(0) }}
+                      <Button onClick={() => { countdownRef.current = sessionTimePerHit; setSessionStarted(true); setSessionCountdown(countdownRef.current); setSessionTimerRunning(true); setSessionRotationIndex(0) }}
                         className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-full px-6 shadow-lg shadow-teal-500/20">
                         <Timer className="size-4 mr-1.5" />{t('sessionStart', lang)}
                       </Button>
@@ -1170,7 +1209,7 @@ export default function Home() {
                           {sessionTimerRunning ? t('sessionPause', lang) : t('start', lang)}
                         </Button>
                         <Button variant="ghost" size="sm" className="rounded-full"
-                          onClick={() => { setSessionTimerRunning(false); setSessionCountdown(sessionTimePerHit * 10) }}>
+                          onClick={() => { setSessionTimerRunning(false); countdownRef.current = sessionTimePerHit; setSessionCountdown(countdownRef.current) }}>
                           <RotateCw className="size-3.5 mr-1" />Reset
                         </Button>
                       </>
@@ -1295,7 +1334,7 @@ export default function Home() {
               </div>
               <div className="flex items-center justify-center gap-2">
                 {!sessionStarted ? (
-                  <Button onClick={() => { setSessionStarted(true); setSessionCountdown(sessionTimePerHit * 10); setSessionTimerRunning(true); setSessionRotationIndex(0) }}
+                  <Button onClick={() => { countdownRef.current = sessionTimePerHit; setSessionStarted(true); setSessionCountdown(countdownRef.current); setSessionTimerRunning(true); setSessionRotationIndex(0) }}
                     className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-full px-6">
                     <Timer className="size-4 mr-1.5" />{t('sessionStart', lang)}
                   </Button>
@@ -1305,7 +1344,7 @@ export default function Home() {
                       {sessionTimerRunning ? <Pause className="size-3.5 mr-1" /> : <Timer className="size-3.5 mr-1" />}
                       {sessionTimerRunning ? t('sessionPause', lang) : t('start', lang)}
                     </Button>
-                    <Button variant="ghost" size="sm" className="rounded-full" onClick={() => { setSessionTimerRunning(false); setSessionCountdown(sessionTimePerHit * 10) }}>
+                    <Button variant="ghost" size="sm" className="rounded-full" onClick={() => { setSessionTimerRunning(false); countdownRef.current = sessionTimePerHit; setSessionCountdown(countdownRef.current) }}>
                       <RotateCw className="size-3.5 mr-1" />Reset
                     </Button>
                   </>
@@ -1488,7 +1527,15 @@ export default function Home() {
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm" onClick={() => { setShowPinSetup(false); setPinInput(''); setPinConfirm('') }} className="rounded-lg">{t('cancel', lang)}</Button>
                         <Button size="sm" disabled={pinInput.length < 4 || pinInput !== pinConfirm}
-                          onClick={() => { updateSettings.mutate(store.settings.pinEnabled ? { pinEnabled: false, pinHash: '' } : { pinEnabled: true, pinHash: pinInput }); setShowPinSetup(false); setPinInput(''); setPinConfirm('') }}
+                          onClick={async () => {
+                            if (store.settings.pinEnabled) {
+                              updateSettings.mutate({ pinEnabled: false, pinHash: '' })
+                            } else {
+                              const hashed = await hashPin(pinInput)
+                              updateSettings.mutate({ pinEnabled: true, pinHash: hashed })
+                            }
+                            setShowPinSetup(false); setPinInput(''); setPinConfirm('')
+                          }}
                           className="rounded-lg">{store.settings.pinEnabled ? t('disablePin', lang) : t('enablePin', lang)}</Button>
                       </div>
                     </div>
