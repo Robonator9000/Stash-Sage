@@ -1,1 +1,9 @@
-node_modulesdisttest_ui*debug_page*.DS_Store*.local.env.env.*tsconfig.tsbuildinfo
+node_modules
+dist
+test_ui*
+debug_page*
+.DS_Store
+*.local
+.env
+.env.*
+tsconfig.tsbuildinfo
