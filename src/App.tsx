@@ -81,7 +81,7 @@ export default function App() {
   const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
 
   const isDark = settings.theme === 'dark';
-  const { user, signOut } = useAuth();
+  const { user, profile, syncStatus, signOut } = useAuth();
 
   const browserLang = useMemo(() => {
     const raw = navigator.language || 'en';
@@ -541,13 +541,27 @@ export default function App() {
               </svg>
             </button>
             {user ? (
-              <button
-                onClick={() => signOut()}
-                className={`px-2 py-1.5 rounded-xl text-xs font-medium transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}
-                title={`Signed in as ${user.email}`}
-              >
-                {user.email?.split('@')[0]}
-              </button>
+              <div className="flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full ${
+                  syncStatus === 'synced' ? 'bg-emerald-400' :
+                  syncStatus === 'syncing' ? 'bg-cyan-400 animate-pulse' :
+                  'bg-red-400'
+                }`} title={
+                  syncStatus === 'synced' ? 'Synced' :
+                  syncStatus === 'syncing' ? 'Syncing...' :
+                  'Offline'
+                } />
+                {profile?.display_name ? (
+                  <span className={`text-xs font-medium ${isDark ? 'text-mist' : 'text-gray-500'}`}>{profile.display_name}</span>
+                ) : null}
+                <button
+                  onClick={() => signOut()}
+                  className={`px-2 py-1.5 rounded-xl text-xs font-medium transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}
+                  title={`Signed in as ${user.email}`}
+                >
+                  {user.email?.split('@')[0]}
+                </button>
+              </div>
             ) : (
               <button
                 onClick={() => setShowLoginModal(true)}

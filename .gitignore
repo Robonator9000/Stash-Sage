@@ -1,5 +1,7 @@
 node_modules
 dist
+test_ui*
+debug_page*
 .DS_Store
 *.local
 .env
