@@ -54,12 +54,12 @@ export function LoginModal({ isDark, onClose }: LoginModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4 overflow-y-auto"
       onClick={onClose}
     >
       <div className="absolute inset-0 bg-black/50" />
       <div
-        className={`relative w-full max-w-sm rounded-2xl p-6 shadow-2xl ${isDark ? 'bg-midnight border border-edge' : 'bg-white border border-gray-200'}`}
+        className={`relative w-full max-w-sm rounded-2xl p-6 shadow-2xl my-auto max-h-[90vh] overflow-y-auto ${isDark ? 'bg-midnight border border-edge' : 'bg-white border border-gray-200'}`}
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5">
