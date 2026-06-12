@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { AuthProvider } from './contexts/AuthContext';
 import './index.css';
 
 registerSW({
@@ -15,7 +16,9 @@ registerSW({
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </ErrorBoundary>
   </StrictMode>,
 );
