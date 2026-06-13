@@ -103,6 +103,7 @@ export function useSettings() {
         { onConflict: 'user_id' }
       ).then(() => {}, () => {});
     }
+    notifyListeners();
   }, [user]);
 
   const updateSettings = useCallback((updates: Partial<Settings>) => {
