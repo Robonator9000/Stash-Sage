@@ -43,14 +43,16 @@ export function CoachMarks({ language, isDark, onComplete, onSkip, onOpenSetting
   }, [updatePosition]);
 
   useEffect(() => {
-    if (step === 2) {
+    if (step === 3) {
       onOpenSettings();
     }
-  }, [step, onOpenSettings]);
+    if (step < 3) {
+      onCloseSettings();
+    }
+  }, [step, onOpenSettings, onCloseSettings]);
 
   const handleNext = () => {
     if (isLast) {
-      onCloseSettings();
       onComplete();
     } else {
       setStep(step + 1);
@@ -58,7 +60,6 @@ export function CoachMarks({ language, isDark, onComplete, onSkip, onOpenSetting
   };
 
   const handleSkipAll = () => {
-    onCloseSettings();
     onSkip();
   };
 
