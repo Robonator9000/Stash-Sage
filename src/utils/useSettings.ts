@@ -68,7 +68,16 @@ export function useSettings() {
   useEffect(() => {
     if (!user) return;
     supabase.from('settings').select('data').eq('user_id', user.id).single()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          if (user) {
+            supabase.from('settings').upsert(
+              { user_id: user.id, data: _settings },
+              { onConflict: 'user_id' }
+            ).then();
+          }
+          return;
+        }
         if (data?.data) {
           const parsed = data.data as Settings;
           const merged = {

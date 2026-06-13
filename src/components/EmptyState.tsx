@@ -9,7 +9,7 @@ interface EmptyStateProps {
 }
 
 function LeafIcon({ className }: { className?: string }) {
-  return <span className={className}>🍁</span>;
+  return <span className={`bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent ${className}`}>🍁</span>;
 }
 
 export function EmptyState({ isDark = true, hasProducts, onAddProduct }: EmptyStateProps) {
