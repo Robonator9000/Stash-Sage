@@ -86,6 +86,7 @@ export function useSettings() {
             sessionDefaults: { ...defaultSettings.sessionDefaults, ...parsed.sessionDefaults },
             statsVisibility: { ...defaultSettings.statsVisibility, ...parsed.statsVisibility },
           };
+          if (_settings.onboardingDone) merged.onboardingDone = true;
           _settings = { ...merged };
           notifyListeners();
           safeSetItem(SETTINGS_KEY, JSON.stringify(_settings));
