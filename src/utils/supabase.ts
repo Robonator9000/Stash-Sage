@@ -6,10 +6,6 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 const configured = !!(supabaseUrl && supabaseKey);
 
-if (!configured) {
-  console.warn('Supabase env variables not configured. Auth and cloud features disabled.');
-}
-
 function buildClient(): SupabaseClient {
   if (configured) return createClient(supabaseUrl!, supabaseKey!);
   const noop = async () => ({ data: null, error: null });

@@ -468,7 +468,7 @@ export default function App() {
           </button>
 
           {/* Search */}
-          <div className="relative flex-1">
+          <div className="relative flex-1 max-w-xl mx-auto">
             <div className="relative">
               <svg className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-muted' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -613,7 +613,7 @@ export default function App() {
             </div>
 
             {/* Controls bar */}
-            <div className={`flex flex-wrap items-center justify-center gap-2 mb-4`}>
+            <div className={`flex flex-wrap items-center justify-center gap-3 mb-4`}>
               {/* Select mode toggle */}
               <button
                 onClick={() => { setSelectMode(!isSelectMode); if (isSelectMode) setSelectedIds(new Set()); }}
@@ -1004,7 +1004,7 @@ export default function App() {
         {activeTab === 'history' && (
           <div>
             {/* Filters */}
-            <div className={`flex flex-wrap items-center justify-center gap-2 mb-4`}>
+            <div className={`flex flex-wrap items-center justify-center gap-3 mb-4`}>
               <span className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'text-muted' : 'text-gray-400'}`}>
                 {t('filterByType', lang)}
               </span>
