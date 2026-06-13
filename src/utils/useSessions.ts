@@ -51,16 +51,18 @@ export function useSessions() {
 
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
     const id = user.id;
     $ids.forEach(x => { if (x !== id) $ids.delete(x); });
     $ids.add(id);
     supabase.from('sessions').select('*').eq('user_id', id).order('date', { ascending: false })
       .then(({ data }) => {
-        if (!data || !$ids.has(id)) return;
+        if (cancelled || !data || !$ids.has(id)) return;
         const mapped = data.map(toCamel);
         setSessions(mapped);
         safeSetItem(SESSIONS_KEY, JSON.stringify(mapped));
       });
+    return () => { cancelled = true; };
   }, [user?.id]);
 
   const addSession = useCallback((session: Session) => {

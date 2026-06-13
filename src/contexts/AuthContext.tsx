@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { supabase } from '../utils/supabase';
+import { supabase, isConfigured } from '../utils/supabase';
 import type { User, AuthError } from '@supabase/supabase-js';
 import { showToast } from '../components/Toast';
 
@@ -21,15 +21,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setIsLoading(false);
+    });
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
     });
     return () => data?.subscription.unsubscribe();
   }, []);
 
   const handleAuthError = (err: AuthError | Error): string => {
-    const msg = err.message;
+    const msg = err?.message ?? 'An unknown error occurred.';
     if (msg.includes('Invalid login credentials')) return 'Invalid email or password.';
     if (msg.includes('Email not confirmed')) return 'Please confirm your email before signing in.';
     if (msg.includes('User already registered')) return 'An account with this email already exists.';
@@ -39,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     setError(null);
+    if (!isConfigured) { setError('Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your .env file.'); throw new Error('Auth not configured'); }
     const { error: err } = await supabase.auth.signInWithPassword({ email, password });
     if (err) {
       const msg = handleAuthError(err);
@@ -50,6 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     setError(null);
+    if (!isConfigured) { setError('Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your .env file.'); throw new Error('Auth not configured'); }
     const { error: err } = await supabase.auth.signUp({ email, password });
     if (err) {
       const msg = handleAuthError(err);
@@ -63,8 +68,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    setError(null);
     const { error: err } = await supabase.auth.signOut();
-    if (err) setError(err.message);
+    if (err) {
+      const msg = handleAuthError(err);
+      setError(msg);
+      throw err;
+    }
   };
 
   const clearError = () => setError(null);

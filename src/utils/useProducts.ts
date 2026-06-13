@@ -62,16 +62,18 @@ export function useProducts() {
 
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
     const id = user.id;
     $ids.forEach(x => { if (x !== id) $ids.delete(x); });
     $ids.add(id);
     supabase.from('products').select('*').eq('user_id', id).order('createdat', { ascending: false })
       .then(({ data }) => {
-        if (!data || !$ids.has(id)) return;
+        if (cancelled || !data || !$ids.has(id)) return;
         const mapped = data.map(toCamel);
         setProducts(mapped);
         safeSetItem(PRODUCTS_KEY, JSON.stringify(mapped));
       });
+    return () => { cancelled = true; };
   }, [user?.id]);
 
   useEffect(() => {

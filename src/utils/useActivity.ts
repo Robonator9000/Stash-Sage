@@ -64,16 +64,18 @@ export function useActivity() {
 
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
     const id = user.id;
     $ids.forEach(x => { if (x !== id) $ids.delete(x); });
     $ids.add(id);
     supabase.from('activity_entries').select('*').eq('user_id', id).order('timestamp', { ascending: false }).limit(MAX_ENTRIES)
       .then(({ data }) => {
-        if (!data || !$ids.has(id)) return;
+        if (cancelled || !data || !$ids.has(id)) return;
         const mapped = data.map(toCamel);
         setEntries(mapped);
         safeSetItem(ACTIVITY_KEY, JSON.stringify(mapped));
       });
+    return () => { cancelled = true; };
   }, [user?.id]);
 
   const addEntry = useCallback((entry: ActivityEntry) => {

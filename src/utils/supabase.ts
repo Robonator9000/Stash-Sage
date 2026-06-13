@@ -4,10 +4,10 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-const configured = !!(supabaseUrl && supabaseKey);
+export const isConfigured = !!(supabaseUrl && supabaseKey);
 
 function buildClient(): SupabaseClient {
-  if (configured) return createClient(supabaseUrl!, supabaseKey!);
+  if (isConfigured) return createClient(supabaseUrl!, supabaseKey!);
   const noop = async () => ({ data: null, error: null });
   return {
     auth: {

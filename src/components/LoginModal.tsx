@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { isConfigured } from '../utils/supabase';
 import { X } from 'lucide-react';
 
 interface LoginModalProps {
@@ -49,6 +50,15 @@ export function LoginModal({ isDark, onClose }: LoginModalProps) {
           </button>
         </div>
 
+        {!isConfigured && (
+          <div className={`mb-4 px-3 py-2 rounded-lg text-sm ${isDark ? 'bg-yellow-500/10 text-yellow-400' : 'bg-yellow-50 text-yellow-700'}`}>
+            Auth is not configured. Sign-in requires{' '}
+            <code className="text-xs px-1 py-0.5 rounded bg-black/10">VITE_SUPABASE_URL</code> and{' '}
+            <code className="text-xs px-1 py-0.5 rounded bg-black/10">VITE_SUPABASE_PUBLISHABLE_KEY</code> in your{' '}
+            <code className="text-xs px-1 py-0.5 rounded bg-black/10">.env</code> file.
+          </div>
+        )}
+
         {error && (
           <div className={`mb-4 px-3 py-2 rounded-lg text-sm ${isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600'}`}>
             {error}
@@ -84,14 +94,23 @@ export function LoginModal({ isDark, onClose }: LoginModalProps) {
           />
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || !isConfigured}
             className="w-full py-2.5 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all disabled:opacity-50"
           >
-            {submitting ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
+            {!isConfigured ? 'Auth Unavailable' : submitting ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
           </button>
         </form>
 
-        <div className="mt-4 text-center">
+        <div className="mt-4 flex flex-col items-center gap-2">
+          {mode === 'signin' && isConfigured && (
+            <button
+              type="button"
+              onClick={() => {/* TODO: password reset flow */}}
+              className={`text-xs ${isDark ? 'text-mist hover:text-cyan-400' : 'text-gray-500 hover:text-cyan-600'}`}
+            >
+              Forgot password?
+            </button>
+          )}
           <button
             onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); clearError(); }}
             className={`text-sm ${isDark ? 'text-mist hover:text-cyan-400' : 'text-gray-500 hover:text-cyan-600'}`}
