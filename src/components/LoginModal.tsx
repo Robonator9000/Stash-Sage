@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { isConfigured } from '../utils/supabase';
 import { X } from 'lucide-react';
+import { ResetPasswordModal } from './ResetPasswordModal';
 
 interface LoginModalProps {
   isDark: boolean;
@@ -14,6 +15,7 @@ export function LoginModal({ isDark, onClose }: LoginModalProps) {
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [submitting, setSubmitting] = useState(false);
+  const [showReset, setShowReset] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,7 +107,7 @@ export function LoginModal({ isDark, onClose }: LoginModalProps) {
           {mode === 'signin' && isConfigured && (
             <button
               type="button"
-              onClick={() => {/* TODO: password reset flow */}}
+              onClick={() => setShowReset(true)}
               className={`text-xs ${isDark ? 'text-mist hover:text-cyan-400' : 'text-gray-500 hover:text-cyan-600'}`}
             >
               Forgot password?
@@ -120,6 +122,7 @@ export function LoginModal({ isDark, onClose }: LoginModalProps) {
               : 'Already have an account? Sign in'}
           </button>
         </div>
+        {showReset && <ResetPasswordModal isDark={isDark} onClose={() => setShowReset(false)} />}
       </div>
     </div>
   );

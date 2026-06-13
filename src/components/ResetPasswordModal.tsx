@@ -1,0 +1,92 @@
+import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { X } from 'lucide-react';
+
+interface ResetPasswordModalProps {
+  isDark: boolean;
+  onClose: () => void;
+}
+
+export function ResetPasswordModal({ isDark, onClose }: ResetPasswordModalProps) {
+  const { error, resetPasswordForEmail, clearError } = useAuth();
+  const [email, setEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await resetPasswordForEmail(email);
+      setSent(true);
+    } catch {
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[200] flex items-start justify-center pt-[15vh] p-4"
+      onClick={onClose}
+    >
+      <div className="absolute inset-0 bg-black/50" />
+      <div
+        className={`relative w-full max-w-sm rounded-2xl p-6 shadow-2xl ${isDark ? 'bg-midnight border border-edge' : 'bg-white border border-gray-200'}`}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h2 className={`text-lg font-bold ${isDark ? 'text-frost' : 'text-gray-900'}`}>
+            Reset Password
+          </h2>
+          <button onClick={onClose} className={`p-1 rounded-lg ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}>
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {sent ? (
+          <div className={`mb-4 px-3 py-2 rounded-lg text-sm ${isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
+            Check your email for the password reset link.
+          </div>
+        ) : (
+          <>
+            {error && (
+              <div className={`mb-4 px-3 py-2 rounded-lg text-sm ${isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600'}`}>
+                {error}
+              </div>
+            )}
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <input
+                type="email"
+                placeholder="Your email address"
+                value={email}
+                onChange={e => { setEmail(e.target.value); clearError(); }}
+                required
+                autoFocus
+                className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-colors ${
+                  isDark
+                    ? 'bg-deep text-frost border border-edge focus:border-cyan-500 placeholder-muted'
+                    : 'bg-gray-50 text-gray-900 border border-gray-200 focus:border-cyan-400 placeholder-gray-400'
+                }`}
+              />
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full py-2.5 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all disabled:opacity-50"
+              >
+                {submitting ? 'Sending...' : 'Send Reset Link'}
+              </button>
+            </form>
+          </>
+        )}
+
+        <button
+          onClick={onClose}
+          className={`mt-4 w-full text-center text-xs ${isDark ? 'text-mist hover:text-cyan-400' : 'text-gray-500 hover:text-cyan-600'}`}
+        >
+          Back to Sign In
+        </button>
+      </div>
+    </div>
+  );
+}

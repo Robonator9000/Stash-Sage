@@ -12,6 +12,8 @@ interface AuthState {
   signOut: () => Promise<void>;
   updatePassword: (newPassword: string) => Promise<void>;
   updateEmail: (newEmail: string) => Promise<void>;
+  resetPasswordForEmail: (email: string) => Promise<void>;
+  deleteAccount: () => Promise<void>;
   clearError: () => void;
 }
 
@@ -103,10 +105,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     showToast({ id: 'auth-email', title: 'Verification sent', body: 'Check your new email for confirmation.' });
   };
 
+  const resetPasswordForEmail = async (email: string) => {
+    setError(null);
+    if (!isConfigured) { setError('Auth is not configured.'); throw new Error('Auth not configured'); }
+    const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/Stash-Tracker',
+    });
+    if (err) {
+      const msg = handleAuthError(err);
+      setError(msg);
+      throw err;
+    }
+    showToast({ id: 'auth-reset', title: 'Reset sent', body: 'Check your email for the password reset link.' });
+  };
+
+  const deleteAccount = async () => {
+    setError(null);
+    if (!isConfigured) { setError('Auth is not configured.'); throw new Error('Auth not configured'); }
+    const { error: err } = await supabase.rpc('delete_my_account');
+    if (err) {
+      const msg = handleAuthError(err);
+      setError(msg);
+      throw err;
+    }
+    showToast({ id: 'auth-deleted', title: 'Account deleted', body: 'Your account has been permanently deleted.' });
+  };
+
   const clearError = () => setError(null);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, error, signIn, signUp, signOut, updatePassword, updateEmail, clearError }}>
+    <AuthContext.Provider value={{ user, isLoading, error, signIn, signUp, signOut, updatePassword, updateEmail, resetPasswordForEmail, deleteAccount, clearError }}>
       {children}
     </AuthContext.Provider>
   );

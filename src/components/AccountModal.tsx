@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { X } from 'lucide-react';
+import { X, AlertTriangle } from 'lucide-react';
 
 interface AccountModalProps {
   isDark: boolean;
@@ -8,13 +8,14 @@ interface AccountModalProps {
 }
 
 export function AccountModal({ isDark, onClose }: AccountModalProps) {
-  const { user, error, signOut, updatePassword, updateEmail, clearError } = useAuth();
+  const { user, error, signOut, updatePassword, updateEmail, deleteAccount, clearError } = useAuth();
   const [tab, setTab] = useState<'info' | 'password' | 'email'>('info');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   if (!user) return null;
 
@@ -45,6 +46,18 @@ export function AccountModal({ isDark, onClose }: AccountModalProps) {
     } catch {
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setSubmitting(true);
+    try {
+      await deleteAccount();
+      onClose();
+    } catch {
+    } finally {
+      setSubmitting(false);
+      setConfirmDelete(false);
     }
   };
 
@@ -120,6 +133,48 @@ export function AccountModal({ isDark, onClose }: AccountModalProps) {
             >
               Sign Out
             </button>
+            <div className={`mt-6 pt-4 border-t ${isDark ? 'border-edge' : 'border-gray-200'}`}>
+              <div className="flex items-center gap-2 mb-3">
+                <AlertTriangle className={`w-4 h-4 ${isDark ? 'text-red-400' : 'text-red-500'}`} />
+                <span className={`text-xs font-bold tracking-wider uppercase ${isDark ? 'text-red-400' : 'text-red-600'}`}>
+                  Danger Zone
+                </span>
+              </div>
+              {!confirmDelete ? (
+                <button
+                  onClick={() => setConfirmDelete(true)}
+                  className="w-full py-2 rounded-xl text-xs font-medium text-red-400 border border-red-400/30 hover:bg-red-500/10 transition-all"
+                >
+                  Delete Account
+                </button>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <p className={`text-xs ${isDark ? 'text-muted' : 'text-gray-500'}`}>
+                    This permanently deletes your account and all data. This cannot be undone.
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setConfirmDelete(false)}
+                      className="flex-1 py-2 rounded-xl text-xs font-medium transition-all border"
+                      disabled={submitting}
+                      style={{
+                        color: isDark ? 'var(--text-secondary)' : 'var(--text)',
+                        borderColor: isDark ? 'var(--border)' : 'var(--border)',
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleDeleteAccount}
+                      disabled={submitting}
+                      className="flex-1 py-2 rounded-xl text-xs font-medium text-white bg-red-500 hover:bg-red-600 transition-all disabled:opacity-50"
+                    >
+                      {submitting ? 'Deleting...' : 'Confirm Delete'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 

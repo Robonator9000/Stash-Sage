@@ -83,7 +83,7 @@ export function useProducts() {
   const addProduct = useCallback((product: Product) => {
     setProducts((prev) => [product, ...prev]);
     if (user) {
-      supabase.from('products').insert({ id: product.id, user_id: user.id, ...toSnake(product) }).then();
+      supabase.from('products').insert({ id: product.id, user_id: user.id, ...toSnake(product) }).then(() => {}, () => {});
     }
   }, [user]);
 
@@ -92,14 +92,14 @@ export function useProducts() {
       prev.map((p) => (p.id === updated.id ? updated : p))
     );
     if (user) {
-      supabase.from('products').update(toSnake(updated)).eq('id', updated.id).then();
+      supabase.from('products').update(toSnake(updated)).eq('id', updated.id).then(() => {}, () => {});
     }
   }, [user]);
 
   const deleteProduct = useCallback((id: string) => {
     setProducts((prev) => prev.filter((p) => p.id !== id));
     if (user) {
-      supabase.from('products').delete().eq('id', id).then();
+      supabase.from('products').delete().eq('id', id).then(() => {}, () => {});
     }
   }, [user]);
 
@@ -110,15 +110,18 @@ export function useProducts() {
         x.id === id ? { ...x, favorite: !x.favorite } : x
       );
       if (user && p) {
-        supabase.from('products').update({ favorite: !p.favorite }).eq('id', id).then();
+        supabase.from('products').update({ favorite: !p.favorite }).eq('id', id).then(() => {}, () => {});
       }
       return next;
     });
   }, [user]);
 
   const consumeProduct = useCallback((id: string, amountConsumed: number, consumedAt?: Date) => {
-    setProducts((prev) =>
-      prev.map((p) =>
+    let pRef: Product | undefined;
+    setProducts((prev) => {
+      pRef = prev.find(x => x.id === id);
+      if (!pRef) return prev;
+      return prev.map((p) =>
         p.id === id
           ? {
               ...p,
@@ -127,27 +130,24 @@ export function useProducts() {
               lastConsumed: consumedAt || new Date(),
             }
           : p
-      )
-    );
-    if (user) {
-      const p = products.find(x => x.id === id);
-      if (!p) return;
-      const newAmount = roundToHundredth(Math.max(0, p.amount - amountConsumed));
+      );
+    });
+    if (user && pRef) {
       supabase.from('products').update({
-        amount: newAmount,
-        consumptionCount: (p.consumptionCount || 0) + 1,
+        amount: roundToHundredth(Math.max(0, pRef.amount - amountConsumed)),
+        consumptionCount: (pRef.consumptionCount || 0) + 1,
         lastconsumed: (consumedAt || new Date()).toISOString(),
-      }).eq('id', id).then();
+      }).eq('id', id).then(() => {}, () => {});
     }
-  }, [user, products]);
+  }, [user]);
 
   const replaceAllProducts = useCallback((nextProducts: Product[]) => {
     setProducts(nextProducts.map(parseProductDates));
     if (user) {
       supabase.from('products').delete().eq('user_id', user.id).then(() => {
         const rows = nextProducts.map(p => ({ id: p.id, user_id: user.id, ...toSnake(p) }));
-        supabase.from('products').insert(rows).then();
-      });
+        supabase.from('products').insert(rows).then(() => {}, () => {});
+      }, () => {});
     }
   }, [user]);
 

@@ -85,7 +85,7 @@ export function useActivity() {
       return updated;
     });
     if (user) {
-      supabase.from('activity_entries').insert({ id: entry.id, user_id: user.id, ...toSnake(entry) }).then();
+      supabase.from('activity_entries').insert({ id: entry.id, user_id: user.id, ...toSnake(entry) }).then(() => {}, () => {});
     }
   }, [user]);
 
@@ -93,7 +93,7 @@ export function useActivity() {
     setEntries([]);
     safeSetItem(ACTIVITY_KEY, JSON.stringify([]));
     if (user) {
-      supabase.from('activity_entries').delete().eq('user_id', user.id).then();
+      supabase.from('activity_entries').delete().eq('user_id', user.id).then(() => {}, () => {});
     }
   }, [user]);
 

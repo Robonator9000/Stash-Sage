@@ -74,7 +74,7 @@ export function useSettings() {
             supabase.from('settings').upsert(
               { user_id: user.id, data: _settings },
               { onConflict: 'user_id' }
-            ).then();
+            ).then(() => {}, () => {});
           }
           return;
         }
@@ -100,7 +100,7 @@ export function useSettings() {
       supabase.from('settings').upsert(
         { user_id: user.id, data: s },
         { onConflict: 'user_id' }
-      ).then();
+      ).then(() => {}, () => {});
     }
   }, [user]);
 
