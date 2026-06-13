@@ -10,6 +10,8 @@ interface AuthState {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  updatePassword: (newPassword: string) => Promise<void>;
+  updateEmail: (newEmail: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -77,10 +79,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updatePassword = async (newPassword: string) => {
+    setError(null);
+    if (!isConfigured) { setError('Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your .env file.'); throw new Error('Auth not configured'); }
+    const { error: err } = await supabase.auth.updateUser({ password: newPassword });
+    if (err) {
+      const msg = handleAuthError(err);
+      setError(msg);
+      throw err;
+    }
+    showToast({ id: 'auth-password', title: 'Password updated', body: 'Your password has been changed.' });
+  };
+
+  const updateEmail = async (newEmail: string) => {
+    setError(null);
+    if (!isConfigured) { setError('Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your .env file.'); throw new Error('Auth not configured'); }
+    const { error: err } = await supabase.auth.updateUser({ email: newEmail });
+    if (err) {
+      const msg = handleAuthError(err);
+      setError(msg);
+      throw err;
+    }
+    showToast({ id: 'auth-email', title: 'Verification sent', body: 'Check your new email for confirmation.' });
+  };
+
   const clearError = () => setError(null);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, error, signIn, signUp, signOut, clearError }}>
+    <AuthContext.Provider value={{ user, isLoading, error, signIn, signUp, signOut, updatePassword, updateEmail, clearError }}>
       {children}
     </AuthContext.Provider>
   );

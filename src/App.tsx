@@ -22,6 +22,8 @@ import { PinModal } from './components/PinModal';
 import { BackgroundCanvas } from './components/BackgroundCanvas';
 import { WelcomeModal } from './components/WelcomeModal';
 import { LoginModal } from './components/LoginModal';
+import { AccountModal } from './components/AccountModal';
+import { UserMenu } from './components/UserMenu';
 import { useAuth } from './contexts/AuthContext';
 import { CalendarHeatmap } from './components/CalendarHeatmap';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -74,6 +76,7 @@ export default function App() {
   const [sessionPeople, setSessionPeople] = useState(2);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showAccountModal, setShowAccountModal] = useState(false);
   const [showSmoke, setShowSmoke] = useState(false);
 
   const [historyFilterType, setHistoryFilterType] = useState<string>('all');
@@ -81,7 +84,7 @@ export default function App() {
   const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
 
   const isDark = settings.theme === 'dark';
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
 
   const browserLang = useMemo(() => {
     const raw = navigator.language || 'en';
@@ -541,13 +544,7 @@ export default function App() {
               </svg>
             </button>
             {user ? (
-              <button
-                onClick={() => signOut()}
-                className={`px-2 py-1.5 rounded-xl text-xs font-medium transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}
-                title={`Signed in as ${user.email}`}
-              >
-                {user.email?.split('@')[0]}
-              </button>
+              <UserMenu isDark={isDark} onOpenAccount={() => setShowAccountModal(true)} />
             ) : (
               <button
                 onClick={() => setShowLoginModal(true)}
@@ -573,6 +570,7 @@ export default function App() {
           </div>
         </div>
         {showLoginModal && <LoginModal isDark={isDark} onClose={() => setShowLoginModal(false)} />}
+        {showAccountModal && <AccountModal isDark={isDark} onClose={() => setShowAccountModal(false)} />}
       </header>
 
       {/* Tabs + Content */}

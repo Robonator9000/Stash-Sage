@@ -18,6 +18,7 @@ function buildClient(): SupabaseClient {
       signInWithPassword: noop,
       signUp: noop,
       signOut: async () => ({ error: null }),
+      updateUser: async () => ({ data: { user: null }, error: null }),
     },
     from: () => ({
       select: () => ({ data: null, error: null }),
