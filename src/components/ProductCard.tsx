@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { Product } from '../types';
 import { formatDate, formatPrecision } from '../utils/helpers';
@@ -22,7 +22,7 @@ interface ProductCardProps {
   onToggleSelect?: () => void;
 }
 
-export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavorite, isDark = true, layout = 'grid', precision = 2, isSelectMode = false, selected = false, onToggleSelect }: ProductCardProps) {
+export const ProductCard = memo(function ProductCard({ product, onClick, onConsume, onSell, onToggleFavorite, isDark = true, layout = 'grid', precision = 2, isSelectMode = false, selected = false, onToggleSelect }: ProductCardProps) {
   const { settings, updateSettings } = useSettings();
   const amountString = `${formatPrecision(product.amount, precision)}g`;
   const lang = settings.language;
@@ -540,4 +540,4 @@ export function ProductCard({ product, onClick, onConsume, onSell, onToggleFavor
       </div>
     </div>
   );
-}
+});

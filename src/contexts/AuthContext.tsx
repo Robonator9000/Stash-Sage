@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useMemo, useCallback, type ReactNode } from 'react';
 import { supabase, isConfigured } from '../utils/supabase';
 import type { User, AuthError } from '@supabase/supabase-js';
 import { showToast } from '../components/Toast';
@@ -35,106 +35,105 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => data?.subscription.unsubscribe();
   }, []);
 
-  const handleAuthError = (err: AuthError | Error): string => {
+  const handleAuthError = useCallback((err: AuthError | Error): string => {
     const msg = err?.message ?? 'An unknown error occurred.';
     if (msg.includes('Invalid login credentials')) return 'Invalid email or password.';
     if (msg.includes('Email not confirmed')) return 'Please confirm your email before signing in.';
     if (msg.includes('User already registered')) return 'An account with this email already exists.';
     if (msg.includes('Password should be at least')) return 'Password must be at least 6 characters.';
     return msg;
-  };
+  }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     setError(null);
     if (!isConfigured) { setError('Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your .env file.'); throw new Error('Auth not configured'); }
     const { error: err } = await supabase.auth.signInWithPassword({ email, password });
     if (err) {
-      const msg = handleAuthError(err);
-      setError(msg);
+      setError(handleAuthError(err));
       throw err;
     }
     showToast({ id: 'auth-signin', title: 'Signed in', body: 'Welcome back!' });
-  };
+  }, [handleAuthError]);
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = useCallback(async (email: string, password: string) => {
     setError(null);
     if (!isConfigured) { setError('Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your .env file.'); throw new Error('Auth not configured'); }
     const { error: err } = await supabase.auth.signUp({ email, password });
     if (err) {
-      const msg = handleAuthError(err);
-      setError(msg);
+      setError(handleAuthError(err));
       throw err;
     }
     showToast({
       id: 'auth-signup', title: 'Account created',
       body: 'Check your email for confirmation.',
     });
-  };
+  }, [handleAuthError]);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     setError(null);
     const { error: err } = await supabase.auth.signOut();
     if (err) {
-      const msg = handleAuthError(err);
-      setError(msg);
+      setError(handleAuthError(err));
       throw err;
     }
-  };
+  }, [handleAuthError]);
 
-  const updatePassword = async (newPassword: string) => {
+  const updatePassword = useCallback(async (newPassword: string) => {
     setError(null);
     if (!isConfigured) { setError('Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your .env file.'); throw new Error('Auth not configured'); }
     const { error: err } = await supabase.auth.updateUser({ password: newPassword });
     if (err) {
-      const msg = handleAuthError(err);
-      setError(msg);
+      setError(handleAuthError(err));
       throw err;
     }
     showToast({ id: 'auth-password', title: 'Password updated', body: 'Your password has been changed.' });
-  };
+  }, [handleAuthError]);
 
-  const updateEmail = async (newEmail: string) => {
+  const updateEmail = useCallback(async (newEmail: string) => {
     setError(null);
     if (!isConfigured) { setError('Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your .env file.'); throw new Error('Auth not configured'); }
     const { error: err } = await supabase.auth.updateUser({ email: newEmail });
     if (err) {
-      const msg = handleAuthError(err);
-      setError(msg);
+      setError(handleAuthError(err));
       throw err;
     }
     showToast({ id: 'auth-email', title: 'Verification sent', body: 'Check your new email for confirmation.' });
-  };
+  }, [handleAuthError]);
 
-  const resetPasswordForEmail = async (email: string) => {
+  const resetPasswordForEmail = useCallback(async (email: string) => {
     setError(null);
     if (!isConfigured) { setError('Auth is not configured.'); throw new Error('Auth not configured'); }
     const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: window.location.origin + '/Stash-Tracker',
     });
     if (err) {
-      const msg = handleAuthError(err);
-      setError(msg);
+      setError(handleAuthError(err));
       throw err;
     }
     showToast({ id: 'auth-reset', title: 'Reset sent', body: 'Check your email for the password reset link.' });
-  };
+  }, [handleAuthError]);
 
-  const deleteAccount = async () => {
+  const deleteAccount = useCallback(async () => {
     setError(null);
     if (!isConfigured) { setError('Auth is not configured.'); throw new Error('Auth not configured'); }
     const { error: err } = await supabase.rpc('delete_my_account');
     if (err) {
-      const msg = handleAuthError(err);
-      setError(msg);
+      setError(handleAuthError(err));
       throw err;
     }
     showToast({ id: 'auth-deleted', title: 'Account deleted', body: 'Your account has been permanently deleted.' });
-  };
+  }, [handleAuthError]);
 
-  const clearError = () => setError(null);
+  const clearError = useCallback(() => setError(null), []);
+
+  const value = useMemo(() => ({
+    user, isLoading, error,
+    signIn, signUp, signOut,
+    updatePassword, updateEmail, resetPasswordForEmail, deleteAccount, clearError,
+  }), [user, isLoading, error, signIn, signUp, signOut, updatePassword, updateEmail, resetPasswordForEmail, deleteAccount, clearError]);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, error, signIn, signUp, signOut, updatePassword, updateEmail, resetPasswordForEmail, deleteAccount, clearError }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

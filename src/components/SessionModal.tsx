@@ -64,9 +64,16 @@ export function SessionModal({
   const gramsPerPerson = people > 0 ? amountUsed / people : 0;
   const bowlsPerPerson = gramsPerPerson / gramsPerBowl;
 
-  // Timer logic — clean tick without side effects in updaters
+  // Timer logic — use refs to avoid recreating interval on every tick
+  const handleHitRef = useRef(handleHit);
+  handleHitRef.current = handleHit;
+  const customTimerDurationRef = useRef(customTimerDuration);
+  customTimerDurationRef.current = customTimerDuration;
+  const timerSecondsRef = useRef(timerSeconds);
+  timerSecondsRef.current = timerSeconds;
+
   useEffect(() => {
-    if (!isTimerRunning || timerSeconds <= 0) return;
+    if (!isTimerRunning) return;
     const ms = settings.showTimerMs ? 100 : 1000;
     const interval = setInterval(() => {
       if (settings.showTimerMs) {
@@ -75,25 +82,18 @@ export function SessionModal({
           return next <= 0 ? next + 1000 : next;
         });
       }
-      setTimerSeconds((prev) => prev - 1);
+      timerSecondsRef.current -= 1;
+      setTimerSeconds(timerSecondsRef.current);
+      if (timerSecondsRef.current <= 0) {
+        timerSecondsRef.current = customTimerDurationRef.current;
+        setTimerSeconds(timerSecondsRef.current);
+        setTimerMs(0);
+        handleHitRef.current();
+        playSessionBeep();
+      }
     }, ms);
     return () => clearInterval(interval);
-  }, [isTimerRunning, timerSeconds, settings.showTimerMs]);
-
-  // Separate effect: when timer hits zero, handle the hit and auto-restart in rotation mode
-  const handleHitRef = useRef(handleHit);
-  handleHitRef.current = handleHit;
-  const customTimerDurationRef = useRef(customTimerDuration);
-  customTimerDurationRef.current = customTimerDuration;
-
-  useEffect(() => {
-    if (isTimerRunning && timerSeconds <= 0) {
-      handleHitRef.current();
-      setTimerSeconds(customTimerDurationRef.current);
-      setTimerMs(0);
-      playSessionBeep();
-    }
-  }, [isTimerRunning, timerSeconds]);
+  }, [isTimerRunning, settings.showTimerMs]);
 
   const handleFinishSession = () => {
     const session: Session = {

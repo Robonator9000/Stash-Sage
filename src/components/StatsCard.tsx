@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, memo } from 'react';
 import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { roundToHundredth, formatPrecision } from '../utils/helpers';
@@ -11,70 +11,71 @@ interface StatsCardProps {
   isDark?: boolean;
 }
 
-export function StatsCard({ products, sessions, isDark = true }: StatsCardProps) {
+export const StatsCard = memo(function StatsCard({ products, sessions, isDark = true }: StatsCardProps) {
   const { settings, toggleStatVisibility } = useSettings();
   const stats = settings.statsVisibility;
   const [hiddenHint, setHiddenHint] = useState<string | null>(null);
 
-  const totalProducts = products.length;
-  const totalAmount = roundToHundredth(products.reduce((sum, p) => sum + p.amount, 0));
-  const totalSessions = products.reduce((sum, p) => sum + (p.consumptionCount || 0), 0);
-  const averageRating = products.filter(p => p.rating > 0).length > 0
-    ? roundToHundredth(products.filter(p => p.rating > 0).reduce((sum, p) => sum + p.rating, 0) / products.filter(p => p.rating > 0).length)
-    : 0;
-  const averageTHC = products.filter(p => p.thc > 0).length > 0
-    ? roundToHundredth(products.filter(p => p.thc > 0).reduce((sum, p) => sum + p.thc, 0) / products.filter(p => p.thc > 0).length)
-    : 0;
-  const totalValue = roundToHundredth(products.reduce((sum, p) => sum + (p.price || 0) * p.amount, 0));
+  const computed = useMemo(() => {
+    const totalProducts = products.length;
+    const totalAmount = roundToHundredth(products.reduce((sum, p) => sum + p.amount, 0));
+    const totalSessions = products.reduce((sum, p) => sum + (p.consumptionCount || 0), 0);
+    const averageRating = products.filter(p => p.rating > 0).length > 0
+      ? roundToHundredth(products.filter(p => p.rating > 0).reduce((sum, p) => sum + p.rating, 0) / products.filter(p => p.rating > 0).length)
+      : 0;
+    const averageTHC = products.filter(p => p.thc > 0).length > 0
+      ? roundToHundredth(products.filter(p => p.thc > 0).reduce((sum, p) => sum + p.thc, 0) / products.filter(p => p.thc > 0).length)
+      : 0;
+    const totalValue = roundToHundredth(products.reduce((sum, p) => sum + (p.price || 0) * p.amount, 0));
+    const pricePerGram = totalAmount > 0 ? roundToHundredth(totalValue / totalAmount) : 0;
 
-  const pricePerGram = totalAmount > 0 ? roundToHundredth(totalValue / totalAmount) : 0;
-
-  const lastConsumedDate = products.reduce<Date | null>((latest, p) => {
-    if (!p.lastConsumed) return latest;
-    const d = new Date(p.lastConsumed);
-    return !latest || d.getTime() > latest.getTime() ? d : latest;
-  }, null);
-  const lastConsumedStr = lastConsumedDate
-    ? (() => {
-        const diffMs = Date.now() - lastConsumedDate.getTime();
-        const diffMins = Math.floor(diffMs / 60000);
-        if (diffMins < 60) return t('minutesAgo', settings.language).replace('{n}', diffMins.toString());
-        const diffHours = Math.floor(diffMins / 60);
-        if (diffHours < 24) return t('hoursAgo', settings.language).replace('{n}', diffHours.toString());
-        const diffDays = Math.floor(diffHours / 24);
-        if (diffDays < 30) return t('daysAgo', settings.language).replace('{n}', diffDays.toString());
-        const diffMonths = Math.floor(diffDays / 30);
-        return t('monthsAgo', settings.language).replace('{n}', diffMonths.toString());
-      })()
-    : '—';
-
-  let consumptionRate = 0;
-  let projectedRunOut = '—';
-  if (sessions.length > 0) {
-    const sortedSessions = [...sessions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    const firstSessionDate = new Date(sortedSessions[0].date);
-    const daysDiff = Math.max(1, (Date.now() - firstSessionDate.getTime()) / 86400000);
-    const totalConsumed = sessions.reduce((sum, s) => sum + Math.max(0, s.amount), 0);
-    consumptionRate = roundToHundredth(totalConsumed / daysDiff);
-    if (consumptionRate > 0 && totalAmount > 0) {
-      const daysLeft = Math.round(totalAmount / consumptionRate);
-      projectedRunOut = daysLeft.toString();
+    let consumptionRate = 0;
+    let projectedRunOut = '—';
+    if (sessions.length > 0) {
+      const sortedSessions = [...sessions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      const firstSessionDate = new Date(sortedSessions[0].date);
+      const daysDiff = Math.max(1, (Date.now() - firstSessionDate.getTime()) / 86400000);
+      const totalConsumed = sessions.reduce((sum, s) => sum + Math.max(0, s.amount), 0);
+      consumptionRate = roundToHundredth(totalConsumed / daysDiff);
+      if (consumptionRate > 0 && totalAmount > 0) {
+        projectedRunOut = Math.round(totalAmount / consumptionRate).toString();
+      }
     }
-  }
+
+    return { totalProducts, totalAmount, totalSessions, averageRating, averageTHC, totalValue, pricePerGram, consumptionRate, projectedRunOut };
+  }, [products, sessions]);
+
+  const lastConsumedStr = useMemo(() => {
+    const lastConsumedDate = products.reduce<Date | null>((latest, p) => {
+      if (!p.lastConsumed) return latest;
+      const d = new Date(p.lastConsumed);
+      return !latest || d.getTime() > latest.getTime() ? d : latest;
+    }, null);
+    if (!lastConsumedDate) return '—';
+    const diffMs = Date.now() - lastConsumedDate.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 60) return t('minutesAgo', settings.language).replace('{n}', diffMins.toString());
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return t('hoursAgo', settings.language).replace('{n}', diffHours.toString());
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 30) return t('daysAgo', settings.language).replace('{n}', diffDays.toString());
+    const diffMonths = Math.floor(diffDays / 30);
+    return t('monthsAgo', settings.language).replace('{n}', diffMonths.toString());
+  }, [products, settings.language]);
 
   const dp = settings.decimalPrecision;
-  const statItems = [
-    { key: 'totalProducts' as const, visible: stats.totalProducts, icon: Package, label: t('totalProducts', settings.language), value: totalProducts.toString(), suffix: '' },
-    { key: 'totalAmount' as const, visible: stats.totalAmount, icon: Scale, label: t('totalAmount', settings.language), value: formatPrecision(totalAmount, dp), suffix: 'g' },
-    { key: 'totalSessions' as const, visible: stats.totalSessions, icon: Flame, label: t('totalSessions', settings.language), value: totalSessions.toString(), suffix: '' },
-    { key: 'averageRating' as const, visible: stats.averageRating, icon: Star, label: t('averageRating', settings.language), value: formatPrecision(averageRating, dp), suffix: '/5' },
-    { key: 'averageTHC' as const, visible: stats.averageTHC, icon: Percent, label: t('averageTHC', settings.language), value: formatPrecision(averageTHC, dp), suffix: '%' },
-    { key: 'totalValue' as const, visible: stats.totalValue, icon: DollarSign, label: t('totalValue', settings.language), value: settings.currency + formatPrecision(totalValue, dp), suffix: '' },
-    { key: 'pricePerGram' as const, visible: stats.pricePerGram && totalAmount > 0, icon: DollarSign, label: t('pricePerGram', settings.language), value: settings.currency + formatPrecision(pricePerGram, dp), suffix: '/g' },
+  const statItems = useMemo(() => [
+    { key: 'totalProducts' as const, visible: stats.totalProducts, icon: Package, label: t('totalProducts', settings.language), value: computed.totalProducts.toString(), suffix: '' },
+    { key: 'totalAmount' as const, visible: stats.totalAmount, icon: Scale, label: t('totalAmount', settings.language), value: formatPrecision(computed.totalAmount, dp), suffix: 'g' },
+    { key: 'totalSessions' as const, visible: stats.totalSessions, icon: Flame, label: t('totalSessions', settings.language), value: computed.totalSessions.toString(), suffix: '' },
+    { key: 'averageRating' as const, visible: stats.averageRating, icon: Star, label: t('averageRating', settings.language), value: formatPrecision(computed.averageRating, dp), suffix: '/5' },
+    { key: 'averageTHC' as const, visible: stats.averageTHC, icon: Percent, label: t('averageTHC', settings.language), value: formatPrecision(computed.averageTHC, dp), suffix: '%' },
+    { key: 'totalValue' as const, visible: stats.totalValue, icon: DollarSign, label: t('totalValue', settings.language), value: settings.currency + formatPrecision(computed.totalValue, dp), suffix: '' },
+    { key: 'pricePerGram' as const, visible: stats.pricePerGram && computed.totalAmount > 0, icon: DollarSign, label: t('pricePerGram', settings.language), value: settings.currency + formatPrecision(computed.pricePerGram, dp), suffix: '/g' },
     { key: 'lastConsumed' as const, visible: stats.lastConsumed, icon: Clock, label: t('lastConsumed', settings.language), value: lastConsumedStr, suffix: '' },
-    { key: 'consumptionRate' as const, visible: stats.consumptionRate && consumptionRate > 0, icon: TrendingDown, label: t('consumptionRate', settings.language), value: formatPrecision(consumptionRate, dp), suffix: t('perDay', settings.language) },
-    { key: 'projectedRunOut' as const, visible: stats.projectedRunOut && projectedRunOut !== '—', icon: CalendarDays, label: t('projectedRunOut', settings.language), value: projectedRunOut, suffix: t('days', settings.language) },
-  ];
+    { key: 'consumptionRate' as const, visible: stats.consumptionRate && computed.consumptionRate > 0, icon: TrendingDown, label: t('consumptionRate', settings.language), value: formatPrecision(computed.consumptionRate, dp), suffix: t('perDay', settings.language) },
+    { key: 'projectedRunOut' as const, visible: stats.projectedRunOut && computed.projectedRunOut !== '—', icon: CalendarDays, label: t('projectedRunOut', settings.language), value: computed.projectedRunOut, suffix: t('days', settings.language) },
+  ], [computed, stats, dp, lastConsumedStr, settings.language, settings.currency]);
 
   const visibleStats = statItems.filter(s => s.visible);
 
@@ -133,4 +134,4 @@ export function StatsCard({ products, sessions, isDark = true }: StatsCardProps)
       </div>
     </div>
   );
-}
+});

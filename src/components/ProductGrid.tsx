@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Product } from '../types';
 import { ProductCard } from './ProductCard';
 import { EmptyState } from './EmptyState';
@@ -18,7 +19,7 @@ interface ProductGridProps {
   onToggleSelect?: (id: string) => void;
 }
 
-export function ProductGrid({
+export const ProductGrid = memo(function ProductGrid({
   products,
   filteredProducts,
   isDark,
@@ -71,4 +72,4 @@ export function ProductGrid({
       )}
     </main>
   );
-}
+});
