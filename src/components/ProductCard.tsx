@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, memo } from 'react';
+import { useState, useRef, useEffect, useMemo, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { Product } from '../types';
 import { formatDate, formatPrecision } from '../utils/helpers';
@@ -24,7 +24,7 @@ interface ProductCardProps {
 
 export const ProductCard = memo(function ProductCard({ product, onClick, onConsume, onSell, onToggleFavorite, isDark = true, layout = 'grid', precision = 2, isSelectMode = false, selected = false, onToggleSelect }: ProductCardProps) {
   const { settings, updateSettings } = useSettings();
-  const amountString = `${formatPrecision(product.amount, precision)}g`;
+  const amountString = useMemo(() => `${formatPrecision(product.amount, precision)}g`, [product.amount, precision]);
   const lang = settings.language;
 
   const [strainHovered, setStrainHovered] = useState(false);
@@ -50,12 +50,12 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
     return () => { if (ozTimer.current) clearTimeout(ozTimer.current); };
   }, []);
 
-  const getStrainColor = (strainType: string) => {
-    const custom = settings.customStrainColors?.[strainType];
+  const strainColors = useMemo(() => {
+    const custom = settings.customStrainColors?.[product.type];
     if (custom && /^#[0-9a-f]{6}$/i.test(custom)) {
       return { bg: '', text: '', border: '', customHex: custom };
     }
-    switch (strainType.toLowerCase()) {
+    switch (product.type.toLowerCase()) {
       case 'indica':
         return { bg: isDark ? 'bg-purple-500/15' : 'bg-purple-100', text: 'text-purple-400', border: 'border-purple-500/30', customHex: '' };
       case 'sativa':
@@ -65,11 +65,9 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
       default:
         return { bg: isDark ? 'bg-mist/15' : 'bg-gray-100', text: 'text-mist', border: 'border-mist/30', customHex: '' };
     }
-  };
+  }, [product.type, isDark, settings.customStrainColors]);
 
-  const strainColors = getStrainColor(product.type);
-
-  const highlight = (() => {
+  const highlight = useMemo(() => {
     const hex = settings.customStrainColors?.[product.type];
     if (hex && /^#[0-9a-f]{6}$/i.test(hex)) {
       const r = parseInt(hex.slice(1, 3), 16);
@@ -85,12 +83,12 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
     const hit = known[product.type.toLowerCase()];
     if (hit) return hit;
     return { borderClass: 'border-mist/40', glowRgb: 'rgba(148,163,184,0.25)' };
-  })();
+  }, [product.type, settings.customStrainColors]);
 
-  const glowStyle = {
+  const glowStyle = useMemo(() => ({
     boxShadow: `3px 0 22px -6px ${highlight.glowRgb}`,
     ...(!highlight.borderClass ? { borderLeftColor: settings.customStrainColors?.[product.type] || '#94a3b8' } : {}),
-  };
+  }), [highlight, settings.customStrainColors, product.type]);
 
   const displayType = product.type.charAt(0).toUpperCase() + product.type.slice(1);
 

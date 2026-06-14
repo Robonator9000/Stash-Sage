@@ -85,7 +85,7 @@ export default function App() {
     } else if (!settings.pinEnabled) {
       setPinUnlocked(true);
     }
-  }, [settings.pinEnabled, settings.pinHash]);
+  }, [settings.pinEnabled, settings.pinHash, pinUnlocked]);
 
   useEffect(() => {
     const root = document.documentElement;

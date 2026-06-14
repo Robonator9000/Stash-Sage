@@ -1,7 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 export function useModalAnimation(onClose: () => void) {
   const [isVisible, setIsVisible] = useState(false);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 10);
@@ -12,17 +14,17 @@ export function useModalAnimation(onClose: () => void) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setIsVisible(false);
-        setTimeout(onClose, 200);
+        setTimeout(() => onCloseRef.current(), 200);
       }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, []);
 
   const handleClose = useCallback(() => {
     setIsVisible(false);
-    setTimeout(onClose, 200);
-  }, [onClose]);
+    setTimeout(() => onCloseRef.current(), 200);
+  }, []);
 
   return { isVisible, handleClose };
 }
