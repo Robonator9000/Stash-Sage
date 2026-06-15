@@ -27,7 +27,10 @@ import { UserMenu } from './components/UserMenu';
 import { LogoIcon } from './components/LogoIcon';
 import { ProfileCard } from './components/ProfileCard';
 import { EditProfileModal } from './components/EditProfileModal';
+import { SocialFeed } from './components/SocialFeed';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { useAuth } from './contexts/AuthContext';
+import { supabase } from './utils/supabase';
 const DashboardTab = lazy(() => import('./components/DashboardTab').then(m => ({ default: m.DashboardTab })));
 const HistoryTab = lazy(() => import('./components/HistoryTab').then(m => ({ default: m.HistoryTab })));
 
@@ -877,6 +880,7 @@ export default function App() {
 
         {/* ==================== COMMUNITY TAB ==================== */}
         {activeTab === 'community' && (
+          <ErrorBoundary isDark={isDark} lang={lang}>
           <div>
             <ProfileCard
               profile={settings.profile}
@@ -885,18 +889,37 @@ export default function App() {
               isDark={isDark}
               lang={lang}
               onEditProfile={() => setShowEditProfile(true)}
-              onUpdateProfile={(p) => updateSettings({ profile: p })}
+              onUpdateProfile={(p) => {
+                updateSettings({ profile: p });
+                if (user) supabase.from('profiles').upsert({ user_id: user.id, display_name: p.username }, { onConflict: 'user_id' }).then(() => {}, () => {});
+              }}
             />
             {showEditProfile && settings.profile && (
               <EditProfileModal
                 profile={settings.profile}
                 isDark={isDark}
                 lang={lang}
-                onSave={(p) => { updateSettings({ profile: p }); setShowEditProfile(false); }}
+                onSave={(p) => {
+                  updateSettings({ profile: p });
+                  if (user) supabase.from('profiles').upsert({ user_id: user.id, display_name: p.username }, { onConflict: 'user_id' }).then(() => {}, () => {});
+                  setShowEditProfile(false);
+                }}
                 onClose={() => setShowEditProfile(false)}
               />
             )}
+
+            {user && (
+              <SocialFeed
+                isDark={isDark}
+                lang={lang}
+                currentUserId={user.id}
+                username={settings.profile?.username || 'User'}
+                products={products}
+                profile={settings.profile}
+              />
+            )}
           </div>
+          </ErrorBoundary>
         )}
       </div>
 

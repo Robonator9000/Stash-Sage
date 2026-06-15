@@ -1,4 +1,5 @@
 import { Product, SortOption, FilterType } from '../types';
+import { t } from './translations';
 
 // Generate unique ID
 export function safeSetItem(key: string, value: string): boolean {
@@ -147,4 +148,17 @@ export function filterProducts(products: Product[], filterBy: FilterType): Produ
       }
       return products.filter((p) => p.type.toLowerCase() === filterBy.toLowerCase());
   }
+}
+
+export function timeAgo(dateStr: string, lang: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'now';
+  if (mins < 60) return t('minutesAgo', lang).replace('{n}', String(mins));
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return t('hoursAgo', lang).replace('{n}', String(hours));
+  const days = Math.floor(hours / 24);
+  if (days < 30) return t('daysAgo', lang).replace('{n}', String(days));
+  const months = Math.floor(days / 30);
+  return t('monthsAgo', lang).replace('{n}', String(months));
 }

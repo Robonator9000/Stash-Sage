@@ -82,5 +82,43 @@ export interface Session {
   rotationEnabled?: boolean;
 }
 
+export interface Post {
+  id: string;
+  user_id: string;
+  content: string;
+  product_id?: string | null;
+  product_name?: string | null;
+  image_url?: string | null;
+  created_at: string;
+  updated_at: string;
+  author?: {
+    username: string;
+    avatar_url?: string;
+  };
+  likes_count?: number;
+  liked_by_me?: boolean;
+  comments_count?: number;
+  is_following?: boolean;
+}
+
+export interface PostLike {
+  id: string;
+  user_id: string;
+  post_id: string;
+  created_at: string;
+}
+
+export interface PostComment {
+  id: string;
+  user_id: string;
+  post_id: string;
+  content: string;
+  created_at: string;
+  author?: {
+    username: string;
+    avatar_url?: string;
+  };
+}
+
 export type SortOption = 'newest' | 'oldest' | 'name' | 'rating' | 'thc' | 'amount' | 'price' | 'favorites';
 export type FilterType = string;

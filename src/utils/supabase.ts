@@ -9,6 +9,27 @@ export const isConfigured = !!(supabaseUrl && supabaseKey);
 function buildClient(): SupabaseClient {
   if (isConfigured) return createClient(supabaseUrl!, supabaseKey!);
   const noop = async () => ({ data: null, error: null });
+  const noopData = { data: null, error: null };
+
+  function buildQuery(): any {
+    const resolved = Promise.resolve(noopData);
+    const q: any = {
+      then: (onfulfilled: any, onrejected: any) => resolved.then(onfulfilled, onrejected),
+      catch: (onrejected: any) => resolved.catch(onrejected),
+      finally: (onfinally: any) => resolved.finally(onfinally),
+    };
+    const methods = [
+      'select', 'insert', 'upsert', 'delete', 'update',
+      'eq', 'neq', 'gt', 'lt', 'gte', 'lte', 'like', 'ilike',
+      'is', 'in', 'not', 'or', 'contains', 'order', 'range',
+      'limit', 'textSearch', 'match', 'filter', 'abortSignal',
+    ];
+    for (const m of methods) q[m] = () => q;
+    q.single = noop;
+    q.maybeSingle = noop;
+    return q;
+  }
+
   return {
     auth: {
       onAuthStateChange: (_: any) => {
@@ -22,15 +43,7 @@ function buildClient(): SupabaseClient {
       resetPasswordForEmail: noop,
     },
     rpc: () => ({ data: null, error: null }),
-    from: () => ({
-      select: () => ({ data: null, error: null }),
-      insert: () => ({ data: null, error: null }),
-      upsert: () => ({ data: null, error: null }),
-      delete: () => ({ data: null, error: null }),
-      eq: () => ({ data: null, error: null, single: async () => ({ data: null, error: null }) }),
-      order: () => ({ data: null, error: null }),
-      single: async () => ({ data: null, error: null }),
-    }),
+    from: buildQuery,
   } as unknown as SupabaseClient;
 }
 

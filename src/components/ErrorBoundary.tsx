@@ -1,49 +1,48 @@
-import { Component, ReactNode } from 'react';
+import { Component, type ReactNode, type ErrorInfo } from 'react';
 import { t } from '../utils/translations';
 
-interface ErrorBoundaryProps {
+interface Props {
   children: ReactNode;
-  fallback?: ReactNode;
-  language?: string;
+  isDark?: boolean;
+  lang?: string;
 }
 
-interface ErrorBoundaryState {
+interface State {
   hasError: boolean;
   error: Error | null;
 }
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
+export class ErrorBoundary extends Component<Props, State> {
+  state: State = { hasError: false, error: null };
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+  static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
   }
 
-  handleReset = () => {
-    this.setState({ hasError: false, error: null });
-  };
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('ErrorBoundary caught:', error, info);
+  }
 
   render() {
     if (this.state.hasError) {
-      if (this.props.fallback) {
-        return this.props.fallback;
-      }
-      const lang = this.props.language || 'en';
+      const isDark = this.props.isDark ?? true;
+      const lang = this.props.lang ?? 'en';
       return (
-        <div style={{ backgroundColor: 'var(--bg)', color: 'var(--text)' }} className="flex flex-col items-center justify-center min-h-[200px] p-8 text-center">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)' }}>
-            <span className="text-2xl">!</span>
+        <div className={`max-w-lg mx-auto mt-8 p-6 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
+            <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
           </div>
-          <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text)' }}>{t('somethingWentWrong', lang)}</h3>
-          <p className="text-sm mb-4 max-w-md" style={{ color: 'var(--text-secondary)' }}>
-            {this.state.error?.message || t('unexpectedError', lang)}
+          <p className={`text-sm font-medium mb-1 ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+            {t('unexpectedError', lang)}
+          </p>
+          <p className={`text-xs mb-4 ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+            {this.state.error?.message || ''}
           </p>
           <button
-            onClick={this.handleReset}
-            className="px-4 py-2 rounded-xl font-medium text-white bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400"
+            onClick={() => this.setState({ hasError: false, error: null })}
+            className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all"
           >
             {t('tryAgain', lang)}
           </button>
