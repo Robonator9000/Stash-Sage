@@ -38,6 +38,15 @@ export function formatPrecision(value: number, precision: number = 2): string {
   return value.toFixed(precision);
 }
 
+// Format currency with symbol
+export function formatCurrency(value: number, currency: string): string {
+  if (currency === 'EUR') return `€${value.toFixed(2)}`;
+  if (currency === 'GBP') return `£${value.toFixed(2)}`;
+  if (currency === 'JPY') return `¥${value.toFixed(0)}`;
+  if (currency === 'CAD') return `C$${value.toFixed(2)}`;
+  return `$${value.toFixed(2)}`;
+}
+
 // Format date
 export function formatDate(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;

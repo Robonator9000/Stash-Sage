@@ -43,7 +43,8 @@ export default function App() {
   const { settings, updateSettings, replaceSettings } = useSettings();
   const { entries: activityEntries, addEntry: addActivityEntry, clearEntries: clearActivity } = useActivity();
 
-  const [activeTab, setActiveTab] = useState<'inventory' | 'dashboard' | 'history'>('inventory');
+  const [activeTab, setActiveTab] = useState<'stash' | 'community'>('stash');
+  const [stashSection, setStashSection] = useState<'products' | 'dashboard' | 'history'>('products');
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedQuery = useDebounce(searchQuery, 200);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -74,7 +75,8 @@ export default function App() {
   const browserLang = useMemo(() => {
     const raw = navigator.language || 'en';
     const code = raw.split('-')[0];
-    return (['en', 'es', 'fr', 'de', 'pt'] as const).includes(code as any) ? code as 'en' | 'es' | 'fr' | 'de' | 'pt' : 'en';
+    const codes = new Set(['en', 'es', 'fr', 'de', 'pt'] as const);
+    return codes.has(code as typeof codes extends Set<infer T> ? T : never) ? code as 'en' | 'es' | 'fr' | 'de' | 'pt' : 'en';
   }, []);
 
   const [showPinModal, setShowPinModal] = useState(false);
@@ -447,7 +449,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
           {/* Logo */}
           <button
-            onClick={() => setActiveTab('inventory')}
+            onClick={() => { setActiveTab('stash'); setStashSection('products'); }}
             className="text-2xl font-extrabold hover:opacity-80 transition-opacity shrink-0 flex items-center gap-1.5"
           >
             <LogoIcon className="w-6 h-6" />
@@ -564,17 +566,16 @@ export default function App() {
 
       {/* Tabs + Content */}
       <div className="max-w-7xl mx-auto px-4 py-4">
-        {/* Tab bar */}
+        {/* Main tab bar */}
         <div className="flex items-center mb-4">
-          <div className={`flex w-full items-center gap-0 ${isDark ? '' : ''}`}>
+          <div className={`flex w-full items-center gap-0`}>
             {[
-              { id: 'inventory', label: t('inventory', lang), icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-              { id: 'dashboard', label: t('dashboard', lang), icon: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z' },
-              { id: 'history', label: t('history', lang), icon: 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z' },
+              { id: 'stash', label: t('stash', lang), icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
+              { id: 'community', label: t('community', lang), icon: 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z' },
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as 'inventory' | 'dashboard' | 'history')}
+                onClick={() => setActiveTab(tab.id as 'stash' | 'community')}
                 className={`flex-1 flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium transition-all duration-200 relative
                   ${activeTab === tab.id
                     ? isDark ? 'text-cyan-400' : 'text-cyan-600'
@@ -592,9 +593,28 @@ export default function App() {
           </div>
         </div>
 
-        {/* ==================== INVENTORY TAB ==================== */}
-        {activeTab === 'inventory' && (
+        {/* ==================== STASH TAB ==================== */}
+        {activeTab === 'stash' && (
           <div>
+            {/* Sub-navigation pills */}
+            <div className="flex items-center justify-center gap-2 mb-5">
+              {(['products', 'dashboard', 'history'] as const).map(section => (
+                <button
+                  key={section}
+                  onClick={() => setStashSection(section)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    stashSection === section
+                      ? 'bg-gradient-to-r from-cyanx to-emera text-white'
+                      : isDark ? 'text-mist hover:text-frost hover:bg-midnight' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {section === 'products' ? t('products', lang) : section === 'dashboard' ? t('dashboard', lang) : t('history', lang)}
+                </button>
+              ))}
+            </div>
+
+            {stashSection === 'products' && (
+            <div>
             <div className="mb-5" data-coach="stats">
               <StatsCard products={products} sessions={sessions} isDark={isDark} />
             </div>
@@ -802,54 +822,69 @@ export default function App() {
                 </button>
               </div>
             )}
+            </div>
+            )} {/* end products section */}
+
+            {stashSection === 'dashboard' && (
+              <Suspense fallback={
+                <div className={`text-center py-16 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Loading dashboard...</div>
+              }>
+                <DashboardTab
+                  products={products}
+                  sessions={sessions}
+                  isDark={isDark}
+                  lang={lang}
+                  settings={settings}
+                  typeDistribution={typeDistribution}
+                  consumptionByMonth={consumptionByMonth}
+                  topStrains={topStrains}
+                  spendingByType={spendingByType}
+                  totalValue={totalValue}
+                />
+              </Suspense>
+            )}
+
+            {stashSection === 'history' && (
+              <Suspense fallback={
+                <div className={`text-center py-16 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Loading history...</div>
+              }>
+                <HistoryTab
+                  filteredHistory={filteredHistory}
+                  isDark={isDark}
+                  lang={lang}
+                  settings={settings}
+                  historyFilterType={historyFilterType}
+                  historyDateFilter={historyDateFilter}
+                  expandedNotes={expandedNotes}
+                  onFilterTypeChange={setHistoryFilterType}
+                  onDateFilterChange={setHistoryDateFilter}
+                  onClearHistory={clearActivity}
+                  onToggleNote={(id: string) => {
+                    setExpandedNotes(prev => {
+                      const next = new Set(prev);
+                      if (next.has(id)) next.delete(id); else next.add(id);
+                      return next;
+                    });
+                  }}
+                />
+              </Suspense>
+            )}
           </div>
         )}
 
-        {/* ==================== DASHBOARD TAB ==================== */}
-        {activeTab === 'dashboard' && (
-          <Suspense fallback={
-            <div className={`text-center py-16 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Loading dashboard...</div>
-          }>
-            <DashboardTab
-              products={products}
-              sessions={sessions}
-              isDark={isDark}
-              lang={lang}
-              settings={settings}
-              typeDistribution={typeDistribution}
-              consumptionByMonth={consumptionByMonth}
-              topStrains={topStrains}
-              spendingByType={spendingByType}
-              totalValue={totalValue}
-            />
-          </Suspense>
-        )}
-
-        {/* ==================== HISTORY TAB ==================== */}
-        {activeTab === 'history' && (
-          <Suspense fallback={
-            <div className={`text-center py-16 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Loading history...</div>
-          }>
-            <HistoryTab
-              filteredHistory={filteredHistory}
-              isDark={isDark}
-              lang={lang}
-              settings={settings}
-              historyFilterType={historyFilterType}
-              historyDateFilter={historyDateFilter}
-              expandedNotes={expandedNotes}
-              onFilterTypeChange={setHistoryFilterType}
-              onDateFilterChange={setHistoryDateFilter}
-              onClearHistory={clearActivity}
-              onToggleNote={(id: string) => {
-                setExpandedNotes(prev => {
-                  const next = new Set(prev);
-                  if (next.has(id)) next.delete(id); else next.add(id);
-                  return next;
-                });
-              }}
-            />
-          </Suspense>
+        {/* ==================== COMMUNITY TAB (placeholder) ==================== */}
+        {activeTab === 'community' && (
+          <div className="text-center py-16">
+            <div className={`text-4xl mb-4 ${isDark ? 'text-muted' : 'text-gray-300'}`}>
+              <svg className="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-frost' : 'text-gray-800'}`}>{t('community', lang)}</h3>
+            <p className={`text-sm max-w-md mx-auto ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+              Connect with other enthusiasts — share your stash, compare strains, and discover new favorites. Coming soon.
+            </p>
+          </div>
         )}
       </div>
 
