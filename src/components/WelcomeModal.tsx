@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { LogoIcon } from './LogoIcon';
 
 interface WelcomeModalProps {
   onComplete: (language: 'en' | 'es' | 'fr' | 'de' | 'pt') => void;
@@ -44,7 +45,7 @@ export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalPr
         }`}
       >
         <div className="text-center mb-8">
-          <div className="text-4xl mb-3 bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent">🍁</div>
+          <LogoIcon className="w-9 h-9 mb-3" />
           <h1 className="text-2xl font-extrabold bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent mb-2">
             STASH
           </h1>

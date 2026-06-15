@@ -24,6 +24,7 @@ import { WelcomeModal } from './components/WelcomeModal';
 import { LoginModal } from './components/LoginModal';
 import { AccountModal } from './components/AccountModal';
 import { UserMenu } from './components/UserMenu';
+import { LogoIcon } from './components/LogoIcon';
 import { useAuth } from './contexts/AuthContext';
 const DashboardTab = lazy(() => import('./components/DashboardTab').then(m => ({ default: m.DashboardTab })));
 const HistoryTab = lazy(() => import('./components/HistoryTab').then(m => ({ default: m.HistoryTab })));
@@ -449,7 +450,7 @@ export default function App() {
             onClick={() => setActiveTab('inventory')}
             className="text-2xl font-extrabold hover:opacity-80 transition-opacity shrink-0 flex items-center gap-1.5"
           >
-            <span className="text-2xl bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent">🍁</span>
+            <LogoIcon className="w-6 h-6" />
             <span className="bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent font-extrabold">STASH</span>
           </button>
 

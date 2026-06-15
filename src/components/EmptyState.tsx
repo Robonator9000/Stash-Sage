@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react';
 import { t } from '../utils/translations';
 import { useSettings } from '../utils/useSettings';
+import { LogoIcon } from './LogoIcon';
 
 interface EmptyStateProps {
   isDark?: boolean;
@@ -9,7 +10,7 @@ interface EmptyStateProps {
 }
 
 function LeafIcon({ className }: { className?: string }) {
-  return <span className={`bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent ${className}`}>🍁</span>;
+  return <LogoIcon className={className} />;
 }
 
 export function EmptyState({ isDark = true, hasProducts, onAddProduct }: EmptyStateProps) {
@@ -23,7 +24,7 @@ export function EmptyState({ isDark = true, hasProducts, onAddProduct }: EmptySt
       <div className={`w-28 h-28 rounded-full flex items-center justify-center mb-6 ${
         isDark ? 'bg-emera/10 border border-emera/20' : 'bg-emerald-50 border border-emerald-100'
       }`}>
-        <LeafIcon className="text-6xl" />
+        <LeafIcon className="w-14 h-14" />
       </div>
 
       {!hasProducts ? (
