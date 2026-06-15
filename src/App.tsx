@@ -451,7 +451,7 @@ export default function App() {
             className="text-2xl font-extrabold hover:opacity-80 transition-opacity shrink-0 flex items-center gap-1.5"
           >
             <LogoIcon className="w-6 h-6" />
-            <span className="bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent font-extrabold">STASH</span>
+            <span className="bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent font-pixel text-base leading-relaxed">STASH</span>
           </button>
 
           {/* Search */}

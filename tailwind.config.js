@@ -18,6 +18,9 @@ export default {
         'emera-dark': '#059669',
         amberx: '#f59e0b',
       },
+      fontFamily: {
+        pixel: ['"Press Start 2P"', 'monospace'],
+      },
     },
   },
   plugins: [],
