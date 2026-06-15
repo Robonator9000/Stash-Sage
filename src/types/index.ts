@@ -59,6 +59,13 @@ export interface Settings {
   budgetPeriod: 'weekly' | 'monthly' | 'yearly';
   settingsVersion?: number;
   customStrainColors?: Record<string, string>;
+  profile?: Profile;
+}
+
+export interface Profile {
+  username: string;
+  bio: string;
+  joinedAt: string;
 }
 
 export interface Session {

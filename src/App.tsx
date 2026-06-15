@@ -25,6 +25,8 @@ import { LoginModal } from './components/LoginModal';
 import { AccountModal } from './components/AccountModal';
 import { UserMenu } from './components/UserMenu';
 import { LogoIcon } from './components/LogoIcon';
+import { ProfileCard } from './components/ProfileCard';
+import { EditProfileModal } from './components/EditProfileModal';
 import { useAuth } from './contexts/AuthContext';
 const DashboardTab = lazy(() => import('./components/DashboardTab').then(m => ({ default: m.DashboardTab })));
 const HistoryTab = lazy(() => import('./components/HistoryTab').then(m => ({ default: m.HistoryTab })));
@@ -63,6 +65,7 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showAccountModal, setShowAccountModal] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
   const [showSmoke, setShowSmoke] = useState(false);
 
   const [historyFilterType, setHistoryFilterType] = useState<string>('all');
@@ -872,18 +875,27 @@ export default function App() {
           </div>
         )}
 
-        {/* ==================== COMMUNITY TAB (placeholder) ==================== */}
+        {/* ==================== COMMUNITY TAB ==================== */}
         {activeTab === 'community' && (
-          <div className="text-center py-16">
-            <div className={`text-4xl mb-4 ${isDark ? 'text-muted' : 'text-gray-300'}`}>
-              <svg className="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-frost' : 'text-gray-800'}`}>{t('community', lang)}</h3>
-            <p className={`text-sm max-w-md mx-auto ${isDark ? 'text-muted' : 'text-gray-400'}`}>
-              Connect with other enthusiasts — share your stash, compare strains, and discover new favorites. Coming soon.
-            </p>
+          <div>
+            <ProfileCard
+              profile={settings.profile}
+              products={products}
+              sessions={sessions}
+              isDark={isDark}
+              lang={lang}
+              onEditProfile={() => setShowEditProfile(true)}
+              onUpdateProfile={(p) => updateSettings({ profile: p })}
+            />
+            {showEditProfile && settings.profile && (
+              <EditProfileModal
+                profile={settings.profile}
+                isDark={isDark}
+                lang={lang}
+                onSave={(p) => { updateSettings({ profile: p }); setShowEditProfile(false); }}
+                onClose={() => setShowEditProfile(false)}
+              />
+            )}
           </div>
         )}
       </div>
