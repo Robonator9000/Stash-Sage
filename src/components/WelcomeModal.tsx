@@ -46,7 +46,7 @@ export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalPr
       >
         <div className="text-center mb-8">
           <LogoIcon className="w-9 h-9 mb-3" />
-          <h1 className="text-lg font-pixel bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent mb-2">
+          <h1 className="text-xl font-display font-extrabold bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent mb-2 -tracking-2">
             STASH
           </h1>
           <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>

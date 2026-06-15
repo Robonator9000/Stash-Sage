@@ -450,10 +450,10 @@ export default function App() {
           {/* Logo */}
           <button
             onClick={() => { setActiveTab('stash'); setStashSection('products'); }}
-            className="text-2xl font-extrabold hover:opacity-80 transition-opacity shrink-0 flex items-center gap-1.5"
+            className="font-display text-2xl font-extrabold hover:opacity-80 transition-opacity shrink-0 flex items-center gap-1.5"
           >
             <LogoIcon className="w-6 h-6" />
-            <span className="bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent font-pixel text-base leading-relaxed">STASH</span>
+            <span className="bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent font-display font-extrabold text-lg tracking-tight">STASH</span>
           </button>
 
           {/* Search */}
@@ -953,7 +953,7 @@ export default function App() {
       <ToastContainer isDark={isDark} />
 
       {/* Footer */}
-      <footer className={`text-center py-6 text-xs font-medium tracking-widest uppercase ${isDark ? 'text-slate-700' : 'text-gray-300'}`}>
+      <footer className={`text-center py-6 text-xs font-display font-semibold tracking-widest uppercase ${isDark ? 'text-slate-700' : 'text-gray-300'}`}>
         STASH TRACKER
       </footer>
 

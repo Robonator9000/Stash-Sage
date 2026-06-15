@@ -19,7 +19,8 @@ export default {
         amberx: '#f59e0b',
       },
       fontFamily: {
-        pixel: ['"Press Start 2P"', 'monospace'],
+        display: ['Poppins', 'sans-serif'],
+        body: ['system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
       },
     },
   },
