@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../utils/useSettings';
 import { isConfigured } from '../utils/supabase';
 import { supabase } from '../utils/supabase';
+import { showToast } from './Toast';
 import { X, AlertTriangle, User as UserIcon } from 'lucide-react';
 import { ResetPasswordModal } from './ResetPasswordModal';
 
@@ -17,6 +18,12 @@ export function UserSettings({ isDark, onClose }: UserSettingsProps) {
 
   const [visible, setVisible] = useState(false);
   useEffect(() => { requestAnimationFrame(() => setVisible(true)); }, []);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   // Auth form state
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
@@ -52,6 +59,8 @@ export function UserSettings({ isDark, onClose }: UserSettingsProps) {
       } else {
         await signUp(email, password);
       }
+      setEmail('');
+      setPassword('');
     } catch {
     } finally {
       setSubmitting(false);
@@ -64,6 +73,7 @@ export function UserSettings({ isDark, onClose }: UserSettingsProps) {
     if (user) {
       supabase.from('profiles').upsert({ user_id: user.id, display_name: p.username }, { onConflict: 'user_id' }).then(() => {}, () => {});
     }
+    showToast({ id: 'profile-saved', title: 'Profile saved', body: 'Your profile has been updated.' });
   };
 
   const handlePasswordChange = async (e: React.FormEvent) => {

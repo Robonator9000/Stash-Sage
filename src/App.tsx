@@ -24,7 +24,6 @@ import { WelcomeModal } from './components/WelcomeModal';
 import { UserSettings } from './components/UserSettings';
 import { LogoIcon } from './components/LogoIcon';
 import { ProfileCard } from './components/ProfileCard';
-import { EditProfileModal } from './components/EditProfileModal';
 import { SocialFeed } from './components/SocialFeed';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useAuth } from './contexts/AuthContext';
@@ -65,7 +64,6 @@ export default function App() {
   const [sessionPeople, setSessionPeople] = useState(2);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showUserSettings, setShowUserSettings] = useState(false);
-  const [showEditProfile, setShowEditProfile] = useState(false);
   const [showSmoke, setShowSmoke] = useState(false);
 
   const [historyFilterType, setHistoryFilterType] = useState<string>('all');
@@ -885,25 +883,12 @@ export default function App() {
               sessions={sessions}
               isDark={isDark}
               lang={lang}
-              onEditProfile={() => setShowEditProfile(true)}
+              onEditProfile={() => setShowUserSettings(true)}
               onUpdateProfile={(p) => {
                 updateSettings({ profile: p });
                 if (user) supabase.from('profiles').upsert({ user_id: user.id, display_name: p.username }, { onConflict: 'user_id' }).then(() => {}, () => {});
               }}
             />
-            {showEditProfile && settings.profile && (
-              <EditProfileModal
-                profile={settings.profile}
-                isDark={isDark}
-                lang={lang}
-                onSave={(p) => {
-                  updateSettings({ profile: p });
-                  if (user) supabase.from('profiles').upsert({ user_id: user.id, display_name: p.username }, { onConflict: 'user_id' }).then(() => {}, () => {});
-                  setShowEditProfile(false);
-                }}
-                onClose={() => setShowEditProfile(false)}
-              />
-            )}
 
             {!user && (
               <div className={`max-w-lg mx-auto mt-8 p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
