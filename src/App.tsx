@@ -562,8 +562,8 @@ export default function App() {
             </button>
           </div>
         </div>
-        {showUserSettings && <UserSettings isDark={isDark} onClose={() => setShowUserSettings(false)} />}
       </header>
+      {showUserSettings && <UserSettings isDark={isDark} onClose={() => setShowUserSettings(false)} />}
 
       {/* Tabs + Content */}
       <div className="max-w-7xl mx-auto px-4 py-4">
