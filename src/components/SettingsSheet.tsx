@@ -36,7 +36,12 @@ const LANGUAGE_NAMES: Record<string, Record<string, string>> = {
 
 export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDark = true, defaultTab = 'personalization' }: SettingsSheetProps) {
   const { settings, updateSettings, toggleStatVisibility } = useSettings();
-  const { user } = useAuth();
+  const { user, signIn, signUp, error: authError } = useAuth();
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [authSubmitting, setAuthSubmitting] = useState(false);
+  const [authLocalError, setAuthLocalError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mergeFileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -112,6 +117,26 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
     } catch {
       setFeedback({ type: 'error', message: t('importError', settings.language) });
     }
+  };
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLocalError(null);
+    if (!authEmail.trim() || authPassword.length < 6) {
+      setAuthLocalError(authMode === 'signin' ? 'Enter your email and password' : 'Password must be at least 6 characters');
+      return;
+    }
+    setAuthSubmitting(true);
+    try {
+      if (authMode === 'signin') {
+        await signIn(authEmail.trim(), authPassword);
+      } else {
+        await signUp(authEmail.trim(), authPassword);
+      }
+    } catch (err: any) {
+      setAuthLocalError(err?.message || 'Something went wrong');
+    }
+    setAuthSubmitting(false);
   };
 
   const handleImportClick = () => fileInputRef.current?.click();
@@ -229,6 +254,51 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
         <div className="flex-1 overflow-y-auto p-5 space-y-6">
           {activeTab === 'profile' && (
             <>
+              {!user ? (
+                <div className="space-y-4">
+                  <div className={`p-4 rounded-xl text-center ${isDark ? 'bg-slate-800/50' : 'bg-gray-50'}`}>
+                    <User className={`w-8 h-8 mx-auto mb-2 ${isDark ? 'text-slate-500' : 'text-gray-400'}`} />
+                    <h3 className={`text-sm font-semibold mb-1 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+                      {authMode === 'signin' ? 'Welcome Back' : 'Create Account'}
+                    </h3>
+                    <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'} mb-4`}>
+                      {authMode === 'signin' ? 'Sign in to manage your profile' : 'Create an account to set up your profile'}
+                    </p>
+                  </div>
+
+                  {(authLocalError || authError) && (
+                    <div className={`px-3 py-2 rounded-lg text-sm ${isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600'}`}>
+                      {authLocalError || authError}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleAuth} className="flex flex-col gap-4">
+                    <input type="email" placeholder="Email" value={authEmail}
+                      onChange={e => { setAuthEmail(e.target.value); setAuthLocalError(null); }}
+                      required autoFocus
+                      className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none ${
+                        isDark ? 'bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
+                      }`} />
+                    <input type="password" placeholder="Password" value={authPassword}
+                      onChange={e => { setAuthPassword(e.target.value); setAuthLocalError(null); }}
+                      required minLength={6}
+                      className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none ${
+                        isDark ? 'bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
+                      }`} />
+                    <button type="submit" disabled={authSubmitting}
+                      className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600 transition-all disabled:opacity-50"
+                    >
+                      {authSubmitting ? 'Please wait...' : authMode === 'signin' ? 'Sign In' : 'Create Account'}
+                    </button>
+                  </form>
+
+                  <button onClick={() => { setAuthMode(authMode === 'signin' ? 'signup' : 'signin'); setAuthLocalError(null); }}
+                    className={`w-full text-sm ${isDark ? 'text-slate-400 hover:text-cyan-400' : 'text-gray-500 hover:text-cyan-600'}`}>
+                    {authMode === 'signin' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+                  </button>
+                </div>
+              ) : (
+                <>
               <div>
                 <label className={sectionLabel}><User className="w-4 h-4" />Profile Picture</label>
                 <div className="flex items-center gap-4 mb-4">
@@ -309,6 +379,8 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                 reader.onload = () => { const url = reader.result as string; setAvatarPreview(url); };
                 reader.readAsDataURL(file);
               }} />
+            </>
+            )}
             </>
           )}
 
