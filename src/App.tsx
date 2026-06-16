@@ -21,9 +21,7 @@ import { CoachMarks } from './components/CoachMarks';
 import { PinModal } from './components/PinModal';
 import { BackgroundCanvas } from './components/BackgroundCanvas';
 import { WelcomeModal } from './components/WelcomeModal';
-import { LoginModal } from './components/LoginModal';
-import { AccountModal } from './components/AccountModal';
-import { UserMenu } from './components/UserMenu';
+import { UserSettings } from './components/UserSettings';
 import { LogoIcon } from './components/LogoIcon';
 import { ProfileCard } from './components/ProfileCard';
 import { EditProfileModal } from './components/EditProfileModal';
@@ -66,8 +64,7 @@ export default function App() {
   const [sessionAmount, setSessionAmount] = useState(0);
   const [sessionPeople, setSessionPeople] = useState(2);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showAccountModal, setShowAccountModal] = useState(false);
+  const [showUserSettings, setShowUserSettings] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showSmoke, setShowSmoke] = useState(false);
 
@@ -535,21 +532,22 @@ export default function App() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </button>
-            {user && (
-              <svg className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-500'}`} fill="currentColor" viewBox="0 0 24 24">
-                <path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
-              </svg>
-            )}
-            {user ? (
-              <UserMenu isDark={isDark} onOpenAccount={() => setShowAccountModal(true)} />
-            ) : (
-              <button
-                onClick={() => setShowLoginModal(true)}
-                className={`px-2 py-1.5 rounded-xl text-xs font-medium transition-all ${isDark ? 'text-cyan-300 hover:bg-cyan-500/10' : 'text-cyan-600 hover:bg-cyan-50'}`}
-              >
-                Sign in
-              </button>
-            )}
+            <button
+              onClick={() => setShowUserSettings(true)}
+              className={`p-1.5 rounded-xl transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}
+            >
+              {user ? (
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyanx to-emera flex items-center justify-center">
+                  <span className="text-white font-display font-bold text-xs">
+                    {settings.profile?.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || '?'}
+                  </span>
+                </div>
+              ) : (
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+              )}
+            </button>
             <button
               onClick={() => updateSettings({ theme: isDark ? 'light' : 'dark', themeAuto: false })}
               className={`p-2 rounded-xl transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}
@@ -566,8 +564,7 @@ export default function App() {
             </button>
           </div>
         </div>
-        {showLoginModal && <LoginModal isDark={isDark} onClose={() => setShowLoginModal(false)} />}
-        {showAccountModal && <AccountModal isDark={isDark} onClose={() => setShowAccountModal(false)} />}
+        {showUserSettings && <UserSettings isDark={isDark} onClose={() => setShowUserSettings(false)} />}
       </header>
 
       {/* Tabs + Content */}
@@ -906,6 +903,26 @@ export default function App() {
                 }}
                 onClose={() => setShowEditProfile(false)}
               />
+            )}
+
+            {!user && (
+              <div className={`max-w-lg mx-auto mt-8 p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+                <svg className="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+                <h3 className={`text-lg font-display font-bold mb-2 ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+                  {t('community', lang)}
+                </h3>
+                <p className={`text-sm mb-6 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+                  Sign up to share your stash, connect with others, and see what the community is talking about.
+                </p>
+                <button
+                  onClick={() => setShowUserSettings(true)}
+                  className="px-6 py-2.5 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all shadow-lg shadow-cyanx/20"
+                >
+                  Sign Up
+                </button>
+              </div>
             )}
 
             {user && (
