@@ -65,6 +65,7 @@ export default function App() {
   const [sessionAmount, setSessionAmount] = useState(0);
   const [sessionPeople, setSessionPeople] = useState(2);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [settingsDefaultTab, setSettingsDefaultTab] = useState<'profile' | 'personalization' | 'session' | 'stats' | 'data' | 'security'>('personalization');
   const [showUserSettings, setShowUserSettings] = useState(false);
   const [showSmoke, setShowSmoke] = useState(false);
   const [viewProfileUserId, setViewProfileUserId] = useState<string | null>(null);
@@ -523,31 +524,29 @@ export default function App() {
               </svg>
               {t('addProduct', lang)}
             </button>
-            <button
-              data-coach="settings"
-              onClick={() => setIsSettingsOpen(true)}
-              className={`p-2 rounded-xl transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </button>
             {user && <NotificationBell isDark={isDark} lang={lang} onViewProfile={(uid) => { setViewProfileUserId(uid); }} />}
             <button
-              onClick={() => setShowUserSettings(true)}
+              onClick={() => { setSettingsDefaultTab('profile'); setIsSettingsOpen(true); }}
               className={`p-1.5 rounded-xl transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}
             >
               {user ? (
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyanx to-emera flex items-center justify-center">
-                  <span className="text-white font-display font-bold text-xs">
-                    {settings.profile?.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || '?'}
-                  </span>
-                </div>
+                settings.profile?.avatar_url ? (
+                  <div className="w-7 h-7 rounded-lg overflow-hidden">
+                    <img src={settings.profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyanx to-emera flex items-center justify-center">
+                    <span className="text-white font-display font-bold text-xs">
+                      {settings.profile?.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || '?'}
+                    </span>
+                  </div>
+                )
               ) : (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                </svg>
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyanx to-emera flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                  </svg>
+                </div>
               )}
             </button>
             <button
@@ -887,7 +886,7 @@ export default function App() {
               sessions={sessions}
               isDark={isDark}
               lang={lang}
-              onEditProfile={() => setShowUserSettings(true)}
+              onEditProfile={() => { setSettingsDefaultTab('profile'); setIsSettingsOpen(true); }}
               onUpdateProfile={(p) => {
                 updateSettings({ profile: p });
                 if (user) supabase.from('profiles').upsert({ user_id: user.id, display_name: p.username }, { onConflict: 'user_id' }).then(() => {}, () => {});
@@ -906,7 +905,7 @@ export default function App() {
                   Sign up to share your stash, connect with others, and see what the community is talking about.
                 </p>
                 <button
-                  onClick={() => setShowUserSettings(true)}
+                  onClick={() => { setSettingsDefaultTab('profile'); setIsSettingsOpen(true); }}
                   className="px-6 py-2.5 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all shadow-lg shadow-cyanx/20"
                 >
                   Sign Up
@@ -988,6 +987,7 @@ export default function App() {
           onMergeImport={handleMergeImport}
           onClose={() => setIsSettingsOpen(false)}
           isDark={isDark}
+          defaultTab={settingsDefaultTab}
         />
       )}
 

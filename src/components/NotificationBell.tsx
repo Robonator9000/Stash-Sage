@@ -42,7 +42,7 @@ export function NotificationBell({ isDark, lang, onViewProfile }: NotificationBe
 
       {open && (
         <div className={`absolute right-0 top-full mt-2 w-80 max-h-96 rounded-2xl shadow-2xl overflow-hidden z-50 ${
-          isDark ? 'bg-card border border-edge' : 'bg-white border border-gray-200'
+          isDark ? 'bg-[#0f172a] border border-slate-700' : 'bg-white border border-gray-200'
         }`}>
           <div className={`flex items-center justify-between px-4 py-3 border-b ${isDark ? 'border-edge' : 'border-gray-200'}`}>
             <span className={`text-sm font-bold ${isDark ? 'text-frost' : 'text-gray-800'}`}>Notifications</span>
@@ -79,10 +79,14 @@ export function NotificationBell({ isDark, lang, onViewProfile }: NotificationBe
                     : 'hover:bg-opacity-50'
                 } ${isDark ? 'hover:bg-surface' : 'hover:bg-gray-50'}`}
               >
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-cyanx to-emera shrink-0`}>
-                  <span className="text-white font-display font-bold text-xs">
-                    {(n.actor?.username?.[0] || '?').toUpperCase()}
-                  </span>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden ${n.actor?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
+                  {n.actor?.avatar_url ? (
+                    <img src={n.actor.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-white font-display font-bold text-xs">
+                      {(n.actor?.username?.[0] || '?').toUpperCase()}
+                    </span>
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className={`text-sm ${isDark ? 'text-frost' : 'text-gray-800'}`}>

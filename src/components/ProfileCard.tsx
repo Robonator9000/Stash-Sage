@@ -85,8 +85,12 @@ export function ProfileCard({ profile, products, sessions, isDark, lang, onEditP
       <div className={`p-6 rounded-2xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-cyanx to-emera`}>
-              <span className="text-white font-display font-bold text-lg">{profile.username[0]?.toUpperCase() || '?'}</span>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${profile.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
+              {profile.avatar_url ? (
+                <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-white font-display font-bold text-lg">{profile.username[0]?.toUpperCase() || '?'}</span>
+              )}
             </div>
             <div>
               <h2 className="font-display font-bold text-lg">{profile.username}</h2>

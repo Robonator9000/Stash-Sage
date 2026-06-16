@@ -66,6 +66,7 @@ export interface Profile {
   username: string;
   bio: string;
   joinedAt: string;
+  avatar_url?: string;
 }
 
 export interface Session {

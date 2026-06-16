@@ -67,11 +67,15 @@ export function PostCard({ post, isDark, lang, currentUserId, username, isFollow
       <div className="flex items-start gap-3">
         <button
           onClick={() => onViewProfile?.(post.user_id)}
-          className={`w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-cyanx to-emera shrink-0`}
+          className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${post.author?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}
         >
-          <span className="text-white font-display font-bold text-sm">
-            {(post.author?.username?.[0] || '?').toUpperCase()}
-          </span>
+          {post.author?.avatar_url ? (
+            <img src={post.author.avatar_url} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-white font-display font-bold text-sm">
+              {(post.author?.username?.[0] || '?').toUpperCase()}
+            </span>
+          )}
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">

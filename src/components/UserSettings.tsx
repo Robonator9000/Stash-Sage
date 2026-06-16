@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../utils/useSettings';
 import { isConfigured } from '../utils/supabase';
-import { supabase } from '../utils/supabase';
-import { showToast } from './Toast';
 import { X, AlertTriangle, User as UserIcon } from 'lucide-react';
 import { ResetPasswordModal } from './ResetPasswordModal';
 
@@ -14,7 +12,7 @@ interface UserSettingsProps {
 
 export function UserSettings({ isDark, onClose }: UserSettingsProps) {
   const { user, error, signIn, signUp, signOut, updatePassword, updateEmail, deleteAccount, clearError } = useAuth();
-  const { settings, updateSettings } = useSettings();
+  const { settings } = useSettings();
 
   const [visible, setVisible] = useState(false);
   useEffect(() => { requestAnimationFrame(() => setVisible(true)); }, []);
@@ -30,10 +28,6 @@ export function UserSettings({ isDark, onClose }: UserSettingsProps) {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [showReset, setShowReset] = useState(false);
-
-  const profile = settings.profile;
-  const [username, setUsername] = useState(profile?.username || '');
-  const [bio, setBio] = useState(profile?.bio || '');
 
   const [accountTab, setAccountTab] = useState<'info' | 'password' | 'email'>('info');
   const [newPassword, setNewPassword] = useState('');
@@ -62,15 +56,6 @@ export function UserSettings({ isDark, onClose }: UserSettingsProps) {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const handleSaveProfile = () => {
-    const p = { username: username.trim() || 'User', bio: bio.trim(), joinedAt: profile?.joinedAt || new Date().toISOString() };
-    updateSettings({ profile: p });
-    if (user) {
-      supabase.from('profiles').upsert({ user_id: user.id, display_name: p.username }, { onConflict: 'user_id' }).then(() => {}, () => {});
-    }
-    showToast({ id: 'profile-saved', title: 'Profile saved', body: 'Your profile has been updated.' });
   };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
@@ -115,7 +100,7 @@ export function UserSettings({ isDark, onClose }: UserSettingsProps) {
     }
   };
 
-  const profileInitial = profile?.username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?';
+  const profileInitial = settings.profile?.username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?';
 
   const inputClass = `w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-colors ${
     isDark
@@ -148,7 +133,7 @@ export function UserSettings({ isDark, onClose }: UserSettingsProps) {
               )}
             </div>
             <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              {user ? (profile?.username || 'Account') : 'Account'}
+              {user ? (settings.profile?.username || 'Account') : 'Account'}
             </h2>
           </div>
           <button onClick={handleClose} className={`p-2 rounded-xl transition-all ${isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'}`}>
@@ -169,19 +154,6 @@ export function UserSettings({ isDark, onClose }: UserSettingsProps) {
               {localError || error}
             </div>
           )}
-
-          {/* Profile section — always visible at the top */}
-          <div>
-            <h3 className={`text-sm font-semibold mb-3 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>Profile</h3>
-            <div className="space-y-3">
-              <input type="text" placeholder="Username" value={username}
-                onChange={e => setUsername(e.target.value)} maxLength={24} className={inputClass} />
-              <textarea placeholder="Bio" value={bio}
-                onChange={e => setBio(e.target.value)} maxLength={160} rows={2}
-                className={`${inputClass} resize-none`} />
-              <button onClick={handleSaveProfile} className={btnPrimary}>Save Profile</button>
-            </div>
-          </div>
 
           {!user ? (
             <div className={`pt-4 border-t ${isDark ? 'border-slate-800' : 'border-gray-200'}`}>

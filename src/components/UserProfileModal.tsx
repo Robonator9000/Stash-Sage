@@ -57,8 +57,12 @@ export function UserProfileModal({ userId, isDark, lang, onClose }: UserProfileM
       >
         <div className={`sticky top-0 z-10 flex items-center justify-between p-4 border-b ${isDark ? 'bg-card border-edge' : 'bg-white border-gray-200'}`}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-cyanx to-emera">
-              <span className="text-white font-display font-bold text-lg">{initial}</span>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${profile?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-white font-display font-bold text-lg">{initial}</span>
+              )}
             </div>
             <div>
               <h2 className={`font-display font-bold text-lg ${isDark ? 'text-frost' : 'text-gray-800'}`}>{username}</h2>
