@@ -161,10 +161,12 @@ export function UserSettings({ isDark, onClose }: UserSettingsProps) {
                 {authMode === 'signin' ? 'Sign In' : 'Create Account'}
               </h3>
               <form onSubmit={handleAuth} className="flex flex-col gap-4">
-                <input type="email" placeholder="Email" value={email}
+                <label htmlFor="auth-email" className="sr-only">Email</label>
+                <input id="auth-email" name="email" type="email" placeholder="Email" value={email}
                   onChange={e => { setEmail(e.target.value); clearError(); }}
                   required autoFocus={!user} className={inputClass} />
-                <input type="password" placeholder="Password" value={password}
+                <label htmlFor="auth-password" className="sr-only">Password</label>
+                <input id="auth-password" name="password" type="password" placeholder="Password" value={password}
                   onChange={e => { setPassword(e.target.value); clearError(); }}
                   required minLength={6} className={inputClass} />
                 <button type="submit" disabled={submitting || !isConfigured} className={btnPrimary}>
@@ -254,9 +256,11 @@ export function UserSettings({ isDark, onClose }: UserSettingsProps) {
 
               {accountTab === 'password' && (
                 <form onSubmit={handlePasswordChange} className="flex flex-col gap-4">
-                  <input type="password" placeholder="New password" value={newPassword}
+                  <label htmlFor="new-password" className="sr-only">New password</label>
+                  <input id="new-password" name="new-password" type="password" placeholder="New password" value={newPassword}
                     onChange={e => setNewPassword(e.target.value)} required minLength={6} className={inputClass} />
-                  <input type="password" placeholder="Confirm new password" value={confirmPassword}
+                  <label htmlFor="confirm-password" className="sr-only">Confirm new password</label>
+                  <input id="confirm-password" name="confirm-password" type="password" placeholder="Confirm new password" value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)} required minLength={6} className={inputClass} />
                   <button type="submit" disabled={submitting} className={btnPrimary}>
                     {submitting ? 'Updating...' : 'Update Password'}
@@ -266,7 +270,8 @@ export function UserSettings({ isDark, onClose }: UserSettingsProps) {
 
               {accountTab === 'email' && (
                 <form onSubmit={handleEmailChange} className="flex flex-col gap-4">
-                  <input type="email" placeholder="New email address" value={newEmail}
+                  <label htmlFor="new-email" className="sr-only">New email address</label>
+                  <input id="new-email" name="new-email" type="email" placeholder="New email address" value={newEmail}
                     onChange={e => setNewEmail(e.target.value)} required className={inputClass} />
                   <button type="submit" disabled={submitting} className={btnPrimary}>
                     {submitting ? 'Updating...' : 'Change Email'}

@@ -273,10 +273,12 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
 
           {/* Strain Name */}
           <div>
-            <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+            <label htmlFor="strain-name" className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
               {t('strainName', lang)} *
             </label>
             <input
+              id="strain-name"
+              name="strain-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -316,7 +318,10 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                 }`}>
                   {/* Search Input */}
                   <div className={`p-2 border-b ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
+                    <label htmlFor="brand-search" className="sr-only">Search brands</label>
                     <input
+                      id="brand-search"
+                      name="brand-search"
                       type="text"
                       value={brandSearchQuery}
                       onChange={(e) => setBrandSearchQuery(e.target.value)}
@@ -417,7 +422,10 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
             </div>
             {showCustomType && (
               <>
+                <label htmlFor="custom-type" className="sr-only">Custom strain type</label>
                 <input
+                  id="custom-type"
+                  name="custom-type"
                   type="text"
                   value={type}
                   onChange={(e) => setType(e.target.value)}
@@ -455,10 +463,12 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
           {/* THC & CBD */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+              <label htmlFor="thc" className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
                 {t('thcPercent', lang)}
               </label>
               <input
+                id="thc"
+                name="thc"
                 type="number"
                 step="0.1"
                 min="0"
@@ -474,10 +484,12 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
               />
             </div>
             <div>
-              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+              <label htmlFor="cbd" className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
                 {t('cbdPercent', lang)}
               </label>
               <input
+                id="cbd"
+                name="cbd"
                 type="number"
                 step="0.1"
                 min="0"
@@ -497,7 +509,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
           {/* Amount & Price */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+              <label htmlFor="amount" className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
                 {t('amountGrams', lang)}{' '}
                 <button
                   type="button"
@@ -510,6 +522,8 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                 </button>
               </label>
               <input
+                id="amount"
+                name="amount"
                 type="number"
                 step="0.01"
                 min="0"
@@ -524,10 +538,12 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
               />
             </div>
             <div>
-              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+              <label htmlFor="price" className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
                 {t('priceLabel', lang)} ({settings.currency})
               </label>
               <input
+                id="price"
+                name="price"
                 type="number"
                 step="0.01"
                 min="0"
@@ -545,10 +561,12 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
 
           {/* Purchase Date */}
           <div>
-            <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+            <label htmlFor="purchase-date" className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
               Purchase Date
             </label>
             <input
+              id="purchase-date"
+              name="purchase-date"
               type="date"
               value={purchasedAt}
               onChange={(e) => setPurchasedAt(e.target.value)}
@@ -604,10 +622,12 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
           {/* Tags & Effects */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+              <label htmlFor="tags" className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
                 {t('tags', lang)}
               </label>
               <input
+                id="tags"
+                name="tags"
                 type="text"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
@@ -620,10 +640,12 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
               />
             </div>
             <div>
-              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+              <label htmlFor="effects" className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
                 {t('effects', lang)}
               </label>
               <input
+                id="effects"
+                name="effects"
                 type="text"
                 value={effects}
                 onChange={(e) => setEffects(e.target.value)}
@@ -639,10 +661,12 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
 
           {/* Notes */}
           <div>
-              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+              <label htmlFor="notes" className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
                 {t('notesLabel', lang)}
               </label>
               <textarea
+                id="notes"
+                name="notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder={t('notesPlaceholder', lang)}

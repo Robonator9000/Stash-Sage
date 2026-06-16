@@ -85,6 +85,11 @@
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* Fast theme transitions on form elements to avoid lag */
+input, textarea, select {
+  transition-duration: 50ms !important;
+}
 button:focus:not(:focus-visible),
 a:focus:not(:focus-visible),
 input:focus:not(:focus-visible),

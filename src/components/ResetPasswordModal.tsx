@@ -56,7 +56,10 @@ export function ResetPasswordModal({ isDark, onClose }: ResetPasswordModalProps)
               </div>
             )}
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <label htmlFor="reset-email" className="sr-only">Email</label>
               <input
+                id="reset-email"
+                name="email"
                 type="email"
                 placeholder="Your email address"
                 value={email}

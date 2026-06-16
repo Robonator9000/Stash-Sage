@@ -309,6 +309,8 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
       {/* User search */}
       <div ref={searchRef} className="relative">
         <input
+          id="user-search"
+          name="user-search"
           type="text"
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}

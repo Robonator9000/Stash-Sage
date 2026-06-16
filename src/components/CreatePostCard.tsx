@@ -64,6 +64,8 @@ export function CreatePostCard({ isDark, lang, username, products, onSubmit }: C
         <div className="flex-1 min-w-0">
           <textarea
             ref={textareaRef}
+            id="post-content"
+            name="post-content"
             value={content}
             onChange={e => setContent(e.target.value.slice(0, MAX_CHARS))}
             placeholder={t('postPlaceholder', lang)}

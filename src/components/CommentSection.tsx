@@ -164,6 +164,8 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
         </div>
         <div className="flex-1 flex gap-2">
           <input
+            id="comment-input"
+            name="comment"
             value={newComment}
             onChange={e => setNewComment(e.target.value.slice(0, 500))}
             placeholder={t('writeComment', lang)}

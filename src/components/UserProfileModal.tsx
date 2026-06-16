@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import type { Post } from '../types';
+import type { Post, Product } from '../types';
 import { supabase } from '../utils/supabase';
 import { PostCard } from './PostCard';
 import { useAuth } from '../contexts/AuthContext';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Package, MessageSquare } from 'lucide-react';
 
 interface UserProfileModalProps {
   userId: string;
@@ -16,15 +16,18 @@ export function UserProfileModal({ userId, isDark, lang, onBack }: UserProfileMo
   const { user: currentUser } = useAuth();
   const [profile, setProfile] = useState<{ display_name?: string; avatar_url?: string } | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState<'posts' | 'products'>('posts');
 
   useEffect(() => {
     async function load() {
       setError(null);
-      const [profileRes, postsRes] = await Promise.all([
+      const [profileRes, postsRes, productsRes] = await Promise.all([
         supabase.from('profiles').select('display_name, avatar_url').eq('user_id', userId).maybeSingle(),
         supabase.from('posts').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(20),
+        supabase.from('products').select('id, name, type, amount, price, rating, thc, cbd, favorite, createdat, updatedat, notes, consumptionCount, lastconsumed, purchasedAt, brand, tags, effects, picture, pictures').eq('user_id', userId).order('createdat', { ascending: false }).limit(20),
       ]);
 
       if (profileRes.error) setError(profileRes.error.message);
@@ -39,6 +42,10 @@ export function UserProfileModal({ userId, isDark, lang, onBack }: UserProfileMo
           comments_count: 0,
         }));
         setPosts(enriched);
+      }
+      if (productsRes.error) setError(prev => prev ? prev + '; ' + productsRes.error.message : productsRes.error.message);
+      if (productsRes.data) {
+        setProducts(productsRes.data as unknown as Product[]);
       }
       setLoading(false);
     }
@@ -65,8 +72,26 @@ export function UserProfileModal({ userId, isDark, lang, onBack }: UserProfileMo
         </div>
         <div>
           <h2 className={`font-display font-bold text-lg ${isDark ? 'text-frost' : 'text-gray-800'}`}>{username}</h2>
-          <p className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>{posts.length} posts</p>
+          <p className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>{posts.length} posts &middot; {products.length} products</p>
         </div>
+      </div>
+
+      {/* Section tabs: Posts / Products */}
+      <div className={`flex gap-1 p-1 rounded-xl ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
+        <button
+          onClick={() => setActiveSection('posts')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg transition-all ${activeSection === 'posts' ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm' : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'}`}
+        >
+          <MessageSquare className="w-4 h-4" />
+          Posts ({posts.length})
+        </button>
+        <button
+          onClick={() => setActiveSection('products')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg transition-all ${activeSection === 'products' ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm' : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'}`}
+        >
+          <Package className="w-4 h-4" />
+          Products ({products.length})
+        </button>
       </div>
 
       <div className="space-y-4">
@@ -87,13 +112,19 @@ export function UserProfileModal({ userId, isDark, lang, onBack }: UserProfileMo
           </div>
         )}
 
-        {!loading && !error && posts.length === 0 && (
+        {!loading && !error && activeSection === 'posts' && posts.length === 0 && (
           <div className={`p-8 text-center text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
             No posts yet
           </div>
         )}
 
-        {posts.map(post => (
+        {!loading && !error && activeSection === 'products' && products.length === 0 && (
+          <div className={`p-8 text-center text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+            No public products yet
+          </div>
+        )}
+
+        {activeSection === 'posts' && posts.map(post => (
           <PostCard
             key={post.id}
             post={post}
@@ -105,6 +136,40 @@ export function UserProfileModal({ userId, isDark, lang, onBack }: UserProfileMo
             onUnlike={async () => {}}
           />
         ))}
+
+        {activeSection === 'products' && (
+          <div className="grid grid-cols-1 gap-3">
+            {products.map(product => (
+              <div key={product.id} className={`p-4 rounded-2xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h4 className={`font-semibold text-sm truncate ${isDark ? 'text-frost' : 'text-gray-900'}`}>{product.name}</h4>
+                    <p className={`text-xs mt-0.5 ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+                      {product.type} {product.thc ? `· ${product.thc}% THC` : ''}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className={`text-sm font-bold ${isDark ? 'text-emera' : 'text-emerald-600'}`}>{product.amount}g</span>
+                    {product.price > 0 && (
+                      <p className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>${product.price.toFixed(2)}</p>
+                    )}
+                  </div>
+                </div>
+                {product.rating > 0 && (
+                  <div className="flex items-center gap-1 mt-2">
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <span key={i} className={`text-xs ${i < Math.round(product.rating) ? 'text-amberx' : isDark ? 'text-slate-600' : 'text-gray-300'}`}>&#9733;</span>
+                    ))}
+                    <span className={`text-xs ml-1 ${isDark ? 'text-muted' : 'text-gray-400'}`}>{product.rating.toFixed(1)}</span>
+                  </div>
+                )}
+                {product.notes && (
+                  <p className={`text-xs mt-2 line-clamp-2 ${isDark ? 'text-mist' : 'text-gray-500'}`}>{product.notes}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
