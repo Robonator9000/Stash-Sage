@@ -20,8 +20,8 @@ export function ProfileCard({ profile, products, sessions, isDark, lang, onEditP
 
   if (!profile) {
     return (
-      <div className={`max-w-lg mx-auto mt-8 p-6 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
-        <LogoIcon className="w-12 h-12 mx-auto mb-3 opacity-40" />
+      <div className={`max-w-lg mx-auto p-6 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+        <LogoIcon className="w-16 h-16 mx-auto mb-4 opacity-40" />
         <p className={`text-sm mb-4 ${isDark ? 'text-mist' : 'text-gray-500'}`}>{t('profileNotSet', lang)}</p>
         <button
           onClick={() => setEditing(true)}
@@ -80,7 +80,7 @@ export function ProfileCard({ profile, products, sessions, isDark, lang, onEditP
   const joinedDate = profile.joinedAt ? new Date(profile.joinedAt).toLocaleDateString(lang, { year: 'numeric', month: 'short' }) : '';
 
   return (
-    <div className={`max-w-lg mx-auto mt-4 ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+    <div className={`max-w-lg mx-auto ${isDark ? 'text-frost' : 'text-gray-800'}`}>
       {/* Profile header */}
       <div className={`p-6 rounded-2xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
         <div className="flex items-start justify-between mb-4">

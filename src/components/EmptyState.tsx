@@ -21,10 +21,10 @@ export function EmptyState({ isDark = true, hasProducts, onAddProduct }: EmptySt
     <div className={`flex flex-col items-center justify-center py-20 px-4 ${
       isDark ? 'text-mist' : 'text-gray-500'
     }`}>
-      <div className={`w-28 h-28 rounded-full flex items-center justify-center mb-6 ${
+      <div className={`w-36 h-36 rounded-full flex items-center justify-center mb-6 ${
         isDark ? 'bg-emera/10 border border-emera/20' : 'bg-emerald-50 border border-emerald-100'
       }`}>
-        <LeafIcon className="w-14 h-14" />
+        <LeafIcon className="w-20 h-20" />
       </div>
 
       {!hasProducts ? (

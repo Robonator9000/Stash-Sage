@@ -45,12 +45,16 @@ export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalPr
         }`}
       >
         <div className="text-center mb-8">
-          <LogoIcon className="w-9 h-9 mb-3" />
-          <h1 className="text-xl font-display font-extrabold bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent mb-2 -tracking-2">
-            STASH
+          <div className="flex justify-center mb-4">
+            <div className={`w-20 h-20 rounded-2xl flex items-center justify-center bg-gradient-to-br from-cyanx/20 to-emera/20 ${isDark ? 'border border-edge' : 'border border-gray-200'}`}>
+              <LogoIcon className="w-12 h-12" />
+            </div>
+          </div>
+          <h1 className="text-3xl font-display font-extrabold bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent mb-2 -tracking-2">
+            STASH TRACKER
           </h1>
           <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
-            Choose your language to get started
+            Keep track of your collection, log your sessions, and connect with the community
           </p>
         </div>
 
@@ -91,13 +95,13 @@ export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalPr
 
         <button
           onClick={() => onComplete(selected)}
-          className="w-full py-3.5 rounded-2xl font-bold text-lg transition-all active:scale-[0.98] bg-gradient-to-r from-cyanx to-emera text-white hover:from-cyanx-dark hover:to-emera-dark"
+          className="w-full py-4 rounded-2xl font-bold text-lg transition-all active:scale-[0.97] bg-gradient-to-r from-cyanx to-emera text-white hover:from-cyanx-dark hover:to-emera-dark shadow-lg shadow-cyanx/20"
         >
           Get Started
         </button>
 
         <p className={`text-center text-xs mt-4 ${isDark ? 'text-haze' : 'text-gray-400'}`}>
-          You can change language anytime in Settings
+          You can change language anytime in Settings &middot; No account required
         </p>
       </div>
     </div>

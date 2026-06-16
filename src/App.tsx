@@ -453,8 +453,8 @@ export default function App() {
             onClick={() => { setActiveTab('stash'); setStashSection('products'); }}
             className="font-display text-2xl font-extrabold hover:opacity-80 transition-opacity shrink-0 flex items-center gap-1.5"
           >
-            <LogoIcon className="w-6 h-6" />
-            <span className="bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent font-display font-extrabold text-lg tracking-tight">STASH</span>
+            <LogoIcon className="w-8 h-8" />
+            <span className="bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent font-display font-extrabold text-xl tracking-tight">STASH</span>
           </button>
 
           {/* Search */}
@@ -577,7 +577,7 @@ export default function App() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as 'stash' | 'community')}
-                className={`flex-1 flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium transition-all duration-200 relative
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3.5 text-base font-medium transition-all duration-200 relative
                   ${activeTab === tab.id
                     ? isDark ? 'text-cyan-400' : 'text-cyan-600'
                     : isDark ? 'text-mist hover:text-frost' : 'text-gray-600 hover:text-gray-900'}`}
@@ -603,7 +603,7 @@ export default function App() {
                 <button
                   key={section}
                   onClick={() => setStashSection(section)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  className={`px-5 py-2 rounded-xl text-sm font-medium transition-all ${
                     stashSection === section
                       ? 'bg-gradient-to-r from-cyanx to-emera text-white'
                       : isDark ? 'text-mist hover:text-frost hover:bg-midnight' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
@@ -876,7 +876,7 @@ export default function App() {
         {/* ==================== COMMUNITY TAB ==================== */}
         {activeTab === 'community' && (
           <ErrorBoundary isDark={isDark} lang={lang}>
-          <div>
+          <div className="space-y-4">
             <ProfileCard
               profile={settings.profile}
               products={products}
@@ -891,7 +891,7 @@ export default function App() {
             />
 
             {!user && (
-              <div className={`max-w-lg mx-auto mt-8 p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+              <div className={`max-w-lg mx-auto p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
                 <svg className="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                 </svg>

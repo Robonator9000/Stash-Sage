@@ -133,7 +133,7 @@ export function UserSettings({ isDark, onClose }: UserSettingsProps) {
       <div className={`absolute inset-0 transition-all duration-200 ${visible ? 'bg-black/60 backdrop-blur-sm' : 'bg-black/0'}`} />
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`relative w-full max-w-md h-full flex flex-col shadow-2xl transition-all duration-200 border-l ${
+        className={`relative w-full max-w-md max-h-screen overflow-y-auto flex flex-col shadow-2xl transition-all duration-200 border-l ${
           isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
         } ${visible ? 'translate-x-0' : 'translate-x-full'}`}
         role="dialog"
@@ -141,7 +141,7 @@ export function UserSettings({ isDark, onClose }: UserSettingsProps) {
         aria-label="Account"
       >
         {/* Header */}
-        <div className={`flex items-center justify-between p-5 border-b shrink-0 ${isDark ? 'border-slate-800' : 'border-gray-200'}`}>
+        <div className={`sticky top-0 z-10 flex items-center justify-between p-5 border-b shrink-0 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-cyanx to-emera`}>
               {user ? (
@@ -160,7 +160,7 @@ export function UserSettings({ isDark, onClose }: UserSettingsProps) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+        <div className="flex-1 p-5 space-y-5">
           {!isConfigured && (
             <div className={`px-3 py-2 rounded-lg text-sm ${isDark ? 'bg-yellow-500/10 text-yellow-400' : 'bg-yellow-50 text-yellow-700'}`}>
               Auth is not configured. Set <code className="text-xs px-1 py-0.5 rounded bg-black/10">VITE_SUPABASE_URL</code> and{' '}

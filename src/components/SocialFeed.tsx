@@ -23,6 +23,7 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [feedFilter, setFeedFilter] = useState<'latest' | 'following'>('latest');
   const pageRef = useRef(0);
   const observerRef = useRef<HTMLDivElement>(null);
 
@@ -207,8 +208,12 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
 
   const showCreatePostCard = !!profile;
 
+  const displayedPosts = feedFilter === 'following'
+    ? posts.filter(p => p.is_following || p.user_id === currentUserId)
+    : posts;
+
   return (
-    <div className="max-w-lg mx-auto mt-4 space-y-4">
+    <div className="max-w-lg mx-auto space-y-4">
       {showCreatePostCard && (
         <CreatePostCard
           isDark={isDark}
@@ -218,6 +223,30 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
           onSubmit={handleCreatePost}
         />
       )}
+
+      {/* Feed filter */}
+      <div className={`flex items-center gap-1 p-1 rounded-xl ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
+        <button
+          onClick={() => setFeedFilter('latest')}
+          className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
+            feedFilter === 'latest'
+              ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm'
+              : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Latest
+        </button>
+        <button
+          onClick={() => setFeedFilter('following')}
+          className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
+            feedFilter === 'following'
+              ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm'
+              : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Following
+        </button>
+      </div>
 
       {loading && (
         <div className="space-y-4">
@@ -242,15 +271,15 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
         </div>
       )}
 
-      {!loading && !error && posts.length === 0 && (
+      {!loading && !error && displayedPosts.length === 0 && (
         <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
           <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
-            {t('noPostsYet', lang)}
+            {feedFilter === 'following' ? 'No posts from people you follow yet' : t('noPostsYet', lang)}
           </p>
         </div>
       )}
 
-        {posts.map(post => (
+        {displayedPosts.map(post => (
           <PostCard
             key={post.id}
             post={post}
