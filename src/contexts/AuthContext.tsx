@@ -27,10 +27,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user?.id && isConfigured) {
+        supabase.from('profiles').upsert(
+          { user_id: session.user.id, display_name: session.user.email?.split('@')[0] || 'User' },
+          { onConflict: 'user_id' }
+        ).then(() => {}, () => {});
+      }
       setIsLoading(false);
     });
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user?.id && isConfigured) {
+        supabase.from('profiles').upsert(
+          { user_id: session.user.id, display_name: session.user.email?.split('@')[0] || 'User' },
+          { onConflict: 'user_id' }
+        ).then(() => {}, () => {});
+      }
     });
     return () => data?.subscription.unsubscribe();
   }, []);
@@ -58,10 +70,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = useCallback(async (email: string, password: string) => {
     setError(null);
     if (!isConfigured) { setError('Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your .env file.'); throw new Error('Auth not configured'); }
-    const { error: err } = await supabase.auth.signUp({ email, password });
+    const { data, error: err } = await supabase.auth.signUp({ email, password });
     if (err) {
       setError(handleAuthError(err));
       throw err;
+    }
+    const uid = data?.user?.id;
+    if (uid) {
+      await supabase.from('profiles').upsert(
+        { user_id: uid, display_name: email.split('@')[0] || 'User' },
+        { onConflict: 'user_id' }
+      );
     }
     showToast({
       id: 'auth-signup', title: 'Account created',

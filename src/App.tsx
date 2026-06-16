@@ -23,13 +23,11 @@ import { BackgroundCanvas } from './components/BackgroundCanvas';
 import { WelcomeModal } from './components/WelcomeModal';
 import { UserSettings } from './components/UserSettings';
 import { LogoIcon } from './components/LogoIcon';
-import { ProfileCard } from './components/ProfileCard';
 import { SocialFeed } from './components/SocialFeed';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NotificationBell } from './components/NotificationBell';
 import { UserProfileModal } from './components/UserProfileModal';
 import { useAuth } from './contexts/AuthContext';
-import { supabase } from './utils/supabase';
 const DashboardTab = lazy(() => import('./components/DashboardTab').then(m => ({ default: m.DashboardTab })));
 const HistoryTab = lazy(() => import('./components/HistoryTab').then(m => ({ default: m.HistoryTab })));
 
@@ -524,7 +522,7 @@ export default function App() {
               </svg>
               {t('addProduct', lang)}
             </button>
-            {user && <NotificationBell isDark={isDark} lang={lang} onViewProfile={(uid) => { setViewProfileUserId(uid); }} />}
+            {user && <NotificationBell isDark={isDark} lang={lang} onViewProfile={(uid) => { setViewProfileUserId(uid); setActiveTab('community'); }} />}
             <button
               onClick={() => { setSettingsDefaultTab('profile'); setIsSettingsOpen(true); }}
               className={`p-1.5 rounded-xl transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}
@@ -880,19 +878,6 @@ export default function App() {
         {activeTab === 'community' && (
           <ErrorBoundary isDark={isDark} lang={lang}>
           <div className="space-y-4">
-            <ProfileCard
-              profile={settings.profile}
-              products={products}
-              sessions={sessions}
-              isDark={isDark}
-              lang={lang}
-              onEditProfile={() => { setSettingsDefaultTab('profile'); setIsSettingsOpen(true); }}
-              onUpdateProfile={(p) => {
-                updateSettings({ profile: p });
-                if (user) supabase.from('profiles').upsert({ user_id: user.id, display_name: p.username }, { onConflict: 'user_id' }).then(() => {}, () => {});
-              }}
-            />
-
             {!user && (
               <div className={`max-w-lg mx-auto p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
                 <svg className="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
@@ -913,7 +898,16 @@ export default function App() {
               </div>
             )}
 
-            {user && (
+            {user && viewProfileUserId && (
+              <UserProfileModal
+                userId={viewProfileUserId}
+                isDark={isDark}
+                lang={lang}
+                onBack={() => setViewProfileUserId(null)}
+              />
+            )}
+
+            {user && !viewProfileUserId && (
               <SocialFeed
                 isDark={isDark}
                 lang={lang}
@@ -988,16 +982,6 @@ export default function App() {
           onClose={() => setIsSettingsOpen(false)}
           isDark={isDark}
           defaultTab={settingsDefaultTab}
-        />
-      )}
-
-      {/* User Profile Modal */}
-      {viewProfileUserId && (
-        <UserProfileModal
-          userId={viewProfileUserId}
-          isDark={isDark}
-          lang={lang}
-          onClose={() => setViewProfileUserId(null)}
         />
       )}
 

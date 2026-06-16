@@ -75,7 +75,7 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
     return rawPosts.map(p => ({
       ...p,
       author: {
-        username: profileMap.get(p.user_id)?.display_name || 'Unknown',
+        username: profileMap.get(p.user_id)?.display_name || 'User',
         avatar_url: profileMap.get(p.user_id)?.avatar_url,
       },
       likes_count: likesCountMap.get(p.id) || 0,
