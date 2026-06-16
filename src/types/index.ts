@@ -120,5 +120,19 @@ export interface PostComment {
   };
 }
 
+export interface Notification {
+  id: string;
+  user_id: string;
+  type: 'like' | 'comment' | 'follow';
+  actor_id: string;
+  post_id?: string | null;
+  read: boolean;
+  created_at: string;
+  actor?: {
+    username: string;
+    avatar_url?: string;
+  };
+}
+
 export type SortOption = 'newest' | 'oldest' | 'name' | 'rating' | 'thc' | 'amount' | 'price' | 'favorites';
 export type FilterType = string;

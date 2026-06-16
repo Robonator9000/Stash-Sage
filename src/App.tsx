@@ -26,6 +26,8 @@ import { LogoIcon } from './components/LogoIcon';
 import { ProfileCard } from './components/ProfileCard';
 import { SocialFeed } from './components/SocialFeed';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { NotificationBell } from './components/NotificationBell';
+import { UserProfileModal } from './components/UserProfileModal';
 import { useAuth } from './contexts/AuthContext';
 import { supabase } from './utils/supabase';
 const DashboardTab = lazy(() => import('./components/DashboardTab').then(m => ({ default: m.DashboardTab })));
@@ -65,6 +67,7 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showUserSettings, setShowUserSettings] = useState(false);
   const [showSmoke, setShowSmoke] = useState(false);
+  const [viewProfileUserId, setViewProfileUserId] = useState<string | null>(null);
 
   const [historyFilterType, setHistoryFilterType] = useState<string>('all');
   const [historyDateFilter, setHistoryDateFilter] = useState<string>('all');
@@ -530,6 +533,7 @@ export default function App() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </button>
+            {user && <NotificationBell isDark={isDark} lang={lang} onViewProfile={(uid) => { setViewProfileUserId(uid); }} />}
             <button
               onClick={() => setShowUserSettings(true)}
               className={`p-1.5 rounded-xl transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}
@@ -918,6 +922,7 @@ export default function App() {
                 username={settings.profile?.username || 'User'}
                 products={products}
                 profile={settings.profile}
+                onViewProfile={(uid) => setViewProfileUserId(uid)}
               />
             )}
           </div>
@@ -983,6 +988,16 @@ export default function App() {
           onMergeImport={handleMergeImport}
           onClose={() => setIsSettingsOpen(false)}
           isDark={isDark}
+        />
+      )}
+
+      {/* User Profile Modal */}
+      {viewProfileUserId && (
+        <UserProfileModal
+          userId={viewProfileUserId}
+          isDark={isDark}
+          lang={lang}
+          onClose={() => setViewProfileUserId(null)}
         />
       )}
 

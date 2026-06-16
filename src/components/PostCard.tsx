@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import type { Post } from '../types';
+import { supabase } from '../utils/supabase';
 import { t } from '../utils/translations';
 import { timeAgo } from '../utils/helpers';
 import { CommentSection } from './CommentSection';
 import { FollowButton } from './FollowButton';
+import { showToast } from './Toast';
 
 interface PostCardProps {
   post: Post;
@@ -15,17 +17,37 @@ interface PostCardProps {
   onLike: (postId: string) => Promise<void>;
   onUnlike: (postId: string) => Promise<void>;
   onDelete?: (postId: string) => Promise<void>;
+  onEdit?: (postId: string, content: string) => Promise<void>;
   onFollow?: (userId: string) => Promise<void>;
   onUnfollow?: (userId: string) => Promise<void>;
+  onViewProfile?: (userId: string) => void;
+  onComment?: (userId: string, postId: string) => void;
 }
 
-export function PostCard({ post, isDark, lang, currentUserId, username, isFollowing, onLike, onUnlike, onDelete, onFollow, onUnfollow }: PostCardProps) {
+export function PostCard({ post, isDark, lang, currentUserId, username, isFollowing, onLike, onUnlike, onDelete, onEdit, onFollow, onUnfollow, onViewProfile, onComment }: PostCardProps) {
   const [liking, setLiking] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
+  const [editSubmitting, setEditSubmitting] = useState(false);
   const isOwner = post.user_id === currentUserId;
   const liked = post.liked_by_me ?? false;
   const likesCount = post.likes_count ?? 0;
+
+  async function handleEdit() {
+    if (!onEdit || !editContent.trim() || editSubmitting) return;
+    setEditSubmitting(true);
+    try {
+      await supabase.from('posts').update({ content: editContent.trim() }).eq('id', post.id).eq('user_id', currentUserId);
+      await onEdit(post.id, editContent.trim());
+      setEditing(false);
+      showToast({ id: 'post-edited', title: '', body: t('postCreated', lang) });
+    } catch {
+    } finally {
+      setEditSubmitting(false);
+    }
+  }
 
   async function handleToggleLike() {
     setLiking(true);
@@ -43,16 +65,22 @@ export function PostCard({ post, isDark, lang, currentUserId, username, isFollow
   return (
     <div className={`p-4 rounded-2xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
       <div className="flex items-start gap-3">
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-cyanx to-emera shrink-0`}>
+        <button
+          onClick={() => onViewProfile?.(post.user_id)}
+          className={`w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-cyanx to-emera shrink-0`}
+        >
           <span className="text-white font-display font-bold text-sm">
             {(post.author?.username?.[0] || '?').toUpperCase()}
           </span>
-        </div>
+        </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className={`font-display font-bold text-sm ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+            <button
+              onClick={() => onViewProfile?.(post.user_id)}
+              className={`font-display font-bold text-sm hover:underline ${isDark ? 'text-frost' : 'text-gray-800'}`}
+            >
               {post.author?.username || 'Unknown'}
-            </span>
+            </button>
             {onFollow && onUnfollow && (
               <FollowButton
                 userId={post.user_id}
@@ -68,9 +96,38 @@ export function PostCard({ post, isDark, lang, currentUserId, username, isFollow
             </span>
           </div>
 
-          <p className={`text-sm mb-2 whitespace-pre-wrap ${isDark ? 'text-mist' : 'text-gray-600'}`}>
-            {post.content}
-          </p>
+          {editing ? (
+            <div className="mb-2 space-y-2">
+              <textarea
+                value={editContent}
+                onChange={e => setEditContent(e.target.value.slice(0, 500))}
+                autoFocus
+                className={`w-full text-sm px-3 py-2 rounded-xl outline-none resize-none transition-colors ${
+                  isDark ? 'bg-midnight text-frost border border-edge focus:border-cyanx/50' : 'bg-gray-50 text-gray-800 border border-gray-200 focus:border-cyan-500'
+                }`}
+                rows={3}
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={handleEdit}
+                  disabled={!editContent.trim() || editSubmitting}
+                  className="px-3 py-1 rounded-lg text-xs font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark disabled:opacity-50"
+                >
+                  {editSubmitting ? 'Saving...' : 'Save'}
+                </button>
+                <button
+                  onClick={() => { setEditing(false); setEditContent(post.content); }}
+                  className={`px-3 py-1 rounded-lg text-xs font-medium ${isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p className={`text-sm mb-2 whitespace-pre-wrap ${isDark ? 'text-mist' : 'text-gray-600'}`}>
+              {post.content}
+            </p>
+          )}
 
           {post.product_name && (
             <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium mb-3 ${
@@ -121,16 +178,28 @@ export function PostCard({ post, isDark, lang, currentUserId, username, isFollow
               {(post.comments_count ?? 0) > 0 && <span>{post.comments_count}</span>}
             </button>
 
-            {isOwner && onDelete && (
+            {isOwner && (
               <>
-                <button
-                  onClick={() => setShowConfirm(true)}
-                  className={`ml-auto text-xs font-medium ${isDark ? 'text-muted hover:text-red-400' : 'text-gray-400 hover:text-red-500'}`}
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                  </svg>
-                </button>
+                {onEdit && (
+                  <button
+                    onClick={() => { setEditing(true); setEditContent(post.content); }}
+                    className={`ml-auto text-xs font-medium ${isDark ? 'text-muted hover:text-cyan-400' : 'text-gray-400 hover:text-cyan-600'}`}
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                    </svg>
+                  </button>
+                )}
+                {onDelete && (
+                  <button
+                    onClick={() => setShowConfirm(true)}
+                    className={`text-xs font-medium ${isDark ? 'text-muted hover:text-red-400' : 'text-gray-400 hover:text-red-500'}`}
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                    </svg>
+                  </button>
+                )}
                 {showConfirm && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowConfirm(false)}>
                     <div className={`p-6 rounded-2xl max-w-xs w-full mx-4 ${isDark ? 'bg-card border border-edge' : 'bg-white border border-gray-200'}`}
@@ -140,7 +209,7 @@ export function PostCard({ post, isDark, lang, currentUserId, username, isFollow
                       </p>
                       <div className="flex gap-2">
                         <button
-                          onClick={async () => { await onDelete(post.id); setShowConfirm(false); }}
+                          onClick={async () => { await onDelete?.(post.id); setShowConfirm(false); }}
                           className="flex-1 px-4 py-2 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-all"
                         >
                           {t('delete', lang)}
@@ -164,10 +233,12 @@ export function PostCard({ post, isDark, lang, currentUserId, username, isFollow
           {showComments && (
             <CommentSection
               postId={post.id}
+              postUserId={post.user_id}
               isDark={isDark}
               lang={lang}
               currentUserId={currentUserId}
               username={username}
+              onComment={onComment}
             />
           )}
         </div>

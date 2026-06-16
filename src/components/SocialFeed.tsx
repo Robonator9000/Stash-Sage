@@ -13,19 +13,35 @@ interface SocialFeedProps {
   username: string;
   products: Product[];
   profile?: Profile;
+  onViewProfile?: (userId: string) => void;
 }
 
 const PAGE_SIZE = 10;
 
-export function SocialFeed({ isDark, lang, currentUserId, username, products, profile }: SocialFeedProps) {
+export function SocialFeed({ isDark, lang, currentUserId, username, products, profile, onViewProfile }: SocialFeedProps) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [feedFilter, setFeedFilter] = useState<'latest' | 'following'>('latest');
+  const [feedFilter, setFeedFilter] = useState<'latest' | 'following' | 'trending'>('latest');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searching, setSearching] = useState(false);
   const pageRef = useRef(0);
   const observerRef = useRef<HTMLDivElement>(null);
+  const searchTimer = useRef<ReturnType<typeof setTimeout>>();
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchResults([]);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   const enrichPosts = useCallback(async (rawPosts: any[]): Promise<Post[]> => {
     if (rawPosts.length === 0) return [];
@@ -69,15 +85,19 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
     }));
   }, [currentUserId]);
 
-  const fetchPosts = useCallback(async (page: number) => {
+  const fetchPosts = useCallback(async (page: number, sort?: string) => {
     const from = page * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
 
-    const { data, error: fetchError } = await supabase
-      .from('posts')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .range(from, to);
+    let query = supabase.from('posts').select('*');
+
+    if (sort === 'trending') {
+      query = query.order('created_at', { ascending: false }).gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+    } else {
+      query = query.order('created_at', { ascending: false });
+    }
+
+    const { data, error: fetchError } = await query.range(from, to);
 
     if (fetchError) {
       setError(fetchError.message);
@@ -90,7 +110,14 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
     }
 
     if (data.length < PAGE_SIZE) setHasMore(false);
-    return enrichPosts(data);
+
+    const enriched = await enrichPosts(data);
+
+    if (sort === 'trending') {
+      return enriched.sort((a, b) => ((b.likes_count ?? 0) * 3 + (b.comments_count ?? 0) * 2) - ((a.likes_count ?? 0) * 3 + (a.comments_count ?? 0) * 2));
+    }
+
+    return enriched;
   }, [enrichPosts]);
 
   useEffect(() => {
@@ -99,7 +126,7 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
     pageRef.current = 0;
     setHasMore(true);
 
-    fetchPosts(0).then(enriched => {
+    fetchPosts(0, feedFilter).then(enriched => {
       setPosts(enriched);
       setLoading(false);
     });
@@ -114,7 +141,7 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [fetchPosts, enrichPosts, currentUserId]);
+  }, [fetchPosts, enrichPosts, currentUserId, feedFilter]);
 
   useEffect(() => {
     const el = observerRef.current;
@@ -126,7 +153,7 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
         const nextPage = pageRef.current + 1;
         pageRef.current = nextPage;
 
-        fetchPosts(nextPage).then(enriched => {
+        fetchPosts(nextPage, feedFilter).then(enriched => {
           setPosts(prev => [...prev, ...enriched]);
           setLoadingMore(false);
         });
@@ -135,7 +162,23 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [hasMore, loading, loadingMore, fetchPosts]);
+  }, [hasMore, loading, loadingMore, fetchPosts, feedFilter]);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) { setSearchResults([]); return; }
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(async () => {
+      setSearching(true);
+      const { data } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url')
+        .ilike('display_name', `%${searchQuery}%`)
+        .limit(10);
+      setSearchResults(data || []);
+      setSearching(false);
+    }, 300);
+    return () => clearTimeout(searchTimer.current);
+  }, [searchQuery]);
 
   async function handleCreatePost(content: string, productId?: string, productName?: string) {
     const { data, error: insertError } = await supabase.from('posts').insert({
@@ -155,7 +198,27 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
     showToast({ id: 'post-created', title: '', body: t('postCreated', lang) });
   }
 
+  async function handleEditPost(postId: string, content: string) {
+    const { error: updateError } = await supabase.from('posts').update({ content }).eq('id', postId).eq('user_id', currentUserId);
+    if (updateError) {
+      showToast({ id: 'edit-error', title: t('somethingWentWrong', lang), body: updateError.message });
+      return;
+    }
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, content } : p));
+  }
+
+  async function notifyUser(targetUserId: string, type: 'like' | 'comment' | 'follow', postId?: string) {
+    if (targetUserId === currentUserId) return;
+    await supabase.from('notifications').insert({
+      user_id: targetUserId,
+      type,
+      actor_id: currentUserId,
+      post_id: postId || null,
+    }).then(() => {}, () => {});
+  }
+
   async function handleLike(postId: string) {
+    const post = posts.find(p => p.id === postId);
     const { error: insertError } = await supabase.from('post_likes').insert({
       user_id: currentUserId,
       post_id: postId,
@@ -165,6 +228,7 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
       return;
     }
     setPosts(prev => prev.map(p => p.id === postId ? { ...p, liked_by_me: true, likes_count: (p.likes_count ?? 0) + 1 } : p));
+    if (post) notifyUser(post.user_id, 'like', postId);
   }
 
   async function handleUnlike(postId: string) {
@@ -199,6 +263,7 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
   async function handleFollow(userId: string) {
     await supabase.from('follows').insert({ follower_id: currentUserId, following_id: userId });
     setPosts(prev => prev.map(p => p.user_id === userId ? { ...p, is_following: true } : p));
+    notifyUser(userId, 'follow');
   }
 
   async function handleUnfollow(userId: string) {
@@ -226,26 +291,53 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
 
       {/* Feed filter */}
       <div className={`flex items-center gap-1 p-1 rounded-xl ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
-        <button
-          onClick={() => setFeedFilter('latest')}
-          className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
-            feedFilter === 'latest'
-              ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm'
-              : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'
+        {(['latest', 'following', 'trending'] as const).map(f => (
+          <button
+            key={f}
+            onClick={() => setFeedFilter(f)}
+            className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
+              feedFilter === f
+                ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm'
+                : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            {f === 'latest' ? 'Latest' : f === 'following' ? 'Following' : 'Trending'}
+          </button>
+        ))}
+      </div>
+
+      {/* User search */}
+      <div ref={searchRef} className="relative">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          placeholder="Search users..."
+          className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-colors ${
+            isDark ? 'bg-midnight text-frost border border-edge focus:border-cyanx/50 placeholder-muted' : 'bg-gray-50 text-gray-800 border border-gray-200 focus:border-cyan-400 placeholder-gray-400'
           }`}
-        >
-          Latest
-        </button>
-        <button
-          onClick={() => setFeedFilter('following')}
-          className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
-            feedFilter === 'following'
-              ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm'
-              : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Following
-        </button>
+        />
+        {searching && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            <div className={`w-4 h-4 rounded-full border-2 border-t-transparent animate-spin ${isDark ? 'border-edge' : 'border-gray-300'}`} />
+          </div>
+        )}
+        {searchResults.length > 0 && (
+          <div className={`absolute top-full mt-1 left-0 right-0 rounded-xl shadow-xl border overflow-hidden z-20 ${isDark ? 'bg-card border-edge' : 'bg-white border-gray-200'}`}>
+            {searchResults.map(r => (
+              <button
+                key={r.user_id}
+                onClick={() => { onViewProfile?.(r.user_id); setSearchQuery(''); setSearchResults([]); }}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors ${isDark ? 'hover:bg-surface text-frost' : 'hover:bg-gray-50 text-gray-800'}`}
+              >
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-cyanx to-emera">
+                  <span className="text-white font-display font-bold text-xs">{(r.display_name?.[0] || '?').toUpperCase()}</span>
+                </div>
+                <span className="font-medium">{r.display_name}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {loading && (
@@ -279,21 +371,24 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
         </div>
       )}
 
-        {displayedPosts.map(post => (
-          <PostCard
-            key={post.id}
-            post={post}
-            isDark={isDark}
-            lang={lang}
-            currentUserId={currentUserId}
-            username={username}
-            isFollowing={post.is_following}
-            onLike={handleLike}
-            onUnlike={handleUnlike}
-            onDelete={handleDelete}
-            onFollow={handleFollow}
-            onUnfollow={handleUnfollow}
-          />
+      {displayedPosts.map(post => (
+        <PostCard
+          key={post.id}
+          post={post}
+          isDark={isDark}
+          lang={lang}
+          currentUserId={currentUserId}
+          username={username}
+          isFollowing={post.is_following}
+          onLike={handleLike}
+          onUnlike={handleUnlike}
+          onDelete={handleDelete}
+          onEdit={handleEditPost}
+          onFollow={handleFollow}
+          onUnfollow={handleUnfollow}
+          onViewProfile={onViewProfile}
+          onComment={(userId, postId) => notifyUser(userId, 'comment', postId)}
+        />
       ))}
 
       {loadingMore && (

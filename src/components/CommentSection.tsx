@@ -6,13 +6,15 @@ import { timeAgo } from '../utils/helpers';
 
 interface CommentSectionProps {
   postId: string;
+  postUserId: string;
   isDark: boolean;
   lang: string;
   currentUserId: string;
   username: string;
+  onComment?: (userId: string, postId: string) => void;
 }
 
-export function CommentSection({ postId, isDark, lang, currentUserId, username }: CommentSectionProps) {
+export function CommentSection({ postId, postUserId, isDark, lang, currentUserId, username, onComment }: CommentSectionProps) {
   const [comments, setComments] = useState<PostComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
@@ -82,6 +84,7 @@ export function CommentSection({ postId, isDark, lang, currentUserId, username }
     }]);
     setNewComment('');
     setSubmitting(false);
+    onComment?.(postUserId, postId);
   }
 
   async function handleDelete(commentId: string) {
