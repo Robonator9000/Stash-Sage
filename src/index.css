@@ -58,6 +58,40 @@
   z-index: 1;
 }
 
+/* Skip-to-content link */
+.skip-link {
+  position: fixed;
+  top: -100%;
+  left: 16px;
+  z-index: 9999;
+  padding: 10px 20px;
+  border-radius: 0 0 8px 8px;
+  font-size: 14px;
+  font-weight: 600;
+  background: var(--accent-from);
+  color: #fff;
+  transition: top 0.2s;
+  text-decoration: none;
+}
+.skip-link:focus {
+  top: 0;
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* Focus indicators */
+:focus-visible {
+  outline: 2px solid var(--accent-from);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible) {
+  outline: none;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

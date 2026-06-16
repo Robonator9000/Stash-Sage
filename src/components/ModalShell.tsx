@@ -35,7 +35,7 @@ export function ModalShell({ isOpen, onClose, isDark = true, children, label, ma
 
   return (
     <div
-      className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-200 ${
+      className={`fixed inset-0 flex items-center justify-center z-50 p-4 max-sm:p-0 transition-all duration-200 ${
         isVisible ? 'bg-deep/85 backdrop-blur-sm' : 'bg-deep/0'
       }`}
       onClick={handleClose}
@@ -44,7 +44,7 @@ export function ModalShell({ isOpen, onClose, isDark = true, children, label, ma
       aria-label={label}
     >
       <div
-        className={`w-full ${maxWidth} rounded-2xl border shadow-2xl transition-all duration-200 ${
+        className={`w-full ${maxWidth} rounded-2xl border shadow-2xl transition-all duration-200 max-sm:min-h-[80dvh] max-sm:rounded-b-none max-sm:mt-auto max-sm:absolute max-sm:bottom-0 max-sm:left-0 max-sm:right-0 max-sm:max-w-none ${
           isDark ? 'bg-surface border-edge' : 'bg-white border-gray-200'
         } ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
         onClick={(e) => e.stopPropagation()}

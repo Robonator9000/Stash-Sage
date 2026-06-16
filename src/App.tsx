@@ -433,7 +433,8 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }} id="main-content">
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <BackgroundCanvas isDark={isDark} />
 
       {!settings.coachMarksDone && (
@@ -451,13 +452,15 @@ export default function App() {
       <header className={`sticky top-0 z-50 ${isDark ? 'bg-[#0b1120]/80' : 'bg-[#e2e8f0]/80'} backdrop-blur-xl`}>
         <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
           {/* Logo */}
-          <button
-            onClick={() => { setActiveTab('stash'); setStashSection('products'); }}
-            className="font-display text-2xl font-extrabold hover:opacity-80 transition-opacity shrink-0 flex items-center gap-1.5"
-          >
-            <LogoIcon className="w-8 h-8" />
-            <span className="bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent font-display font-extrabold text-xl tracking-tight">STASH</span>
-          </button>
+          <h1 className="m-0">
+            <button
+              onClick={() => { setActiveTab('stash'); setStashSection('products'); }}
+              className="font-display text-2xl font-extrabold hover:opacity-80 transition-opacity shrink-0 flex items-center gap-1.5"
+            >
+              <LogoIcon className="w-8 h-8" />
+              <span className="bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent font-display font-extrabold text-xl tracking-tight">STASH</span>
+            </button>
+          </h1>
 
           {/* Search */}
           <div className="relative flex-1 max-w-xl mx-auto">
@@ -883,9 +886,9 @@ export default function App() {
                 <svg className="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                 </svg>
-                <h3 className={`text-lg font-display font-bold mb-2 ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+                <h2 className={`text-lg font-display font-bold mb-2 ${isDark ? 'text-frost' : 'text-gray-800'}`}>
                   {t('community', lang)}
-                </h3>
+                </h2>
                 <p className={`text-sm mb-6 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
                   Sign up to share your stash, connect with others, and see what the community is talking about.
                 </p>
@@ -989,8 +992,21 @@ export default function App() {
       <ToastContainer isDark={isDark} />
 
       {/* Footer */}
-      <footer className={`text-center py-6 text-xs font-display font-semibold tracking-widest uppercase ${isDark ? 'text-slate-700' : 'text-gray-300'}`}>
-        STASH TRACKER
+      <footer className={`py-8 px-4 mt-8 ${isDark ? 'border-t border-edge' : 'border-t border-gray-200'}`}>
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className={`text-xs font-display font-semibold tracking-widest uppercase ${isDark ? 'text-slate-700' : 'text-gray-300'}`}>
+            STASH TRACKER
+          </p>
+          <div className="flex items-center gap-4">
+            <a href="#" className={`text-xs hover:underline ${isDark ? 'text-slate-600 hover:text-slate-400' : 'text-gray-400 hover:text-gray-600'}`}>
+              Privacy
+            </a>
+            <span className={`text-xs ${isDark ? 'text-slate-700' : 'text-gray-300'}`}>·</span>
+            <a href="#" className={`text-xs hover:underline ${isDark ? 'text-slate-600 hover:text-slate-400' : 'text-gray-400 hover:text-gray-600'}`}>
+              Terms
+            </a>
+          </div>
+        </div>
       </footer>
 
       {/* Animations */}
