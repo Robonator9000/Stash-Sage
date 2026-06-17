@@ -602,7 +602,7 @@ export default function App() {
 
         {/* ==================== STASH TAB ==================== */}
         {activeTab === 'stash' && (
-          <div>
+          <div className="w-full">
             {/* Sub-navigation pills */}
             <div className="flex items-center justify-center gap-2 mb-5 max-w-md mx-auto">
               {(['products', 'dashboard', 'history'] as const).map(section => (
