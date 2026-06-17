@@ -80,7 +80,7 @@ export function CreateListingModal({ isDark, lang, products, initial, onSubmit, 
             {t('listingTitle', lang)} *
           </label>
           <input id="listing-title" name="title" type="text" value={title} onChange={e => setTitle(e.target.value)} required
-            className={`w-full px-4 py-3 rounded-xl border-2 outline-none transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'}`} />
+            className={`w-full px-4 py-3 rounded-xl border-2 outline-none transition-colors ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'}`} />
         </div>
 
         {/* Description */}
@@ -89,7 +89,7 @@ export function CreateListingModal({ isDark, lang, products, initial, onSubmit, 
             {t('listingDescription', lang)}
           </label>
           <textarea id="listing-desc" name="description" value={description} onChange={e => setDescription(e.target.value)} rows={3}
-            className={`w-full px-4 py-3 rounded-xl border-2 outline-none resize-none transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'}`} />
+            className={`w-full px-4 py-3 rounded-xl border-2 outline-none resize-none transition-colors ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'}`} />
         </div>
 
         {/* Price + Category row */}
@@ -101,7 +101,7 @@ export function CreateListingModal({ isDark, lang, products, initial, onSubmit, 
             <div className="relative">
               <DollarSign className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
               <input id="listing-price" name="price" type="number" step="0.01" min="0" value={price} onChange={e => setPrice(e.target.value)} required
-                className={`w-full pl-10 pr-4 py-3 rounded-xl border-2 outline-none transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'}`} />
+                className={`w-full pl-10 pr-4 py-3 rounded-xl border-2 outline-none transition-colors ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'}`} />
             </div>
           </div>
           <div>
@@ -109,7 +109,7 @@ export function CreateListingModal({ isDark, lang, products, initial, onSubmit, 
               {t('listingCategory', lang)}
             </label>
             <select id="listing-category" name="category" value={category} onChange={e => setCategory(e.target.value)}
-              className={`w-full px-4 py-3 rounded-xl border-2 outline-none transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}>
+              className={`w-full px-4 py-3 rounded-xl border-2 outline-none transition-colors ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}>
               <option value="">{t('listingCategory', lang)}...</option>
               {MARKETPLACE_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
             </select>
