@@ -89,7 +89,7 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5">
+    <div className="space-y-5">
       {/* Header + Create / Sign in */}
       <div className="flex items-center gap-2">
         {currentUserId ? (

@@ -278,7 +278,7 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
     : posts;
 
   return (
-    <div className="max-w-lg mx-auto space-y-4">
+    <div className="space-y-4">
       {showCreatePostCard && (
         <CreatePostCard
           isDark={isDark}

@@ -604,12 +604,12 @@ export default function App() {
         {activeTab === 'stash' && (
           <div>
             {/* Sub-navigation pills */}
-            <div className="flex items-center justify-center gap-2 mb-5">
+            <div className="flex items-center justify-center gap-2 mb-5 max-w-md mx-auto">
               {(['products', 'dashboard', 'history'] as const).map(section => (
                 <button
                   key={section}
                   onClick={() => setStashSection(section)}
-                  className={`px-5 py-2 rounded-xl text-sm font-medium transition-all ${
+                  className={`flex-1 px-5 py-2 rounded-xl text-sm font-medium transition-all ${
                     stashSection === section
                       ? 'bg-gradient-to-r from-cyanx to-emera text-white'
                       : isDark ? 'text-mist hover:text-frost hover:bg-midnight' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
@@ -882,7 +882,7 @@ export default function App() {
         {/* ==================== COMMUNITY TAB ==================== */}
         {activeTab === 'community' && (
           <ErrorBoundary isDark={isDark} lang={lang}>
-          <div className="space-y-4">
+          <div className="max-w-2xl mx-auto space-y-4">
             {!user && (
               <div className={`p-4 rounded-2xl text-center text-sm ${isDark ? 'bg-surface/50 border border-edge text-mist' : 'bg-white border border-gray-200 text-gray-500'}`}>
                 Sign in to like, comment, and post in the community.
@@ -918,7 +918,7 @@ export default function App() {
         {/* ==================== MARKETPLACE TAB ==================== */}
         {activeTab === 'marketplace' && (
           <ErrorBoundary isDark={isDark} lang={lang}>
-          <div className="space-y-4">
+          <div className="max-w-2xl mx-auto space-y-4">
             <MarketplaceFeed
               isDark={isDark}
               lang={lang}
@@ -997,7 +997,7 @@ export default function App() {
       <ToastContainer isDark={isDark} />
 
       {/* Footer */}
-      <footer className={`py-6 px-4 text-center ${isDark ? 'border-t border-edge' : 'border-t border-gray-200'}`}>
+      <footer className="py-6 px-4 text-center">
         <p className={`text-xs font-display font-semibold tracking-widest uppercase ${isDark ? 'text-slate-700' : 'text-gray-300'}`}>
           STASH TRACKER
         </p>
