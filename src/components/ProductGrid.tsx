@@ -35,7 +35,7 @@ export const ProductGrid = memo(function ProductGrid({
   onToggleSelect,
 }: ProductGridProps) {
   return (
-    <main className="max-w-7xl mx-auto px-4 py-6">
+    <main className="py-4">
 
 
       {filteredProducts.length === 0 ? (
