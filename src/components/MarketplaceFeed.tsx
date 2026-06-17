@@ -89,48 +89,54 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
   }
 
   return (
-    <div className="max-w-lg mx-auto space-y-4">
-      {/* Header + Create */}
+    <div className="max-w-2xl mx-auto space-y-5">
+      {/* Header + Create / Sign in */}
       <div className="flex items-center gap-2">
-        <button onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all shadow-lg shadow-cyanx/20">
-          <Plus className="w-4 h-4" />
-          {t('sellSomething', lang)}
-        </button>
+        {currentUserId ? (
+          <button onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all shadow-lg shadow-cyanx/20">
+            <Plus className="w-4 h-4" />
+            {t('sellSomething', lang)}
+          </button>
+        ) : (
+          <div className={`w-full p-4 rounded-2xl text-center text-sm ${isDark ? 'bg-surface/50 border border-edge text-mist' : 'bg-white border border-gray-200 text-gray-500'}`}>
+            Sign in to create a listing.
+          </div>
+        )}
       </div>
 
       {/* Search */}
       <div className="relative">
-        <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
+        <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
         <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
           placeholder={t('searchPlaceholder', lang)}
-          className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none transition-all ${isDark ? 'bg-midnight text-frost border border-edge focus:border-cyanx/50 placeholder-muted' : 'bg-gray-50 text-gray-800 border border-gray-200 focus:border-cyan-400 placeholder-gray-400'}`} />
+          className={`w-full pl-12 pr-4 py-3.5 rounded-xl text-base outline-none transition-all ${isDark ? 'bg-midnight text-frost border border-edge focus:border-cyanx/50 placeholder-muted' : 'bg-gray-50 text-gray-800 border border-gray-200 focus:border-cyan-400 placeholder-gray-400'}`} />
       </div>
 
       {/* Categories row */}
-      <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
         <button onClick={() => setCategoryFilter('all')}
-          className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${categoryFilter === 'all' ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+          className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all ${categoryFilter === 'all' ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
           {t('allCategories', lang)}
         </button>
         {MARKETPLACE_CATEGORIES.map(cat => (
           <button key={cat} onClick={() => setCategoryFilter(cat)}
-            className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${categoryFilter === cat ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+            className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all ${categoryFilter === cat ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
             {cat}
           </button>
         ))}
       </div>
 
       {/* Sort */}
-      <div className={`flex items-center gap-1.5 p-1 rounded-xl ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
-        <ArrowUpDown className={`w-3.5 h-3.5 ml-2 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
+      <div className={`flex items-center gap-1.5 p-1.5 rounded-xl ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
+        <ArrowUpDown className={`w-4 h-4 ml-2 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
         {([
           { id: 'newest' as const, label: t('sortNewest', lang) },
           { id: 'price_low' as const, label: t('sortPriceLow', lang) },
           { id: 'price_high' as const, label: t('sortPriceHigh', lang) },
         ]).map(s => (
           <button key={s.id} onClick={() => setSortBy(s.id)}
-            className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-all ${sortBy === s.id ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm' : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'}`}>
+            className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${sortBy === s.id ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm' : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'}`}>
             {s.label}
           </button>
         ))}
