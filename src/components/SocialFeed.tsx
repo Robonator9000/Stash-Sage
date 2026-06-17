@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { Post, Product, Profile } from '../types';
 import { supabase } from '../utils/supabase';
 import { t } from '../utils/translations';
@@ -181,7 +181,17 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
     return () => clearTimeout(searchTimer.current);
   }, [searchQuery]);
 
-  async function handleCreatePost(content: string, productId?: string, productName?: string) {
+  const notifyUser = useCallback(async (targetUserId: string, type: 'like' | 'comment' | 'follow', postId?: string) => {
+    if (targetUserId === currentUserId) return;
+    await supabase.from('notifications').insert({
+      user_id: targetUserId,
+      type,
+      actor_id: currentUserId,
+      post_id: postId || null,
+    }).then(() => {}, () => {});
+  }, [currentUserId]);
+
+  const handleCreatePost = useCallback(async (content: string, productId?: string, productName?: string) => {
     if (submitting) return;
     setSubmitting(true);
     try {
@@ -203,9 +213,9 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
     } finally {
       setSubmitting(false);
     }
-  }
+  }, [submitting, currentUserId, lang, enrichPosts]);
 
-  async function handleEditPost(postId: string, content: string) {
+  const handleEditPost = useCallback(async (postId: string, content: string) => {
     if (submitting) return;
     setSubmitting(true);
     try {
@@ -218,19 +228,9 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
     } finally {
       setSubmitting(false);
     }
-  }
+  }, [submitting, currentUserId, lang]);
 
-  async function notifyUser(targetUserId: string, type: 'like' | 'comment' | 'follow', postId?: string) {
-    if (targetUserId === currentUserId) return;
-    await supabase.from('notifications').insert({
-      user_id: targetUserId,
-      type,
-      actor_id: currentUserId,
-      post_id: postId || null,
-    }).then(() => {}, () => {});
-  }
-
-  async function handleLike(postId: string) {
+  const handleLike = useCallback(async (postId: string) => {
     if (submitting) return;
     setSubmitting(true);
     try {
@@ -248,9 +248,9 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
     } finally {
       setSubmitting(false);
     }
-  }
+  }, [submitting, posts, currentUserId, lang, notifyUser]);
 
-  async function handleUnlike(postId: string) {
+  const handleUnlike = useCallback(async (postId: string) => {
     if (submitting) return;
     setSubmitting(true);
     try {
@@ -268,9 +268,9 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
     } finally {
       setSubmitting(false);
     }
-  }
+  }, [submitting, currentUserId, lang]);
 
-  async function handleDelete(postId: string) {
+  const handleDelete = useCallback(async (postId: string) => {
     if (submitting) return;
     setSubmitting(true);
     try {
@@ -289,9 +289,9 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
     } finally {
       setSubmitting(false);
     }
-  }
+  }, [submitting, currentUserId, lang]);
 
-  async function handleFollow(userId: string) {
+  const handleFollow = useCallback(async (userId: string) => {
     if (submitting) return;
     setSubmitting(true);
     try {
@@ -301,9 +301,9 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
     } finally {
       setSubmitting(false);
     }
-  }
+  }, [submitting, currentUserId, notifyUser]);
 
-  async function handleUnfollow(userId: string) {
+  const handleUnfollow = useCallback(async (userId: string) => {
     if (submitting) return;
     setSubmitting(true);
     try {
@@ -312,13 +312,26 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
     } finally {
       setSubmitting(false);
     }
-  }
+  }, [submitting, currentUserId]);
+
+  const handleComment = useCallback((userId: string, postId: string) => {
+    notifyUser(userId, 'comment', postId);
+  }, [notifyUser]);
+
+  const handleSearchSelect = useCallback((userId: string) => {
+    onViewProfile?.(userId);
+    setSearchQuery('');
+    setSearchResults([]);
+  }, [onViewProfile]);
 
   const showCreatePostCard = !!profile;
 
-  const displayedPosts = feedFilter === 'following'
-    ? posts.filter(p => p.is_following || p.user_id === currentUserId)
-    : posts;
+  const displayedPosts = useMemo(() =>
+    feedFilter === 'following'
+      ? posts.filter(p => p.is_following || p.user_id === currentUserId)
+      : posts,
+    [posts, feedFilter, currentUserId]
+  );
 
   return (
     <div className="space-y-4">
@@ -372,7 +385,7 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
             {searchResults.map(r => (
               <button
                 key={r.user_id}
-                onClick={() => { onViewProfile?.(r.user_id); setSearchQuery(''); setSearchResults([]); }}
+                onClick={() => handleSearchSelect(r.user_id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors ${isDark ? 'hover:bg-surface text-frost' : 'hover:bg-gray-50 text-gray-800'}`}
               >
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-cyanx to-emera">
@@ -432,7 +445,7 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
           onFollow={handleFollow}
           onUnfollow={handleUnfollow}
           onViewProfile={onViewProfile}
-          onComment={(userId, postId) => notifyUser(userId, 'comment', postId)}
+          onComment={handleComment}
         />
       ))}
 

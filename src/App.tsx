@@ -12,16 +12,11 @@ import { playSmokeSound, playSellSound } from './utils/sounds';
 import { ToastContainer, showToast } from './components/Toast';
 import { ProductGrid } from './components/ProductGrid';
 import { StatsCard } from './components/StatsCard';
-import { ProductModal } from './components/ProductModal';
-import { ConsumeModal } from './components/ConsumeModal';
-import { SellModal } from './components/SellModal';
-import { SessionModal } from './components/SessionModal';
 import { SettingsSheet } from './components/SettingsSheet';
 import { CoachMarks } from './components/CoachMarks';
 import { PinModal } from './components/PinModal';
 import { BackgroundCanvas } from './components/BackgroundCanvas';
 import { WelcomeModal } from './components/WelcomeModal';
-import { UserSettings } from './components/UserSettings';
 import { LogoIcon } from './components/LogoIcon';
 import { SocialFeed } from './components/SocialFeed';
 import { MarketplaceFeed } from './components/MarketplaceFeed';
@@ -31,6 +26,10 @@ import { UserProfileModal } from './components/UserProfileModal';
 import { useAuth } from './contexts/AuthContext';
 const DashboardTab = lazy(() => import('./components/DashboardTab').then(m => ({ default: m.DashboardTab })));
 const HistoryTab = lazy(() => import('./components/HistoryTab').then(m => ({ default: m.HistoryTab })));
+const ProductModal = lazy(() => import('./components/ProductModal').then(m => ({ default: m.ProductModal })));
+const ConsumeModal = lazy(() => import('./components/ConsumeModal').then(m => ({ default: m.ConsumeModal })));
+const SellModal = lazy(() => import('./components/SellModal').then(m => ({ default: m.SellModal })));
+const SessionModal = lazy(() => import('./components/SessionModal').then(m => ({ default: m.SessionModal })));
 
 function formatCurrency(value: number, currency: string): string {
   if (currency === 'EUR') return `€${value.toFixed(2)}`;
@@ -65,9 +64,14 @@ export default function App() {
   const [sessionPeople, setSessionPeople] = useState(2);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settingsDefaultTab, setSettingsDefaultTab] = useState<'profile' | 'personalization' | 'session' | 'stats' | 'data' | 'security'>('personalization');
-  const [showUserSettings, setShowUserSettings] = useState(false);
+
   const [showSmoke, setShowSmoke] = useState(false);
   const [viewProfileUserId, setViewProfileUserId] = useState<string | null>(null);
+
+  const handleViewProfile = useCallback((uid: string) => {
+    setViewProfileUserId(uid);
+    setActiveTab('community');
+  }, []);
 
   const [historyFilterType, setHistoryFilterType] = useState<string>('all');
   const [historyDateFilter, setHistoryDateFilter] = useState<string>('all');
@@ -342,23 +346,22 @@ export default function App() {
   const [isSelectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const handleToggleSelect = (id: string) => {
+  const handleToggleSelect = useCallback((id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
-  };
+  }, []);
 
-  const handleSelectAll = () => {
-    if (selectedIds.size === paginatedProducts.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(paginatedProducts.map(p => p.id)));
-    }
-  };
+  const handleSelectAll = useCallback(() => {
+    setSelectedIds((prev) => {
+      if (prev.size === paginatedProducts.length) return new Set();
+      return new Set(paginatedProducts.map(p => p.id));
+    });
+  }, [paginatedProducts]);
 
-  const handleBulkDelete = () => {
+  const handleBulkDelete = useCallback(() => {
     const selected = products.filter(p => selectedIds.has(p.id));
     const deletedProducts = [...selected];
     selected.forEach(p => deleteProduct(p.id));
@@ -382,9 +385,9 @@ export default function App() {
     });
     setSelectedIds(new Set());
     setSelectMode(false);
-  };
+  }, [products, selectedIds, deleteProduct, addActivityEntry, addProduct, settings.language]);
 
-  const handleBulkSession = () => {
+  const handleBulkSession = useCallback(() => {
     const selected = products.filter(p => selectedIds.has(p.id));
     if (selected.length === 1) {
       setSessionProduct(selected[0]);
@@ -393,9 +396,9 @@ export default function App() {
       setSelectedIds(new Set());
       setSelectMode(false);
     }
-  };
+  }, [products, selectedIds]);
 
-  const sortOptions = [
+  const sortOptions = useMemo(() => [
     { value: 'newest', labelKey: 'sortNewest' },
     { value: 'oldest', labelKey: 'sortOldest' },
     { value: 'name', labelKey: 'sortName' },
@@ -404,10 +407,11 @@ export default function App() {
     { value: 'amount', labelKey: 'sortAmount' },
     { value: 'price', labelKey: 'sortPrice' },
     { value: 'favorites', labelKey: 'sortFavorites' },
-  ];
+  ], []);
 
-  const customTypes = [...new Set(products.map(p => p.type).filter(t => !['indica', 'sativa', 'hybrid'].includes(t)))];
-  const filterOptions = [
+  const customTypes = useMemo(() => [...new Set(products.map(p => p.type).filter(t => !['indica', 'sativa', 'hybrid'].includes(t)))], [products]);
+
+  const filterOptions = useMemo(() => [
     { value: 'all', labelKey: 'filterAll' },
     { value: 'indica', labelKey: 'filterIndica' },
     { value: 'sativa', labelKey: 'filterSativa' },
@@ -418,7 +422,7 @@ export default function App() {
     { value: 'lowStock', labelKey: 'filterLowStock' },
     { value: 'outOfStock', labelKey: 'filterOutOfStock' },
     ...brandList.map(b => ({ value: `brand:${b}`, labelKey: b, display: b })),
-  ];
+  ], [customTypes, brandList]);
 
   if (!settings.onboardingDone) {
     return (
@@ -526,7 +530,7 @@ export default function App() {
               </svg>
               {t('addProduct', lang)}
             </button>
-            {user && <NotificationBell isDark={isDark} lang={lang} onViewProfile={(uid) => { setViewProfileUserId(uid); setActiveTab('community'); }} />}
+            {user && <NotificationBell isDark={isDark} lang={lang} onViewProfile={handleViewProfile} />}
             <button
               onClick={() => { setSettingsDefaultTab('profile'); setIsSettingsOpen(true); }}
               className={`p-1.5 rounded-xl transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}
@@ -568,7 +572,7 @@ export default function App() {
           </div>
         </div>
       </header>
-      {showUserSettings && <UserSettings isDark={isDark} onClose={() => setShowUserSettings(false)} />}
+
 
       {/* Tabs + Content */}
       <div className="max-w-7xl mx-auto px-4 py-4 flex-1">
@@ -908,7 +912,7 @@ export default function App() {
                 username={settings.profile?.username || 'User'}
                 products={products}
                 profile={settings.profile}
-                onViewProfile={(uid) => setViewProfileUserId(uid)}
+                onViewProfile={handleViewProfile}
               />
             )}
           </div>
@@ -924,7 +928,7 @@ export default function App() {
               lang={lang}
               currentUserId={user?.id || ''}
               products={products}
-              onViewProfile={(uid) => setViewProfileUserId(uid)}
+              onViewProfile={handleViewProfile}
             />
           </div>
           </ErrorBoundary>
@@ -943,43 +947,51 @@ export default function App() {
 
       {/* Modals */}
       {(isAddModalOpen || editingProduct) && (
-        <ProductModal
-          product={editingProduct}
-          sessions={sessions}
-          onSave={handleSaveProduct}
-          onDelete={editingProduct ? handleDeleteProduct : undefined}
-          onClose={() => { setIsAddModalOpen(false); setEditingProduct(null); }}
-          isDark={isDark}
-        />
+        <Suspense fallback={null}>
+          <ProductModal
+            product={editingProduct}
+            sessions={sessions}
+            onSave={handleSaveProduct}
+            onDelete={editingProduct ? handleDeleteProduct : undefined}
+            onClose={() => { setIsAddModalOpen(false); setEditingProduct(null); }}
+            isDark={isDark}
+          />
+        </Suspense>
       )}
 
       {consumingProduct && (
-        <ConsumeModal
-          product={consumingProduct}
-          onConsume={handleConsume}
-          onClose={() => setConsumingProduct(null)}
-          isDark={isDark}
-        />
+        <Suspense fallback={null}>
+          <ConsumeModal
+            product={consumingProduct}
+            onConsume={handleConsume}
+            onClose={() => setConsumingProduct(null)}
+            isDark={isDark}
+          />
+        </Suspense>
       )}
 
       {sellingProduct && (
-        <SellModal
-          product={sellingProduct}
-          onSell={handleSell}
-          onClose={() => setSellingProduct(null)}
-          isDark={isDark}
-        />
+        <Suspense fallback={null}>
+          <SellModal
+            product={sellingProduct}
+            onSell={handleSell}
+            onClose={() => setSellingProduct(null)}
+            isDark={isDark}
+          />
+        </Suspense>
       )}
 
       {sessionProduct && (
-        <SessionModal
-          product={sessionProduct}
-          initialAmount={sessionAmount}
-          people={sessionPeople}
-          onFinish={handleFinishSession}
-          onClose={() => { setSessionProduct(null); setSessionAmount(0); setSessionPeople(2); }}
-          isDark={isDark}
-        />
+        <Suspense fallback={null}>
+          <SessionModal
+            product={sessionProduct}
+            initialAmount={sessionAmount}
+            people={sessionPeople}
+            onFinish={handleFinishSession}
+            onClose={() => { setSessionProduct(null); setSessionAmount(0); setSessionPeople(2); }}
+            isDark={isDark}
+          />
+        </Suspense>
       )}
 
       {isSettingsOpen && (

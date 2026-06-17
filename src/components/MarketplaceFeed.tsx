@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { MarketplaceListing, Product } from '../types';
 import { MARKETPLACE_CATEGORIES } from '../types';
 import { supabase } from '../utils/supabase';
@@ -47,19 +47,19 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
 
   useEffect(() => { fetchListings(); }, [fetchListings]);
 
-  const filtered = listings.filter(l => {
+  const filtered = useMemo(() => listings.filter(l => {
     if (categoryFilter !== 'all' && l.category !== categoryFilter) return false;
     if (searchQuery && !l.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
-  });
+  }), [listings, categoryFilter, searchQuery]);
 
-  const sorted = [...filtered].sort((a, b) => {
+  const sorted = useMemo(() => [...filtered].sort((a, b) => {
     if (sortBy === 'price_low') return a.price - b.price;
     if (sortBy === 'price_high') return b.price - a.price;
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
+  }), [filtered, sortBy]);
 
-  async function handleCreate(data: Partial<MarketplaceListing>) {
+  const handleCreate = useCallback(async (data: Partial<MarketplaceListing>) => {
     if (submitting) return;
     setSubmitting(true);
     try {
@@ -71,9 +71,9 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
     } finally {
       setSubmitting(false);
     }
-  }
+  }, [submitting, currentUserId, lang, fetchListings]);
 
-  async function handleUpdate(data: Partial<MarketplaceListing>) {
+  const handleUpdate = useCallback(async (data: Partial<MarketplaceListing>) => {
     if (submitting || !editingListing) return;
     setSubmitting(true);
     try {
@@ -85,9 +85,9 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
     } finally {
       setSubmitting(false);
     }
-  }
+  }, [submitting, editingListing, currentUserId, lang, fetchListings]);
 
-  async function handleDelete(id: string) {
+  const handleDelete = useCallback(async (id: string) => {
     if (submitting) return;
     setSubmitting(true);
     try {
@@ -98,9 +98,9 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
     } finally {
       setSubmitting(false);
     }
-  }
+  }, [submitting, currentUserId, lang, fetchListings]);
 
-  async function handleMarkSold(id: string) {
+  const handleMarkSold = useCallback(async (id: string) => {
     if (submitting) return;
     setSubmitting(true);
     try {
@@ -110,14 +110,19 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
     } finally {
       setSubmitting(false);
     }
-  }
+  }, [submitting, currentUserId, lang, fetchListings]);
+
+  const handleEditListing = useCallback((l: MarketplaceListing) => setEditingListing(l), []);
+  const handleCloseCreate = useCallback(() => setShowCreateModal(false), []);
+  const handleCloseEdit = useCallback(() => setEditingListing(null), []);
+  const handleOpenCreate = useCallback(() => setShowCreateModal(true), []);
 
   return (
     <div className="space-y-5">
       {/* Header + Create / Sign in */}
       <div className="flex items-center gap-2">
         {currentUserId ? (
-          <button onClick={() => setShowCreateModal(true)}
+          <button onClick={handleOpenCreate}
             className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all shadow-lg shadow-cyanx/20">
             <Plus className="w-4 h-4" />
             {t('sellSomething', lang)}
@@ -199,15 +204,15 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
 
       {sorted.map(listing => (
         <MarketplaceCard key={listing.id} listing={listing} isDark={isDark} lang={lang} currentUserId={currentUserId}
-          onEdit={(l) => setEditingListing(l)} onDelete={handleDelete} onMarkSold={handleMarkSold} onViewProfile={onViewProfile} />
+          onEdit={handleEditListing} onDelete={handleDelete} onMarkSold={handleMarkSold} onViewProfile={onViewProfile} />
       ))}
 
       {showCreateModal && (
-        <CreateListingModal isDark={isDark} lang={lang} products={products} onSubmit={handleCreate} onClose={() => setShowCreateModal(false)} />
+        <CreateListingModal isDark={isDark} lang={lang} products={products} onSubmit={handleCreate} onClose={handleCloseCreate} />
       )}
 
       {editingListing && (
-        <CreateListingModal isDark={isDark} lang={lang} products={products} initial={editingListing} onSubmit={handleUpdate} onClose={() => setEditingListing(null)} />
+        <CreateListingModal isDark={isDark} lang={lang} products={products} initial={editingListing} onSubmit={handleUpdate} onClose={handleCloseEdit} />
       )}
     </div>
   );
