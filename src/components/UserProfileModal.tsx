@@ -49,7 +49,7 @@ export function UserProfileModal({ userId, isDark, lang, onBack }: UserProfileMo
       }
       setLoading(false);
     }
-    load();
+    load().catch(e => { setError(e instanceof Error ? e.message : 'Failed to load profile'); setLoading(false); });
   }, [userId]);
 
   const username = profile?.display_name || 'User';

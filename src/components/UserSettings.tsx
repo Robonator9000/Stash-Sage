@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../utils/useSettings';
 import { isConfigured } from '../utils/supabase';
@@ -15,10 +15,16 @@ export function UserSettings({ isDark, onClose }: UserSettingsProps) {
   const { settings } = useSettings();
 
   const [visible, setVisible] = useState(false);
-  useEffect(() => { requestAnimationFrame(() => setVisible(true)); }, []);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  const handleCloseRef = useRef(onClose);
+  handleCloseRef.current = onClose;
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') handleCloseRef.current(); };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, []);

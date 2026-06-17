@@ -25,6 +25,7 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
   const [sortBy, setSortBy] = useState<'newest' | 'price_low' | 'price_high'>('newest');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingListing, setEditingListing] = useState<MarketplaceListing | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const enrichListings = useCallback(async (rawListings: any[]): Promise<MarketplaceListing[]> => {
     if (rawListings.length === 0) return [];
@@ -59,33 +60,56 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
   });
 
   async function handleCreate(data: Partial<MarketplaceListing>) {
-    const { error: insertError } = await supabase.from('marketplace_listings').insert({ ...data, user_id: currentUserId, status: 'active' });
-    if (insertError) { showToast({ id: 'listing-error', title: t('somethingWentWrong', lang), body: insertError.message }); return; }
-    showToast({ id: 'listing-created', title: '', body: t('listingCreated', lang) });
-    setShowCreateModal(false);
-    fetchListings();
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const { error: insertError } = await supabase.from('marketplace_listings').insert({ ...data, user_id: currentUserId, status: 'active' });
+      if (insertError) { showToast({ id: 'listing-error', title: t('somethingWentWrong', lang), body: insertError.message }); return; }
+      showToast({ id: 'listing-created', title: '', body: t('listingCreated', lang) });
+      setShowCreateModal(false);
+      fetchListings();
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function handleUpdate(data: Partial<MarketplaceListing>) {
-    if (!editingListing) return;
-    const { error: updateError } = await supabase.from('marketplace_listings').update(data).eq('id', editingListing.id).eq('user_id', currentUserId);
-    if (updateError) { showToast({ id: 'listing-error', title: t('somethingWentWrong', lang), body: updateError.message }); return; }
-    showToast({ id: 'listing-updated', title: '', body: t('listingUpdated', lang) });
-    setEditingListing(null);
-    fetchListings();
+    if (submitting || !editingListing) return;
+    setSubmitting(true);
+    try {
+      const { error: updateError } = await supabase.from('marketplace_listings').update(data).eq('id', editingListing.id).eq('user_id', currentUserId);
+      if (updateError) { showToast({ id: 'listing-error', title: t('somethingWentWrong', lang), body: updateError.message }); return; }
+      showToast({ id: 'listing-updated', title: '', body: t('listingUpdated', lang) });
+      setEditingListing(null);
+      fetchListings();
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function handleDelete(id: string) {
-    const { error: deleteError } = await supabase.from('marketplace_listings').delete().eq('id', id).eq('user_id', currentUserId);
-    if (deleteError) { showToast({ id: 'listing-error', title: t('somethingWentWrong', lang), body: deleteError.message }); return; }
-    showToast({ id: 'listing-deleted', title: '', body: t('listingDeleted', lang) });
-    fetchListings();
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const { error: deleteError } = await supabase.from('marketplace_listings').delete().eq('id', id).eq('user_id', currentUserId);
+      if (deleteError) { showToast({ id: 'listing-error', title: t('somethingWentWrong', lang), body: deleteError.message }); return; }
+      showToast({ id: 'listing-deleted', title: '', body: t('listingDeleted', lang) });
+      fetchListings();
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function handleMarkSold(id: string) {
-    const { error: updateError } = await supabase.from('marketplace_listings').update({ status: 'sold' }).eq('id', id).eq('user_id', currentUserId);
-    if (updateError) { showToast({ id: 'listing-error', title: t('somethingWentWrong', lang), body: updateError.message }); return; }
-    fetchListings();
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const { error: updateError } = await supabase.from('marketplace_listings').update({ status: 'sold' }).eq('id', id).eq('user_id', currentUserId);
+      if (updateError) { showToast({ id: 'listing-error', title: t('somethingWentWrong', lang), body: updateError.message }); return; }
+      fetchListings();
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (

@@ -28,6 +28,7 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const pageRef = useRef(0);
   const observerRef = useRef<HTMLDivElement>(null);
   const searchTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -181,30 +182,42 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
   }, [searchQuery]);
 
   async function handleCreatePost(content: string, productId?: string, productName?: string) {
-    const { data, error: insertError } = await supabase.from('posts').insert({
-      user_id: currentUserId,
-      content,
-      product_id: productId || null,
-      product_name: productName || null,
-    }).select('*').single();
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const { data, error: insertError } = await supabase.from('posts').insert({
+        user_id: currentUserId,
+        content,
+        product_id: productId || null,
+        product_name: productName || null,
+      }).select('*').single();
 
-    if (insertError || !data) {
-      showToast({ id: 'post-error', title: t('somethingWentWrong', lang), body: insertError?.message || '' });
-      return;
+      if (insertError || !data) {
+        showToast({ id: 'post-error', title: t('somethingWentWrong', lang), body: insertError?.message || '' });
+        return;
+      }
+
+      const enriched = await enrichPosts([data]);
+      setPosts(prev => [enriched[0], ...prev]);
+      showToast({ id: 'post-created', title: '', body: t('postCreated', lang) });
+    } finally {
+      setSubmitting(false);
     }
-
-    const enriched = await enrichPosts([data]);
-    setPosts(prev => [enriched[0], ...prev]);
-    showToast({ id: 'post-created', title: '', body: t('postCreated', lang) });
   }
 
   async function handleEditPost(postId: string, content: string) {
-    const { error: updateError } = await supabase.from('posts').update({ content }).eq('id', postId).eq('user_id', currentUserId);
-    if (updateError) {
-      showToast({ id: 'edit-error', title: t('somethingWentWrong', lang), body: updateError.message });
-      return;
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const { error: updateError } = await supabase.from('posts').update({ content }).eq('id', postId).eq('user_id', currentUserId);
+      if (updateError) {
+        showToast({ id: 'edit-error', title: t('somethingWentWrong', lang), body: updateError.message });
+        return;
+      }
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, content } : p));
+    } finally {
+      setSubmitting(false);
     }
-    setPosts(prev => prev.map(p => p.id === postId ? { ...p, content } : p));
   }
 
   async function notifyUser(targetUserId: string, type: 'like' | 'comment' | 'follow', postId?: string) {
@@ -218,57 +231,87 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
   }
 
   async function handleLike(postId: string) {
-    const post = posts.find(p => p.id === postId);
-    const { error: insertError } = await supabase.from('post_likes').insert({
-      user_id: currentUserId,
-      post_id: postId,
-    });
-    if (insertError) {
-      showToast({ id: 'like-error', title: t('somethingWentWrong', lang), body: insertError.message });
-      return;
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const post = posts.find(p => p.id === postId);
+      const { error: insertError } = await supabase.from('post_likes').insert({
+        user_id: currentUserId,
+        post_id: postId,
+      });
+      if (insertError) {
+        showToast({ id: 'like-error', title: t('somethingWentWrong', lang), body: insertError.message });
+        return;
+      }
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, liked_by_me: true, likes_count: (p.likes_count ?? 0) + 1 } : p));
+      if (post) notifyUser(post.user_id, 'like', postId);
+    } finally {
+      setSubmitting(false);
     }
-    setPosts(prev => prev.map(p => p.id === postId ? { ...p, liked_by_me: true, likes_count: (p.likes_count ?? 0) + 1 } : p));
-    if (post) notifyUser(post.user_id, 'like', postId);
   }
 
   async function handleUnlike(postId: string) {
-    const { error: deleteError } = await supabase
-      .from('post_likes')
-      .delete()
-      .eq('user_id', currentUserId)
-      .eq('post_id', postId);
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const { error: deleteError } = await supabase
+        .from('post_likes')
+        .delete()
+        .eq('user_id', currentUserId)
+        .eq('post_id', postId);
 
-    if (deleteError) {
-      showToast({ id: 'unlike-error', title: t('somethingWentWrong', lang), body: deleteError.message });
-      return;
+      if (deleteError) {
+        showToast({ id: 'unlike-error', title: t('somethingWentWrong', lang), body: deleteError.message });
+        return;
+      }
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, liked_by_me: false, likes_count: Math.max(0, (p.likes_count ?? 1) - 1) } : p));
+    } finally {
+      setSubmitting(false);
     }
-    setPosts(prev => prev.map(p => p.id === postId ? { ...p, liked_by_me: false, likes_count: Math.max(0, (p.likes_count ?? 1) - 1) } : p));
   }
 
   async function handleDelete(postId: string) {
-    const { error: deleteError } = await supabase
-      .from('posts')
-      .delete()
-      .eq('id', postId)
-      .eq('user_id', currentUserId);
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const { error: deleteError } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId)
+        .eq('user_id', currentUserId);
 
-    if (deleteError) {
-      showToast({ id: 'delete-error', title: t('somethingWentWrong', lang), body: deleteError.message });
-      return;
+      if (deleteError) {
+        showToast({ id: 'delete-error', title: t('somethingWentWrong', lang), body: deleteError.message });
+        return;
+      }
+      setPosts(prev => prev.filter(p => p.id !== postId));
+      showToast({ id: 'post-deleted', title: '', body: t('postDeleted', lang) });
+    } finally {
+      setSubmitting(false);
     }
-    setPosts(prev => prev.filter(p => p.id !== postId));
-    showToast({ id: 'post-deleted', title: '', body: t('postDeleted', lang) });
   }
 
   async function handleFollow(userId: string) {
-    await supabase.from('follows').insert({ follower_id: currentUserId, following_id: userId });
-    setPosts(prev => prev.map(p => p.user_id === userId ? { ...p, is_following: true } : p));
-    notifyUser(userId, 'follow');
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await supabase.from('follows').insert({ follower_id: currentUserId, following_id: userId });
+      setPosts(prev => prev.map(p => p.user_id === userId ? { ...p, is_following: true } : p));
+      notifyUser(userId, 'follow');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function handleUnfollow(userId: string) {
-    await supabase.from('follows').delete().eq('follower_id', currentUserId).eq('following_id', userId);
-    setPosts(prev => prev.map(p => p.user_id === userId ? { ...p, is_following: false } : p));
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await supabase.from('follows').delete().eq('follower_id', currentUserId).eq('following_id', userId);
+      setPosts(prev => prev.map(p => p.user_id === userId ? { ...p, is_following: false } : p));
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const showCreatePostCard = !!profile;
