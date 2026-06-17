@@ -882,7 +882,7 @@ export default function App() {
         {/* ==================== COMMUNITY TAB ==================== */}
         {activeTab === 'community' && (
           <ErrorBoundary isDark={isDark} lang={lang}>
-          <div className="max-w-2xl mx-auto space-y-4">
+          <div className="space-y-4">
             {!user && (
               <div className={`p-4 rounded-2xl text-center text-sm ${isDark ? 'bg-surface/50 border border-edge text-mist' : 'bg-white border border-gray-200 text-gray-500'}`}>
                 Sign in to like, comment, and post in the community.
@@ -918,7 +918,7 @@ export default function App() {
         {/* ==================== MARKETPLACE TAB ==================== */}
         {activeTab === 'marketplace' && (
           <ErrorBoundary isDark={isDark} lang={lang}>
-          <div className="max-w-2xl mx-auto space-y-4">
+          <div className="space-y-4">
             <MarketplaceFeed
               isDark={isDark}
               lang={lang}

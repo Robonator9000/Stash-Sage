@@ -41,7 +41,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
   return (
     <div
       className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-200 ${
-        isVisible ? 'bg-deep/85 backdrop-blur-sm' : 'bg-deep/0'
+        isVisible ? 'bg-black/80 backdrop-blur-sm' : 'bg-black/0'
       }`}
       onClick={handleClose}
       role="dialog"
@@ -51,19 +51,19 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
       <div
         className={`w-full max-w-sm rounded-2xl border shadow-2xl transition-all duration-200 ${
           isDark
-            ? 'bg-surface border-edge'
+            ? 'bg-slate-900 border-slate-800'
             : 'bg-white border-gray-200'
         } ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className={`flex items-center justify-between p-5 border-b ${
-          isDark ? 'border-edge' : 'border-gray-200'
+          isDark ? 'border-slate-800' : 'border-gray-200'
         }`}>
           <div>
-            <h2 className={`text-lg font-bold ${isDark ? 'text-frost' : 'text-gray-900'}`}>
+            <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
               {t('consume', lang)} {product.name}
             </h2>
-            <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+            <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
               {t('amount', lang)}: {formatPrecision(product.amount, settings.decimalPrecision)}g
             </p>
           </div>
@@ -71,7 +71,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
             onClick={handleClose}
             aria-label={t('cancel', lang)}
             className={`p-2 rounded-xl transition-all ${
-              isDark ? 'hover:bg-surface text-mist hover:text-frost' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'
+              isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'
             }`}
           >
             <X className="w-5 h-5" />
@@ -89,7 +89,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
                 aria-label={`${t('amount', lang)} -0.1`}
                 className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-colors ${
                   isDark
-                    ? 'bg-surface text-mist hover:bg-surface-light hover:text-frost'
+                    ? 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -104,7 +104,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
                 aria-label={t('amount', lang)}
                 className={`flex-1 px-4 py-3 rounded-xl border text-center font-bold outline-none transition-all ${
                   isDark
-                    ? 'bg-midnight border-edge text-frost focus:border-cyanx/50'
+                    ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
                     : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-emerald-500'
                 }`}
               />
@@ -129,8 +129,8 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
                   aria-label={`+${amt}g`}
                   className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
                     isDark
-                      ? 'bg-surface text-mist hover:bg-surface-light'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   +{amt}g
@@ -140,15 +140,15 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
           </div>
 
           <div className={`flex items-center justify-between p-4 rounded-xl ${
-            isDark ? 'bg-midnight border border-edge' : 'bg-gray-50 border border-gray-200'
+            isDark ? 'bg-slate-800/50 border border-slate-700' : 'bg-gray-50 border border-gray-200'
           }`}>
             <div className="flex items-center gap-3">
               <Play className={`w-5 h-5 ${isDark ? 'text-emera' : 'text-emerald-600'}`} />
               <div>
-                <span className={`font-medium ${isDark ? 'text-frost' : 'text-gray-900'}`}>
+                <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {t('session', lang)}
                 </span>
-                <p className={`text-xs ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+                <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
                   {t('sessionDefaults', lang)}
                 </p>
               </div>
@@ -159,7 +159,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
               className={`w-14 h-8 rounded-full transition-colors relative ${
                 startSession
                   ? 'bg-emera'
-                  : isDark ? 'bg-surface' : 'bg-gray-300'
+                  : isDark ? 'bg-slate-800' : 'bg-gray-300'
               }`}
             >
               <div className={`absolute top-1 w-6 h-6 rounded-full bg-white transition-transform shadow ${
@@ -170,7 +170,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
 
           {startSession && (
             <div>
-              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-mist' : 'text-gray-700'}`}>
+            <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
                 <Users className="w-4 h-4 inline mr-1" />
                 {t('people', lang)}
               </label>
@@ -180,13 +180,13 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
                   aria-label={`${t('people', lang)} -1`}
                   className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-colors ${
                     isDark
-                      ? 'bg-surface text-mist hover:bg-surface-light hover:text-frost'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  <Minus className="w-4 h-4" />
-                </button>
-                <span className={`flex-1 text-center text-xl font-bold ${isDark ? 'text-frost' : 'text-gray-900'}`}>
+                    ? 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <Minus className="w-4 h-4" />
+              </button>
+              <span className={`flex-1 text-center text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {people}
                 </span>
                 <button
@@ -205,9 +205,9 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
           )}
 
           <div className={`flex items-center justify-between p-3 rounded-xl ${
-            isDark ? 'bg-midnight border border-edge' : 'bg-gray-50 border border-gray-200'
+            isDark ? 'bg-slate-800/50 border border-slate-700' : 'bg-gray-50 border border-gray-200'
           }`}>
-            <span className={`text-sm ${isDark ? 'text-mist' : 'text-gray-700'}`}>
+            <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
               {t('setConsumptionTime', lang)}
             </span>
             <input
@@ -216,17 +216,17 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
               onChange={(e) => setConsumedAt(e.target.value)}
               aria-label={t('setConsumptionTime', lang)}
               className={`text-xs border-0 bg-transparent outline-none ${
-                isDark ? 'text-mist' : 'text-gray-500'
+                isDark ? 'text-slate-400' : 'text-gray-500'
               }`}
             />
           </div>
 
-          <div className={`p-3 rounded-xl ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
+          <div className={`p-3 rounded-xl ${isDark ? 'bg-slate-800/50' : 'bg-gray-100'}`}>
             <div className="flex justify-between items-center">
-              <span className={`text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+              <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
                 {t('amount', lang)}:
               </span>
-              <span className={`font-bold ${isDark ? 'text-frost' : 'text-gray-900'}`}>
+              <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {formatPrecision(Math.max(0, roundToHundredth(product.amount - amount)), settings.decimalPrecision)}g
               </span>
             </div>
@@ -234,13 +234,13 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
         </div>
 
         <div className={`flex items-center gap-3 p-5 border-t ${
-          isDark ? 'border-edge' : 'border-gray-200'
+          isDark ? 'border-slate-800' : 'border-gray-200'
         }`}>
           <button
             onClick={handleClose}
             className={`flex-1 py-3 rounded-xl font-medium transition-all ${
               isDark
-                ? 'bg-midnight text-mist hover:bg-surface hover:text-frost'
+                ? 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -255,7 +255,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
                 ? isDark
                     ? 'bg-emera text-white hover:bg-emera-dark'
                     : 'bg-emerald-600 text-white hover:bg-emerald-700'
-                : isDark ? 'bg-surface text-haze cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                : isDark ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
             }`}
           >
             {startSession ? t('session', lang) : t('consume', lang)}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useModalAnimation } from '../hooks/useModalAnimation';
 import { useAuth } from '../contexts/AuthContext';
 import { X } from 'lucide-react';
 
@@ -8,6 +9,7 @@ interface ResetPasswordModalProps {
 }
 
 export function ResetPasswordModal({ isDark, onClose }: ResetPasswordModalProps) {
+  const { isVisible, handleClose } = useModalAnimation(onClose);
   const { error, resetPasswordForEmail, clearError } = useAuth();
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -27,19 +29,26 @@ export function ResetPasswordModal({ isDark, onClose }: ResetPasswordModalProps)
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-start justify-center pt-[15vh] p-4"
-      onClick={onClose}
+      className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-200 ${
+        isVisible ? 'bg-black/80 backdrop-blur-sm' : 'bg-black/0'
+      }`}
+      onClick={handleClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Reset Password"
     >
-      <div className="absolute inset-0 bg-black/50" />
       <div
-        className={`relative w-full max-w-sm rounded-2xl p-6 shadow-2xl ${isDark ? 'bg-midnight border border-edge' : 'bg-white border border-gray-200'}`}
+        className={`w-full max-w-sm rounded-2xl border-2 shadow-2xl transition-all duration-200 ${
+          isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
+        } ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
         onClick={e => e.stopPropagation()}
       >
+        <div className="p-6">
         <div className="flex items-center justify-between mb-5">
-          <h2 className={`text-lg font-bold ${isDark ? 'text-frost' : 'text-gray-900'}`}>
+          <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
             Reset Password
           </h2>
-          <button onClick={onClose} className={`p-1 rounded-lg ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}>
+          <button onClick={handleClose} className={`p-1.5 rounded-lg transition-all ${isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'}`}>
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -68,7 +77,7 @@ export function ResetPasswordModal({ isDark, onClose }: ResetPasswordModalProps)
                 autoFocus
                 className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-colors ${
                   isDark
-                    ? 'bg-deep text-frost border border-edge focus:border-cyan-500 placeholder-muted'
+                    ? 'bg-slate-800 text-white border border-slate-700 focus:border-cyan-500 placeholder-slate-500'
                     : 'bg-gray-50 text-gray-900 border border-gray-200 focus:border-cyan-400 placeholder-gray-400'
                 }`}
               />
@@ -84,11 +93,12 @@ export function ResetPasswordModal({ isDark, onClose }: ResetPasswordModalProps)
         )}
 
         <button
-          onClick={onClose}
-          className={`mt-4 w-full text-center text-xs ${isDark ? 'text-mist hover:text-cyan-400' : 'text-gray-500 hover:text-cyan-600'}`}
+          onClick={handleClose}
+          className={`mt-4 w-full text-center text-xs ${isDark ? 'text-slate-400 hover:text-cyan-400' : 'text-gray-500 hover:text-cyan-600'}`}
         >
           Back to Sign In
         </button>
+        </div>
       </div>
     </div>
   );

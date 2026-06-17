@@ -60,7 +60,7 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
 
   return (
     <div
-      className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-200 ${isVisible ? 'bg-black/95' : 'bg-black/0'}`}
+      className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-200 ${isVisible ? 'bg-black/80 backdrop-blur-sm' : 'bg-black/0'}`}
       onClick={handleClose}
       role="dialog"
       aria-modal="true"

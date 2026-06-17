@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useModalAnimation } from '../hooks/useModalAnimation';
 import type { MarketplaceListing, Product } from '../types';
 import { CONTACT_PLATFORMS, MARKETPLACE_CATEGORIES } from '../types';
 import { t } from '../utils/translations';
@@ -19,6 +20,7 @@ interface CreateListingModalProps {
 }
 
 export function CreateListingModal({ isDark, lang, products, initial, onSubmit, onClose }: CreateListingModalProps) {
+  const { isVisible, handleClose } = useModalAnimation(onClose);
   const [title, setTitle] = useState(initial?.title || '');
   const [description, setDescription] = useState(initial?.description || '');
   const [price, setPrice] = useState(initial?.price?.toString() || '');
@@ -61,18 +63,35 @@ export function CreateListingModal({ isDark, lang, products, initial, onSubmit, 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <form onSubmit={handleSubmit} className={`relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl p-6 space-y-5 ${isDark ? 'bg-card border border-edge' : 'bg-white border border-gray-200 shadow-xl'}`}>
+    <div
+      className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-200 ${
+        isVisible ? 'bg-black/80 backdrop-blur-sm' : 'bg-black/0'
+      }`}
+      onClick={handleClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={initial ? t('editListing', lang) : t('createListing', lang)}
+    >
+      <div
+        className={`w-full max-w-lg rounded-2xl border-2 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col transition-all duration-200 ${
+          isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
+        } ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <h2 className={`text-lg font-display font-bold ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+        <div className={`flex items-center justify-between p-5 border-b flex-shrink-0 ${
+          isDark ? 'border-slate-800' : 'border-gray-200'
+        }`}>
+          <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
             {initial ? t('editListing', lang) : t('createListing', lang)}
           </h2>
-          <button type="button" onClick={onClose} className={`p-1.5 rounded-lg transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`}>
+          <button type="button" onClick={handleClose}
+            className={`p-2 rounded-xl transition-all ${isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'}`}>
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto flex-1">
 
         {/* Title */}
         <div>
@@ -99,7 +118,7 @@ export function CreateListingModal({ isDark, lang, products, initial, onSubmit, 
               {t('listingPrice', lang)} *
             </label>
             <div className="relative">
-              <DollarSign className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
+              <DollarSign className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-slate-400' : 'text-gray-400'}`} />
               <input id="listing-price" name="price" type="number" step="0.01" min="0" value={price} onChange={e => setPrice(e.target.value)} required
                 className={`w-full pl-10 pr-4 py-3 rounded-xl border-2 outline-none transition-colors ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'}`} />
             </div>
@@ -126,7 +145,7 @@ export function CreateListingModal({ isDark, lang, products, initial, onSubmit, 
               const Icon = PLATFORM_ICONS[pf] || Globe;
               return (
                 <button key={pf} type="button" onClick={() => setContactPlatform(pf)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${contactPlatform === pf ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${contactPlatform === pf ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                   <Icon className="w-3.5 h-3.5" />
                   {pf}
                 </button>
@@ -134,7 +153,7 @@ export function CreateListingModal({ isDark, lang, products, initial, onSubmit, 
             })}
           </div>
           <div className="relative">
-            <PlatformIcon className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
+            <PlatformIcon className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-slate-400' : 'text-gray-400'}`} />
             <input type="text" name="contact" value={contactValue} onChange={e => setContactValue(e.target.value)} required
               placeholder={contactPlatform === 'email' ? 'user@example.com' : contactPlatform === 'phone' ? '+1 555 0000' : '@username'}
               className={`w-full pl-10 pr-4 py-3 rounded-xl border-2 outline-none transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'}`} />
@@ -147,9 +166,9 @@ export function CreateListingModal({ isDark, lang, products, initial, onSubmit, 
             {t('linkProduct', lang)}
           </label>
           {linkedProduct ? (
-            <div className={`flex items-center gap-2 px-3 py-2.5 rounded-xl ${isDark ? 'bg-midnight' : 'bg-gray-50'}`}>
+            <div className={`flex items-center gap-2 px-3 py-2.5 rounded-xl ${isDark ? 'bg-slate-800/50' : 'bg-gray-50'}`}>
               <Tag className={`w-4 h-4 shrink-0 ${isDark ? 'text-cyanx' : 'text-cyan-600'}`} />
-              <span className={`text-sm font-medium flex-1 ${isDark ? 'text-frost' : 'text-gray-800'}`}>{linkedProduct.name}</span>
+              <span className={`text-sm font-medium flex-1 ${isDark ? 'text-white' : 'text-gray-800'}`}>{linkedProduct.name}</span>
               <button type="button" onClick={() => { setLinkedProductId(''); setShowProductPicker(false); }}
                 className={`text-xs font-medium ${isDark ? 'text-red-400 hover:text-red-300' : 'text-red-500 hover:text-red-600'}`}>
                 {t('removeProduct', lang)}
@@ -204,6 +223,7 @@ export function CreateListingModal({ isDark, lang, products, initial, onSubmit, 
           {submitting ? '...' : initial ? t('editListing', lang) : t('createListing', lang)}
         </button>
       </form>
+      </div>
     </div>
   );
 }
