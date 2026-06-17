@@ -30,8 +30,11 @@ def run_tests():
         page.on('pageerror', lambda err: errors.append(str(err)))
 
         # ---------- SETUP ----------
-        page.goto('http://localhost:5173')
-        page.wait_for_load_state('networkidle')
+        page.goto('http://localhost:5173', wait_until='load', timeout=15000)
+        try:
+            page.wait_for_load_state('networkidle', timeout=5000)
+        except:
+            pass
         time.sleep(1)
 
         # ===== 01: Welcome Modal =====
@@ -81,7 +84,10 @@ def run_tests():
         print_header(5, "Add Product")
         page.evaluate('localStorage.clear()')
         page.reload()
-        page.wait_for_load_state('networkidle')
+        try:
+            page.wait_for_load_state('networkidle', timeout=5000)
+        except:
+            pass
         time.sleep(0.5)
         page.locator('text=English').first.click()
         page.get_by_role('button', name='Get Started').click()
@@ -138,7 +144,10 @@ def run_tests():
         # Set threshold to 5g first via localStorage, then reload
         page.evaluate('() => { const s = JSON.parse(localStorage.getItem("weed-settings") || "{}"); s.lowStockThreshold = 5; localStorage.setItem("weed-settings", JSON.stringify(s)); }')
         page.reload()
-        page.wait_for_load_state('networkidle')
+        try:
+            page.wait_for_load_state('networkidle', timeout=5000)
+        except:
+            pass
         time.sleep(0.5)
 
         # Close any open modal first, then click Consume directly on card
@@ -178,7 +187,10 @@ def run_tests():
         # First add more product so we can test grayed out portions
         page.evaluate('localStorage.clear()')
         page.reload()
-        page.wait_for_load_state('networkidle')
+        try:
+            page.wait_for_load_state('networkidle', timeout=5000)
+        except:
+            pass
         time.sleep(0.5)
         page.locator('text=English').first.click()
         page.get_by_role('button', name='Get Started').click()

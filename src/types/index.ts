@@ -135,5 +135,50 @@ export interface Notification {
   };
 }
 
+export interface MarketplaceListing {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  product_id?: string | null;
+  product_name?: string | null;
+  contact_platform: string;
+  contact_value: string;
+  image_url?: string | null;
+  status: 'active' | 'sold';
+  created_at: string;
+  updated_at: string;
+  author?: {
+    username: string;
+    avatar_url?: string;
+  };
+}
+
+export const CONTACT_PLATFORMS = [
+  'email',
+  'phone',
+  'discord',
+  'telegram',
+  'instagram',
+  'signal',
+  'whatsapp',
+  'other',
+] as const;
+
+export const MARKETPLACE_CATEGORIES = [
+  'flower',
+  'concentrate',
+  'edible',
+  'cartridge',
+  'pre-roll',
+  'tincture',
+  'topical',
+  'seeds',
+  'accessories',
+  'other',
+] as const;
+
 export type SortOption = 'newest' | 'oldest' | 'name' | 'rating' | 'thc' | 'amount' | 'price' | 'favorites';
 export type FilterType = string;

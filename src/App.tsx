@@ -24,6 +24,7 @@ import { WelcomeModal } from './components/WelcomeModal';
 import { UserSettings } from './components/UserSettings';
 import { LogoIcon } from './components/LogoIcon';
 import { SocialFeed } from './components/SocialFeed';
+import { MarketplaceFeed } from './components/MarketplaceFeed';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NotificationBell } from './components/NotificationBell';
 import { UserProfileModal } from './components/UserProfileModal';
@@ -45,7 +46,7 @@ export default function App() {
   const { settings, updateSettings, replaceSettings } = useSettings();
   const { entries: activityEntries, addEntry: addActivityEntry, clearEntries: clearActivity } = useActivity();
 
-  const [activeTab, setActiveTab] = useState<'stash' | 'community'>('stash');
+  const [activeTab, setActiveTab] = useState<'stash' | 'community' | 'marketplace'>('stash');
   const [stashSection, setStashSection] = useState<'products' | 'dashboard' | 'history'>('products');
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedQuery = useDebounce(searchQuery, 200);
@@ -577,10 +578,11 @@ export default function App() {
             {[
               { id: 'stash', label: t('stash', lang), icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
               { id: 'community', label: t('community', lang), icon: 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z' },
+              { id: 'marketplace', label: t('marketplace', lang), icon: 'M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z' },
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as 'stash' | 'community')}
+                onClick={() => setActiveTab(tab.id as 'stash' | 'community' | 'marketplace')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3.5 text-base font-medium transition-all duration-200 relative
                   ${activeTab === tab.id
                     ? isDark ? 'text-cyan-400' : 'text-cyan-600'
@@ -918,6 +920,39 @@ export default function App() {
                 username={settings.profile?.username || 'User'}
                 products={products}
                 profile={settings.profile}
+                onViewProfile={(uid) => setViewProfileUserId(uid)}
+              />
+            )}
+          </div>
+          </ErrorBoundary>
+        )}
+
+        {/* ==================== MARKETPLACE TAB ==================== */}
+        {activeTab === 'marketplace' && (
+          <ErrorBoundary isDark={isDark} lang={lang}>
+          <div className="space-y-4">
+            {!user ? (
+              <div className={`max-w-lg mx-auto p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+                <svg className="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                </svg>
+                <h2 className={`text-lg font-display font-bold mb-2 ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+                  {t('marketplace', lang)}
+                </h2>
+                <p className={`text-sm mb-6 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+                  {t('browseMarketplaceDesc', lang)}
+                </p>
+                <button onClick={() => { setSettingsDefaultTab('profile'); setIsSettingsOpen(true); }}
+                  className="px-6 py-2.5 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all shadow-lg shadow-cyanx/20">
+                  Sign Up
+                </button>
+              </div>
+            ) : (
+              <MarketplaceFeed
+                isDark={isDark}
+                lang={lang}
+                currentUserId={user.id}
+                products={products}
                 onViewProfile={(uid) => setViewProfileUserId(uid)}
               />
             )}
