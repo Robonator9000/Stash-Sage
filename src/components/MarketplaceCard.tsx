@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { MarketplaceListing } from '../types';
 import { t } from '../utils/translations';
 import { Tag, Clock, DollarSign } from 'lucide-react';
@@ -47,7 +48,7 @@ const PLATFORM_BRAND_ICONS: Record<string, string> = {
   other: 'M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418',
 };
 
-export function MarketplaceCard({ listing, isDark, lang, currentUserId, onEdit, onDelete, onMarkSold, onViewProfile }: MarketplaceCardProps) {
+export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, lang, currentUserId, onEdit, onDelete, onMarkSold, onViewProfile }: MarketplaceCardProps) {
   const isOwner = listing.user_id === currentUserId;
   const brandPath = PLATFORM_BRAND_ICONS[listing.contact_platform] || PLATFORM_BRAND_ICONS.other;
   const brandColor = PLATFORM_COLORS[listing.contact_platform] || PLATFORM_COLORS.other;
@@ -60,7 +61,7 @@ export function MarketplaceCard({ listing, isDark, lang, currentUserId, onEdit, 
           <button onClick={() => onViewProfile?.(listing.user_id)} className="shrink-0">
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden ${listing.author?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
               {listing.author?.avatar_url ? (
-                <img src={listing.author.avatar_url} alt="" className="w-full h-full object-cover" />
+                <img src={listing.author.avatar_url} alt="" loading="lazy" className="w-full h-full object-cover" />
               ) : (
                 <span className="text-white font-display font-bold text-lg">
                   {(listing.author?.username?.[0] || '?').toUpperCase()}
@@ -88,7 +89,7 @@ export function MarketplaceCard({ listing, isDark, lang, currentUserId, onEdit, 
       {/* Image */}
       {listing.image_url && (
         <div className="mb-4 rounded-xl overflow-hidden">
-          <img src={listing.image_url} alt="" className="w-full h-56 object-cover" />
+          <img src={listing.image_url} alt="" loading="lazy" className="w-full h-56 object-cover" />
         </div>
       )}
 
@@ -160,4 +161,4 @@ export function MarketplaceCard({ listing, isDark, lang, currentUserId, onEdit, 
       )}
     </div>
   );
-}
+});

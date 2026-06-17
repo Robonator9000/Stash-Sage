@@ -81,7 +81,7 @@ export function NotificationBell({ isDark, lang, onViewProfile }: NotificationBe
               >
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden ${n.actor?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
                   {n.actor?.avatar_url ? (
-                    <img src={n.actor.avatar_url} alt="" className="w-full h-full object-cover" />
+                    <img src={n.actor.avatar_url} alt="" loading="lazy" className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-white font-display font-bold text-xs">
                       {(n.actor?.username?.[0] || '?').toUpperCase()}

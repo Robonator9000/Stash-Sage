@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import type { Post } from '../types';
 import { supabase } from '../utils/supabase';
 import { t } from '../utils/translations';
@@ -24,7 +24,7 @@ interface PostCardProps {
   onComment?: (userId: string, postId: string) => void;
 }
 
-export function PostCard({ post, isDark, lang, currentUserId, username, isFollowing, onLike, onUnlike, onDelete, onEdit, onFollow, onUnfollow, onViewProfile, onComment }: PostCardProps) {
+export const PostCard = memo(function PostCard({ post, isDark, lang, currentUserId, username, isFollowing, onLike, onUnlike, onDelete, onEdit, onFollow, onUnfollow, onViewProfile, onComment }: PostCardProps) {
   const [liking, setLiking] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -70,7 +70,7 @@ export function PostCard({ post, isDark, lang, currentUserId, username, isFollow
           className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${post.author?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}
         >
           {post.author?.avatar_url ? (
-            <img src={post.author.avatar_url} alt="" className="w-full h-full object-cover" />
+            <img src={post.author.avatar_url} alt="" loading="lazy" className="w-full h-full object-cover" />
           ) : (
             <span className="text-white font-display font-bold text-sm">
               {(post.author?.username?.[0] || '?').toUpperCase()}
@@ -249,4 +249,4 @@ export function PostCard({ post, isDark, lang, currentUserId, username, isFollow
       </div>
     </div>
   );
-}
+});
