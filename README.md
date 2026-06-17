@@ -23,7 +23,10 @@ Add strains with name, brand, type, THC/CBD %, rating, price, notes, photos, and
 Log 0.1g–2g quick amounts or type custom values. Backdate entries. Stash updates automatically. Full history with filters.
 
 ### 👥 Community
-Share posts about your stash, like and comment on others' posts, and follow people. Real-time feed updates. Browse Latest or Following feeds.
+Share posts about your stash, like and comment on others' posts, and follow people. Real-time feed updates. Browse Latest, Following, or Trending feeds.
+
+### 🏪 Marketplace
+Browse and list products for sale. Filter by category and sort by price. Contact sellers via Discord, Telegram, Signal, WhatsApp, and more. Optional product linking from your stash.
 
 ### ☁️ Cloud Sync (Optional)
 Everything works offline in your browser. Sign up with email to sync across devices via Supabase.
@@ -34,7 +37,10 @@ Everything works offline in your browser. Sign up with email to sync across devi
 | Saved locally | ✅ | ✅ |
 | Cloud backup | — | ✅ |
 | Cross-device sync | — | ✅ |
+| Community viewing | ✅ | ✅ |
 | Community posting | — | ✅ |
+| Marketplace browsing | ✅ | ✅ |
+| Marketplace listing | — | ✅ |
 
 ### 📸 Color-Coded Strains
 Tap any strain badge to pick from 10 colors. Colors appear on badges, card glows, and edge highlights.
