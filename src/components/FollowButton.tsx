@@ -31,6 +31,8 @@ export function FollowButton({ userId, currentUserId, isFollowing, isDark, onFol
     <button
       onClick={handleClick}
       disabled={loading}
+      aria-pressed={isFollowing}
+      aria-label={isFollowing ? 'Unfollow' : 'Follow'}
       className={`text-xs font-medium px-2.5 py-1 rounded-lg transition-all ${
         loading ? 'opacity-50' : ''
       } ${

@@ -75,6 +75,7 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
 
     if (insertError || !data) {
       setSubmitting(false);
+      setError(insertError?.message || 'Failed to post comment');
       return;
     }
 
@@ -88,12 +89,16 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
   }
 
   async function handleDelete(commentId: string) {
-    await supabase.from('post_comments').delete().eq('id', commentId).eq('user_id', currentUserId);
+    const { error: delError } = await supabase.from('post_comments').delete().eq('id', commentId).eq('user_id', currentUserId);
+    if (delError) {
+      setError(delError.message);
+      return;
+    }
     setComments(prev => prev.filter(c => c.id !== commentId));
   }
 
   return (
-    <div className={`mt-3 pt-3 border-t ${isDark ? 'border-edge' : 'border-gray-200'}`}>
+    <div id={`comment-section-${postId}`} className={`mt-3 pt-3 border-t ${isDark ? 'border-edge' : 'border-gray-200'}`}>
       {loading && (
         <div className="space-y-2 pl-1">
           {[1, 2].map(i => (
@@ -118,11 +123,11 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
         </p>
       )}
 
-      <div className="space-y-3">
+      <div role="list" className="space-y-3">
         {comments.map(comment => {
           const isOwner = comment.user_id === currentUserId;
           return (
-            <div key={comment.id} className="flex items-start gap-2">
+            <div key={comment.id} role="listitem" className="flex items-start gap-2">
               <div className={`w-6 h-6 rounded-lg flex items-center justify-center bg-gradient-to-br from-cyanx to-emera shrink-0`}>
                 <span className="text-white font-display font-bold text-xs">
                   {(comment.author?.username?.[0] || '?').toUpperCase()}
@@ -144,6 +149,7 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
               {isOwner && (
                 <button
                   onClick={() => handleDelete(comment.id)}
+                  aria-label="Delete comment"
                   className={`text-xs shrink-0 ${isDark ? 'text-muted hover:text-red-400' : 'text-gray-400 hover:text-red-500'}`}
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -176,6 +182,7 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
           <button
             onClick={handleSubmit}
             disabled={!newComment.trim() || submitting}
+            aria-label="Submit comment"
             className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
               newComment.trim() && !submitting
                 ? 'text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark'

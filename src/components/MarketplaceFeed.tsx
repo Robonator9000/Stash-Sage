@@ -38,14 +38,14 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
   const fetchListings = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const { data, error: fetchError } = await supabase.from('marketplace_listings').select('*').order('created_at', { ascending: false });
+    const { data, error: fetchError } = await supabase.from('marketplace_listings').select('*').order('created_at', { ascending: false }).limit(50);
     if (fetchError) { setError(fetchError.message); setLoading(false); return; }
     const enriched = await enrichListings(data || []);
     setListings(enriched);
     setLoading(false);
   }, [enrichListings]);
 
-  useEffect(() => { fetchListings(); }, [fetchListings]);
+  useEffect(() => { fetchListings().catch(e => { setError(e.message); setLoading(false); }); }, [fetchListings]);
 
   const filtered = useMemo(() => listings.filter(l => {
     if (categoryFilter !== 'all' && l.category !== categoryFilter) return false;
@@ -122,7 +122,7 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
       {/* Header + Create / Sign in */}
       <div className="flex items-center gap-2">
         {currentUserId ? (
-          <button onClick={handleOpenCreate}
+          <button onClick={handleOpenCreate} aria-label="Create new listing"
             className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all shadow-lg shadow-cyanx/20">
             <Plus className="w-4 h-4" />
             {t('sellSomething', lang)}
@@ -137,19 +137,19 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
       {/* Search */}
       <div className="relative">
         <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
-        <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+        <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} aria-label="Search listings"
           placeholder={t('searchPlaceholder', lang)}
           className={`w-full pl-12 pr-4 py-3.5 rounded-xl text-base outline-none transition-all ${isDark ? 'bg-midnight text-frost border border-edge focus:border-cyanx/50 placeholder-muted' : 'bg-gray-50 text-gray-800 border border-gray-200 focus:border-cyan-400 placeholder-gray-400'}`} />
       </div>
 
       {/* Categories row */}
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-        <button onClick={() => setCategoryFilter('all')}
+        <button onClick={() => setCategoryFilter('all')} role="button" aria-pressed={categoryFilter === 'all'}
           className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all ${categoryFilter === 'all' ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
           {t('allCategories', lang)}
         </button>
         {MARKETPLACE_CATEGORIES.map(cat => (
-          <button key={cat} onClick={() => setCategoryFilter(cat)}
+          <button key={cat} onClick={() => setCategoryFilter(cat)} role="button" aria-pressed={categoryFilter === cat}
             className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all ${categoryFilter === cat ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
             {cat}
           </button>
@@ -164,7 +164,7 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
           { id: 'price_low' as const, label: t('sortPriceLow', lang) },
           { id: 'price_high' as const, label: t('sortPriceHigh', lang) },
         ]).map(s => (
-          <button key={s.id} onClick={() => setSortBy(s.id)}
+          <button key={s.id} onClick={() => setSortBy(s.id)} aria-pressed={sortBy === s.id}
             className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${sortBy === s.id ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm' : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'}`}>
             {s.label}
           </button>
@@ -173,7 +173,7 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
 
       {/* Loading */}
       {loading && (
-        <div className="space-y-4">
+        <div className="space-y-4" aria-busy="true" aria-label="Loading listings">
           {[1, 2, 3].map(i => (
             <div key={i} className={`p-5 rounded-2xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
               <div className="flex items-center gap-3 mb-3">
@@ -191,13 +191,13 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
       )}
 
       {error && (
-        <div className={`p-4 rounded-2xl text-center text-sm ${isDark ? 'bg-red-900/20 text-red-400 border border-red-900/30' : 'bg-red-50 text-red-500 border border-red-200'}`}>
+        <div className={`p-4 rounded-2xl text-center text-sm ${isDark ? 'bg-red-900/20 text-red-400 border border-red-900/30' : 'bg-red-50 text-red-500 border border-red-200'}`} role="alert">
           {error}
         </div>
       )}
 
       {!loading && !error && sorted.length === 0 && (
-        <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+        <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`} role="status">
           <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>{t('noListings', lang)}</p>
         </div>
       )}

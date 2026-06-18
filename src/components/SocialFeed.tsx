@@ -130,7 +130,7 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
     fetchPosts(0, feedFilter).then(enriched => {
       setPosts(enriched);
       setLoading(false);
-    });
+    }).catch(console.error);
 
     const channel = supabase.channel('social-feed')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, async (payload) => {
@@ -139,7 +139,7 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
           if (newPost.user_id === currentUserId) return;
           const enriched = await enrichPosts([newPost]);
           setPosts(prev => [enriched[0], ...prev]);
-        } catch {} // SWALLOW
+        } catch (e) { console.error('Realtime post error:', e); }
       })
       .subscribe((status) => {
         if (status === 'CHANNEL_ERROR') console.error('Realtime social-feed channel error');
@@ -161,7 +161,7 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
         fetchPosts(nextPage, feedFilter).then(enriched => {
           setPosts(prev => [...prev, ...enriched]);
           setLoadingMore(false);
-        });
+        }).catch(console.error);
       }
     }, { rootMargin: '400px' });
 
@@ -299,24 +299,32 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
     if (submitting) return;
     setSubmitting(true);
     try {
-      await supabase.from('follows').insert({ follower_id: currentUserId, following_id: userId });
+      const { error } = await supabase.from('follows').insert({ follower_id: currentUserId, following_id: userId });
+      if (error) {
+        showToast({ id: 'follow-error', title: t('somethingWentWrong', lang), body: error.message });
+        return;
+      }
       setPosts(prev => prev.map(p => p.user_id === userId ? { ...p, is_following: true } : p));
       notifyUser(userId, 'follow');
     } finally {
       setSubmitting(false);
     }
-  }, [submitting, currentUserId, notifyUser]);
+  }, [submitting, currentUserId, notifyUser, lang]);
 
   const handleUnfollow = useCallback(async (userId: string) => {
     if (submitting) return;
     setSubmitting(true);
     try {
-      await supabase.from('follows').delete().eq('follower_id', currentUserId).eq('following_id', userId);
+      const { error } = await supabase.from('follows').delete().eq('follower_id', currentUserId).eq('following_id', userId);
+      if (error) {
+        showToast({ id: 'unfollow-error', title: t('somethingWentWrong', lang), body: error.message });
+        return;
+      }
       setPosts(prev => prev.map(p => p.user_id === userId ? { ...p, is_following: false } : p));
     } finally {
       setSubmitting(false);
     }
-  }, [submitting, currentUserId]);
+  }, [submitting, currentUserId, lang]);
 
   const handleComment = useCallback((userId: string, postId: string) => {
     notifyUser(userId, 'comment', postId);
@@ -350,10 +358,12 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
       )}
 
       {/* Feed filter */}
-      <div className={`flex items-center gap-1 p-1 rounded-xl ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
+      <div role="tablist" className={`flex items-center gap-1 p-1 rounded-xl ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
         {(['latest', 'following', 'trending'] as const).map(f => (
           <button
             key={f}
+            role="tab"
+            aria-selected={feedFilter === f}
             onClick={() => setFeedFilter(f)}
             className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
               feedFilter === f
@@ -368,11 +378,12 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
 
       {/* User search */}
       <div ref={searchRef} className="relative">
-        <input
-          id="user-search"
-          name="user-search"
-          type="text"
-          value={searchQuery}
+          <input
+            id="user-search"
+            name="user-search"
+            type="text"
+            aria-label="Search users"
+            value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           placeholder="Search users..."
           className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-colors ${
@@ -403,7 +414,7 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
       </div>
 
       {loading && (
-        <div className="space-y-4">
+        <div aria-busy="true" aria-label="Loading posts" className="space-y-4">
           {[1, 2, 3].map(i => (
             <div key={i} className={`p-4 rounded-2xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
               <div className="flex items-start gap-3">

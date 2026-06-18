@@ -30,6 +30,8 @@ export function NotificationBell({ isDark, lang, onViewProfile }: NotificationBe
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
+        aria-label="Notifications"
+        aria-expanded={open}
         className={`relative p-2 rounded-xl transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}
       >
         <Bell className="w-5 h-5" />
@@ -49,6 +51,7 @@ export function NotificationBell({ isDark, lang, onViewProfile }: NotificationBe
             {unreadCount > 0 && (
               <button
                 onClick={markAllRead}
+                aria-label="Mark all notifications as read"
                 className={`text-xs font-medium ${isDark ? 'text-cyanx hover:text-cyan-400' : 'text-cyan-600 hover:text-cyan-700'}`}
               >
                 Mark all read
@@ -81,7 +84,7 @@ export function NotificationBell({ isDark, lang, onViewProfile }: NotificationBe
               >
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden ${n.actor?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
                   {n.actor?.avatar_url ? (
-                    <img src={n.actor.avatar_url} alt="" loading="lazy" className="w-full h-full object-cover" />
+                    <img src={n.actor.avatar_url} alt={n.actor?.username || 'User'} loading="lazy" className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-white font-display font-bold text-xs">
                       {(n.actor?.username?.[0] || '?').toUpperCase()}

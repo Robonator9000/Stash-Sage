@@ -85,13 +85,13 @@ export function useNotifications(userId: string | undefined): UseNotificationsRe
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const markRead = useCallback(async (id: string) => {
-    await supabase.from('notifications').update({ read: true }).eq('id', id);
+    await supabase.from('notifications').update({ read: true }).eq('id', id).then(undefined, console.error);
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
   }, []);
 
   const markAllRead = useCallback(async () => {
     if (!userId) return;
-    await supabase.from('notifications').update({ read: true }).eq('user_id', userId).eq('read', false);
+    await supabase.from('notifications').update({ read: true }).eq('user_id', userId).eq('read', false).then(undefined, console.error);
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   }, [userId]);
 

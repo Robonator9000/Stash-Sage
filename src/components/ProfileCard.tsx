@@ -87,7 +87,7 @@ export function ProfileCard({ profile, products, sessions, isDark, lang, onEditP
           <div className="flex items-center gap-3">
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${profile.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
               {profile.avatar_url ? (
-                <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                <img src={profile.avatar_url} alt={profile.username || 'Profile'} className="w-full h-full object-cover" />
               ) : (
                 <span className="text-white font-display font-bold text-lg">{profile.username[0]?.toUpperCase() || '?'}</span>
               )}
@@ -99,6 +99,7 @@ export function ProfileCard({ profile, products, sessions, isDark, lang, onEditP
           </div>
           <button
             onClick={onEditProfile}
+            aria-label="Edit profile"
             className={`p-2 rounded-xl text-xs font-medium transition-all ${
               isDark ? 'bg-midnight text-mist hover:bg-surface hover:text-frost' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
             }`}

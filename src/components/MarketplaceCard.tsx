@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import type { MarketplaceListing } from '../types';
 import { t } from '../utils/translations';
 import { Tag, Clock, DollarSign } from 'lucide-react';
@@ -14,7 +14,7 @@ const PLATFORM_COLORS: Record<string, string> = {
   other: '#94a3b8',
 };
 
-function timeAgo(dateStr: string): string {
+function timeAgo(dateStr: string, lang?: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return 'just now';
@@ -23,7 +23,7 @@ function timeAgo(dateStr: string): string {
   if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
   if (days < 30) return `${days}d ago`;
-  return new Date(dateStr).toLocaleDateString();
+  return new Date(dateStr).toLocaleDateString(lang);
 }
 
 interface MarketplaceCardProps {
@@ -52,13 +52,14 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, 
   const isOwner = listing.user_id === currentUserId;
   const brandPath = PLATFORM_BRAND_ICONS[listing.contact_platform] || PLATFORM_BRAND_ICONS.other;
   const brandColor = PLATFORM_COLORS[listing.contact_platform] || PLATFORM_COLORS.other;
+  const [confirmAction, setConfirmAction] = useState<{ type: 'delete' | 'sold', listingId: string } | null>(null);
 
   return (
-    <div className={`p-6 rounded-2xl transition-all ${isDark ? 'bg-surface/60 border border-edge hover:border-cyanx/30' : 'bg-white border border-gray-200 hover:border-cyan-400/30'} shadow-sm`}>
+    <div className={`p-6 rounded-2xl transition-all ${isDark ? 'bg-surface/60 border border-edge hover:border-cyanx/30' : 'bg-white border border-gray-200 hover:border-cyan-400/30'} shadow-sm`} role="article">
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex items-center gap-3 min-w-0">
-          <button onClick={() => onViewProfile?.(listing.user_id)} className="shrink-0">
+          <button onClick={() => onViewProfile?.(listing.user_id)} aria-label={'View ' + (listing.author?.username || 'user') + '\'s profile'} className="shrink-0">
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden ${listing.author?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
               {listing.author?.avatar_url ? (
                 <img src={listing.author.avatar_url} alt="" loading="lazy" className="w-full h-full object-cover" />
@@ -70,12 +71,12 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, 
             </div>
           </button>
           <div className="min-w-0">
-            <button onClick={() => onViewProfile?.(listing.user_id)} className={`text-sm font-semibold truncate block w-full text-left hover:underline ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+            <button onClick={() => onViewProfile?.(listing.user_id)} aria-label={'View ' + (listing.author?.username || 'user') + '\'s profile'} className={`text-sm font-semibold truncate block w-full text-left hover:underline ${isDark ? 'text-frost' : 'text-gray-800'}`}>
               {listing.author?.username || 'User'}
             </button>
             <div className={`flex items-center gap-1.5 text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>
               <Clock className="w-3 h-3" />
-              {timeAgo(listing.created_at)}
+              <time dateTime={listing.created_at}>{timeAgo(listing.created_at, lang)}</time>
             </div>
           </div>
         </div>
@@ -129,13 +130,13 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, 
 
       {/* Contact info */}
       <div className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm ${isDark ? 'bg-midnight' : 'bg-gray-50'}`}>
-        <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" style={{ color: brandColor }}>
+        <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" style={{ color: brandColor }} aria-hidden="true">
           <path d={brandPath} />
         </svg>
         <span className={`font-medium ${isDark ? 'text-frost' : 'text-gray-800'}`}>
-          {listing.contact_platform === 'email' ? listing.contact_value :
-           listing.contact_platform === 'phone' ? listing.contact_value :
-           `@${listing.contact_value}`}
+           {listing.contact_platform === 'email' ? listing.contact_value :
+            listing.contact_platform === 'phone' ? listing.contact_value :
+            `@${listing.contact_value.replace(/^@+/, '')}`}
         </span>
         <span className={`text-xs ml-auto capitalize ${isDark ? 'text-muted' : 'text-gray-400'}`}>
           {listing.contact_platform}
@@ -145,18 +146,49 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, 
       {/* Owner actions */}
       {isOwner && listing.status === 'active' && (
         <div className="flex gap-2 mt-5 pt-4 border-t border-edge">
-          <button onClick={() => onEdit?.(listing)}
+          <button onClick={() => onEdit?.(listing)} aria-label="Edit listing"
             className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${isDark ? 'bg-midnight text-mist hover:text-frost hover:bg-surface' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
             {t('editProduct', lang)}
           </button>
-          <button onClick={() => onMarkSold?.(listing.id)}
+          <button onClick={() => setConfirmAction({ type: 'sold', listingId: listing.id })} aria-label="Mark listing as sold"
             className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${isDark ? 'bg-midnight text-emera hover:bg-emera/10' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}>
             {t('markAsSold', lang)}
           </button>
-          <button onClick={() => onDelete?.(listing.id)}
+          <button onClick={() => setConfirmAction({ type: 'delete', listingId: listing.id })} aria-label="Delete listing"
             className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${isDark ? 'bg-midnight text-red-400 hover:bg-red-900/20' : 'bg-red-50 text-red-500 hover:bg-red-100'}`}>
             {t('delete', lang)}
           </button>
+        </div>
+      )}
+
+      {confirmAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setConfirmAction(null)}>
+          <div className={`p-6 rounded-2xl max-w-xs w-full mx-4 shadow-xl ${isDark ? 'bg-card border border-edge' : 'bg-white border border-gray-200'}`}
+            onClick={e => e.stopPropagation()}>
+            <p className={`text-sm font-medium mb-4 ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+              {confirmAction.type === 'delete' ? 'Delete this listing?' : 'Mark as sold?'}
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={async () => {
+                  if (confirmAction.type === 'delete') await onDelete?.(confirmAction.listingId);
+                  else await onMarkSold?.(confirmAction.listingId);
+                  setConfirmAction(null);
+                }}
+                className="flex-1 px-4 py-2 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-all"
+              >
+                {confirmAction.type === 'delete' ? 'Delete' : 'Mark Sold'}
+              </button>
+              <button
+                onClick={() => setConfirmAction(null)}
+                className={`flex-1 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

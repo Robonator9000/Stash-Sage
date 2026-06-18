@@ -40,7 +40,7 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
     try {
       await onEdit(post.id, editContent.trim());
       setEditing(false);
-      showToast({ id: 'post-edited', title: '', body: t('postCreated', lang) });
+      showToast({ id: 'post-edited', title: '', body: 'Post updated' });
     } catch {
     } finally {
       setEditSubmitting(false);
@@ -65,6 +65,7 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
       <div className="flex items-start gap-3">
         <button
           onClick={() => onViewProfile?.(post.user_id)}
+          aria-label={`View ${post.author?.username || 'user'}'s profile`}
           className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${post.author?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}
         >
           {post.author?.avatar_url ? (
@@ -79,6 +80,7 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
           <div className="flex items-center gap-2 mb-1">
             <button
               onClick={() => onViewProfile?.(post.user_id)}
+              aria-label={`View ${post.author?.username || 'user'}'s profile`}
               className={`font-display font-bold text-sm hover:underline ${isDark ? 'text-frost' : 'text-gray-800'}`}
             >
               {post.author?.username || 'Unknown'}
@@ -146,6 +148,7 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
             <button
               onClick={handleToggleLike}
               disabled={liking}
+              aria-label={liked ? 'Unlike post' : 'Like post'}
               className={`flex items-center gap-1.5 text-sm font-medium transition-all ${
                 liked
                   ? 'text-orange-500'
@@ -168,6 +171,9 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
 
             <button
               onClick={() => setShowComments(!showComments)}
+              aria-label="Toggle comments"
+              aria-expanded={showComments}
+              aria-controls={`comment-section-${post.id}`}
               className={`flex items-center gap-1.5 text-sm font-medium transition-all ${
                 showComments
                   ? isDark ? 'text-cyanx' : 'text-cyan-600'
@@ -185,6 +191,7 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
                 {onEdit && (
                   <button
                     onClick={() => { setEditing(true); setEditContent(post.content); }}
+                    aria-label="Edit post"
                     className={`ml-auto text-xs font-medium ${isDark ? 'text-muted hover:text-cyan-400' : 'text-gray-400 hover:text-cyan-600'}`}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -195,6 +202,7 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
                 {onDelete && (
                   <button
                     onClick={() => setShowConfirm(true)}
+                    aria-label="Delete post"
                     className={`text-xs font-medium ${isDark ? 'text-muted hover:text-red-400' : 'text-gray-400 hover:text-red-500'}`}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

@@ -60,13 +60,13 @@ export function UserProfileModal({ userId, isDark, lang, onBack }: UserProfileMo
     <div className="space-y-4">
       <div className={`flex items-center gap-3 p-3 rounded-xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
         {onBack && (
-          <button onClick={onBack} className={`p-2 rounded-xl transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`}>
+          <button onClick={onBack} aria-label="Go back" className={`p-2 rounded-xl transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`}>
             <ArrowLeft className="w-5 h-5" />
           </button>
         )}
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${profile?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
           {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+            <img src={profile.avatar_url} alt={username} className="w-full h-full object-cover" />
           ) : (
             <span className="text-white font-display font-bold text-lg">{initial}</span>
           )}
@@ -78,9 +78,11 @@ export function UserProfileModal({ userId, isDark, lang, onBack }: UserProfileMo
       </div>
 
       {/* Section tabs: Posts / Products */}
-      <div className={`flex gap-1 p-1 rounded-xl ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
+      <div role="tablist" className={`flex gap-1 p-1 rounded-xl ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
         <button
           onClick={() => setActiveSection('posts')}
+          role="tab"
+          aria-selected={activeSection === 'posts'}
           className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg transition-all ${activeSection === 'posts' ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm' : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'}`}
         >
           <MessageSquare className="w-4 h-4" />
@@ -88,6 +90,8 @@ export function UserProfileModal({ userId, isDark, lang, onBack }: UserProfileMo
         </button>
         <button
           onClick={() => setActiveSection('products')}
+          role="tab"
+          aria-selected={activeSection === 'products'}
           className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg transition-all ${activeSection === 'products' ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm' : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'}`}
         >
           <Package className="w-4 h-4" />
@@ -133,8 +137,25 @@ export function UserProfileModal({ userId, isDark, lang, onBack }: UserProfileMo
             lang={lang}
             currentUserId={currentUser?.id || ''}
             username={currentUser?.email || 'User'}
-            onLike={async () => {}}
-            onUnlike={async () => {}}
+            onLike={async (postId) => {
+              const { error } = await supabase.from('post_likes').insert({ user_id: currentUser?.id, post_id: postId });
+              if (error) throw error;
+            }}
+            onUnlike={async (postId) => {
+              const { error } = await supabase.from('post_likes').delete().eq('user_id', currentUser?.id).eq('post_id', postId);
+              if (error) throw error;
+            }}
+            onDelete={async (postId) => {
+              await supabase.from('posts').delete().eq('id', postId).eq('user_id', currentUser?.id);
+              setPosts(prev => prev.filter(p => p.id !== postId));
+            }}
+            onEdit={async (postId, content) => {
+              await supabase.from('posts').update({ content }).eq('id', postId).eq('user_id', currentUser?.id);
+              setPosts(prev => prev.map(p => p.id === postId ? { ...p, content } : p));
+            }}
+            onViewProfile={(userId) => {
+              if (userId !== userId) { /* already viewing this profile */ }
+            }}
           />
         ))}
 

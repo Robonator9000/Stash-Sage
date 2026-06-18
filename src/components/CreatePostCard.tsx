@@ -66,6 +66,7 @@ export function CreatePostCard({ isDark, lang, username, products, onSubmit }: C
             ref={textareaRef}
             id="post-content"
             name="post-content"
+            aria-label="Post content"
             value={content}
             onChange={e => setContent(e.target.value.slice(0, MAX_CHARS))}
             placeholder={t('postPlaceholder', lang)}
@@ -85,6 +86,7 @@ export function CreatePostCard({ isDark, lang, username, products, onSubmit }: C
               {selectedProduct.name}
               <button
                 onClick={() => setSelectedProduct(null)}
+                aria-label="Remove linked product"
                 className="ml-1 hover:opacity-70"
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -98,6 +100,7 @@ export function CreatePostCard({ isDark, lang, username, products, onSubmit }: C
             <div className="relative" ref={pickerRef}>
               <button
                 onClick={() => setShowProductPicker(!showProductPicker)}
+                aria-label="Toggle product picker"
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   isDark ? 'text-muted hover:text-frost hover:bg-midnight' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
                 }`}

@@ -48,18 +48,22 @@ export function CreateListingModal({ isDark, lang, products, initial, onSubmit, 
     e.preventDefault();
     if (!title.trim() || !price.trim()) return;
     setSubmitting(true);
-    await onSubmit({
-      title: title.trim(),
-      description: description.trim(),
-      price: parseFloat(price),
-      category: category || undefined,
-      contact_platform: contactPlatform,
-      contact_value: contactValue.trim(),
-      product_id: linkedProductId || undefined,
-      product_name: linkedProduct?.name || undefined,
-      image_url: imageDataUrl || undefined,
-    });
-    setSubmitting(false);
+    try {
+      await onSubmit({
+        title: title.trim(),
+        description: description.trim(),
+        price: parseFloat(price),
+        category: category || undefined,
+        contact_platform: contactPlatform,
+        contact_value: contactValue.trim(),
+        product_id: linkedProductId || undefined,
+        product_name: linkedProduct?.name || undefined,
+        image_url: imageDataUrl || undefined,
+      });
+      handleClose();
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -85,7 +89,7 @@ export function CreateListingModal({ isDark, lang, products, initial, onSubmit, 
           <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
             {initial ? t('editListing', lang) : t('createListing', lang)}
           </h2>
-          <button type="button" onClick={handleClose}
+          <button type="button" onClick={handleClose} aria-label="Close dialog"
             className={`p-2 rounded-xl transition-all ${isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'}`}>
             <X className="w-5 h-5" />
           </button>
@@ -144,7 +148,7 @@ export function CreateListingModal({ isDark, lang, products, initial, onSubmit, 
             {CONTACT_PLATFORMS.map(pf => {
               const Icon = PLATFORM_ICONS[pf] || Globe;
               return (
-                <button key={pf} type="button" onClick={() => setContactPlatform(pf)}
+                <button key={pf} type="button" onClick={() => setContactPlatform(pf)} aria-pressed={contactPlatform === pf}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${contactPlatform === pf ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                   <Icon className="w-3.5 h-3.5" />
                   {pf}
@@ -202,13 +206,13 @@ export function CreateListingModal({ isDark, lang, products, initial, onSubmit, 
           {imageDataUrl ? (
             <div className="relative rounded-xl overflow-hidden">
               <img src={imageDataUrl} alt="" className="w-full h-40 object-cover" />
-              <button type="button" onClick={() => setImageDataUrl('')}
+              <button type="button" onClick={() => setImageDataUrl('')} aria-label="Remove image"
                 className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/50 text-white hover:bg-black/70 transition-all">
                 <X className="w-4 h-4" />
               </button>
             </div>
           ) : (
-            <button type="button" onClick={() => fileInputRef.current?.click()}
+            <button type="button" onClick={() => fileInputRef.current?.click()} aria-label="Upload image"
               className={`w-full py-8 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 cursor-pointer transition-all ${isDark ? 'border-slate-700 hover:border-slate-600 text-slate-500' : 'border-gray-300 hover:border-gray-400 text-gray-400'}`}>
               <Camera className="w-6 h-6" />
               <span className="text-xs">{t('uploadPicture', lang)}</span>
