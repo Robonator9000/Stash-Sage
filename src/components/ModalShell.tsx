@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface ModalShellProps {
   isOpen: boolean;
@@ -31,10 +32,13 @@ export function ModalShell({ isOpen, onClose, isDark = true, children, label, ma
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleClose]);
 
+  const focusTrapRef = useFocusTrap(isOpen);
+
   if (!isOpen) return null;
 
   return (
     <div
+      ref={focusTrapRef}
       className={`fixed inset-0 flex items-center justify-center z-50 p-4 max-sm:p-0 transition-all duration-200 ${
         isVisible ? 'bg-deep/85 backdrop-blur-sm' : 'bg-deep/0'
       }`}

@@ -578,7 +578,7 @@ export default function App() {
       <div className="max-w-7xl mx-auto px-4 py-4 flex-1">
         {/* Main tab bar */}
         <div className="flex items-center mb-4">
-          <div className={`flex w-full items-center gap-0`}>
+          <div className={`flex w-full items-center gap-0`} role="tablist">
             {[
               { id: 'stash', label: t('stash', lang), icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
               { id: 'community', label: t('community', lang), icon: 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z' },
@@ -586,6 +586,9 @@ export default function App() {
             ].map(tab => (
               <button
                 key={tab.id}
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                aria-current={activeTab === tab.id ? 'page' : undefined}
                 onClick={() => setActiveTab(tab.id as 'stash' | 'community' | 'marketplace')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3.5 text-base font-medium transition-all duration-200 relative
                   ${activeTab === tab.id
@@ -608,10 +611,12 @@ export default function App() {
         {activeTab === 'stash' && (
           <div>
             {/* Sub-navigation pills */}
-            <div className="flex items-center justify-center gap-2 mb-5 max-w-md mx-auto">
+            <div className="flex items-center justify-center gap-2 mb-5 max-w-md mx-auto" role="tablist">
               {(['products', 'dashboard', 'history'] as const).map(section => (
                 <button
                   key={section}
+                  role="tab"
+                  aria-selected={stashSection === section}
                   onClick={() => setStashSection(section)}
                   className={`flex-1 px-5 py-2 rounded-xl text-sm font-medium transition-all ${
                     stashSection === section

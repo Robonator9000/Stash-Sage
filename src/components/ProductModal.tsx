@@ -236,7 +236,7 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
                   <div className={`w-full aspect-square rounded-xl overflow-hidden border-2 ${
                     isDark ? 'border-slate-700' : 'border-gray-200'
                   }`}>
-                    <img src={pic} alt="" className="w-full h-full object-cover" />
+                    <img src={pic} alt={product?.name || ''} className="w-full h-full object-cover" />
                   </div>
                   <button
                     onClick={() => setPictures((prev) => prev.filter((_, i) => i !== idx))}

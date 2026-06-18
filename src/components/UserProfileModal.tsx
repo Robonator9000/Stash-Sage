@@ -4,6 +4,7 @@ import { supabase } from '../utils/supabase';
 import { PostCard } from './PostCard';
 import { useAuth } from '../contexts/AuthContext';
 import { ArrowLeft, Package, MessageSquare } from 'lucide-react';
+import { t } from '../utils/translations';
 
 interface UserProfileModalProps {
   userId: string;
@@ -72,7 +73,7 @@ export function UserProfileModal({ userId, isDark, lang, onBack }: UserProfileMo
         </div>
         <div>
           <h2 className={`font-display font-bold text-lg ${isDark ? 'text-frost' : 'text-gray-800'}`}>{username}</h2>
-          <p className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>{posts.length} posts &middot; {products.length} products</p>
+          <p className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>{posts.length} {t('posts', lang).toLowerCase()} &middot; {products.length} {t('products', lang).toLowerCase()}</p>
         </div>
       </div>
 
@@ -83,14 +84,14 @@ export function UserProfileModal({ userId, isDark, lang, onBack }: UserProfileMo
           className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg transition-all ${activeSection === 'posts' ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm' : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'}`}
         >
           <MessageSquare className="w-4 h-4" />
-          Posts ({posts.length})
+          {t('posts', lang)} ({posts.length})
         </button>
         <button
           onClick={() => setActiveSection('products')}
           className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg transition-all ${activeSection === 'products' ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm' : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'}`}
         >
           <Package className="w-4 h-4" />
-          Products ({products.length})
+          {t('products', lang)} ({products.length})
         </button>
       </div>
 
@@ -114,13 +115,13 @@ export function UserProfileModal({ userId, isDark, lang, onBack }: UserProfileMo
 
         {!loading && !error && activeSection === 'posts' && posts.length === 0 && (
           <div className={`p-8 text-center text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
-            No posts yet
+            {t('noPostsYet', lang)}
           </div>
         )}
 
         {!loading && !error && activeSection === 'products' && products.length === 0 && (
           <div className={`p-8 text-center text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
-            No public products yet
+            {t('noProductsYet', lang)}
           </div>
         )}
 

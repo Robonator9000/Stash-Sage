@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../utils/supabase';
 import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, Users, Scale, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, Camera, Mail } from 'lucide-react';
 import { ResetPasswordModal } from './ResetPasswordModal';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface SettingsSheetProps {
   products: Product[];
@@ -60,6 +61,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const [profileBio, setProfileBio] = useState(settings.profile?.bio || '');
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(settings.profile?.avatar_url);
   const [showResetPassword, setShowResetPassword] = useState(false);
+  const focusTrapRef = useFocusTrap(true);
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [passwordChangeSubmitting, setPasswordChangeSubmitting] = useState(false);
@@ -238,7 +240,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end" onClick={handleClose}>
+    <div ref={focusTrapRef} className="fixed inset-0 z-50 flex justify-end" onClick={handleClose}>
       <div
         className={`absolute inset-0 transition-all duration-200 ${
           visible ? 'bg-black/60 backdrop-blur-sm' : 'bg-black/0'
@@ -487,6 +489,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                 <label className={sectionLabel}><Globe className="w-4 h-4" />{t('language', lang)}</label>
                 <div className="relative">
                   <button
+                    aria-label={t('language', lang)}
                     onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
                     className={`w-full px-4 py-3 rounded-xl border-2 transition-colors text-left flex items-center justify-between ${
                       isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'

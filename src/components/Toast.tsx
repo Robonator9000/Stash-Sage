@@ -48,7 +48,7 @@ export function ToastContainer({ isDark = true }: ToastContainerProps) {
   }, [toasts, removeToast]);
 
   return (
-    <div className="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none">
+    <div className="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none" aria-live="polite">
       {toasts.map((toast) => {
         const isInfo = toast.variant === 'info' || (!toast.variant && toast.action);
         return (
@@ -65,6 +65,7 @@ export function ToastContainer({ isDark = true }: ToastContainerProps) {
                   ? 'bg-red-900/90 border-red-700/50 backdrop-blur-md'
                   : 'bg-red-50 border-red-200'
             }`}
+            role="alert"
           >
             {isInfo ? (
               <Info className={`w-5 h-5 mt-0.5 flex-shrink-0 ${

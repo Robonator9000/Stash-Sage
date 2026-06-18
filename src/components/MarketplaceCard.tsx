@@ -89,7 +89,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, 
       {/* Image */}
       {listing.image_url && (
         <div className="mb-4 rounded-xl overflow-hidden">
-          <img src={listing.image_url} alt="" loading="lazy" className="w-full h-56 object-cover" />
+          <img src={listing.image_url} alt={listing.title} loading="lazy" className="w-full h-56 object-cover" />
         </div>
       )}
 
