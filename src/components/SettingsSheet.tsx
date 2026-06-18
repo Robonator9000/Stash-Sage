@@ -7,7 +7,8 @@ import { createExportData, downloadExport, downloadCsvExport, copyExportToClipbo
 import { exportProductsPdf } from '../utils/pdfExport';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../utils/supabase';
-import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, Users, Scale, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, Camera } from 'lucide-react';
+import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, Users, Scale, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, Camera, Mail } from 'lucide-react';
+import { ResetPasswordModal } from './ResetPasswordModal';
 
 interface SettingsSheetProps {
   products: Product[];
@@ -36,7 +37,7 @@ const LANGUAGE_NAMES: Record<string, Record<string, string>> = {
 
 export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDark = true, defaultTab = 'personalization' }: SettingsSheetProps) {
   const { settings, updateSettings, toggleStatVisibility } = useSettings();
-  const { user, signIn, signUp, error: authError } = useAuth();
+  const { user, signIn, signUp, updatePassword, updateEmail, error: authError } = useAuth();
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
@@ -58,6 +59,16 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const [profileUsername, setProfileUsername] = useState(settings.profile?.username || '');
   const [profileBio, setProfileBio] = useState(settings.profile?.bio || '');
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(settings.profile?.avatar_url);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [passwordChangeSubmitting, setPasswordChangeSubmitting] = useState(false);
+  const [passwordChangeError, setPasswordChangeError] = useState<string | null>(null);
+  const [passwordChangeSuccess, setPasswordChangeSuccess] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [emailChangeSubmitting, setEmailChangeSubmitting] = useState(false);
+  const [emailChangeError, setEmailChangeError] = useState<string | null>(null);
+  const [emailChangeSuccess, setEmailChangeSuccess] = useState(false);
 
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true));
@@ -137,6 +148,38 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
       setAuthLocalError(err?.message || 'Something went wrong');
     }
     setAuthSubmitting(false);
+  };
+
+  const handlePasswordChange = async () => {
+    if (newPassword.length < 6) { setPasswordChangeError('Password must be at least 6 characters'); return; }
+    if (newPassword !== confirmNewPassword) { setPasswordChangeError('Passwords do not match'); return; }
+    setPasswordChangeError(null);
+    setPasswordChangeSubmitting(true);
+    try {
+      await updatePassword(newPassword);
+      setPasswordChangeSuccess(true);
+      setNewPassword('');
+      setConfirmNewPassword('');
+      setTimeout(() => setPasswordChangeSuccess(false), 4000);
+    } catch (err: any) {
+      setPasswordChangeError(err?.message || 'Something went wrong');
+    }
+    setPasswordChangeSubmitting(false);
+  };
+
+  const handleEmailChange = async () => {
+    if (!newEmail.trim() || !newEmail.includes('@')) { setEmailChangeError('Enter a valid email address'); return; }
+    setEmailChangeError(null);
+    setEmailChangeSubmitting(true);
+    try {
+      await updateEmail(newEmail.trim());
+      setEmailChangeSuccess(true);
+      setNewEmail('');
+      setTimeout(() => setEmailChangeSuccess(false), 4000);
+    } catch (err: any) {
+      setEmailChangeError(err?.message || 'Something went wrong');
+    }
+    setEmailChangeSubmitting(false);
   };
 
   const handleImportClick = () => fileInputRef.current?.click();
@@ -285,6 +328,12 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                       className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none ${
                         isDark ? 'bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
                       }`} />
+                    {authMode === 'signin' && (
+                      <button type="button" onClick={() => setShowResetPassword(true)}
+                        className={`self-start text-xs -mt-2 ${isDark ? 'text-slate-400 hover:text-cyan-400' : 'text-gray-500 hover:text-cyan-600'}`}>
+                        Forgot password?
+                      </button>
+                    )}
                     <button type="submit" disabled={authSubmitting}
                       className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600 transition-all disabled:opacity-50"
                     >
@@ -379,6 +428,53 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                 reader.onload = () => { const url = reader.result as string; setAvatarPreview(url); };
                 reader.readAsDataURL(file);
               }} />
+
+              <hr className={`my-6 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`} />
+              <h4 className={`text-sm font-semibold ${isDark ? 'text-slate-300' : 'text-gray-700'} flex items-center gap-2`}>
+                <Lock className="w-4 h-4" />Change Password
+              </h4>
+              {passwordChangeError && (
+                <div className={`px-3 py-2 rounded-lg text-sm ${isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600'}`}>{passwordChangeError}</div>
+              )}
+              {passwordChangeSuccess && (
+                <div className={`px-3 py-2 rounded-lg text-sm ${isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>Password updated successfully!</div>
+              )}
+              <input type="password" placeholder="New password" value={newPassword}
+                onChange={e => { setNewPassword(e.target.value); setPasswordChangeError(null); setPasswordChangeSuccess(false); }}
+                minLength={6}
+                className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none ${
+                  isDark ? 'bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
+                }`} />
+              <input type="password" placeholder="Confirm new password" value={confirmNewPassword}
+                onChange={e => { setConfirmNewPassword(e.target.value); setPasswordChangeError(null); setPasswordChangeSuccess(false); }}
+                minLength={6}
+                className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none ${
+                  isDark ? 'bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
+                }`} />
+              <button onClick={handlePasswordChange} disabled={passwordChangeSubmitting || !newPassword || !confirmNewPassword}
+                className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600 transition-all disabled:opacity-50">
+                {passwordChangeSubmitting ? 'Updating...' : 'Update Password'}
+              </button>
+
+              <hr className={`my-6 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`} />
+              <h4 className={`text-sm font-semibold ${isDark ? 'text-slate-300' : 'text-gray-700'} flex items-center gap-2`}>
+                <Mail className="w-4 h-4" />Change Email
+              </h4>
+              {emailChangeError && (
+                <div className={`px-3 py-2 rounded-lg text-sm ${isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600'}`}>{emailChangeError}</div>
+              )}
+              {emailChangeSuccess && (
+                <div className={`px-3 py-2 rounded-lg text-sm ${isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>Verification sent! Check your new email.</div>
+              )}
+              <input type="email" placeholder="New email address" value={newEmail}
+                onChange={e => { setNewEmail(e.target.value); setEmailChangeError(null); setEmailChangeSuccess(false); }}
+                className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none ${
+                  isDark ? 'bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
+                }`} />
+              <button onClick={handleEmailChange} disabled={emailChangeSubmitting || !newEmail}
+                className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600 transition-all disabled:opacity-50">
+                {emailChangeSubmitting ? 'Sending...' : 'Update Email'}
+              </button>
             </>
             )}
             </>
@@ -731,6 +827,12 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                 </>
               )}
             </div>
+          )}
+          {showResetPassword && (
+            <ResetPasswordModal
+              isDark={isDark}
+              onClose={() => setShowResetPassword(false)}
+            />
           )}
         </div>
       </div>

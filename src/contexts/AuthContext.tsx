@@ -25,6 +25,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+    if (hashParams.get('type') === 'recovery') {
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+      if (accessToken) {
+        supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken || '' }).then(({ error: sessionErr }) => {
+          if (!sessionErr) {
+            showToast({ id: 'auth-recovery', title: 'Password reset', body: 'Link accepted. Go to Profile to set a new password.' });
+          }
+        });
+        window.location.hash = '';
+        setIsLoading(false);
+        return;
+      }
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user?.id && isConfigured) {
