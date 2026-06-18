@@ -3,6 +3,7 @@ import { Settings } from '../types';
 import { safeSetItem } from './helpers';
 import { supabase } from './supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { showToast } from '../components/Toast';
 
 const SETTINGS_KEY = 'weed-settings';
 const SETTINGS_VERSION = 1;
@@ -74,7 +75,7 @@ export function useSettings() {
             supabase.from('settings').upsert(
               { user_id: user.id, data: _settings },
               { onConflict: 'user_id' }
-            ).then(undefined, console.error);
+            ).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
           }
           return;
         }
@@ -101,7 +102,7 @@ export function useSettings() {
       supabase.from('settings').upsert(
         { user_id: user.id, data: s },
         { onConflict: 'user_id' }
-      ).then(undefined, console.error);
+      ).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
     }
     notifyListeners();
   }, [user]);

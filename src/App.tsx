@@ -6,7 +6,7 @@ import { useSettings } from './utils/useSettings';
 import { useDebounce } from './hooks/useDebounce';
 import { useActivity } from './utils/useActivity';
 import { ImportResult } from './utils/dataTransfer';
-import { searchProducts, sortProducts, filterProducts, generateId, formatPrecision, roundToHundredth } from './utils/helpers';
+import { searchProducts, sortProducts, filterProducts, generateId, formatPrecision, roundToHundredth, formatCurrency } from './utils/helpers';
 import { t } from './utils/translations';
 import { playSmokeSound, playSellSound } from './utils/sounds';
 import { ToastContainer, showToast } from './components/Toast';
@@ -30,14 +30,6 @@ const ProductModal = lazy(() => import('./components/ProductModal').then(m => ({
 const ConsumeModal = lazy(() => import('./components/ConsumeModal').then(m => ({ default: m.ConsumeModal })));
 const SellModal = lazy(() => import('./components/SellModal').then(m => ({ default: m.SellModal })));
 const SessionModal = lazy(() => import('./components/SessionModal').then(m => ({ default: m.SessionModal })));
-
-function formatCurrency(value: number, currency: string): string {
-  if (currency === 'EUR') return `€${value.toFixed(2)}`;
-  if (currency === 'GBP') return `£${value.toFixed(2)}`;
-  if (currency === 'JPY') return `¥${value.toFixed(0)}`;
-  if (currency === 'CAD') return `C$${value.toFixed(2)}`;
-  return `$${value.toFixed(2)}`;
-}
 
 export default function App() {
   const { products, addProduct, updateProduct, deleteProduct, toggleFavorite, consumeProduct, replaceAllProducts } = useProducts();

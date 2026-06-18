@@ -134,12 +134,16 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
 
     const channel = supabase.channel('social-feed')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, async (payload) => {
-        const newPost = payload.new as any;
-        if (newPost.user_id === currentUserId) return;
-        const enriched = await enrichPosts([newPost]);
-        setPosts(prev => [enriched[0], ...prev]);
+        try {
+          const newPost = payload.new as any;
+          if (newPost.user_id === currentUserId) return;
+          const enriched = await enrichPosts([newPost]);
+          setPosts(prev => [enriched[0], ...prev]);
+        } catch {} // SWALLOW
       })
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR') console.error('Realtime social-feed channel error');
+      });
 
     return () => { supabase.removeChannel(channel); };
   }, [fetchPosts, enrichPosts, currentUserId, feedFilter]);
@@ -188,7 +192,7 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
       type,
       actor_id: currentUserId,
       post_id: postId || null,
-    }).then(undefined, console.error);
+    }).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
   }, [currentUserId]);
 
   const handleCreatePost = useCallback(async (content: string, productId?: string, productName?: string) => {

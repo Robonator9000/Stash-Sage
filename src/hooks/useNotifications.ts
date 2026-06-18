@@ -43,6 +43,12 @@ export function useNotifications(userId: string | undefined): UseNotificationsRe
                 },
               })));
               setLoading(false);
+            }).then(undefined, () => {
+              setNotifications(data.map(n => ({
+                ...n,
+                actor: { username: 'Unknown', avatar_url: null },
+              })));
+              setLoading(false);
             });
         } else {
           setLoading(false);
@@ -53,21 +59,25 @@ export function useNotifications(userId: string | undefined): UseNotificationsRe
       .on('postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
         async (payload) => {
-          const newNotif = payload.new as any;
-          const { data: profiles } = await supabase
-            .from('profiles')
-            .select('display_name, avatar_url')
-            .eq('user_id', newNotif.actor_id)
-            .single();
-          setNotifications(prev => [{
-            ...newNotif,
-            actor: {
-              username: profiles?.display_name || 'Unknown',
-              avatar_url: profiles?.avatar_url,
-            },
-          }, ...prev]);
+          try {
+            const newNotif = payload.new as any;
+            const { data: profiles } = await supabase
+              .from('profiles')
+              .select('display_name, avatar_url')
+              .eq('user_id', newNotif.actor_id)
+              .single();
+            setNotifications(prev => [{
+              ...newNotif,
+              actor: {
+                username: profiles?.display_name || 'Unknown',
+                avatar_url: profiles?.avatar_url,
+              },
+            }, ...prev]);
+          } catch {} // SWALLOW
         })
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR') console.error('Realtime notification channel error');
+      });
 
     return () => { supabase.removeChannel(channel); };
   }, [userId]);

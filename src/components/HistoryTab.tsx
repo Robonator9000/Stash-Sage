@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { Settings } from '../types';
 import { ActivityEntry } from '../utils/useActivity';
 import { t } from '../utils/translations';
-import { formatPrecision } from '../utils/helpers';
+import { formatPrecision, formatCurrency } from '../utils/helpers';
 
 interface HistoryTabProps {
   filteredHistory: ActivityEntry[];
@@ -16,14 +16,6 @@ interface HistoryTabProps {
   onDateFilterChange: (v: string) => void;
   onClearHistory: () => void;
   onToggleNote: (id: string) => void;
-}
-
-function formatCurrency(value: number, currency: string): string {
-  if (currency === 'EUR') return `€${value.toFixed(2)}`;
-  if (currency === 'GBP') return `£${value.toFixed(2)}`;
-  if (currency === 'JPY') return `¥${value.toFixed(0)}`;
-  if (currency === 'CAD') return `C$${value.toFixed(2)}`;
-  return `$${value.toFixed(2)}`;
 }
 
 function formatActivityDate(date: Date): string {

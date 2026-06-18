@@ -1,6 +1,5 @@
 import { useState, memo } from 'react';
 import type { Post } from '../types';
-import { supabase } from '../utils/supabase';
 import { t } from '../utils/translations';
 import { timeAgo } from '../utils/helpers';
 import { CommentSection } from './CommentSection';
@@ -39,7 +38,6 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
     if (!onEdit || !editContent.trim() || editSubmitting) return;
     setEditSubmitting(true);
     try {
-      await supabase.from('posts').update({ content: editContent.trim() }).eq('id', post.id).eq('user_id', currentUserId);
       await onEdit(post.id, editContent.trim());
       setEditing(false);
       showToast({ id: 'post-edited', title: '', body: t('postCreated', lang) });

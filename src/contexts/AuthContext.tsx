@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         supabase.from('profiles').upsert(
           { user_id: session.user.id, display_name: session.user.email?.split('@')[0] || 'User' },
           { onConflict: 'user_id' }
-        ).then(undefined, console.error);
+        ).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
       }
       setIsLoading(false);
     });
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         supabase.from('profiles').upsert(
           { user_id: session.user.id, display_name: session.user.email?.split('@')[0] || 'User' },
           { onConflict: 'user_id' }
-        ).then(undefined, console.error);
+        ).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
       }
     });
     return () => data?.subscription.unsubscribe();

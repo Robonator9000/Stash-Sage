@@ -84,7 +84,7 @@ export function useProducts() {
   const addProduct = useCallback((product: Product) => {
     setProducts((prev) => [product, ...prev]);
     if (user) {
-      supabase.from('products').insert({ id: product.id, user_id: user.id, ...toSnake(product) }).then(undefined, console.error);
+      supabase.from('products').insert({ id: product.id, user_id: user.id, ...toSnake(product) }).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
     }
   }, [user]);
 
@@ -93,14 +93,14 @@ export function useProducts() {
       prev.map((p) => (p.id === updated.id ? updated : p))
     );
     if (user) {
-      supabase.from('products').update(toSnake(updated)).eq('id', updated.id).then(undefined, console.error);
+      supabase.from('products').update(toSnake(updated)).eq('id', updated.id).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
     }
   }, [user]);
 
   const deleteProduct = useCallback((id: string) => {
     setProducts((prev) => prev.filter((p) => p.id !== id));
     if (user) {
-      supabase.from('products').delete().eq('id', id).then(undefined, console.error);
+      supabase.from('products').delete().eq('id', id).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
     }
   }, [user]);
 
@@ -111,7 +111,7 @@ export function useProducts() {
         x.id === id ? { ...x, favorite: !x.favorite } : x
       );
       if (user && p) {
-        supabase.from('products').update({ favorite: !p.favorite }).eq('id', id).then(undefined, console.error);
+        supabase.from('products').update({ favorite: !p.favorite }).eq('id', id).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
       }
       return next;
     });
@@ -138,7 +138,7 @@ export function useProducts() {
         amount: roundToHundredth(Math.max(0, pRef.amount - amountConsumed)),
         consumptionCount: (pRef.consumptionCount || 0) + 1,
         lastconsumed: (consumedAt || new Date()).toISOString(),
-      }).eq('id', id).then(undefined, console.error);
+      }).eq('id', id).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
     }
   }, [user]);
 

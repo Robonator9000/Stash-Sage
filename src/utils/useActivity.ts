@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { safeSetItem } from './helpers';
 import { supabase } from './supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { showToast } from '../components/Toast';
 
 const ACTIVITY_KEY = 'weed-activity';
 const MAX_ENTRIES = 500;
@@ -85,7 +86,7 @@ export function useActivity() {
       return updated;
     });
     if (user) {
-      supabase.from('activity_entries').insert({ id: entry.id, user_id: user.id, ...toSnake(entry) }).then(undefined, console.error);
+      supabase.from('activity_entries').insert({ id: entry.id, user_id: user.id, ...toSnake(entry) }).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
     }
   }, [user]);
 
@@ -93,7 +94,7 @@ export function useActivity() {
     setEntries([]);
     safeSetItem(ACTIVITY_KEY, JSON.stringify([]));
     if (user) {
-      supabase.from('activity_entries').delete().eq('user_id', user.id).then(undefined, console.error);
+      supabase.from('activity_entries').delete().eq('user_id', user.id).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
     }
   }, [user]);
 

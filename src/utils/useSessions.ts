@@ -3,6 +3,7 @@ import { Session } from '../types';
 import { safeSetItem } from './helpers';
 import { supabase } from './supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { showToast } from '../components/Toast';
 
 const SESSIONS_KEY = 'weed-sessions';
 
@@ -72,7 +73,7 @@ export function useSessions() {
       return updated;
     });
     if (user) {
-      supabase.from('sessions').insert({ id: session.id, user_id: user.id, ...toSnake(session) }).then(undefined, console.error);
+      supabase.from('sessions').insert({ id: session.id, user_id: user.id, ...toSnake(session) }).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
     }
   }, [user]);
 

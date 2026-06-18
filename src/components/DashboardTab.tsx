@@ -3,7 +3,7 @@ import { StatsCard } from './StatsCard';
 import { CalendarHeatmap } from './CalendarHeatmap';
 import { Product, Session, Settings } from '../types';
 import { t } from '../utils/translations';
-import { formatPrecision } from '../utils/helpers';
+import { formatPrecision, formatCurrency } from '../utils/helpers';
 
 const DASHBOARD_COLORS = ['#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
 
@@ -18,14 +18,6 @@ interface DashboardTabProps {
   topStrains: Product[];
   spendingByType: { name: string; value: number }[];
   totalValue: number;
-}
-
-function formatCurrency(value: number, currency: string): string {
-  if (currency === 'EUR') return `€${value.toFixed(2)}`;
-  if (currency === 'GBP') return `£${value.toFixed(2)}`;
-  if (currency === 'JPY') return `¥${value.toFixed(0)}`;
-  if (currency === 'CAD') return `C$${value.toFixed(2)}`;
-  return `$${value.toFixed(2)}`;
 }
 
 export function DashboardTab({ products, sessions, isDark, lang, settings, typeDistribution, consumptionByMonth, topStrains, spendingByType, totalValue }: DashboardTabProps) {
