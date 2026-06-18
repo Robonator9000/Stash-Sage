@@ -72,7 +72,7 @@ export function useSessions() {
       return updated;
     });
     if (user) {
-      supabase.from('sessions').insert({ id: session.id, user_id: user.id, ...toSnake(session) }).then(() => {}, () => {});
+      supabase.from('sessions').insert({ id: session.id, user_id: user.id, ...toSnake(session) }).then(undefined, console.error);
     }
   }, [user]);
 

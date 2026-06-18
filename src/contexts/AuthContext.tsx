@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         supabase.from('profiles').upsert(
           { user_id: session.user.id, display_name: session.user.email?.split('@')[0] || 'User' },
           { onConflict: 'user_id' }
-        ).then(() => {}, () => {});
+        ).then(undefined, console.error);
       }
       setIsLoading(false);
     });
@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         supabase.from('profiles').upsert(
           { user_id: session.user.id, display_name: session.user.email?.split('@')[0] || 'User' },
           { onConflict: 'user_id' }
-        ).then(() => {}, () => {});
+        ).then(undefined, console.error);
       }
     });
     return () => data?.subscription.unsubscribe();

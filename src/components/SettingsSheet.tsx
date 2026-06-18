@@ -328,7 +328,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                     </button>
                     {avatarPreview && (
                       <button
-                        onClick={() => { setAvatarPreview(undefined); updateSettings({ profile: { ...settings.profile!, avatar_url: undefined } }); if (user) supabase.from('profiles').upsert({ user_id: user.id, display_name: settings.profile?.username || 'User', avatar_url: null }, { onConflict: 'user_id' }).then(() => {}, () => {}); }}
+                        onClick={() => { setAvatarPreview(undefined); updateSettings({ profile: { ...settings.profile!, avatar_url: undefined } }); if (user) supabase.from('profiles').upsert({ user_id: user.id, display_name: settings.profile?.username || 'User', avatar_url: null }, { onConflict: 'user_id' }).then(undefined, (e: unknown) => { console.error('Avatar remove sync failed:', e); }); }}
                         className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
                           isDark ? 'border-red-500/30 text-red-400 hover:bg-red-500/10' : 'border-red-200 text-red-500 hover:bg-red-50'
                         }`}
@@ -363,7 +363,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                 onClick={() => {
                   const p = { username: profileUsername.trim() || 'User', bio: profileBio.trim(), joinedAt: settings.profile?.joinedAt || new Date().toISOString(), avatar_url: avatarPreview };
                   updateSettings({ profile: p });
-                  if (user) supabase.from('profiles').upsert({ user_id: user.id, display_name: p.username, avatar_url: p.avatar_url || null }, { onConflict: 'user_id' }).then(() => {}, () => {});
+                  if (user) supabase.from('profiles').upsert({ user_id: user.id, display_name: p.username, avatar_url: p.avatar_url || null }, { onConflict: 'user_id' }).then(undefined, (e: unknown) => { console.error('Profile save sync failed:', e); });
                 }}
                 className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600 transition-all"
               >

@@ -3,6 +3,7 @@ import { Product } from '../types';
 import { parseProductDates, safeSetItem, roundToHundredth } from './helpers';
 import { supabase } from './supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { showToast } from '../components/Toast';
 
 const PRODUCTS_KEY = 'weed-products';
 
@@ -83,7 +84,7 @@ export function useProducts() {
   const addProduct = useCallback((product: Product) => {
     setProducts((prev) => [product, ...prev]);
     if (user) {
-      supabase.from('products').insert({ id: product.id, user_id: user.id, ...toSnake(product) }).then(() => {}, () => {});
+      supabase.from('products').insert({ id: product.id, user_id: user.id, ...toSnake(product) }).then(undefined, console.error);
     }
   }, [user]);
 
@@ -92,14 +93,14 @@ export function useProducts() {
       prev.map((p) => (p.id === updated.id ? updated : p))
     );
     if (user) {
-      supabase.from('products').update(toSnake(updated)).eq('id', updated.id).then(() => {}, () => {});
+      supabase.from('products').update(toSnake(updated)).eq('id', updated.id).then(undefined, console.error);
     }
   }, [user]);
 
   const deleteProduct = useCallback((id: string) => {
     setProducts((prev) => prev.filter((p) => p.id !== id));
     if (user) {
-      supabase.from('products').delete().eq('id', id).then(() => {}, () => {});
+      supabase.from('products').delete().eq('id', id).then(undefined, console.error);
     }
   }, [user]);
 
@@ -110,7 +111,7 @@ export function useProducts() {
         x.id === id ? { ...x, favorite: !x.favorite } : x
       );
       if (user && p) {
-        supabase.from('products').update({ favorite: !p.favorite }).eq('id', id).then(() => {}, () => {});
+        supabase.from('products').update({ favorite: !p.favorite }).eq('id', id).then(undefined, console.error);
       }
       return next;
     });
@@ -137,7 +138,7 @@ export function useProducts() {
         amount: roundToHundredth(Math.max(0, pRef.amount - amountConsumed)),
         consumptionCount: (pRef.consumptionCount || 0) + 1,
         lastconsumed: (consumedAt || new Date()).toISOString(),
-      }).eq('id', id).then(() => {}, () => {});
+      }).eq('id', id).then(undefined, console.error);
     }
   }, [user]);
 
@@ -146,8 +147,14 @@ export function useProducts() {
     if (user) {
       supabase.from('products').delete().eq('user_id', user.id).then(() => {
         const rows = nextProducts.map(p => ({ id: p.id, user_id: user.id, ...toSnake(p) }));
-        supabase.from('products').insert(rows).then(() => {}, () => {});
-      }, () => {});
+        supabase.from('products').insert(rows).then(undefined, (e: unknown) => {
+          console.error('Failed to sync products to cloud:', e);
+          showToast({ id: 'sync-error', title: 'Sync failed', body: 'Products saved locally but cloud sync failed.' });
+        });
+      }, (e: unknown) => {
+        console.error('Failed to clear products for replace:', e);
+        showToast({ id: 'sync-error', title: 'Sync failed', body: 'Products saved locally but cloud sync failed.' });
+      });
     }
   }, [user]);
 

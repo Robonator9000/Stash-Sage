@@ -188,7 +188,7 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
       type,
       actor_id: currentUserId,
       post_id: postId || null,
-    }).then(() => {}, () => {});
+    }).then(undefined, console.error);
   }, [currentUserId]);
 
   const handleCreatePost = useCallback(async (content: string, productId?: string, productName?: string) => {
