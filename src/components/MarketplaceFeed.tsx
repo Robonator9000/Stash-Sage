@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { MarketplaceListing, Product } from '../types';
 import { MARKETPLACE_CATEGORIES } from '../types';
 import { supabase, deleteStorageImages } from '../utils/supabase';
@@ -6,7 +6,7 @@ import { t } from '../utils/translations';
 import { MarketplaceCard } from './MarketplaceCard';
 import { CreateListingModal } from './CreateListingModal';
 import { showToast } from './Toast';
-import { Plus, Search, ArrowUpDown } from 'lucide-react';
+import { Plus, Search, ArrowUpDown, SlidersHorizontal, X } from 'lucide-react';
 
 interface MarketplaceFeedProps {
   isDark: boolean;
@@ -23,9 +23,21 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [sortBy, setSortBy] = useState<'newest' | 'price_low' | 'price_high'>('newest');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'sold'>('all');
+  const [priceMin, setPriceMin] = useState('');
+  const [priceMax, setPriceMax] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debounceTimer = useRef<ReturnType<typeof setTimeout>>();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingListing, setEditingListing] = useState<MarketplaceListing | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+    return () => clearTimeout(debounceTimer.current);
+  }, [searchQuery]);
 
   const enrichListings = useCallback(async (rawListings: any[]): Promise<MarketplaceListing[]> => {
     if (rawListings.length === 0) return [];
@@ -38,20 +50,26 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
   const fetchListings = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const { data, error: fetchError } = await supabase.from('marketplace_listings').select('*').order('created_at', { ascending: false }).limit(50);
+    let query = supabase.from('marketplace_listings').select('*');
+    if (debouncedSearch.trim()) {
+      query = query.textSearch('search_vector', debouncedSearch.trim(), { config: 'english' });
+    }
+    const { data, error: fetchError } = await query.order('created_at', { ascending: false }).limit(50);
     if (fetchError) { setError(fetchError.message); setLoading(false); return; }
     const enriched = await enrichListings(data || []);
     setListings(enriched);
     setLoading(false);
-  }, [enrichListings]);
+  }, [enrichListings, debouncedSearch]);
 
   useEffect(() => { fetchListings().catch(e => { setError(e.message); setLoading(false); }); }, [fetchListings]);
 
   const filtered = useMemo(() => listings.filter(l => {
     if (categoryFilter !== 'all' && l.category !== categoryFilter) return false;
-    if (searchQuery && !l.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (statusFilter !== 'all' && l.status !== statusFilter) return false;
+    if (priceMin && l.price < parseFloat(priceMin)) return false;
+    if (priceMax && l.price > parseFloat(priceMax)) return false;
     return true;
-  }), [listings, categoryFilter, searchQuery]);
+  }), [listings, categoryFilter, statusFilter, priceMin, priceMax]);
 
   const sorted = useMemo(() => [...filtered].sort((a, b) => {
     if (sortBy === 'price_low') return a.price - b.price;
@@ -159,22 +177,69 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
         <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
         <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} aria-label="Search listings"
           placeholder={t('searchPlaceholder', lang)}
-          className={`w-full pl-12 pr-4 py-3.5 rounded-xl text-base outline-none transition-all ${isDark ? 'bg-midnight text-frost border border-edge focus:border-cyanx/50 placeholder-muted' : 'bg-gray-50 text-gray-800 border border-gray-200 focus:border-cyan-400 placeholder-gray-400'}`} />
+          className={`w-full pl-12 pr-12 py-3.5 rounded-xl text-base outline-none transition-all ${isDark ? 'bg-midnight text-frost border border-edge focus:border-cyanx/50 placeholder-muted' : 'bg-gray-50 text-gray-800 border border-gray-200 focus:border-cyan-400 placeholder-gray-400'}`} />
+        {searchQuery && (
+          <button onClick={() => setSearchQuery('')} aria-label="Clear search"
+            className={`absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-lg transition-all ${isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}`}>
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
-      {/* Categories row */}
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-        <button onClick={() => setCategoryFilter('all')} role="button" aria-pressed={categoryFilter === 'all'}
-          className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all ${categoryFilter === 'all' ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-          {t('allCategories', lang)}
+      {/* Filter toggle + Categories row */}
+      <div className="flex items-center gap-2">
+        <button onClick={() => setShowFilters(!showFilters)} aria-expanded={showFilters} aria-label="Toggle advanced filters"
+          className={`shrink-0 px-3 py-2 rounded-xl text-sm font-medium transition-all ${showFilters ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+          <SlidersHorizontal className="w-4 h-4" />
         </button>
-        {MARKETPLACE_CATEGORIES.map(cat => (
-          <button key={cat} onClick={() => setCategoryFilter(cat)} role="button" aria-pressed={categoryFilter === cat}
-            className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all ${categoryFilter === cat ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-            {cat}
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none flex-1">
+          <button onClick={() => setCategoryFilter('all')} role="button" aria-pressed={categoryFilter === 'all'}
+            className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all ${categoryFilter === 'all' ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+            {t('allCategories', lang)}
           </button>
-        ))}
+          {MARKETPLACE_CATEGORIES.map(cat => (
+            <button key={cat} onClick={() => setCategoryFilter(cat)} role="button" aria-pressed={categoryFilter === cat}
+              className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all ${categoryFilter === cat ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+              {cat}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* Advanced filters panel */}
+      {showFilters && (
+        <div className={`p-4 rounded-2xl space-y-3 ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+          <div className="flex items-center gap-3">
+            <span className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'text-muted' : 'text-gray-400'}`}>Status</span>
+            <div className="flex gap-1">
+              {(['all', 'active', 'sold'] as const).map(s => (
+                <button key={s} onClick={() => setStatusFilter(s)} aria-pressed={statusFilter === s}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${statusFilter === s ? isDark ? 'bg-cyanx/20 text-cyanx' : 'bg-cyan-50 text-cyan-600' : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'}`}>
+                  {s === 'all' ? 'All' : s === 'active' ? 'Active' : 'Sold'}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'text-muted' : 'text-gray-400'}`}>Price</span>
+            <div className="flex items-center gap-2">
+              <input type="number" min="0" step="0.01" value={priceMin} onChange={e => setPriceMin(e.target.value)} aria-label="Minimum price"
+                placeholder="Min"
+                className={`w-24 px-3 py-1.5 rounded-lg text-sm outline-none transition-colors ${isDark ? 'bg-midnight text-frost border border-edge focus:border-cyanx/50 placeholder-muted' : 'bg-gray-50 text-gray-800 border border-gray-200 focus:border-cyan-400 placeholder-gray-400'}`} />
+              <span className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>to</span>
+              <input type="number" min="0" step="0.01" value={priceMax} onChange={e => setPriceMax(e.target.value)} aria-label="Maximum price"
+                placeholder="Max"
+                className={`w-24 px-3 py-1.5 rounded-lg text-sm outline-none transition-colors ${isDark ? 'bg-midnight text-frost border border-edge focus:border-cyanx/50 placeholder-muted' : 'bg-gray-50 text-gray-800 border border-gray-200 focus:border-cyan-400 placeholder-gray-400'}`} />
+              {(priceMin || priceMax) && (
+                <button onClick={() => { setPriceMin(''); setPriceMax(''); }} aria-label="Clear price filter"
+                  className={`text-xs ${isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}`}>
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Sort */}
       <div className={`flex items-center gap-1.5 p-1.5 rounded-xl ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>

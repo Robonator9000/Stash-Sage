@@ -5,6 +5,7 @@ import { t } from '../utils/translations';
 import { PostCard } from './PostCard';
 import { CreatePostCard } from './CreatePostCard';
 import { showToast } from './Toast';
+import { Search, X } from 'lucide-react';
 
 interface SocialFeedProps {
   isDark: boolean;
@@ -28,10 +29,13 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
+  const [postSearch, setPostSearch] = useState('');
+  const [debouncedPostSearch, setDebouncedPostSearch] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const pageRef = useRef(0);
   const observerRef = useRef<HTMLDivElement>(null);
   const searchTimer = useRef<ReturnType<typeof setTimeout>>();
+  const postSearchTimer = useRef<ReturnType<typeof setTimeout>>();
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -92,7 +96,9 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
 
     let query = supabase.from('posts').select('*');
 
-    if (sort === 'trending') {
+    if (debouncedPostSearch.trim()) {
+      query = query.textSearch('search_vector', debouncedPostSearch.trim(), { config: 'english' });
+    } else if (sort === 'trending') {
       query = query.order('created_at', { ascending: false }).gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
     } else {
       query = query.order('created_at', { ascending: false });
@@ -114,12 +120,12 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
 
     const enriched = await enrichPosts(data);
 
-    if (sort === 'trending') {
+    if (!debouncedPostSearch.trim() && sort === 'trending') {
       return enriched.sort((a, b) => ((b.likes_count ?? 0) * 3 + (b.comments_count ?? 0) * 2) - ((a.likes_count ?? 0) * 3 + (a.comments_count ?? 0) * 2));
     }
 
     return enriched;
-  }, [enrichPosts]);
+  }, [enrichPosts, debouncedPostSearch]);
 
   useEffect(() => {
     setLoading(true);
@@ -132,21 +138,22 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
       setLoading(false);
     }).catch(console.error);
 
-    const channel = supabase.channel('social-feed')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, async (payload) => {
-        try {
-          const newPost = payload.new as any;
-          if (newPost.user_id === currentUserId) return;
-          const enriched = await enrichPosts([newPost]);
-          setPosts(prev => [enriched[0], ...prev]);
-        } catch (e) { console.error('Realtime post error:', e); }
-      })
-      .subscribe((status) => {
-        if (status === 'CHANNEL_ERROR') console.error('Realtime social-feed channel error');
-      });
-
-    return () => { supabase.removeChannel(channel); };
-  }, [fetchPosts, enrichPosts, currentUserId, feedFilter]);
+    if (!debouncedPostSearch.trim()) {
+      const channel = supabase.channel('social-feed')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, async (payload) => {
+          try {
+            const newPost = payload.new as any;
+            if (newPost.user_id === currentUserId) return;
+            const enriched = await enrichPosts([newPost]);
+            setPosts(prev => [enriched[0], ...prev]);
+          } catch (e) { console.error('Realtime post error:', e); }
+        })
+        .subscribe((status) => {
+          if (status === 'CHANNEL_ERROR') console.error('Realtime social-feed channel error');
+        });
+      return () => { supabase.removeChannel(channel); };
+    }
+  }, [fetchPosts, enrichPosts, currentUserId, feedFilter, debouncedPostSearch]);
 
   useEffect(() => {
     const el = observerRef.current;
@@ -184,6 +191,12 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
     }, 300);
     return () => clearTimeout(searchTimer.current);
   }, [searchQuery]);
+
+  useEffect(() => {
+    clearTimeout(postSearchTimer.current);
+    postSearchTimer.current = setTimeout(() => setDebouncedPostSearch(postSearch), 300);
+    return () => clearTimeout(postSearchTimer.current);
+  }, [postSearch]);
 
   const notifyUser = useCallback(async (targetUserId: string, type: 'like' | 'comment' | 'follow', postId?: string) => {
     if (targetUserId === currentUserId) return;
@@ -413,6 +426,22 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
         )}
       </div>
 
+      {/* Post search */}
+      <div className="relative">
+        <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
+        <input type="text" value={postSearch} onChange={e => setPostSearch(e.target.value)} aria-label="Search posts"
+          placeholder="Search posts..."
+          className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none transition-colors ${
+            isDark ? 'bg-midnight text-frost border border-edge focus:border-cyanx/50 placeholder-muted' : 'bg-gray-50 text-gray-800 border border-gray-200 focus:border-cyan-400 placeholder-gray-400'
+          }`} />
+        {postSearch && (
+          <button onClick={() => setPostSearch('')} aria-label="Clear post search"
+            className={`absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded transition-all ${isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}`}>
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
       {loading && (
         <div aria-busy="true" aria-label="Loading posts" className="space-y-4">
           {[1, 2, 3].map(i => (
@@ -439,7 +468,7 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
       {!loading && !error && displayedPosts.length === 0 && (
         <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
           <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
-            {feedFilter === 'following' ? 'No posts from people you follow yet' : t('noPostsYet', lang)}
+            {debouncedPostSearch.trim() ? `No posts matching "${debouncedPostSearch}"` : feedFilter === 'following' ? 'No posts from people you follow yet' : t('noPostsYet', lang)}
           </p>
         </div>
       )}
