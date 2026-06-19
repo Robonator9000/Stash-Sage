@@ -1,0 +1,11 @@
+[auth]
+enabled = true
+
+[analytics]
+enabled = false
+
+[functions]
+enabled = true
+
+[functions.image-optimize]
+verify_jwt = false
