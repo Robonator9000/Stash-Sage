@@ -4,6 +4,11 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   base: '/',
+  server: { fs: { strict: false } },
+  optimizeDeps: {
+    entries: ['src/**/*.{ts,tsx,js,jsx}'],
+    exclude: ['three'],
+  },
   plugins: [
     react(),
     VitePWA({

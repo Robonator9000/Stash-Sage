@@ -67,6 +67,8 @@ export interface Profile {
   bio: string;
   joinedAt: string;
   avatar_url?: string;
+  contact_platform?: string;
+  contact_value?: string;
 }
 
 export interface Session {

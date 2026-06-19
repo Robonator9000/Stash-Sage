@@ -1,7 +1,8 @@
-import { memo, useState } from 'react';
+import { memo, useState, useCallback } from 'react';
 import type { MarketplaceListing } from '../types';
 import { t } from '../utils/translations';
-import { Tag, Clock, DollarSign } from 'lucide-react';
+import { getContactUrl, copyToClipboard } from '../utils/helpers';
+import { Tag, Clock, DollarSign, ExternalLink } from 'lucide-react';
 
 const PLATFORM_COLORS: Record<string, string> = {
   phone: '#22c55e',
@@ -55,6 +56,17 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, 
   const brandPath = PLATFORM_BRAND_ICONS[listing.contact_platform] || PLATFORM_BRAND_ICONS.other;
   const brandColor = PLATFORM_COLORS[listing.contact_platform] || PLATFORM_COLORS.other;
   const [confirmAction, setConfirmAction] = useState<{ type: 'delete' | 'sold', listingId: string } | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleContactClick = useCallback(async () => {
+    const url = getContactUrl(listing.contact_platform, listing.contact_value);
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+    await copyToClipboard(listing.contact_value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [listing.contact_platform, listing.contact_value]);
 
   return (
     <div className={`p-6 rounded-2xl transition-all ${isDark ? 'bg-surface/60 border border-edge hover:border-cyanx/30' : 'bg-white border border-gray-200 hover:border-cyan-400/30'} shadow-sm`} role="article">
@@ -131,7 +143,8 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, 
       )}
 
       {/* Contact info */}
-      <div className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm ${isDark ? 'bg-midnight' : 'bg-gray-50'}`}>
+      <button onClick={handleContactClick} aria-label={`Contact via ${listing.contact_platform}: ${listing.contact_value}`}
+        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all ${isDark ? 'bg-midnight hover:bg-midnight/80' : 'bg-gray-50 hover:bg-gray-100'}`}>
         <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" style={{ color: brandColor }} aria-hidden="true">
           <path d={brandPath} />
         </svg>
@@ -140,10 +153,15 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, 
             listing.contact_platform === 'phone' ? listing.contact_value :
             `@${listing.contact_value.replace(/^@+/, '')}`}
         </span>
-        <span className={`text-xs ml-auto capitalize ${isDark ? 'text-muted' : 'text-gray-400'}`}>
-          {listing.contact_platform}
-        </span>
-      </div>
+        {copied ? (
+          <span className="text-xs text-emera ml-auto">Copied!</span>
+        ) : (
+          <span className={`flex items-center gap-1 text-xs ml-auto capitalize ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+            <ExternalLink className="w-3 h-3" />
+            {listing.contact_platform}
+          </span>
+        )}
+      </button>
 
       {/* Owner actions */}
       {isOwner && listing.status === 'active' && (

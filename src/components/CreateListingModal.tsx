@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useModalAnimation } from '../hooks/useModalAnimation';
+import { useSettings } from '../utils/useSettings';
 import type { MarketplaceListing, Product } from '../types';
 import { CONTACT_PLATFORMS, MARKETPLACE_CATEGORIES } from '../types';
 import { t } from '../utils/translations';
@@ -20,13 +21,14 @@ interface CreateListingModalProps {
 }
 
 export function CreateListingModal({ isDark, lang, products, initial, onSubmit, onClose }: CreateListingModalProps) {
+  const { settings } = useSettings();
   const { isVisible, handleClose } = useModalAnimation(onClose);
   const [title, setTitle] = useState(initial?.title || '');
   const [description, setDescription] = useState(initial?.description || '');
   const [price, setPrice] = useState(initial?.price?.toString() || '');
   const [category, setCategory] = useState(initial?.category || '');
-  const [contactPlatform, setContactPlatform] = useState(initial?.contact_platform || 'email');
-  const [contactValue, setContactValue] = useState(initial?.contact_value || '');
+  const [contactPlatform, setContactPlatform] = useState(initial?.contact_platform || settings.profile?.contact_platform || 'email');
+  const [contactValue, setContactValue] = useState(initial?.contact_value || settings.profile?.contact_value || '');
   const [linkedProductId, setLinkedProductId] = useState(initial?.product_id || '');
   const [imageDataUrl, setImageDataUrl] = useState(initial?.image_url || '');
   const [showProductPicker, setShowProductPicker] = useState(false);

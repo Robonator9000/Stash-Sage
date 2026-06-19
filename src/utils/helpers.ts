@@ -150,6 +150,33 @@ export function filterProducts(products: Product[], filterBy: FilterType): Produ
   }
 }
 
+export function getContactUrl(platform: string, value: string): string | null {
+  switch (platform) {
+    case 'email': return `mailto:${value}`;
+    case 'phone': return `tel:${value.replace(/[^+\d]/g, '')}`;
+    case 'discord': return `https://discord.com/users/${value}`;
+    case 'telegram': return `https://t.me/${value.replace(/^@+/, '')}`;
+    case 'instagram': return `https://instagram.com/${value.replace(/^@+/, '')}`;
+    case 'snapchat': return `https://snapchat.com/add/${value.replace(/^@+/, '')}`;
+    case 'whatsapp': {
+      const cleaned = value.replace(/[^+\d]/g, '');
+      if (/^\+\d{7,15}$/.test(cleaned)) return `https://wa.me/${cleaned}`;
+      return null;
+    }
+    case 'signal': return null;
+    default: return null;
+  }
+}
+
+export async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function timeAgo(dateStr: string, lang: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);

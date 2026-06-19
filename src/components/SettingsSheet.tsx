@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Product, Settings } from '../types';
+import { Product, Settings, CONTACT_PLATFORMS } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { hashPin } from '../utils/helpers';
@@ -7,7 +7,7 @@ import { createExportData, downloadExport, downloadCsvExport, copyExportToClipbo
 import { exportProductsPdf } from '../utils/pdfExport';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../utils/supabase';
-import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, Users, Scale, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, Camera, Mail } from 'lucide-react';
+import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, Users, Scale, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, Camera, Mail, Phone, MessageCircle, Send } from 'lucide-react';
 import { ResetPasswordModal } from './ResetPasswordModal';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 
@@ -60,6 +60,8 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const [profileUsername, setProfileUsername] = useState(settings.profile?.username || '');
   const [profileBio, setProfileBio] = useState(settings.profile?.bio || '');
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(settings.profile?.avatar_url);
+  const [profileContactPlatform, setProfileContactPlatform] = useState(settings.profile?.contact_platform || '');
+  const [profileContactValue, setProfileContactValue] = useState(settings.profile?.contact_value || '');
   const [showResetPassword, setShowResetPassword] = useState(false);
   const focusTrapRef = useFocusTrap(true);
   const [newPassword, setNewPassword] = useState('');
@@ -410,9 +412,37 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                   }`} />
               </div>
 
+              <div>
+                <label className={sectionLabel}><MessageCircle className="w-4 h-4" />Contact</label>
+                <div className="flex gap-2 flex-wrap mb-2">
+                  {CONTACT_PLATFORMS.map(pf => {
+                    const Icon = pf === 'phone' ? Phone : pf === 'email' ? Mail : pf === 'discord' ? MessageCircle : pf === 'signal' ? MessageCircle : pf === 'whatsapp' ? MessageCircle : pf === 'instagram' ? Camera : pf === 'snapchat' ? Camera : pf === 'telegram' ? Send : Globe;
+                    return (
+                      <button key={pf} type="button" onClick={() => setProfileContactPlatform(profileContactPlatform === pf ? '' : pf)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${profileContactPlatform === pf ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                        <Icon className="w-3.5 h-3.5" />
+                        {pf}
+                      </button>
+                    );
+                  })}
+                </div>
+                {profileContactPlatform && (
+                  <input type="text" value={profileContactValue} onChange={e => setProfileContactValue(e.target.value)}
+                    placeholder={profileContactPlatform === 'email' ? 'user@example.com' : profileContactPlatform === 'phone' ? '+1 555 0000' : '@username'}
+                    className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'}`} />
+                )}
+              </div>
+
               <button
                 onClick={() => {
-                  const p = { username: profileUsername.trim() || 'User', bio: profileBio.trim(), joinedAt: settings.profile?.joinedAt || new Date().toISOString(), avatar_url: avatarPreview };
+                  const p = {
+                    username: profileUsername.trim() || 'User',
+                    bio: profileBio.trim(),
+                    joinedAt: settings.profile?.joinedAt || new Date().toISOString(),
+                    avatar_url: avatarPreview,
+                    contact_platform: profileContactPlatform || undefined,
+                    contact_value: profileContactValue.trim() || undefined,
+                  };
                   updateSettings({ profile: p });
                   if (user) supabase.from('profiles').upsert({ user_id: user.id, display_name: p.username, avatar_url: p.avatar_url || null }, { onConflict: 'user_id' }).then(undefined, (e: unknown) => { console.error('Profile save sync failed:', e); });
                 }}

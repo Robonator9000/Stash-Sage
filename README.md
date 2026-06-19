@@ -4,11 +4,11 @@
 
 **Track your collection, log sessions, and connect with the community — with or without an account.**
 
-[![Live Site](https://img.shields.io/badge/try%20it%20live-GitHub%20Pages-222?logo=github&logoColor=fff)](https://robonator9000.github.io/Stash-Tracker/)
-[![PWA](https://img.shields.io/badge/works%20offline-ready-5A0FC8?logo=pwa&logoColor=fff)](https://robonator9000.github.io/Stash-Tracker/)
+[![Live Site](https://img.shields.io/badge/try%20it%20live-Vercel-222?logo=vercel&logoColor=fff)](https://st-sh.vercel.app)
+[![PWA](https://img.shields.io/badge/works%20offline-ready-5A0FC8?logo=pwa&logoColor=fff)](https://st-sh.vercel.app)
 [![License](https://img.shields.io/badge/license-MIT-3b82f6)](LICENSE)
 
-**[🌐 Try It](https://robonator9000.github.io/Stash-Tracker/)**
+**[🌐 Try It](https://st-sh.vercel.app)**
 
 </div>
 
