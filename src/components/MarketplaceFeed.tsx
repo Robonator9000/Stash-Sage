@@ -63,11 +63,19 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
     if (submitting) return;
     setSubmitting(true);
     try {
-      const { error: insertError } = await supabase.from('marketplace_listings').insert({ ...data, user_id: currentUserId, status: 'active' });
+      const { error: insertError, data: created } = await supabase.from('marketplace_listings').insert({ ...data, user_id: currentUserId, status: 'active' }).select('id, title').single();
       if (insertError) { showToast({ id: 'listing-error', title: t('somethingWentWrong', lang), body: insertError.message }); return; }
       showToast({ id: 'listing-created', title: '', body: t('listingCreated', lang) });
       setShowCreateModal(false);
       fetchListings();
+      if (created) {
+        const { data: followers } = await supabase.from('follows').select('follower_id').eq('following_id', currentUserId).limit(20);
+        if (followers?.length) {
+          supabase.from('notifications').insert(followers.map(f => ({
+            user_id: f.follower_id, type: 'new_listing', actor_id: currentUserId, listing_id: created.id, listing_title: created.title,
+          }))).then(undefined, () => {});
+        }
+      }
     } finally {
       setSubmitting(false);
     }
@@ -107,9 +115,18 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
     if (submitting) return;
     setSubmitting(true);
     try {
+      const { data: listing } = await supabase.from('marketplace_listings').select('title, user_id').eq('id', id).single();
       const { error: updateError } = await supabase.from('marketplace_listings').update({ status: 'sold' }).eq('id', id).eq('user_id', currentUserId);
       if (updateError) { showToast({ id: 'listing-error', title: t('somethingWentWrong', lang), body: updateError.message }); return; }
       fetchListings();
+      if (listing) {
+        const { data: followers } = await supabase.from('follows').select('follower_id').eq('following_id', currentUserId).limit(20);
+        if (followers?.length) {
+          supabase.from('notifications').insert(followers.map(f => ({
+            user_id: f.follower_id, type: 'listing_sold', actor_id: currentUserId, listing_id: id, listing_title: listing.title,
+          }))).then(undefined, () => {});
+        }
+      }
     } finally {
       setSubmitting(false);
     }

@@ -96,6 +96,8 @@ export function NotificationBell({ isDark, lang, onViewProfile }: NotificationBe
                     {n.type === 'like' && <><span className="font-semibold">{n.actor?.username}</span> liked your post</>}
                     {n.type === 'comment' && <><span className="font-semibold">{n.actor?.username}</span> commented on your post</>}
                     {n.type === 'follow' && <><span className="font-semibold">{n.actor?.username}</span> followed you</>}
+                    {n.type === 'new_listing' && <><span className="font-semibold">{n.actor?.username}</span> listed <span className="font-medium">{n.listing_title || 'something'}</span> for sale</>}
+                    {n.type === 'listing_sold' && <><span className="font-semibold">{n.actor?.username}</span> marked <span className="font-medium">{n.listing_title || 'a listing'}</span> as sold</>}
                   </p>
                   <p className={`text-xs mt-0.5 ${isDark ? 'text-muted' : 'text-gray-400'}`}>
                     {timeAgo(n.created_at, lang)}

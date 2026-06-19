@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Notification } from '../types';
 import { supabase } from '../utils/supabase';
+import { playNotificationSound } from '../utils/sounds';
 
 interface UseNotificationsReturn {
   notifications: Notification[];
@@ -73,6 +74,7 @@ export function useNotifications(userId: string | undefined): UseNotificationsRe
                 avatar_url: profiles?.avatar_url,
               },
             }, ...prev]);
+            playNotificationSound();
           } catch {} // SWALLOW
         })
       .subscribe((status) => {

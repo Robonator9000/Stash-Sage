@@ -123,12 +123,16 @@ export interface PostComment {
   };
 }
 
+export type NotificationType = 'like' | 'comment' | 'follow' | 'new_listing' | 'listing_sold';
+
 export interface Notification {
   id: string;
   user_id: string;
-  type: 'like' | 'comment' | 'follow';
+  type: NotificationType;
   actor_id: string;
   post_id?: string | null;
+  listing_id?: string | null;
+  listing_title?: string | null;
   read: boolean;
   created_at: string;
   actor?: {

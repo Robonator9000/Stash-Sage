@@ -93,3 +93,8 @@ export function playSessionBeep() {
   playTone(520, 0.08, 'sine', 0.06);
   setTimeout(() => playTone(680, 0.1, 'sine', 0.05), 80);
 }
+
+export function playNotificationSound() {
+  playTone(880, 0.06, 'sine', 0.06);
+  setTimeout(() => playTone(1100, 0.08, 'sine', 0.05), 60);
+}

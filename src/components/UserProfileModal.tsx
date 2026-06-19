@@ -138,8 +138,14 @@ export function UserProfileModal({ userId, isDark, lang, onBack }: UserProfileMo
             currentUserId={currentUser?.id || ''}
             username={currentUser?.email || 'User'}
             onLike={async (postId) => {
+              const post = posts.find(p => p.id === postId);
               const { error } = await supabase.from('post_likes').insert({ user_id: currentUser?.id, post_id: postId });
               if (error) throw error;
+              if (post && post.user_id !== currentUser?.id) {
+                await supabase.from('notifications').insert({
+                  user_id: post.user_id, type: 'like', actor_id: currentUser?.id, post_id: postId,
+                }).then(undefined, () => {});
+              }
             }}
             onUnlike={async (postId) => {
               const { error } = await supabase.from('post_likes').delete().eq('user_id', currentUser?.id).eq('post_id', postId);
