@@ -18,18 +18,19 @@ interface HistoryTabProps {
   onToggleNote: (id: string) => void;
 }
 
-function formatActivityDate(date: Date): string {
+function formatActivityDate(date: Date, lang: string): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffMins < 1) return 'now';
+  if (diffMins < 60) return t('minutesAgo', lang).replace('{n}', String(diffMins));
   const diffHrs = Math.floor(diffMins / 60);
-  if (diffHrs < 24) return `${diffHrs}h ago`;
+  if (diffHrs < 24) return t('hoursAgo', lang).replace('{n}', String(diffHrs));
   const diffDays = Math.floor(diffHrs / 24);
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString();
+  if (diffDays === 1) return t('daysAgo', lang).replace('{n}', '1');
+  if (diffDays < 30) return t('daysAgo', lang).replace('{n}', String(diffDays));
+  if (diffDays < 365) return t('monthsAgo', lang).replace('{n}', String(Math.floor(diffDays / 30)));
+  return t('monthsAgo', lang).replace('{n}', String(Math.floor(diffDays / 365)));
 }
 
 export const HistoryTab = memo(function HistoryTab({
@@ -76,10 +77,10 @@ export const HistoryTab = memo(function HistoryTab({
             <table className="w-full text-sm">
               <thead>
                 <tr className={`text-xs uppercase tracking-wider ${isDark ? 'bg-midnight text-muted' : 'bg-gray-50 text-gray-400'}`}>
-                  <th className="px-4 py-3 text-left">Type</th>
-                  <th className="px-4 py-3 text-left">Product</th>
-                  <th className="px-4 py-3 text-right">Amount</th>
-                  <th className="px-4 py-3 text-right">Price</th>
+                  <th className="px-4 py-3 text-left">{t('strainType', lang)}</th>
+                  <th className="px-4 py-3 text-left">{t('products', lang)}</th>
+                  <th className="px-4 py-3 text-right">{t('amount', lang)}</th>
+                  <th className="px-4 py-3 text-right">{t('priceLabel', lang)}</th>
                   <th className="px-4 py-3 text-left">{t('notesLabel', lang)}</th>
                   <th className="px-4 py-3 text-right">When</th>
                 </tr>
@@ -116,7 +117,7 @@ export const HistoryTab = memo(function HistoryTab({
                       ) : '—'}
                     </td>
                     <td className={`px-4 py-3 text-right text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>
-                      {formatActivityDate(entry.timestamp)}
+                      {formatActivityDate(entry.timestamp, lang)}
                     </td>
                   </tr>
                 ))}

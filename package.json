@@ -6,9 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:pages": "tsc -b && cross-env GITHUB_PAGES=true vite build",
-    "preview": "vite preview",
-    "preview:pages": "cross-env GITHUB_PAGES=true vite preview"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.1",
@@ -17,6 +15,7 @@
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-router-dom": "^7.18.0",
     "recharts": "^3.8.1"
   },
   "devDependencies": {

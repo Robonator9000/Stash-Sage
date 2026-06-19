@@ -7,7 +7,7 @@ import { X, Phone, Mail, MessageCircle, Send, Camera, Globe, Tag, DollarSign } f
 
 const PLATFORM_ICONS: Record<string, typeof Phone> = {
   phone: Phone, email: Mail, discord: MessageCircle, telegram: Send,
-  instagram: Camera, signal: MessageCircle, whatsapp: MessageCircle, other: Globe,
+  instagram: Camera, snapchat: Camera, signal: MessageCircle, whatsapp: MessageCircle, other: Globe,
 };
 
 interface CreateListingModalProps {

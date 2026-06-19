@@ -2,15 +2,13 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-const base = process.env.GITHUB_PAGES === 'true' ? '/Stash-Tracker/' : '/';
-
 export default defineConfig({
-  base,
+  base: '/',
   plugins: [
     react(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['icon.svg', '.nojekyll'],
+      includeAssets: ['icon.svg'],
       manifest: {
         name: 'Stash Tracker',
         short_name: 'Stash',
@@ -19,18 +17,18 @@ export default defineConfig({
         background_color: '#020617',
         display: 'standalone',
         orientation: 'portrait-primary',
-        scope: base,
-        start_url: base,
+        scope: '/',
+        start_url: '/',
         categories: ['health', 'lifestyle', 'productivity'],
         icons: [
           {
-            src: `${base}icon.svg`,
+            src: '/icon.svg',
             sizes: '512x512',
             type: 'image/svg+xml',
             purpose: 'any',
           },
           {
-            src: `${base}icon.svg`,
+            src: '/icon.svg',
             sizes: '512x512',
             type: 'image/svg+xml',
             purpose: 'maskable',

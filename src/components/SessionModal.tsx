@@ -31,7 +31,7 @@ export function SessionModal({
   const { settings } = useSettings();
   const { isVisible, handleClose } = useModalAnimation(onClose);
 
-  const [amountUsed] = useState(initialAmount);
+  const amountUsed = initialAmount;
   const [hitsCount, setHitsCount] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(autoStartTimer);
   const [timerSeconds, setTimerSeconds] = useState(defaultHitTimer);

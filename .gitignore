@@ -7,4 +7,4 @@ dist
 !.env.example
 tsconfig.tsbuildinfo
 .next
-"server.log" 
+server.log

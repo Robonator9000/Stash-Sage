@@ -49,18 +49,18 @@ export function formatCurrency(value: number, currency: string): string {
 }
 
 // Format date
-export function formatDate(date: Date | string): string {
+export function formatDate(date: Date | string, lang: string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-  if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-  return `${Math.floor(diffDays / 365)} years ago`;
+  if (diffDays === 0) return t('today', lang);
+  if (diffDays === 1) return t('yesterday', lang);
+  if (diffDays < 7) return t('daysAgo', lang).replace('{n}', String(diffDays));
+  if (diffDays < 30) return t('weeksAgo', lang).replace('{n}', String(Math.floor(diffDays / 7)));
+  if (diffDays < 365) return t('monthsAgo', lang).replace('{n}', String(Math.floor(diffDays / 30)));
+  return t('yearsAgo', lang).replace('{n}', String(Math.floor(diffDays / 365)));
 }
 
 function tryParseDate(value: unknown): Date | undefined {

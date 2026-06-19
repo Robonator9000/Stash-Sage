@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useMemo, useCallback, type ReactNode } from 'react';
 import { supabase, isConfigured } from '../utils/supabase';
-import type { User, AuthError } from '@supabase/supabase-js';
+import type { User } from '@supabase/supabase-js';
+import { AuthError } from '@supabase/supabase-js';
 import { showToast } from '../components/Toast';
 
 interface AuthState {
@@ -30,18 +31,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const accessToken = hashParams.get('access_token');
       const refreshToken = hashParams.get('refresh_token');
       if (accessToken) {
-        supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken || '' }).then(({ error: sessionErr }) => {
-          if (!sessionErr) {
+        supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken || '' }).then(({ data: { session }, error: sessionErr }) => {
+          setUser(session?.user ?? null);
+          if (!sessionErr && session?.user?.id && isConfigured) {
+            supabase.from('profiles').upsert(
+              { user_id: session.user.id, display_name: session.user.email?.split('@')[0] || 'User' },
+              { onConflict: 'user_id' }
+            ).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
             showToast({ id: 'auth-recovery', title: 'Password reset', body: 'Link accepted. Go to Profile to set a new password.' });
           }
+          setIsLoading(false);
         });
         window.location.hash = '';
+      } else {
         setIsLoading(false);
-        return;
       }
-    }
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    } else {
+      supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user?.id && isConfigured) {
         supabase.from('profiles').upsert(
@@ -61,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
     return () => data?.subscription.unsubscribe();
+    }
   }, []);
 
   const handleAuthError = useCallback((err: AuthError | Error): string => {
@@ -69,39 +76,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (msg.includes('Email not confirmed')) return 'Please confirm your email before signing in.';
     if (msg.includes('User already registered')) return 'An account with this email already exists.';
     if (msg.includes('Password should be at least')) return 'Password must be at least 6 characters.';
+    if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Network Error') || msg.includes('ERR_NAME_NOT_RESOLVED')) {
+      return 'Unable to reach server. Check your connection or if the server is running (supabase start).';
+    }
     return msg;
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
     setError(null);
     if (!isConfigured) { setError('Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your .env file.'); throw new Error('Auth not configured'); }
-    const { error: err } = await supabase.auth.signInWithPassword({ email, password });
-    if (err) {
-      setError(handleAuthError(err));
-      throw err;
+    try {
+      const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+      if (err) {
+        setError(handleAuthError(err));
+        throw err;
+      }
+      showToast({ id: 'auth-signin', title: 'Signed in', body: 'Welcome back!' });
+    } catch (err: any) {
+      if (!(err instanceof AuthError)) {
+        setError(handleAuthError(err));
+        throw err;
+      }
     }
-    showToast({ id: 'auth-signin', title: 'Signed in', body: 'Welcome back!' });
   }, [handleAuthError]);
 
   const signUp = useCallback(async (email: string, password: string) => {
     setError(null);
     if (!isConfigured) { setError('Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your .env file.'); throw new Error('Auth not configured'); }
-    const { data, error: err } = await supabase.auth.signUp({ email, password });
-    if (err) {
-      setError(handleAuthError(err));
-      throw err;
+    try {
+      const { data, error: err } = await supabase.auth.signUp({ email, password });
+      if (err) {
+        setError(handleAuthError(err));
+        throw err;
+      }
+      const uid = data?.user?.id;
+      if (uid) {
+        await supabase.from('profiles').upsert(
+          { user_id: uid, display_name: email.split('@')[0] || 'User' },
+          { onConflict: 'user_id' }
+        );
+      }
+      showToast({
+        id: 'auth-signup', title: 'Account created',
+        body: 'Check your email for confirmation.',
+      });
+    } catch (err: any) {
+      if (!(err instanceof AuthError)) {
+        setError(handleAuthError(err));
+        throw err;
+      }
     }
-    const uid = data?.user?.id;
-    if (uid) {
-      await supabase.from('profiles').upsert(
-        { user_id: uid, display_name: email.split('@')[0] || 'User' },
-        { onConflict: 'user_id' }
-      );
-    }
-    showToast({
-      id: 'auth-signup', title: 'Account created',
-      body: 'Check your email for confirmation.',
-    });
   }, [handleAuthError]);
 
   const signOut = useCallback(async () => {
@@ -139,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
     if (!isConfigured) { setError('Auth is not configured.'); throw new Error('Auth not configured'); }
     const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/Stash-Tracker',
+      redirectTo: window.location.origin,
     });
     if (err) {
       setError(handleAuthError(err));

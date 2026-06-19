@@ -22,6 +22,8 @@ interface ProductCardProps {
   onToggleSelect?: () => void;
 }
 
+const COLOR_PRESETS = ['#a855f7', '#f59e0b', '#10b981', '#ef4444', '#3b82f6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16'];
+
 export const ProductCard = memo(function ProductCard({ product, onClick, onConsume, onSell, onToggleFavorite, isDark = true, layout = 'grid', precision = 2, isSelectMode = false, selected = false, onToggleSelect }: ProductCardProps) {
   const { settings, updateSettings } = useSettings();
   const amountString = useMemo(() => `${formatPrecision(product.amount, precision)}g`, [product.amount, precision]);
@@ -31,7 +33,6 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
   const [amountHovered, setAmountHovered] = useState(false);
   const [pickingStrain, setPickingStrain] = useState<string | null>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
-  const COLOR_PRESETS = ['#a855f7', '#f59e0b', '#10b981', '#ef4444', '#3b82f6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16'];
 
   useEffect(() => {
     if (!pickingStrain) return;
@@ -491,7 +492,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
           {product.lastConsumed && (
             <div className={`flex items-center gap-1.5 text-xs ${isDark ? 'text-haze' : 'text-gray-400'}`}>
               <Clock className="w-3 h-3" />
-              {t('lastConsumed', lang)}: {formatDate(product.lastConsumed)}
+              {t('lastConsumed', lang)}: {formatDate(product.lastConsumed, lang)}
             </div>
           )}
         </div>

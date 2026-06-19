@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Product, Session, SortOption, FilterType } from './types';
 import { useProducts } from './utils/useProducts';
 import { useSessions } from './utils/useSessions';
@@ -37,7 +38,11 @@ export default function App() {
   const { settings, updateSettings, replaceSettings } = useSettings();
   const { entries: activityEntries, addEntry: addActivityEntry, clearEntries: clearActivity } = useActivity();
 
-  const [activeTab, setActiveTab] = useState<'stash' | 'community' | 'marketplace'>('stash');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = (searchParams.get('tab') as 'stash' | 'community' | 'marketplace') || 'stash';
+  function setActiveTab(tab: 'stash' | 'community' | 'marketplace') {
+    setSearchParams(prev => { prev.set('tab', tab); return prev; }, { replace: true });
+  }
   const [stashSection, setStashSection] = useState<'products' | 'dashboard' | 'history'>('products');
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedQuery = useDebounce(searchQuery, 200);

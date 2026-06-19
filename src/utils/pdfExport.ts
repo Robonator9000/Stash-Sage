@@ -1,17 +1,11 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Product, Settings } from '../types';
+import { formatCurrency } from './helpers';
 
 export function exportProductsPdf(products: Product[], settings: Settings) {
   const doc = new jsPDF();
   const currency = settings.currency;
-
-  const formatCurrency = (value: number) => {
-    if (currency === 'EUR') return `€${value.toFixed(2)}`;
-    if (currency === 'GBP') return `£${value.toFixed(2)}`;
-    if (currency === 'JPY') return `¥${value.toFixed(0)}`;
-    return `$${value.toFixed(2)}`;
-  };
 
   const formatDate = (d?: Date) => {
     if (!d) return '—';
@@ -33,7 +27,7 @@ export function exportProductsPdf(products: Product[], settings: Settings) {
   const totalAmount = products.reduce((s, p) => s + p.amount, 0);
 
   doc.setFontSize(10);
-  doc.text(`Total Value: ${formatCurrency(totalValue)}`, 14, 34);
+  doc.text(`Total Value: ${formatCurrency(totalValue, currency)}`, 14, 34);
   doc.text(`Total Weight: ${totalAmount.toFixed(1)}g`, 80, 34);
 
   const body = products.map((p) => [
@@ -41,7 +35,7 @@ export function exportProductsPdf(products: Product[], settings: Settings) {
     p.type,
     p.brand || '—',
     `${p.amount.toFixed(1)}g`,
-    formatCurrency(p.price),
+    formatCurrency(p.price, currency),
     p.thc ? `${p.thc}%` : '—',
     p.rating > 0 ? p.rating.toFixed(1) : '—',
     formatDate(p.purchasedAt),

@@ -162,6 +162,7 @@ export const CONTACT_PLATFORMS = [
   'discord',
   'telegram',
   'instagram',
+  'snapchat',
   'signal',
   'whatsapp',
   'other',
