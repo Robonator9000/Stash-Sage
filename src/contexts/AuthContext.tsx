@@ -8,6 +8,7 @@ interface AuthState {
   user: User | null;
   isLoading: boolean;
   error: string | null;
+  isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -24,6 +25,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase.from('profiles').select('role').eq('user_id', user.id).single().then(({ data }) => {
+      setIsAdmin(data?.role === 'admin');
+    }).then(undefined, () => setIsAdmin(false));
+  }, [user]);
 
   useEffect(() => {
     const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
@@ -186,10 +195,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const clearError = useCallback(() => setError(null), []);
 
   const value = useMemo(() => ({
-    user, isLoading, error,
+    user, isLoading, error, isAdmin,
     signIn, signUp, signOut,
     updatePassword, updateEmail, resetPasswordForEmail, deleteAccount, clearError,
-  }), [user, isLoading, error, signIn, signUp, signOut, updatePassword, updateEmail, resetPasswordForEmail, deleteAccount, clearError]);
+  }), [user, isLoading, error, isAdmin, signIn, signUp, signOut, updatePassword, updateEmail, resetPasswordForEmail, deleteAccount, clearError]);
 
   return (
     <AuthContext.Provider value={value}>

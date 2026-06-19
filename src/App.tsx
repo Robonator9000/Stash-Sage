@@ -25,6 +25,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { NotificationBell } from './components/NotificationBell';
 import { UserProfileModal } from './components/UserProfileModal';
 import { useAuth } from './contexts/AuthContext';
+import { AdminDashboard } from './components/AdminDashboard';
 const DashboardTab = lazy(() => import('./components/DashboardTab').then(m => ({ default: m.DashboardTab })));
 const HistoryTab = lazy(() => import('./components/HistoryTab').then(m => ({ default: m.HistoryTab })));
 const ProductModal = lazy(() => import('./components/ProductModal').then(m => ({ default: m.ProductModal })));
@@ -39,8 +40,8 @@ export default function App() {
   const { entries: activityEntries, addEntry: addActivityEntry, clearEntries: clearActivity } = useActivity();
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = (searchParams.get('tab') as 'stash' | 'community' | 'marketplace') || 'stash';
-  function setActiveTab(tab: 'stash' | 'community' | 'marketplace') {
+  const activeTab = (searchParams.get('tab') as 'stash' | 'community' | 'marketplace' | 'admin') || 'stash';
+  function setActiveTab(tab: 'stash' | 'community' | 'marketplace' | 'admin') {
     setSearchParams(prev => { prev.set('tab', tab); return prev; }, { replace: true });
   }
   const [stashSection, setStashSection] = useState<'products' | 'dashboard' | 'history'>('products');
@@ -75,7 +76,7 @@ export default function App() {
   const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
 
   const isDark = settings.theme === 'dark';
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const browserLang = useMemo(() => {
     const raw = navigator.language || 'en';
@@ -580,13 +581,14 @@ export default function App() {
               { id: 'stash', label: t('stash', lang), icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
               { id: 'community', label: t('community', lang), icon: 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z' },
               { id: 'marketplace', label: t('marketplace', lang), icon: 'M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z' },
-            ].map(tab => (
+              ...(isAdmin ? [{ id: 'admin', label: 'Admin', icon: 'M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z' }] : []),
+            ].flat().map(tab => (
               <button
                 key={tab.id}
                 role="tab"
                 aria-selected={activeTab === tab.id}
                 aria-current={activeTab === tab.id ? 'page' : undefined}
-                onClick={() => setActiveTab(tab.id as 'stash' | 'community' | 'marketplace')}
+                onClick={() => setActiveTab(tab.id as 'stash' | 'community' | 'marketplace' | 'admin')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3.5 text-base font-medium transition-all duration-200 relative
                   ${activeTab === tab.id
                     ? isDark ? 'text-cyan-400' : 'text-cyan-600'
@@ -930,6 +932,19 @@ export default function App() {
               lang={lang}
               currentUserId={user?.id || ''}
               products={products}
+              onViewProfile={handleViewProfile}
+            />
+          </div>
+          </ErrorBoundary>
+        )}
+
+        {/* ==================== ADMIN TAB ==================== */}
+        {activeTab === 'admin' && isAdmin && (
+          <ErrorBoundary isDark={isDark} lang={lang}>
+          <div className="space-y-4">
+            <AdminDashboard
+              isDark={isDark}
+              currentUserId={user?.id || ''}
               onViewProfile={handleViewProfile}
             />
           </div>
