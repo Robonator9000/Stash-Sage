@@ -1,8 +1,8 @@
-import { memo, useState, useCallback } from 'react';
+import { memo, useState, useCallback, useEffect } from 'react';
 import type { MarketplaceListing } from '../types';
 import { t } from '../utils/translations';
 import { getContactUrl, copyToClipboard } from '../utils/helpers';
-import { Tag, Clock, DollarSign, ExternalLink } from 'lucide-react';
+import { Tag, Clock, DollarSign, ExternalLink, ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 const PLATFORM_COLORS: Record<string, string> = {
   phone: '#22c55e',
@@ -55,6 +55,9 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, 
   const isOwner = listing.user_id === currentUserId;
   const brandPath = PLATFORM_BRAND_ICONS[listing.contact_platform] || PLATFORM_BRAND_ICONS.other;
   const brandColor = PLATFORM_COLORS[listing.contact_platform] || PLATFORM_COLORS.other;
+  const allImages = listing.images?.filter(Boolean) || (listing.image_url ? [listing.image_url] : []);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showDetail, setShowDetail] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{ type: 'delete' | 'sold', listingId: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -67,6 +70,19 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, 
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [listing.contact_platform, listing.contact_value]);
+
+  useEffect(() => { setCurrentImageIndex(0); }, [listing.id]);
+
+  useEffect(() => {
+    if (!showDetail) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setShowDetail(false);
+      if (e.key === 'ArrowLeft') setCurrentImageIndex(i => (i - 1 + allImages.length) % allImages.length);
+      if (e.key === 'ArrowRight') setCurrentImageIndex(i => (i + 1) % allImages.length);
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [showDetail, allImages.length]);
 
   return (
     <div className={`p-6 rounded-2xl transition-all ${isDark ? 'bg-surface/60 border border-edge hover:border-cyanx/30' : 'bg-white border border-gray-200 hover:border-cyan-400/30'} shadow-sm`} role="article">
@@ -101,10 +117,30 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, 
         )}
       </div>
 
-      {/* Image */}
-      {listing.image_url && (
-        <div className="mb-4 rounded-xl overflow-hidden">
-          <img src={listing.image_url} alt={listing.title} loading="lazy" className="w-full h-56 object-cover" />
+      {/* Image gallery */}
+      {allImages.length > 0 && (
+        <div className="mb-4 rounded-xl overflow-hidden relative group">
+          <button type="button" onClick={() => setShowDetail(true)} className="w-full block">
+            <img src={allImages[currentImageIndex]} alt={listing.title} loading="lazy" className="w-full h-56 object-cover" />
+          </button>
+          {allImages.length > 1 && (
+            <>
+              <button type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i => (i - 1 + allImages.length) % allImages.length); }} aria-label="Previous image"
+                className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-black/60">
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i => (i + 1) % allImages.length); }} aria-label="Next image"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-black/60">
+                <ChevronRight className="w-5 h-5" />
+              </button>
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                {allImages.map((_, i) => (
+                  <button key={i} type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i); }} aria-label={`Image ${i + 1}`}
+                    className={`w-2 h-2 rounded-full transition-all ${i === currentImageIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/70'}`} />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -208,6 +244,36 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, 
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90" onClick={() => setShowDetail(false)}>
+          <button type="button" onClick={() => setShowDetail(false)} aria-label="Close gallery"
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all z-10">
+            <X className="w-6 h-6" />
+          </button>
+          <div className="relative max-w-4xl w-full mx-4" onClick={e => e.stopPropagation()}>
+            <img src={allImages[currentImageIndex]} alt={listing.title} className="w-full max-h-[85vh] object-contain rounded-2xl" />
+            {allImages.length > 1 && (
+              <>
+                <button type="button" onClick={() => setCurrentImageIndex(i => (i - 1 + allImages.length) % allImages.length)} aria-label="Previous image"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition-all">
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button type="button" onClick={() => setCurrentImageIndex(i => (i + 1) % allImages.length)} aria-label="Next image"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition-all">
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                  {allImages.map((_, i) => (
+                    <button key={i} type="button" onClick={() => setCurrentImageIndex(i)} aria-label={`Image ${i + 1}`}
+                      className={`w-2.5 h-2.5 rounded-full transition-all ${i === currentImageIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/70'}`} />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

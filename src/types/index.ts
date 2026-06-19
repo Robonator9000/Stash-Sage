@@ -149,6 +149,7 @@ export interface MarketplaceListing {
   contact_platform: string;
   contact_value: string;
   image_url?: string | null;
+  images?: string[];
   status: 'active' | 'sold';
   created_at: string;
   updated_at: string;

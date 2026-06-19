@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { MarketplaceListing, Product } from '../types';
 import { MARKETPLACE_CATEGORIES } from '../types';
-import { supabase } from '../utils/supabase';
+import { supabase, deleteStorageImages } from '../utils/supabase';
 import { t } from '../utils/translations';
 import { MarketplaceCard } from './MarketplaceCard';
 import { CreateListingModal } from './CreateListingModal';
@@ -91,8 +91,11 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
     if (submitting) return;
     setSubmitting(true);
     try {
+      const { data: listing } = await supabase.from('marketplace_listings').select('image_url, images').eq('id', id).eq('user_id', currentUserId).single();
+      const imagesToDelete = [...(listing?.images || []), ...(listing?.image_url ? [listing.image_url] : [])].filter(Boolean);
       const { error: deleteError } = await supabase.from('marketplace_listings').delete().eq('id', id).eq('user_id', currentUserId);
       if (deleteError) { showToast({ id: 'listing-error', title: t('somethingWentWrong', lang), body: deleteError.message }); return; }
+      deleteStorageImages(imagesToDelete);
       showToast({ id: 'listing-deleted', title: '', body: t('listingDeleted', lang) });
       fetchListings();
     } finally {
@@ -208,11 +211,11 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
       ))}
 
       {showCreateModal && (
-        <CreateListingModal isDark={isDark} lang={lang} products={products} onSubmit={handleCreate} onClose={handleCloseCreate} />
+        <CreateListingModal isDark={isDark} lang={lang} products={products} currentUserId={currentUserId} onSubmit={handleCreate} onClose={handleCloseCreate} />
       )}
 
       {editingListing && (
-        <CreateListingModal isDark={isDark} lang={lang} products={products} initial={editingListing} onSubmit={handleUpdate} onClose={handleCloseEdit} />
+        <CreateListingModal isDark={isDark} lang={lang} products={products} currentUserId={currentUserId} initial={editingListing} onSubmit={handleUpdate} onClose={handleCloseEdit} />
       )}
     </div>
   );

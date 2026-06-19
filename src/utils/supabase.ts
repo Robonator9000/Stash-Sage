@@ -48,3 +48,32 @@ function buildClient(): SupabaseClient {
 }
 
 export const supabase = buildClient();
+
+export async function uploadListingImages(userId: string, files: File[]): Promise<string[]> {
+  if (!isConfigured || files.length === 0) return [];
+  const urls: string[] = [];
+  for (const file of files) {
+    const ext = file.name.split('.').pop() || 'webp';
+    const fileName = `${crypto.randomUUID()}.${ext}`;
+    const filePath = `${userId}/${fileName}`;
+    const { error } = await supabase.storage.from('listing-images').upload(filePath, file, {
+      contentType: file.type,
+      upsert: false,
+    });
+    if (error) continue;
+    const { data: { publicUrl } } = supabase.storage.from('listing-images').getPublicUrl(filePath);
+    urls.push(publicUrl);
+  }
+  return urls;
+}
+
+export async function deleteStorageImages(urls: string[]): Promise<void> {
+  if (!isConfigured || urls.length === 0) return;
+  const paths: string[] = [];
+  for (const url of urls) {
+    const parts = url.split('/listing-images/');
+    if (parts.length === 2) paths.push(parts[1]);
+  }
+  if (paths.length === 0) return;
+  await supabase.storage.from('listing-images').remove(paths);
+}

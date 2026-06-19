@@ -3,6 +3,7 @@ import { useModalAnimation } from '../hooks/useModalAnimation';
 import { useSettings } from '../utils/useSettings';
 import type { MarketplaceListing, Product } from '../types';
 import { CONTACT_PLATFORMS, MARKETPLACE_CATEGORIES } from '../types';
+import { uploadListingImages } from '../utils/supabase';
 import { t } from '../utils/translations';
 import { X, Phone, Mail, MessageCircle, Send, Camera, Globe, Tag, DollarSign } from 'lucide-react';
 
@@ -15,12 +16,13 @@ interface CreateListingModalProps {
   isDark: boolean;
   lang: string;
   products: Product[];
+  currentUserId: string;
   initial?: MarketplaceListing;
   onSubmit: (data: Partial<MarketplaceListing>) => Promise<void>;
   onClose: () => void;
 }
 
-export function CreateListingModal({ isDark, lang, products, initial, onSubmit, onClose }: CreateListingModalProps) {
+export function CreateListingModal({ isDark, lang, products, currentUserId, initial, onSubmit, onClose }: CreateListingModalProps) {
   const { settings } = useSettings();
   const { isVisible, handleClose } = useModalAnimation(onClose);
   const [title, setTitle] = useState(initial?.title || '');
@@ -30,7 +32,9 @@ export function CreateListingModal({ isDark, lang, products, initial, onSubmit, 
   const [contactPlatform, setContactPlatform] = useState(initial?.contact_platform || settings.profile?.contact_platform || 'email');
   const [contactValue, setContactValue] = useState(initial?.contact_value || settings.profile?.contact_value || '');
   const [linkedProductId, setLinkedProductId] = useState(initial?.product_id || '');
-  const [imageDataUrl, setImageDataUrl] = useState(initial?.image_url || '');
+  const [existingImages, setExistingImages] = useState<string[]>(initial?.images || (initial?.image_url ? [initial.image_url] : []));
+  const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
+  const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
   const [showProductPicker, setShowProductPicker] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -39,11 +43,23 @@ export function CreateListingModal({ isDark, lang, products, initial, onSubmit, 
   const linkedProduct = products.find(p => p.id === linkedProductId);
 
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setImageDataUrl(reader.result as string);
-    reader.readAsDataURL(file);
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    const newFiles = [...newImageFiles, ...files];
+    setNewImageFiles(newFiles);
+    const previews = files.map(f => URL.createObjectURL(f));
+    setNewImagePreviews(prev => [...prev, ...previews]);
+    e.target.value = '';
+  }
+
+  function removeNewImage(index: number) {
+    URL.revokeObjectURL(newImagePreviews[index]);
+    setNewImageFiles(prev => prev.filter((_, i) => i !== index));
+    setNewImagePreviews(prev => prev.filter((_, i) => i !== index));
+  }
+
+  function removeExistingImage(index: number) {
+    setExistingImages(prev => prev.filter((_, i) => i !== index));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -51,6 +67,12 @@ export function CreateListingModal({ isDark, lang, products, initial, onSubmit, 
     if (!title.trim() || !price.trim()) return;
     setSubmitting(true);
     try {
+      let allImages = [...existingImages];
+      if (newImageFiles.length > 0) {
+        const uploaded = await uploadListingImages(currentUserId, newImageFiles);
+        allImages = [...allImages, ...uploaded];
+      }
+      newImagePreviews.forEach(p => URL.revokeObjectURL(p));
       await onSubmit({
         title: title.trim(),
         description: description.trim(),
@@ -60,7 +82,8 @@ export function CreateListingModal({ isDark, lang, products, initial, onSubmit, 
         contact_value: contactValue.trim(),
         product_id: linkedProductId || undefined,
         product_name: linkedProduct?.name || undefined,
-        image_url: imageDataUrl || undefined,
+        image_url: allImages[0] || undefined,
+        images: allImages.length > 0 ? allImages : undefined,
       });
       handleClose();
     } finally {
@@ -200,27 +223,39 @@ export function CreateListingModal({ isDark, lang, products, initial, onSubmit, 
           )}
         </div>
 
-        {/* Image */}
+        {/* Images */}
         <div>
           <label className={`block text-sm font-medium mb-1.5 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
             {t('listingImage', lang)}
           </label>
-          {imageDataUrl ? (
-            <div className="relative rounded-xl overflow-hidden">
-              <img src={imageDataUrl} alt="" className="w-full h-40 object-cover" />
-              <button type="button" onClick={() => setImageDataUrl('')} aria-label="Remove image"
-                className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/50 text-white hover:bg-black/70 transition-all">
-                <X className="w-4 h-4" />
+          <div className="grid grid-cols-3 gap-2 mb-2">
+            {existingImages.map((url, i) => (
+              <div key={`e-${i}`} className="relative aspect-square rounded-xl overflow-hidden group">
+                <img src={url} alt="" className="w-full h-full object-cover" />
+                <button type="button" onClick={() => removeExistingImage(i)} aria-label="Remove image"
+                  className="absolute top-1 right-1 p-1 rounded-lg bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-all">
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+            {newImagePreviews.map((preview, i) => (
+              <div key={`n-${i}`} className="relative aspect-square rounded-xl overflow-hidden group">
+                <img src={preview} alt="" className="w-full h-full object-cover" />
+                <button type="button" onClick={() => removeNewImage(i)} aria-label="Remove image"
+                  className="absolute top-1 right-1 p-1 rounded-lg bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-all">
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+            {(existingImages.length + newImagePreviews.length) < 9 && (
+              <button type="button" onClick={() => fileInputRef.current?.click()} aria-label="Upload image"
+                className={`aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-1 cursor-pointer transition-all ${isDark ? 'border-slate-700 hover:border-slate-600 text-slate-500' : 'border-gray-300 hover:border-gray-400 text-gray-400'}`}>
+                <Camera className="w-5 h-5" />
+                <span className="text-[10px]">{t('uploadPicture', lang)}</span>
               </button>
-            </div>
-          ) : (
-            <button type="button" onClick={() => fileInputRef.current?.click()} aria-label="Upload image"
-              className={`w-full py-8 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 cursor-pointer transition-all ${isDark ? 'border-slate-700 hover:border-slate-600 text-slate-500' : 'border-gray-300 hover:border-gray-400 text-gray-400'}`}>
-              <Camera className="w-6 h-6" />
-              <span className="text-xs">{t('uploadPicture', lang)}</span>
-            </button>
-          )}
-          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+            )}
+          </div>
+          <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
         </div>
 
         {/* Submit */}
