@@ -32,6 +32,8 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
   const [postSearch, setPostSearch] = useState('');
   const [debouncedPostSearch, setDebouncedPostSearch] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [activeHashtag, setActiveHashtag] = useState<string | null>(null);
+  const [trendingTags, setTrendingTags] = useState<string[]>([]);
   const pageRef = useRef(0);
   const observerRef = useRef<HTMLDivElement>(null);
   const searchTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -198,6 +200,15 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
     return () => clearTimeout(postSearchTimer.current);
   }, [postSearch]);
 
+  useEffect(() => {
+    supabase.from('post_hashtags').select('tag, created_at').gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()).then(({ data }) => {
+      if (!data) return;
+      const counts: Record<string, number> = {};
+      data.forEach(h => { counts[h.tag] = (counts[h.tag] || 0) + 1; });
+      setTrendingTags(Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10).map(e => e[0]));
+    });
+  }, []);
+
   const notifyUser = useCallback(async (targetUserId: string, type: 'like' | 'comment' | 'follow', postId?: string) => {
     if (targetUserId === currentUserId) return;
     await supabase.from('notifications').insert({
@@ -224,6 +235,12 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
         return;
       }
 
+      const tags = content.match(/#\w+/g);
+      if (tags) {
+        const uniqueTags = [...new Set(tags.map(t => t.toLowerCase()))];
+        await supabase.from('post_hashtags').insert(uniqueTags.map(tag => ({ post_id: data.id, tag })));
+      }
+
       const enriched = await enrichPosts([data]);
       setPosts(prev => [enriched[0], ...prev]);
       showToast({ id: 'post-created', title: '', body: t('postCreated', lang) });
@@ -240,6 +257,12 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
       if (updateError) {
         showToast({ id: 'edit-error', title: t('somethingWentWrong', lang), body: updateError.message });
         return;
+      }
+      await supabase.from('post_hashtags').delete().eq('post_id', postId);
+      const tags = content.match(/#\w+/g);
+      if (tags) {
+        const uniqueTags = [...new Set(tags.map(t => t.toLowerCase()))];
+        await supabase.from('post_hashtags').insert(uniqueTags.map(tag => ({ post_id: postId, tag })));
       }
       setPosts(prev => prev.map(p => p.id === postId ? { ...p, content } : p));
     } finally {
@@ -349,14 +372,25 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
     setSearchResults([]);
   }, [onViewProfile]);
 
+  const handleHashtagClick = useCallback((tag: string) => {
+    setActiveHashtag(prev => prev === tag ? null : tag);
+  }, []);
+
   const showCreatePostCard = !!profile;
 
-  const displayedPosts = useMemo(() =>
-    feedFilter === 'following'
+  const displayedPosts = useMemo(() => {
+    let filtered = feedFilter === 'following'
       ? posts.filter(p => p.is_following || p.user_id === currentUserId)
-      : posts,
-    [posts, feedFilter, currentUserId]
-  );
+      : posts;
+    if (activeHashtag) {
+      const lower = activeHashtag.toLowerCase();
+      filtered = filtered.filter(p => {
+        const tags = p.content.match(/#\w+/g);
+        return tags?.some(t => t.toLowerCase() === `#${lower}`);
+      });
+    }
+    return filtered;
+  }, [posts, feedFilter, currentUserId, activeHashtag]);
 
   return (
     <div className="space-y-4">
@@ -465,10 +499,32 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
         </div>
       )}
 
+      {/* Trending hashtags */}
+      {(trendingTags.length > 0 || activeHashtag) && (
+        <div className={`flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none ${isDark ? 'text-mist' : 'text-gray-600'}`}>
+          {activeHashtag && (
+            <button onClick={() => setActiveHashtag(null)}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-cyanx/20 text-cyanx whitespace-nowrap">
+              <X className="w-3 h-3" /> #{activeHashtag}
+            </button>
+          )}
+          {trendingTags.map(tag => (
+            <button key={tag} onClick={() => setActiveHashtag(tag)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                activeHashtag === tag
+                  ? 'bg-cyanx/20 text-cyanx'
+                  : isDark ? 'bg-midnight text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:text-gray-800'
+              }`}>
+              #{tag}
+            </button>
+          ))}
+        </div>
+      )}
+
       {!loading && !error && displayedPosts.length === 0 && (
         <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
           <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
-            {debouncedPostSearch.trim() ? `No posts matching "${debouncedPostSearch}"` : feedFilter === 'following' ? 'No posts from people you follow yet' : t('noPostsYet', lang)}
+            {activeHashtag ? `No posts tagged #${activeHashtag}` : debouncedPostSearch.trim() ? `No posts matching "${debouncedPostSearch}"` : feedFilter === 'following' ? 'No posts from people you follow yet' : t('noPostsYet', lang)}
           </p>
         </div>
       )}
@@ -490,6 +546,7 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
           onUnfollow={handleUnfollow}
           onViewProfile={onViewProfile}
           onComment={handleComment}
+          onHashtagClick={handleHashtagClick}
         />
       ))}
 

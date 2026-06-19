@@ -21,9 +21,25 @@ interface PostCardProps {
   onUnfollow?: (userId: string) => Promise<void>;
   onViewProfile?: (userId: string) => void;
   onComment?: (userId: string, postId: string) => void;
+  onHashtagClick?: (tag: string) => void;
 }
 
-export const PostCard = memo(function PostCard({ post, isDark, lang, currentUserId, username, isFollowing, onLike, onUnlike, onDelete, onEdit, onFollow, onUnfollow, onViewProfile, onComment }: PostCardProps) {
+function renderContent(text: string, isDark: boolean, onHashtagClick?: (tag: string) => void) {
+  const parts = text.split(/(#\w+)/g);
+  return parts.map((part, i) => {
+    if (/^#\w+$/.test(part)) {
+      return (
+        <button key={i} onClick={(e) => { e.preventDefault(); e.stopPropagation(); onHashtagClick?.(part.slice(1).toLowerCase()); }}
+          className={`inline font-medium ${isDark ? 'text-cyan-400 hover:text-cyan-300' : 'text-cyan-600 hover:text-cyan-700'} hover:underline`}>
+          {part}
+        </button>
+      );
+    }
+    return <span key={i}>{part}</span>;
+  });
+}
+
+export const PostCard = memo(function PostCard({ post, isDark, lang, currentUserId, username, isFollowing, onLike, onUnlike, onDelete, onEdit, onFollow, onUnfollow, onViewProfile, onComment, onHashtagClick }: PostCardProps) {
   const [liking, setLiking] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -129,7 +145,7 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
             </div>
           ) : (
             <p className={`text-sm mb-2 whitespace-pre-wrap ${isDark ? 'text-mist' : 'text-gray-600'}`}>
-              {post.content}
+              {renderContent(post.content, isDark, onHashtagClick)}
             </p>
           )}
 
