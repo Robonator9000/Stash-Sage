@@ -26,6 +26,7 @@ import { NotificationBell } from './components/NotificationBell';
 import { UserProfileModal } from './components/UserProfileModal';
 import { useAuth } from './contexts/AuthContext';
 import { AdminDashboard } from './components/AdminDashboard';
+import { MenuButton } from './components/MenuButton';
 const DashboardTab = lazy(() => import('./components/DashboardTab').then(m => ({ default: m.DashboardTab })));
 const HistoryTab = lazy(() => import('./components/HistoryTab').then(m => ({ default: m.HistoryTab })));
 const ProductModal = lazy(() => import('./components/ProductModal').then(m => ({ default: m.ProductModal })));
@@ -1031,6 +1032,9 @@ export default function App() {
           STASH TRACKER
         </p>
       </footer>
+
+      {/* Menu shortcut */}
+      <MenuButton />
 
       {/* Animations */}
       {showSmoke && (

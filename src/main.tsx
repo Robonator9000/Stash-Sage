@@ -1,11 +1,13 @@
-import { StrictMode } from 'react';
+import { StrictMode, lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { registerSW } from 'virtual:pwa-register';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthProvider } from './contexts/AuthContext';
 import './index.css';
+
+const MenuPage = lazy(() => import('./components/MenuPage').then(m => ({ default: m.MenuPage })));
 
 registerSW({
   immediate: true,
@@ -19,7 +21,10 @@ createRoot(document.getElementById('root')!).render(
     <ErrorBoundary>
       <BrowserRouter>
         <AuthProvider>
-          <App />
+          <Routes>
+            <Route path="/menu" element={<Suspense fallback={<div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center"><div className="w-10 h-10 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin" /></div>}><MenuPage /></Suspense>} />
+            <Route path="*" element={<App />} />
+          </Routes>
         </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>
