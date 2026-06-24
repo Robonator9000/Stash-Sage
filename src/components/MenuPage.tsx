@@ -60,6 +60,9 @@ const FEATURES = [
   { icon: '📴', title: 'Works Offline', desc: 'Full PWA — install it, use it anywhere. No account needed to get started.' },
 ];
 
+const SNAPCHAT_URL = 'https://www.snapchat.com/add/kotycannaco';
+const SNAPCHAT_HANDLE = '@kotycannaco';
+
 function ProductCard({ product, index, visible, isDark }: { product: Product; index: number; visible: boolean; isDark: boolean }) {
   const sc = isDark ? STRAIN_COLORS : STRAIN_COLORS_LIGHT;
   const strainInfo = sc[product.strain];
@@ -146,6 +149,14 @@ function DisposableCard({ product, index, visible, isDark }: { product: Product;
   );
 }
 
+function SnapchatIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+      <path d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12.922-.214.093-.04.195-.06.3-.06.34 0 .594.165.745.375.09.12.15.27.165.435 0 .06-.015.135-.03.21-.255.975-1.485 1.665-2.866 1.92-.045.09-.09.21-.135.33-.06.165-.12.33-.2.48-.285.525-.66.765-1.155.765-.21 0-.39-.045-.555-.12a2.7 2.7 0 0 0-.315-.105c-.165-.045-.33-.075-.51-.075-.15 0-.315.03-.48.075l-.33.09c-.165.045-.33.075-.51.075-.66 0-1.17-.39-1.485-.78-.33-.405-.6-.825-.795-1.11-.255-.375-.81-.81-1.53-.81-.255 0-.48.06-.69.15-.15.06-.285.135-.405.21-.27.15-.57.285-.945.285-.3 0-.555-.06-.78-.18a2.48 2.48 0 0 1-.51-.36c-.225-.195-.42-.42-.585-.675-.42-.66-.72-1.44-.72-2.34 0-.51.09-1.005.27-1.44.18-.42.42-.78.72-1.08.285-.285.615-.51.99-.66.345-.135.72-.21 1.11-.21.12 0 .24.015.36.045.105.03.21.06.315.105.105.045.195.09.285.135.33.165.585.285.825.375.39.15.78.225 1.2.225.165 0 .33-.015.48-.045.135-.015.255-.045.375-.075.15-.045.3-.075.45-.075.21 0 .39.06.525.165.12.09.195.225.24.375.03.105.045.225.045.36 0 .135-.03.27-.06.405a1.2 1.2 0 0 1-.24.405c-.09.09-.195.165-.315.225a1.5 1.5 0 0 1-.405.12c-.135.03-.27.045-.405.06-.075.015-.15.015-.225.03-.12.03-.225.06-.33.09-.21.06-.39.105-.57.15-.39.09-.72.15-1.05.21-.3.06-.57.105-.84.15-.45.075-.84.135-1.14.195-.375.075-.645.135-.81.195-.195.06-.3.12-.345.18-.045.06-.06.135-.06.225 0 .15.06.285.165.39.21.195.555.345 1.02.435.135.03.27.045.405.06.15.015.3.03.45.045.3.03.57.06.81.09.375.045.675.09.915.135.27.06.495.105.675.165.15.045.27.105.36.165.09.06.15.135.18.225.03.09.045.195.045.315 0 .165-.03.315-.09.45-.15.345-.54.6-1.08.75-.09.03-.195.045-.3.06-.15.015-.3.03-.465.045l-.06.015c-.24.045-.465.075-.69.105-.375.045-.72.09-1.05.135-.45.06-.84.12-1.17.18-.39.075-.72.15-.96.24-.195.06-.36.135-.48.225-.12.09-.195.195-.225.33-.015.075-.015.15-.015.225z" />
+    </svg>
+  );
+}
+
 export function MenuPage() {
   const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
@@ -157,42 +168,41 @@ export function MenuPage() {
 
   return (
     <div className="min-h-screen bg-white text-black overflow-x-hidden" style={{ fontFamily: 'Inter, sans-serif' }}>
+
+      {/* ========== PRODUCT STORE SECTION ========== */}
       {/* Top bar */}
       <div className="bg-[#29292C] text-white text-center py-2 text-xs tracking-widest uppercase font-medium">
         🔥 21 Exotic Flavors — All $15 — Limited Time 🔥
       </div>
 
-      {/* Header */}
+      {/* Header — Product Store branding */}
       <header className="relative">
         <div className="max-w-[1000px] mx-auto px-6 py-6 flex items-center justify-between">
-          <button
-            onClick={() => navigate('/')}
-            className="text-[#EF1187] hover:text-[#BF0F6C] transition-colors text-sm font-medium"
-          >
-            ← Back to App
-          </button>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-[#EF1187] to-[#BF0F6C] rounded-xl flex items-center justify-center text-white text-xl shadow-md">
               🌿
             </div>
-            <div className="text-center">
+            <div>
               <div className="text-[#EF1187] font-bold text-lg leading-none" style={{ fontFamily: '"Varela Round", sans-serif' }}>
-                STASH TRACKER
+                KOTY CANNA CO
               </div>
-              <div className="text-[#13EEEF] text-[10px] tracking-widest uppercase">New Products</div>
+              <div className="text-[#13EEEF] text-[10px] tracking-widest uppercase">Premium Vape Products</div>
             </div>
           </div>
-          <button
-            onClick={() => navigate('/')}
-            className="px-5 py-2 bg-[#EF1187] text-white rounded-[10px] text-sm font-bold hover:bg-[#BF0F6C] transition-colors shadow-md shadow-[#EF1187]/20"
+          <a
+            href={SNAPCHAT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-5 py-2 bg-[#FFFC00] text-[#111] rounded-[10px] text-sm font-bold hover:bg-[#e6e300] transition-colors shadow-md flex items-center gap-2"
           >
-            Shop Now
-          </button>
+            <SnapchatIcon />
+            Order on Snap
+          </a>
         </div>
         <div className="h-1 bg-gradient-to-r from-[#13EEEF] via-[#EF1187] to-[#13EEEF]" />
       </header>
 
-      {/* Hero */}
+      {/* Hero — Products */}
       <section className="relative bg-[#29292C] text-white overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#EF1187]/10 rounded-full blur-[150px]" />
@@ -215,12 +225,15 @@ export function MenuPage() {
                 <span className="text-6xl sm:text-7xl font-bold" style={{ fontFamily: '"Varela Round", sans-serif', color: '#FABF39' }}>$15</span>
                 <span className="text-white/50 text-lg uppercase tracking-wider">each</span>
               </div>
-              <button
-                onClick={() => navigate('/')}
-                className="px-8 py-4 bg-[#EF1187] text-white rounded-[10px] text-lg font-bold hover:bg-[#BF0F6C] transition-all shadow-lg shadow-[#EF1187]/25 hover:shadow-[#EF1187]/40 hover:scale-105"
+              <a
+                href={SNAPCHAT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-[#FFFC00] text-[#111] rounded-[10px] text-lg font-bold hover:bg-[#e6e300] transition-all shadow-lg shadow-[#FFFC00]/20 hover:shadow-[#FFFC00]/40 hover:scale-105"
               >
-                Start Tracking →
-              </button>
+                <SnapchatIcon />
+                Message {SNAPCHAT_HANDLE} to Order
+              </a>
             </div>
             <div className="flex-1 flex justify-center">
               <div className="relative">
@@ -249,6 +262,32 @@ export function MenuPage() {
           ))}
         </div>
       </div>
+
+      {/* How to Order */}
+      <section className="bg-[#FFFC00]/10 border-y border-[#FFFC00]/30 py-10 px-6">
+        <div className="max-w-[1000px] mx-auto text-center">
+          <h2 className="text-2xl font-bold mb-2 text-[#111]" style={{ fontFamily: '"Varela Round", sans-serif' }}>
+            How to Order
+          </h2>
+          <p className="text-gray-600 mb-6">Easy as 1-2-3</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10">
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-12 h-12 bg-[#FFFC00] rounded-full flex items-center justify-center text-xl font-bold text-[#111]" style={{ fontFamily: '"Varela Round", sans-serif' }}>1</div>
+              <div className="text-sm font-semibold text-[#111]">Open Snapchat</div>
+            </div>
+            <div className="text-gray-300 text-2xl hidden sm:block">→</div>
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-12 h-12 bg-[#FFFC00] rounded-full flex items-center justify-center text-xl font-bold text-[#111]" style={{ fontFamily: '"Varela Round", sans-serif' }}>2</div>
+              <div className="text-sm font-semibold text-[#111]">Add <span className="text-[#EF1187]">{SNAPCHAT_HANDLE}</span></div>
+            </div>
+            <div className="text-gray-300 text-2xl hidden sm:block">→</div>
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-12 h-12 bg-[#FFFC00] rounded-full flex items-center justify-center text-xl font-bold text-[#111]" style={{ fontFamily: '"Varela Round", sans-serif' }}>3</div>
+              <div className="text-sm font-semibold text-[#111]">Place Your Order</div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Products: Cartridges */}
       <section className="py-16 px-6">
@@ -294,53 +333,76 @@ export function MenuPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-[#29292C] py-16 px-6">
+      {/* Final Order CTA */}
+      <section className="bg-[#29292C] py-12 px-6">
         <div className="max-w-[1000px] mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4" style={{ fontFamily: '"Varela Round", sans-serif' }}>
-            Track Your Collection With <span className="text-[#EF1187]">Stash Tracker</span>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3" style={{ fontFamily: '"Varela Round", sans-serif' }}>
+            Ready to Order?
           </h2>
-          <p className="text-white/50 text-lg mb-8 max-w-xl mx-auto">
-            Log these cartridges, rate your favorites, see your stats. Free PWA — no account needed.
+          <p className="text-white/50 text-lg mb-6">
+            Message <span className="text-[#FFFC00] font-bold">{SNAPCHAT_HANDLE}</span> on Snapchat
           </p>
-          <button
-            onClick={() => navigate('/')}
-            className="px-10 py-4 bg-[#EF1187] text-white rounded-[10px] text-lg font-bold hover:bg-[#BF0F6C] transition-all shadow-lg shadow-[#EF1187]/25 hover:shadow-[#EF1187]/40 hover:scale-105"
+          <a
+            href={SNAPCHAT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-[#FFFC00] text-[#111] rounded-[10px] text-lg font-bold hover:bg-[#e6e300] transition-all shadow-lg shadow-[#FFFC00]/20 hover:shadow-[#FFFC00]/40 hover:scale-105"
           >
-            Open Stash Tracker →
-          </button>
+            <SnapchatIcon />
+            Open Snapchat
+          </a>
         </div>
       </section>
 
+
+      {/* ========== DIVIDER — SEPARATE FROM PRODUCTS ========== */}
+      <div className="relative py-12 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#29292C] via-[#0b1120] to-[#0b1120]" />
+        <div className="relative z-10 max-w-[800px] mx-auto text-center px-6">
+          <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-[#13EEEF] to-transparent mx-auto mb-6" />
+          <div className="inline-flex items-center gap-3 bg-[#13EEEF]/10 border border-[#13EEEF]/20 rounded-full px-5 py-2 mb-4">
+            <span className="text-[#13EEEF] text-sm font-bold tracking-widest uppercase">Powered by</span>
+          </div>
+          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4" style={{ fontFamily: '"Varela Round", sans-serif' }}>
+            <span className="text-[#13EEEF]">Stash</span> Tracker
+          </h2>
+          <p className="text-white/40 text-lg max-w-md mx-auto">
+            The app behind the products. Track your stash, log sessions, view stats, and connect with the community.
+          </p>
+        </div>
+      </div>
+
+      {/* ========== STASH TRACKER APP SECTION ========== */}
+
       {/* Features */}
-      <section className="py-16 px-6 bg-gray-50">
+      <section className="py-16 px-6 bg-[#0b1120]">
         <div className="max-w-[1000px] mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-4xl sm:text-5xl font-bold mb-3" style={{ fontFamily: '"Varela Round", sans-serif', color: '#EF1187' }}>
+            <h2 className="text-4xl sm:text-5xl font-bold mb-3" style={{ fontFamily: '"Varela Round", sans-serif', color: '#13EEEF' }}>
               Why Stash Tracker?
             </h2>
-            <p className="text-gray-500 text-lg">One app. Your whole collection. Always with you.</p>
+            <p className="text-white/40 text-lg">One app. Your whole collection. Always with you.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {FEATURES.map((f) => (
               <div
                 key={f.title}
-                className="bg-white border border-gray-100 rounded-2xl p-6 hover:border-[#13EEEF]/40 hover:shadow-lg transition-all group"
+                className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-[#13EEEF]/40 hover:shadow-lg transition-all group"
               >
                 <div className="text-3xl mb-4 group-hover:scale-110 transition-transform">{f.icon}</div>
-                <h3 className="font-semibold text-lg mb-2 text-[#111]" style={{ fontFamily: '"Varela Round", sans-serif' }}>{f.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
+                <h3 className="font-semibold text-lg mb-2 text-white" style={{ fontFamily: '"Varela Round", sans-serif' }}>{f.title}</h3>
+                <p className="text-white/40 text-sm leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Newsletter-style CTA */}
+      {/* App CTA */}
       <section className="bg-[#13EEEF] py-14 px-6">
         <div className="max-w-[600px] mx-auto text-center">
           <h2 className="text-3xl font-bold mb-3 text-[#111]" style={{ fontFamily: '"Varela Round", sans-serif' }}>
-            Ready to Start?
+            Try Stash Tracker
           </h2>
           <p className="text-[#29292C]/70 text-lg mb-6">
             Free PWA. Works offline. No account required.
@@ -349,7 +411,7 @@ export function MenuPage() {
             onClick={() => navigate('/')}
             className="px-8 py-4 bg-[#EF1187] text-white rounded-[10px] text-lg font-bold hover:bg-[#BF0F6C] transition-all shadow-lg"
           >
-            Launch Stash Tracker
+            Launch Stash Tracker →
           </button>
         </div>
       </section>
@@ -359,14 +421,21 @@ export function MenuPage() {
         <div className="max-w-[1000px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-[#EF1187] to-[#BF0F6C] rounded-lg flex items-center justify-center text-sm">🌿</div>
-            <span className="text-white/60 text-sm" style={{ fontFamily: '"Varela Round", sans-serif' }}>Stash Tracker</span>
+            <div>
+              <span className="text-white/60 text-sm font-bold" style={{ fontFamily: '"Varela Round", sans-serif' }}>Koty Canna Co</span>
+              <span className="text-white/20 text-xs mx-2">•</span>
+              <span className="text-white/40 text-sm" style={{ fontFamily: '"Varela Round", sans-serif' }}>Stash Tracker</span>
+            </div>
           </div>
-          <div className="text-white/30 text-sm">
-            st-sh.vercel.app · Free PWA · Open Source
+          <div className="flex items-center gap-4 text-sm">
+            <a href={SNAPCHAT_URL} target="_blank" rel="noopener noreferrer" className="text-[#FFFC00] hover:text-[#e6e300] transition-colors font-medium flex items-center gap-1.5">
+              <SnapchatIcon /> {SNAPCHAT_HANDLE}
+            </a>
+            <span className="text-white/20">·</span>
+            <button onClick={() => navigate('/')} className="text-[#13EEEF] hover:text-[#0fc5c6] transition-colors font-medium">
+              Launch App →
+            </button>
           </div>
-          <button onClick={() => navigate('/')} className="text-[#13EEEF] hover:text-[#0fc5c6] transition-colors text-sm font-medium">
-            Launch App →
-          </button>
         </div>
       </footer>
     </div>
