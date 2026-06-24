@@ -1,34 +1,55 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const CARTRIDGES = [
-  { name: 'Apple Candy', price: 15, emoji: '🍎' },
-  { name: 'Apricot Jelly', price: 15, emoji: '🍑' },
-  { name: 'Banana Daze', price: 15, emoji: '🍌' },
-  { name: 'Banana Kush', price: 15, emoji: '🍌' },
-  { name: 'Bloodshot', price: 15, emoji: '👁️' },
-  { name: 'Blueberry Oatmeal', price: 15, emoji: '🫐' },
-  { name: 'Blueberry Pie', price: 15, emoji: '🥧' },
-  { name: 'Champagne', price: 15, emoji: '🥂' },
-  { name: 'Cherry Candy Ice', price: 15, emoji: '🍒' },
-  { name: 'Clementine Ice', price: 15, emoji: '🍊' },
-  { name: 'Frosted Grapes', price: 15, emoji: '🍇' },
-  { name: 'Golden Mango', price: 15, emoji: '🥭' },
-  { name: 'Grand Daddy Purple', price: 15, emoji: '👑' },
-  { name: 'Irish Cream', price: 15, emoji: '☘️' },
-  { name: 'Island Sweet Skunk', price: 15, emoji: '🌴' },
-  { name: 'Maple Pumpkin Pie', price: 15, emoji: '🎃' },
-  { name: 'Pink Flamingo', price: 15, emoji: '🦩' },
-  { name: 'Rootbeer', price: 15, emoji: '🍺' },
-  { name: 'Sour Watermelon Candy', price: 15, emoji: '🍉' },
-  { name: 'Tangie', price: 15, emoji: '🍊' },
-  { name: 'Watermelon', price: 15, emoji: '🍉' },
+type StrainType = 'indica' | 'sativa' | 'hybrid';
+
+interface Product {
+  name: string;
+  price: number;
+  image?: string;
+  strain: StrainType;
+}
+
+const CARTRIDGES: Product[] = [
+  { name: 'Apple Candy', price: 15, strain: 'hybrid', image: 'https://mightypuff.ca/wp-content/uploads/2026/06/Big-Apple-1-400x400.jpg' },
+  { name: 'Apricot Jelly', price: 15, strain: 'indica', image: 'https://mightypuff.ca/wp-content/uploads/2025/09/Apricot-Jelly-510-cart-400x400.jpg' },
+  { name: 'Banana Daze', price: 15, strain: 'hybrid', image: 'https://mightypuff.ca/wp-content/uploads/2025/09/Banana-Daze-cart-400x400.jpg' },
+  { name: 'Banana Kush', price: 15, strain: 'indica', image: 'https://mightypuff.ca/wp-content/uploads/2026/06/Banana-Kush-1-400x400.jpg' },
+  { name: 'Bloodshot', price: 15, strain: 'sativa' },
+  { name: 'Blueberry Oatmeal', price: 15, strain: 'indica' },
+  { name: 'Blueberry Pie', price: 15, strain: 'indica' },
+  { name: 'Champagne', price: 15, strain: 'sativa' },
+  { name: 'Cherry Candy Ice', price: 15, strain: 'hybrid' },
+  { name: 'Clementine Ice', price: 15, strain: 'hybrid', image: 'https://mightypuff.ca/wp-content/uploads/2026/05/Clementine-ice-1-400x400.jpg' },
+  { name: 'Frosted Grapes', price: 15, strain: 'indica' },
+  { name: 'Golden Mango', price: 15, strain: 'sativa', image: 'https://mightypuff.ca/wp-content/uploads/2025/10/Mango-01-400x400.jpg' },
+  { name: 'Grand Daddy Purple', price: 15, strain: 'indica', image: 'https://mightypuff.ca/wp-content/uploads/2026/04/Grand-Daddy-Purple-400x400.jpg' },
+  { name: 'Irish Cream', price: 15, strain: 'indica', image: 'https://mightypuff.ca/wp-content/uploads/2026/04/Irish-Cream-400x400.jpg' },
+  { name: 'Island Sweet Skunk', price: 15, strain: 'sativa' },
+  { name: 'Maple Pumpkin Pie', price: 15, strain: 'indica' },
+  { name: 'Pink Flamingo', price: 15, strain: 'hybrid', image: 'https://mightypuff.ca/wp-content/uploads/2026/06/Pink-Flamingo-1-400x400.jpg' },
+  { name: 'Rootbeer', price: 15, strain: 'indica' },
+  { name: 'Sour Watermelon Candy', price: 15, strain: 'hybrid' },
+  { name: 'Tangie', price: 15, strain: 'sativa' },
+  { name: 'Watermelon', price: 15, strain: 'indica' },
 ];
 
-const DISPOSABLES = [
-  { name: 'Cherry Jam', price: 30, emoji: '🍒' },
-  { name: 'Galactic Grape', price: 30, emoji: '🪐' },
+const DISPOSABLES: Product[] = [
+  { name: 'Cherry Jam', price: 30, strain: 'hybrid' },
+  { name: 'Galactic Grape', price: 30, strain: 'indica' },
 ];
+
+const STRAIN_COLORS: Record<StrainType, { bg: string; text: string; label: string }> = {
+  indica: { bg: 'bg-indigo-500/15', text: 'text-indigo-400', label: 'Indica' },
+  sativa: { bg: 'bg-amber-500/15', text: 'text-amber-400', label: 'Sativa' },
+  hybrid: { bg: 'bg-emerald-500/15', text: 'text-emerald-400', label: 'Hybrid' },
+};
+
+const STRAIN_COLORS_LIGHT: Record<StrainType, { bg: string; text: string; label: string }> = {
+  indica: { bg: 'bg-indigo-50 border-indigo-200', text: 'text-indigo-700', label: 'Indica' },
+  sativa: { bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700', label: 'Sativa' },
+  hybrid: { bg: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700', label: 'Hybrid' },
+};
 
 const FEATURES = [
   { icon: '📦', title: 'Track Your Stash', desc: 'Add strains, cartridges, edibles — log THC/CBD levels, ratings, prices, and more.' },
@@ -38,6 +59,76 @@ const FEATURES = [
   { icon: '🛒', title: 'Marketplace', desc: 'Buy and sell within the community. Listings with images, ratings, and contact info.' },
   { icon: '📴', title: 'Works Offline', desc: 'Full PWA — install it, use it anywhere. No account needed to get started.' },
 ];
+
+function ProductCard({ product, index, visible, isDark }: { product: Product; index: number; visible: boolean; isDark: boolean }) {
+  const sc = isDark ? STRAIN_COLORS : STRAIN_COLORS_LIGHT;
+  const strainInfo = sc[product.strain];
+
+  return (
+    <div
+      className={`${isDark ? 'bg-white/5 border-white/10 hover:border-[#EF1187]/40' : 'bg-white border-gray-100 hover:border-[#EF1187]/40'} rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-[#EF1187]/5 transition-all duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+      style={{ transitionDelay: `${index * 40}ms` }}
+    >
+      {product.image ? (
+        <div className="relative h-44 overflow-hidden bg-gray-100">
+          <img
+            src={product.image}
+            alt={product.name}
+            loading="lazy"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+          <div className="absolute top-2 right-2">
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${strainInfo.bg} ${strainInfo.text}`}>
+              {strainInfo.label}
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div className="relative h-44 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+          <span className="text-6xl group-hover:scale-110 transition-transform">🌿</span>
+          <div className="absolute top-2 right-2">
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${strainInfo.bg} ${strainInfo.text}`}>
+              {strainInfo.label}
+            </span>
+          </div>
+        </div>
+      )}
+      <div className="p-4 text-center">
+        <h3 className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-[#111]'} mb-1.5 leading-tight`} style={{ fontFamily: '"Varela Round", sans-serif' }}>
+          {product.name}
+        </h3>
+        <div className="text-[#13EEEF] text-[10px] font-bold uppercase tracking-wider mb-2">1g Cartridge</div>
+        <div className="text-[#22c55e] text-[10px] font-medium mb-2">✓ In Stock</div>
+        <div className={`text-xl font-bold ${isDark ? 'text-white' : 'text-[#111]'}`} style={{ fontFamily: '"Varela Round", sans-serif' }}>${product.price}</div>
+      </div>
+    </div>
+  );
+}
+
+function DisposableCard({ product, index, visible, isDark }: { product: Product; index: number; visible: boolean; isDark: boolean }) {
+  const sc = isDark ? STRAIN_COLORS : STRAIN_COLORS_LIGHT;
+  const strainInfo = sc[product.strain];
+
+  return (
+    <div
+      className={`${isDark ? 'bg-gradient-to-br from-[#29292C] to-[#1a1a1d] border-white/10 hover:border-[#13EEEF]/40' : 'bg-gradient-to-br from-gray-900 to-gray-800 border-white/10 hover:border-[#13EEEF]/40'} border rounded-2xl p-8 text-center hover:shadow-lg hover:shadow-[#13EEEF]/10 transition-all duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+      style={{ transitionDelay: `${index * 40}ms` }}
+    >
+      <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">🔥</div>
+      <h3 className="text-lg font-semibold text-white mb-2" style={{ fontFamily: '"Varela Round", sans-serif' }}>
+        {product.name}
+      </h3>
+      <div className="mb-2">
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border ${strainInfo.bg} ${strainInfo.text}`}>
+          {strainInfo.label}
+        </span>
+      </div>
+      <div className="text-[#13EEEF] text-sm font-bold uppercase tracking-wider mb-2">2g Disposable</div>
+      <div className="text-[#22c55e] text-sm font-medium mb-3">✓ In Stock</div>
+      <div className="text-3xl font-bold text-[#FABF39]" style={{ fontFamily: '"Varela Round", sans-serif' }}>${product.price}</div>
+    </div>
+  );
+}
 
 export function MenuPage() {
   const navigate = useNavigate();
@@ -89,7 +180,6 @@ export function MenuPage() {
             Shop Now
           </button>
         </div>
-        {/* Cyan accent bar */}
         <div className="h-1 bg-gradient-to-r from-[#13EEEF] via-[#EF1187] to-[#13EEEF]" />
       </header>
 
@@ -159,22 +249,15 @@ export function MenuPage() {
               1g Cartridges
             </h2>
             <p className="text-gray-500 text-lg">All flavors — $15 each</p>
+            <div className="flex items-center justify-center gap-4 mt-4 text-xs font-medium">
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-indigo-500" /> Indica</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Sativa</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Hybrid</span>
+            </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {CARTRIDGES.map((p, i) => (
-              <div
-                key={p.name}
-                className={`bg-white border border-gray-100 rounded-2xl p-5 text-center hover:border-[#EF1187]/40 hover:shadow-lg hover:shadow-[#EF1187]/5 transition-all duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-                style={{ transitionDelay: `${i * 40}ms` }}
-              >
-                <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">{p.emoji}</div>
-                <h3 className="text-sm font-semibold text-[#111] mb-2 leading-tight" style={{ fontFamily: '"Varela Round", sans-serif' }}>
-                  {p.name}
-                </h3>
-                <div className="text-[#13EEEF] text-xs font-bold uppercase tracking-wider mb-2">1g Cartridge</div>
-                <div className="text-[#22c55e] text-xs font-medium mb-3">✓ In Stock</div>
-                <div className="text-2xl font-bold text-[#111]" style={{ fontFamily: '"Varela Round", sans-serif' }}>${p.price}</div>
-              </div>
+              <ProductCard key={p.name} product={p} index={i} visible={visible} isDark={false} />
             ))}
           </div>
         </div>
@@ -196,19 +279,7 @@ export function MenuPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-lg mx-auto">
             {DISPOSABLES.map((p, i) => (
-              <div
-                key={p.name}
-                className={`bg-gradient-to-br from-[#29292C] to-[#1a1a1d] border border-white/10 rounded-2xl p-8 text-center hover:border-[#13EEEF]/40 hover:shadow-lg hover:shadow-[#13EEEF]/10 transition-all duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-                style={{ transitionDelay: `${(CARTRIDGES.length + i) * 40}ms` }}
-              >
-                <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">{p.emoji}</div>
-                <h3 className="text-lg font-semibold text-white mb-2" style={{ fontFamily: '"Varela Round", sans-serif' }}>
-                  {p.name}
-                </h3>
-                <div className="text-[#13EEEF] text-sm font-bold uppercase tracking-wider mb-2">2g Disposable</div>
-                <div className="text-[#22c55e] text-sm font-medium mb-3">✓ In Stock</div>
-                <div className="text-3xl font-bold text-[#FABF39]" style={{ fontFamily: '"Varela Round", sans-serif' }}>${p.price}</div>
-              </div>
+              <DisposableCard key={p.name} product={p} index={i} visible={visible} isDark={true} />
             ))}
           </div>
         </div>
