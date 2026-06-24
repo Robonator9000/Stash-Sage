@@ -60,6 +60,11 @@ export interface Settings {
   settingsVersion?: number;
   customStrainColors?: Record<string, string>;
   profile?: Profile;
+  notificationsSound?: boolean;
+  notificationsEnabled?: boolean;
+  defaultFeedFilter?: 'latest' | 'following' | 'trending';
+  showOnlineStatus?: boolean;
+  showLocation?: boolean;
 }
 
 export interface Profile {
@@ -69,6 +74,7 @@ export interface Profile {
   avatar_url?: string;
   contact_platform?: string;
   contact_value?: string;
+  location?: string;
 }
 
 export interface Session {

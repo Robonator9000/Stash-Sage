@@ -7,7 +7,7 @@ import { createExportData, downloadExport, downloadCsvExport, copyExportToClipbo
 import { exportProductsPdf } from '../utils/pdfExport';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../utils/supabase';
-import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, Users, Scale, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, Camera, Mail, Phone, MessageCircle, Send } from 'lucide-react';
+import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, Users, Scale, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, Camera, Mail, Phone, MessageCircle, Send, MapPin, Bell, Rss } from 'lucide-react';
 import { ResetPasswordModal } from './ResetPasswordModal';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 
@@ -17,7 +17,7 @@ interface SettingsSheetProps {
   onMergeImport: (data: ImportResult) => void;
   onClose: () => void;
   isDark?: boolean;
-  defaultTab?: 'profile' | 'personalization' | 'session' | 'stats' | 'data' | 'security';
+  defaultTab?: 'profile' | 'preferences' | 'session' | 'budget' | 'data' | 'security';
 }
 
 const LANGUAGES = [
@@ -36,7 +36,7 @@ const LANGUAGE_NAMES: Record<string, Record<string, string>> = {
   pt: { en: 'Ingl\u00eas', es: 'Espanhol', fr: 'Franc\u00eas', de: 'Alem\u00e3o', pt: 'Portugu\u00eas' },
 };
 
-export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDark = true, defaultTab = 'personalization' }: SettingsSheetProps) {
+export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDark = true, defaultTab = 'preferences' }: SettingsSheetProps) {
   const { settings, updateSettings, toggleStatVisibility } = useSettings();
   const { user, signIn, signUp, updatePassword, updateEmail, error: authError } = useAuth();
   const [authEmail, setAuthEmail] = useState('');
@@ -47,7 +47,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mergeFileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
-  const [activeTab, setActiveTab] = useState<'profile' | 'personalization' | 'session' | 'stats' | 'data' | 'security'>(defaultTab);
+  const [activeTab, setActiveTab] = useState<'profile' | 'preferences' | 'session' | 'budget' | 'data' | 'security'>(defaultTab);
   const [pinSetupValue, setPinSetupValue] = useState('');
   const [pinDisableValue, setPinDisableValue] = useState('');
   const [showPinSetup, setShowPinSetup] = useState(false);
@@ -62,6 +62,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(settings.profile?.avatar_url);
   const [profileContactPlatform, setProfileContactPlatform] = useState(settings.profile?.contact_platform || '');
   const [profileContactValue, setProfileContactValue] = useState(settings.profile?.contact_value || '');
+  const [profileLocation, setProfileLocation] = useState(settings.profile?.location || '');
   const [showResetPassword, setShowResetPassword] = useState(false);
   const focusTrapRef = useFocusTrap(true);
   const [newPassword, setNewPassword] = useState('');
@@ -270,10 +271,10 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
         {/* Tabs */}
         <div className={`flex flex-wrap border-b shrink-0 ${isDark ? 'border-slate-800' : 'border-gray-200'}`}>
           {([
-            { id: 'profile', icon: User, label: 'Profile' },
-            { id: 'personalization', icon: Palette, label: t('personalization', lang) },
+            { id: 'profile', icon: User, label: t('profileSetup', lang) },
+            { id: 'preferences', icon: Palette, label: t('preferences', lang) },
             { id: 'session', icon: Clock, label: t('sessionDefaults', lang) },
-            { id: 'stats', icon: BarChart3, label: t('showStats', lang) },
+            { id: 'budget', icon: BarChart3, label: t('budgetAndStats', lang) },
             { id: 'data', icon: Database, label: t('dataBackup', lang) },
             { id: 'security', icon: Lock, label: t('pinLock', lang) },
           ] as const).map(tab => (
@@ -352,6 +353,55 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                 </div>
               ) : (
                 <>
+              {/* Profile Completion Progress */}
+              {(() => {
+                const filled = [
+                  !!profileUsername.trim(),
+                  !!profileBio.trim(),
+                  !!avatarPreview,
+                  !!profileContactPlatform && !!profileContactValue.trim(),
+                ];
+                const pct = Math.round((filled.filter(Boolean).length / filled.length) * 100);
+                return (
+                  <div className={`mb-4 p-3 rounded-xl ${isDark ? 'bg-slate-800/50 border border-slate-700/50' : 'bg-gray-50 border border-gray-200'}`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`text-xs font-medium ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>{t('profileCompletion', lang)}</span>
+                      <span className={`text-xs font-bold ${pct === 100 ? 'text-emerald-400' : 'text-cyan-400'}`}>{pct}%</span>
+                    </div>
+                    <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDark ? 'bg-slate-700' : 'bg-gray-200'}`}>
+                      <div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500 transition-all duration-500" style={{ width: `${pct}%` }} />
+                    </div>
+                    {pct < 100 && (
+                      <p className={`text-[10px] mt-1.5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('profileSetupHint', lang)}</p>
+                    )}
+                  </div>
+                );
+              })()}
+
+              <div>
+                <label className={sectionLabel}><User className="w-4 h-4" />{t('displayName', lang)} <span className="text-red-400">*</span></label>
+                <div className="flex items-center gap-2 mb-1">
+                  <input type="text" value={profileUsername}
+                    onChange={e => setProfileUsername(e.target.value)} maxLength={24} placeholder="Your display name"
+                    className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none ${
+                      isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
+                    }`} />
+                </div>
+                {!profileUsername.trim() && (
+                  <p className={`text-[10px] mt-1 ${isDark ? 'text-red-400/70' : 'text-red-500'}`}>{t('displayNameRequired', lang)}</p>
+                )}
+              </div>
+
+              <div>
+                <label className={sectionLabel}><User className="w-4 h-4" />{t('bio', lang)}</label>
+                <textarea value={profileBio}
+                  onChange={e => setProfileBio(e.target.value)} maxLength={160} rows={3} placeholder="Tell the community about yourself..."
+                  className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none resize-none ${
+                    isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
+                  }`} />
+                <p className={`text-[10px] mt-1 text-right ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{profileBio.length}/160</p>
+              </div>
+
               <div>
                 <label className={sectionLabel}><User className="w-4 h-4" />Profile Picture</label>
                 <div className="flex items-center gap-4 mb-4">
@@ -395,25 +445,16 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               </div>
 
               <div>
-                <label className={sectionLabel}><User className="w-4 h-4" />Username</label>
-                <input type="text" value={profileUsername}
-                  onChange={e => setProfileUsername(e.target.value)} maxLength={24}
+                <label className={sectionLabel}><MapPin className="w-4 h-4" />{t('location', lang)}</label>
+                <input type="text" value={profileLocation}
+                  onChange={e => setProfileLocation(e.target.value)} maxLength={60} placeholder={t('locationPlaceholder', lang)}
                   className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none ${
-                    isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
+                    isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
                   }`} />
               </div>
 
               <div>
-                <label className={sectionLabel}><User className="w-4 h-4" />Bio</label>
-                <textarea value={profileBio}
-                  onChange={e => setProfileBio(e.target.value)} maxLength={160} rows={3}
-                  className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none resize-none ${
-                    isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-                  }`} />
-              </div>
-
-              <div>
-                <label className={sectionLabel}><MessageCircle className="w-4 h-4" />Contact</label>
+                <label className={sectionLabel}><MessageCircle className="w-4 h-4" />{t('contactInfo', lang)}</label>
                 <div className="flex gap-2 flex-wrap mb-2">
                   {CONTACT_PLATFORMS.map(pf => {
                     const Icon = pf === 'phone' ? Phone : pf === 'email' ? Mail : pf === 'discord' ? MessageCircle : pf === 'signal' ? MessageCircle : pf === 'whatsapp' ? MessageCircle : pf === 'instagram' ? Camera : pf === 'snapchat' ? Camera : pf === 'telegram' ? Send : Globe;
@@ -433,8 +474,41 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                 )}
               </div>
 
+              {/* Visibility toggles */}
+              <div className={`p-3 rounded-xl border-2 space-y-3 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{t('showOnlineStatus', lang)}</span>
+                    <p className={`text-[10px] mt-0.5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('showOnlineStatusHint', lang)}</p>
+                  </div>
+                  <button onClick={() => updateSettings({ showOnlineStatus: !settings.showOnlineStatus })}
+                    className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${
+                      settings.showOnlineStatus !== false ? 'bg-gradient-to-r from-cyan-500 to-emerald-500' : isDark ? 'bg-slate-600' : 'bg-gray-300'
+                    }`}>
+                    <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform shadow ${
+                      settings.showOnlineStatus !== false ? 'translate-x-[1.375rem]' : 'translate-x-0.5'
+                    }`} />
+                  </button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{t('showLocation', lang)}</span>
+                    <p className={`text-[10px] mt-0.5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('showLocationHint', lang)}</p>
+                  </div>
+                  <button onClick={() => updateSettings({ showLocation: settings.showLocation === false ? true : false })}
+                    className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${
+                      settings.showLocation !== false ? 'bg-gradient-to-r from-cyan-500 to-emerald-500' : isDark ? 'bg-slate-600' : 'bg-gray-300'
+                    }`}>
+                    <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform shadow ${
+                      settings.showLocation !== false ? 'translate-x-[1.375rem]' : 'translate-x-0.5'
+                    }`} />
+                  </button>
+                </div>
+              </div>
+
               <button
                 onClick={() => {
+                  if (!profileUsername.trim()) return;
                   const p = {
                     username: profileUsername.trim() || 'User',
                     bio: profileBio.trim(),
@@ -442,13 +516,15 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                     avatar_url: avatarPreview,
                     contact_platform: profileContactPlatform || undefined,
                     contact_value: profileContactValue.trim() || undefined,
+                    location: profileLocation.trim() || undefined,
                   };
                   updateSettings({ profile: p });
                   if (user) supabase.from('profiles').upsert({ user_id: user.id, display_name: p.username, avatar_url: p.avatar_url || null }, { onConflict: 'user_id' }).then(undefined, (e: unknown) => { console.error('Profile save sync failed:', e); });
                 }}
-                className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600 transition-all"
+                disabled={!profileUsername.trim()}
+                className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Save Profile
+                {t('save', lang)} {t('profileSetup', lang)}
               </button>
 
               <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={e => {
@@ -512,7 +588,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
             </>
           )}
 
-          {activeTab === 'personalization' && (
+          {activeTab === 'preferences' && (
             <>
               {/* Language */}
               <div className="mb-4">
@@ -614,42 +690,55 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                 </div>
               </div>
 
-              {/* Budget Limit */}
+              <hr className={`my-4 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`} />
+
+              {/* Notifications Section */}
               <div className="mb-4">
-                <label className={sectionLabel}><DollarSign className="w-4 h-4" />{t('budgetLimit', lang)}</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <input type="number" value={settings.budgetLimit}
-                    onChange={(e) => updateSettings({ budgetLimit: Math.max(0, parseFloat(e.target.value) || 0) })}
-                    min="0" step="10" placeholder="0 = disabled"
-                    className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none ${
-                      isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
-                             : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-                    }`} />
-                  <div className={`flex rounded-xl border-2 overflow-hidden ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
-                    {(['weekly', 'monthly', 'yearly'] as const).map(period => (
-                      <button key={period} onClick={() => updateSettings({ budgetPeriod: period })}
-                        className={`flex-1 py-3 text-xs font-medium transition-colors ${
-                          settings.budgetPeriod === period
-                            ? isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
-                            : isDark ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
-                        }`}>{period}</button>
-                    ))}
+                <label className={sectionLabel}><Bell className="w-4 h-4" />{t('notifications', lang)}</label>
+                <div className={`flex items-center justify-between p-3 rounded-xl border-2 mb-2 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
+                  <div>
+                    <span className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{t('notificationsEnabled', lang)}</span>
+                    <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('notificationsEnabledHint', lang)}</p>
                   </div>
+                  <button onClick={() => updateSettings({ notificationsEnabled: settings.notificationsEnabled !== false ? false : true })}
+                    className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${
+                      settings.notificationsEnabled !== false ? 'bg-gradient-to-r from-cyan-500 to-emerald-500' : isDark ? 'bg-slate-600' : 'bg-gray-300'
+                    }`}>
+                    <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform shadow ${
+                      settings.notificationsEnabled !== false ? 'translate-x-[1.375rem]' : 'translate-x-0.5'
+                    }`} />
+                  </button>
                 </div>
-                <p className={`text-xs mt-2 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('budgetLimitHint', lang)}</p>
+                <div className={`flex items-center justify-between p-3 rounded-xl border-2 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
+                  <div>
+                    <span className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{t('notificationsSound', lang)}</span>
+                    <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('notificationsSoundHint', lang)}</p>
+                  </div>
+                  <button onClick={() => updateSettings({ notificationsSound: settings.notificationsSound === false ? true : false })}
+                    className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${
+                      settings.notificationsSound !== false ? 'bg-gradient-to-r from-cyan-500 to-emerald-500' : isDark ? 'bg-slate-600' : 'bg-gray-300'
+                    }`}>
+                    <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform shadow ${
+                      settings.notificationsSound !== false ? 'translate-x-[1.375rem]' : 'translate-x-0.5'
+                    }`} />
+                  </button>
+                </div>
               </div>
 
-              {/* Low Stock Threshold */}
+              {/* Feed Preferences */}
               <div>
-                <label className={sectionLabel}><AlertTriangle className="w-4 h-4" />{t('lowStockThreshold', lang)}</label>
-                <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('lowStockThresholdHint', lang)}</p>
-                <input type="number" value={settings.lowStockThreshold}
-                  onChange={(e) => updateSettings({ lowStockThreshold: Math.max(0, parseFloat(e.target.value) || 0) })}
-                  min="0" step="0.5"
-                  className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none ${
-                    isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
-                           : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-                  }`} />
+                <label className={sectionLabel}><Rss className="w-4 h-4" />{t('defaultFeedFilter', lang)}</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['latest', 'following', 'trending'] as const).map(f => (
+                    <button key={f} onClick={() => updateSettings({ defaultFeedFilter: f })}
+                      className={`py-3 rounded-xl text-xs font-medium transition-all border-2 capitalize ${
+                        (settings.defaultFeedFilter || 'latest') === f
+                          ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
+                          : isDark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
+                                  : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
+                      }`}>{f}</button>
+                  ))}
+                </div>
               </div>
             </>
           )}
@@ -722,18 +811,65 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
             </div>
           )}
 
-          {activeTab === 'stats' && (
-            <div className="grid grid-cols-2 gap-2">
-              {statOptions.map((stat) => (
-                <button key={stat.key} onClick={() => handleStatToggle(stat.key)}
-                  className={`py-2 px-3 rounded-xl text-sm font-medium transition-all border-2 text-left ${
-                    settings.statsVisibility[stat.key]
-                      ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
-                      : isDark ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
-                              : 'bg-gray-100 border-gray-200 text-gray-500 hover:border-gray-300'
-                  }`}>{stat.label}</button>
-              ))}
-            </div>
+          {activeTab === 'budget' && (
+            <>
+              {/* Budget Limit */}
+              <div className="mb-4">
+                <label className={sectionLabel}><DollarSign className="w-4 h-4" />{t('budgetLimit', lang)}</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <input type="number" value={settings.budgetLimit}
+                    onChange={(e) => updateSettings({ budgetLimit: Math.max(0, parseFloat(e.target.value) || 0) })}
+                    min="0" step="10" placeholder="0 = disabled"
+                    className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none ${
+                      isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
+                             : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
+                    }`} />
+                  <div className={`flex rounded-xl border-2 overflow-hidden ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
+                    {(['weekly', 'monthly', 'yearly'] as const).map(period => (
+                      <button key={period} onClick={() => updateSettings({ budgetPeriod: period })}
+                        className={`flex-1 py-3 text-xs font-medium transition-colors ${
+                          settings.budgetPeriod === period
+                            ? isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
+                            : isDark ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                        }`}>{period}</button>
+                    ))}
+                  </div>
+                </div>
+                <p className={`text-xs mt-2 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('budgetLimitHint', lang)}</p>
+              </div>
+
+              {/* Low Stock Threshold */}
+              <div className="mb-4">
+                <label className={sectionLabel}><AlertTriangle className="w-4 h-4" />{t('lowStockThreshold', lang)}</label>
+                <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('lowStockThresholdHint', lang)}</p>
+                <input type="number" value={settings.lowStockThreshold}
+                  onChange={(e) => updateSettings({ lowStockThreshold: Math.max(0, parseFloat(e.target.value) || 0) })}
+                  min="0" step="0.5"
+                  className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none ${
+                    isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
+                           : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
+                  }`} />
+              </div>
+
+              <hr className={`my-4 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`} />
+
+              {/* Stat Visibility */}
+              <div>
+                <label className={sectionLabel}><BarChart3 className="w-4 h-4" />{t('showStats', lang)}</label>
+                <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('statTogglesHint', lang)}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {statOptions.map((stat) => (
+                    <button key={stat.key} onClick={() => handleStatToggle(stat.key)}
+                      className={`py-2 px-3 rounded-xl text-sm font-medium transition-all border-2 text-left ${
+                        settings.statsVisibility[stat.key]
+                          ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
+                          : isDark ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
+                                  : 'bg-gray-100 border-gray-200 text-gray-500 hover:border-gray-300'
+                      }`}>{stat.label}</button>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
 
           {activeTab === 'data' && (

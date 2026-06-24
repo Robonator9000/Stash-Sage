@@ -25,6 +25,8 @@ const defaultSettings: Settings = {
   },
   lowStockThreshold: 0, budgetLimit: 0, budgetPeriod: 'monthly',
   settingsVersion: SETTINGS_VERSION, customStrainColors: {},
+  notificationsSound: true, notificationsEnabled: true,
+  defaultFeedFilter: 'latest', showOnlineStatus: true,
 };
 
 function loadSettings(): Settings {

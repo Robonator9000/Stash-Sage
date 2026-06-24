@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
+import { Lock } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { Product, Session, SortOption, FilterType } from './types';
 import { useProducts } from './utils/useProducts';
@@ -62,7 +63,7 @@ export default function App() {
   const [sessionAmount, setSessionAmount] = useState(0);
   const [sessionPeople, setSessionPeople] = useState(2);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [settingsDefaultTab, setSettingsDefaultTab] = useState<'profile' | 'personalization' | 'session' | 'stats' | 'data' | 'security'>('personalization');
+  const [settingsDefaultTab, setSettingsDefaultTab] = useState<'profile' | 'preferences' | 'session' | 'budget' | 'data' | 'security'>('preferences');
 
   const [showSmoke, setShowSmoke] = useState(false);
   const [viewProfileUserId, setViewProfileUserId] = useState<string | null>(null);
@@ -892,6 +893,24 @@ export default function App() {
         {activeTab === 'community' && (
           <ErrorBoundary isDark={isDark} lang={lang}>
           <div className="space-y-4">
+            {!isAdmin ? (
+              <div className={`flex flex-col items-center justify-center py-20 px-6 text-center rounded-2xl ${
+                isDark ? 'bg-slate-800/40 border border-slate-700/50' : 'bg-gray-50 border border-gray-200'
+              }`}>
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
+                  isDark ? 'bg-slate-700/60' : 'bg-gray-200'
+                }`}>
+                  <Lock className={`w-7 h-7 ${isDark ? 'text-slate-400' : 'text-gray-500'}`} />
+                </div>
+                <h3 className={`text-lg font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {t('wipTitle', lang)}
+                </h3>
+                <p className={`text-sm max-w-xs ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                  {t('wipCommunityDesc', lang)}
+                </p>
+              </div>
+            ) : (
+              <>
             {!user && (
               <div className={`p-4 rounded-2xl text-center text-sm ${isDark ? 'bg-surface/50 border border-edge text-mist' : 'bg-white border border-gray-200 text-gray-500'}`}>
                 Sign in to like, comment, and post in the community.
@@ -920,6 +939,8 @@ export default function App() {
                 onViewProfile={handleViewProfile}
               />
             )}
+              </>
+            )}
           </div>
           </ErrorBoundary>
         )}
@@ -928,13 +949,31 @@ export default function App() {
         {activeTab === 'marketplace' && (
           <ErrorBoundary isDark={isDark} lang={lang}>
           <div className="space-y-4">
-            <MarketplaceFeed
-              isDark={isDark}
-              lang={lang}
-              currentUserId={user?.id || ''}
-              products={products}
-              onViewProfile={handleViewProfile}
-            />
+            {!isAdmin ? (
+              <div className={`flex flex-col items-center justify-center py-20 px-6 text-center rounded-2xl ${
+                isDark ? 'bg-slate-800/40 border border-slate-700/50' : 'bg-gray-50 border border-gray-200'
+              }`}>
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
+                  isDark ? 'bg-slate-700/60' : 'bg-gray-200'
+                }`}>
+                  <Lock className={`w-7 h-7 ${isDark ? 'text-slate-400' : 'text-gray-500'}`} />
+                </div>
+                <h3 className={`text-lg font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {t('wipTitle', lang)}
+                </h3>
+                <p className={`text-sm max-w-xs ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                  {t('wipMarketplaceDesc', lang)}
+                </p>
+              </div>
+            ) : (
+              <MarketplaceFeed
+                isDark={isDark}
+                lang={lang}
+                currentUserId={user?.id || ''}
+                products={products}
+                onViewProfile={handleViewProfile}
+              />
+            )}
           </div>
           </ErrorBoundary>
         )}
