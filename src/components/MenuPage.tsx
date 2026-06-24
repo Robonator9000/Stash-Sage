@@ -1,68 +1,42 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const FLAVORS = [
-  { emoji: '🍎', name: 'Apple Candy', type: '1g Cartridge' },
-  { emoji: '🍇', name: 'Frosted Grapes', type: '1g Cartridge' },
-  { emoji: '🍌', name: 'Banana Daze', type: '1g Cartridge' },
-  { emoji: '🍒', name: 'Cherry Jam', type: '1g Cartridge' },
-  { emoji: '🍉', name: 'Watermelon', type: '1g Cartridge' },
-  { emoji: '🥭', name: 'Golden Mango', type: '1g Cartridge' },
-  { emoji: '🍊', name: 'Clementine Ice', type: '1g Cartridge' },
-  { emoji: '🫐', name: 'Blue Razz', type: '1g Cartridge' },
-  { emoji: '🍑', name: 'Apricot Jelly', type: '1g Cartridge' },
-  { emoji: '🍋', name: 'Lemon Zest', type: '1g Cartridge' },
-  { emoji: '🍓', name: 'Strawberry Kush', type: '1g Cartridge' },
-  { emoji: '🍍', name: 'Pineapple Express', type: '1g Cartridge' },
-  { emoji: '🫒', name: 'Olive Garden', type: '1g Cartridge' },
-  { emoji: '🍈', name: 'Honeydew', type: '1g Cartridge' },
-  { emoji: '🥝', name: 'Kiwi Burst', type: '1g Cartridge' },
-  { emoji: '🥥', name: 'Coconut Dream', type: '1g Cartridge' },
-  { emoji: '🫧', name: 'Bubble Mint', type: '1g Cartridge' },
-  { emoji: '🌿', name: 'Classic OG', type: '1g Cartridge' },
-  { emoji: '🌲', name: 'Pine Forest', type: '1g Cartridge' },
-  { emoji: '🧪', name: 'Cosmic Blend', type: '1g Cartridge' },
-  { emoji: '🌸', name: 'Cherry Blossom', type: '1g Cartridge' },
+const CARTRIDGES = [
+  { name: 'Apple Candy', price: 15, emoji: '🍎' },
+  { name: 'Apricot Jelly', price: 15, emoji: '🍑' },
+  { name: 'Banana Daze', price: 15, emoji: '🍌' },
+  { name: 'Banana Kush', price: 15, emoji: '🍌' },
+  { name: 'Bloodshot', price: 15, emoji: '👁️' },
+  { name: 'Blueberry Oatmeal', price: 15, emoji: '🫐' },
+  { name: 'Blueberry Pie', price: 15, emoji: '🥧' },
+  { name: 'Champagne', price: 15, emoji: '🥂' },
+  { name: 'Cherry Candy Ice', price: 15, emoji: '🍒' },
+  { name: 'Clementine Ice', price: 15, emoji: '🍊' },
+  { name: 'Frosted Grapes', price: 15, emoji: '🍇' },
+  { name: 'Golden Mango', price: 15, emoji: '🥭' },
+  { name: 'Grand Daddy Purple', price: 15, emoji: '👑' },
+  { name: 'Irish Cream', price: 15, emoji: '☘️' },
+  { name: 'Island Sweet Skunk', price: 15, emoji: '🌴' },
+  { name: 'Maple Pumpkin Pie', price: 15, emoji: '🎃' },
+  { name: 'Pink Flamingo', price: 15, emoji: '🦩' },
+  { name: 'Rootbeer', price: 15, emoji: '🍺' },
+  { name: 'Sour Watermelon Candy', price: 15, emoji: '🍉' },
+  { name: 'Tangie', price: 15, emoji: '🍊' },
+  { name: 'Watermelon', price: 15, emoji: '🍉' },
+];
+
+const DISPOSABLES = [
+  { name: 'Cherry Jam', price: 30, emoji: '🍒' },
+  { name: 'Galactic Grape', price: 30, emoji: '🪐' },
 ];
 
 const FEATURES = [
-  {
-    icon: '📦',
-    title: 'Track Your Stash',
-    desc: 'Add strains, cartridges, edibles — log THC/CBD levels, ratings, prices, and more.',
-  },
-  {
-    icon: ' session',
-    title: 'Log Sessions',
-    desc: 'Record every session with method, amount, and notes. See your usage over time.',
-  },
-  {
-    icon: '📊',
-    title: 'View Stats',
-    desc: 'Dashboards and charts showing your consumption patterns, spending, and favorites.',
-  },
-  {
-    icon: '👥',
-    title: 'Community',
-    desc: 'Social feed to share posts, follow friends, comment, and like.',
-  },
-  {
-    icon: '🛒',
-    title: 'Marketplace',
-    desc: 'Buy and sell within the community. Listings with images, ratings, and contact info.',
-  },
-  {
-    icon: '📴',
-    title: 'Works Offline',
-    desc: 'Full PWA — install it, use it anywhere. No account needed to get started.',
-  },
-];
-
-const STEPS = [
-  { num: '01', title: 'Open the App', desc: 'Visit st-sh.vercel.app and add it to your home screen.' },
-  { num: '02', title: 'Add Your Stash', desc: 'Log your products with details, ratings, and photos.' },
-  { num: '03', title: 'Track Sessions', desc: 'Record consumption and watch your stats grow.' },
-  { num: '04', title: 'Join the Community', desc: 'Connect, share, and discover in the marketplace.' },
+  { icon: '📦', title: 'Track Your Stash', desc: 'Add strains, cartridges, edibles — log THC/CBD levels, ratings, prices, and more.' },
+  { icon: '🫧', title: 'Log Sessions', desc: 'Record every session with method, amount, and notes. See your usage over time.' },
+  { icon: '📊', title: 'View Stats', desc: 'Dashboards and charts showing your consumption patterns, spending, and favorites.' },
+  { icon: '👥', title: 'Community', desc: 'Social feed to share posts, follow friends, comment, and like.' },
+  { icon: '🛒', title: 'Marketplace', desc: 'Buy and sell within the community. Listings with images, ratings, and contact info.' },
+  { icon: '📴', title: 'Works Offline', desc: 'Full PWA — install it, use it anywhere. No account needed to get started.' },
 ];
 
 export function MenuPage() {
@@ -75,148 +49,165 @@ export function MenuPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden">
+    <div className="min-h-screen bg-white text-black overflow-x-hidden" style={{ fontFamily: 'Inter, sans-serif' }}>
       {/* WIP Banner */}
-      <div className="bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 border-b border-amber-500/30 px-4 py-2.5 text-center">
-        <span className="text-amber-400 font-semibold text-sm tracking-wide uppercase">
+      <div className="bg-[#FABF39] px-4 py-2 text-center relative z-50">
+        <span className="text-[#111] font-bold text-sm tracking-wide uppercase" style={{ fontFamily: '"Varela Round", sans-serif' }}>
           🚧 Work In Progress — This page is under construction 🚧
         </span>
       </div>
 
-      {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      {/* Top bar */}
+      <div className="bg-[#29292C] text-white text-center py-2 text-xs tracking-widest uppercase font-medium">
+        🔥 21 Exotic Flavors — All $15 — Limited Time 🔥
+      </div>
+
+      {/* Header */}
+      <header className="relative">
+        <div className="max-w-[1000px] mx-auto px-6 py-6 flex items-center justify-between">
+          <button
+            onClick={() => navigate('/')}
+            className="text-[#EF1187] hover:text-[#BF0F6C] transition-colors text-sm font-medium"
+          >
+            ← Back to App
+          </button>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center text-xl shadow-lg shadow-emerald-500/20">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#EF1187] to-[#BF0F6C] rounded-xl flex items-center justify-center text-white text-xl shadow-md">
               🌿
             </div>
-            <span className="font-['Bebas_Neue'] text-2xl tracking-wider text-white">Stash Tracker</span>
+            <div className="text-center">
+              <div className="text-[#EF1187] font-bold text-lg leading-none" style={{ fontFamily: '"Varela Round", sans-serif' }}>
+                STASH TRACKER
+              </div>
+              <div className="text-[#13EEEF] text-[10px] tracking-widest uppercase">New Products</div>
+            </div>
           </div>
           <button
             onClick={() => navigate('/')}
-            className="px-5 py-2.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-full text-sm font-semibold hover:bg-emerald-500/20 transition-all"
+            className="px-5 py-2 bg-[#EF1187] text-white rounded-[10px] text-sm font-bold hover:bg-[#BF0F6C] transition-colors shadow-md shadow-[#EF1187]/20"
           >
-            Open App →
+            Shop Now
           </button>
         </div>
-      </nav>
+        {/* Cyan accent bar */}
+        <div className="h-1 bg-gradient-to-r from-[#13EEEF] via-[#EF1187] to-[#13EEEF]" />
+      </header>
 
       {/* Hero */}
-      <section className="relative pt-32 pb-20 px-6">
+      <section className="relative bg-[#29292C] text-white overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-20 left-1/4 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px]" />
-          <div className="absolute top-40 right-1/4 w-[400px] h-[400px] bg-purple-500/8 rounded-full blur-[100px]" />
+          <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#EF1187]/10 rounded-full blur-[150px]" />
+          <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-[#13EEEF]/10 rounded-full blur-[120px]" />
         </div>
-        <div className={`max-w-4xl mx-auto text-center relative z-10 transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-4 py-1.5 mb-8">
-            <span className="text-emerald-400 text-xs font-semibold uppercase tracking-widest">🌿 Free PWA</span>
-          </div>
-          <h1 className="font-['Bebas_Neue'] text-6xl sm:text-8xl md:text-9xl leading-[0.9] tracking-wider mb-6">
-            STASH<br />
-            <span className="text-emerald-400">TRACKER</span>
-          </h1>
-          <p className="text-lg sm:text-xl text-white/60 max-w-xl mx-auto mb-10 leading-relaxed">
-            The modern way to manage your cannabis collection. Track strains, log sessions, see your stats, and connect with the community.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button
-              onClick={() => navigate('/')}
-              className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl text-white font-bold text-lg shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all hover:scale-105"
-            >
-              Launch Stash Tracker
-            </button>
-            <a
-              href="#features"
-              className="px-8 py-4 bg-white/5 border border-white/10 rounded-2xl text-white/70 font-medium hover:bg-white/10 transition-all"
-            >
-              Learn More ↓
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Promo Section */}
-      <section className="py-20 px-6 relative">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
-        </div>
-        <div className={`max-w-4xl mx-auto text-center relative z-10 transition-all duration-1000 delay-200 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="inline-flex items-center gap-2 bg-red-500/15 border border-red-500/40 rounded-full px-4 py-1.5 mb-6">
-            <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            <span className="text-red-400 text-xs font-bold uppercase tracking-widest">🔥 Limited Time</span>
-          </div>
-          <h2 className="font-['Bebas_Neue'] text-5xl sm:text-7xl tracking-wider mb-4">
-            <span className="text-white">21 EXOTIC</span> <span className="text-emerald-400">FLAVORS</span>
-          </h2>
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <span className="font-['Bebas_Neue'] text-7xl sm:text-8xl text-emerald-400">$15</span>
-            <div className="text-left">
-              <div className="text-white font-semibold text-xl">Each</div>
-              <div className="text-white/40 text-sm uppercase tracking-wider">1g Cartridges</div>
+        <div className={`max-w-[1000px] mx-auto px-6 py-16 sm:py-20 relative z-10 transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+          <div className="flex flex-col sm:flex-row items-center gap-10">
+            <div className="flex-1">
+              <div className="inline-flex items-center gap-2 bg-[#13EEEF]/15 border border-[#13EEEF]/40 rounded-full px-4 py-1.5 mb-6">
+                <span className="w-2 h-2 bg-[#13EEEF] rounded-full animate-pulse" />
+                <span className="text-[#13EEEF] text-xs font-bold uppercase tracking-widest">In Stock Now</span>
+              </div>
+              <h1 className="text-5xl sm:text-7xl font-bold leading-[0.95] mb-4" style={{ fontFamily: '"Varela Round", sans-serif', color: '#EF1187' }}>
+                21 EXOTIC<br />FLAVORS
+              </h1>
+              <p className="text-white/60 text-lg mb-6 leading-relaxed">
+                Premium 1g cartridges. Lab tested quality. Unbeatable price.
+              </p>
+              <div className="flex items-baseline gap-4 mb-8">
+                <span className="text-6xl sm:text-7xl font-bold" style={{ fontFamily: '"Varela Round", sans-serif', color: '#FABF39' }}>$15</span>
+                <span className="text-white/50 text-lg uppercase tracking-wider">each</span>
+              </div>
+              <button
+                onClick={() => navigate('/')}
+                className="px-8 py-4 bg-[#EF1187] text-white rounded-[10px] text-lg font-bold hover:bg-[#BF0F6C] transition-all shadow-lg shadow-[#EF1187]/25 hover:shadow-[#EF1187]/40 hover:scale-105"
+              >
+                Start Tracking →
+              </button>
+            </div>
+            <div className="flex-1 flex justify-center">
+              <div className="relative">
+                <div className="w-48 h-48 bg-gradient-to-br from-[#EF1187] to-[#BF0F6C] rounded-full flex items-center justify-center text-8xl shadow-2xl shadow-[#EF1187]/30">
+                  🌿
+                </div>
+                <div className="absolute -top-3 -right-3 w-20 h-20 bg-[#FABF39] rounded-full flex items-center justify-center text-3xl font-bold text-[#111] shadow-lg" style={{ fontFamily: '"Varela Round", sans-serif' }}>
+                  $15
+                </div>
+                <div className="absolute -bottom-2 -left-2 w-14 h-14 bg-[#13EEEF] rounded-full flex items-center justify-center text-2xl shadow-lg">
+                  🔥
+                </div>
+              </div>
             </div>
           </div>
-          <p className="text-white/50 text-lg mb-12">Track your collection in Stash Tracker — free PWA, no account needed</p>
+        </div>
+      </section>
 
-          {/* Flavor Grid */}
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-3">
-            {FLAVORS.map((f, i) => (
+      {/* Marquee strip */}
+      <div className="bg-[#EF1187] text-white py-2 overflow-hidden">
+        <div className="flex animate-marquee whitespace-nowrap">
+          {[...Array(2)].map((_, i) => (
+            <span key={i} className="mx-8 text-sm font-bold uppercase tracking-wider">
+              🍎 Apple Candy &nbsp;•&nbsp; 🍇 Frosted Grapes &nbsp;•&nbsp; 🍌 Banana Daze &nbsp;•&nbsp; 🍒 Cherry Candy Ice &nbsp;•&nbsp; 🍉 Watermelon &nbsp;•&nbsp; 🥭 Golden Mango &nbsp;•&nbsp; 👑 Grand Daddy Purple &nbsp;•&nbsp; 🦩 Pink Flamingo &nbsp;•&nbsp; 🍊 Clementine Ice &nbsp;•&nbsp; 🥂 Champagne &nbsp;•&nbsp; 🌴 Island Sweet Skunk &nbsp;•&nbsp; 🍺 Rootbeer &nbsp;•&nbsp;
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Products: Cartridges */}
+      <section className="py-16 px-6">
+        <div className="max-w-[1000px] mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl sm:text-5xl font-bold mb-3" style={{ fontFamily: '"Varela Round", sans-serif', color: '#EF1187' }}>
+              1g Cartridges
+            </h2>
+            <p className="text-gray-500 text-lg">All flavors — $15 each</p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {CARTRIDGES.map((p, i) => (
               <div
-                key={f.name}
-                className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-3 text-center hover:border-emerald-500/40 hover:bg-emerald-500/5 transition-all cursor-default"
-                style={{ animationDelay: `${i * 30}ms` }}
+                key={p.name}
+                className={`bg-white border border-gray-100 rounded-2xl p-5 text-center hover:border-[#EF1187]/40 hover:shadow-lg hover:shadow-[#EF1187]/5 transition-all duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                style={{ transitionDelay: `${i * 40}ms` }}
               >
-                <div className="text-2xl mb-1">{f.emoji}</div>
-                <div className="text-[10px] text-white/70 font-medium leading-tight">{f.name}</div>
+                <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">{p.emoji}</div>
+                <h3 className="text-sm font-semibold text-[#111] mb-2 leading-tight" style={{ fontFamily: '"Varela Round", sans-serif' }}>
+                  {p.name}
+                </h3>
+                <div className="text-[#13EEEF] text-xs font-bold uppercase tracking-wider mb-2">1g Cartridge</div>
+                <div className="text-[#22c55e] text-xs font-medium mb-3">✓ In Stock</div>
+                <div className="text-2xl font-bold text-[#111]" style={{ fontFamily: '"Varela Round", sans-serif' }}>${p.price}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="py-20 px-6">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
-        </div>
-        <div className="max-w-5xl mx-auto relative z-10">
-          <div className="text-center mb-16">
-            <h2 className="font-['Bebas_Neue'] text-4xl sm:text-6xl tracking-wider text-white mb-4">
-              EVERYTHING YOU <span className="text-emerald-400">NEED</span>
-            </h2>
-            <p className="text-white/50 text-lg">One app. Your whole collection. Always with you.</p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {FEATURES.map((f) => (
-              <div
-                key={f.title}
-                className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6 hover:border-emerald-500/30 hover:bg-emerald-500/[0.03] transition-all group"
-              >
-                <div className="text-3xl mb-4 group-hover:scale-110 transition-transform">{f.icon}</div>
-                <h3 className="text-white font-semibold text-lg mb-2">{f.title}</h3>
-                <p className="text-white/40 text-sm leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Divider */}
+      <div className="max-w-[1000px] mx-auto px-6">
+        <div className="h-px bg-gradient-to-r from-transparent via-[#13EEEF]/40 to-transparent" />
+      </div>
 
-      {/* How It Works */}
-      <section className="py-20 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="font-['Bebas_Neue'] text-4xl sm:text-6xl tracking-wider text-white mb-4">
-              GET STARTED IN <span className="text-emerald-400">SECONDS</span>
+      {/* Products: Disposables */}
+      <section className="py-16 px-6">
+        <div className="max-w-[1000px] mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl sm:text-5xl font-bold mb-3" style={{ fontFamily: '"Varela Round", sans-serif', color: '#EF1187' }}>
+              2g Disposables
             </h2>
-            <p className="text-white/50 text-lg">No sign-up required. Just open and start tracking.</p>
+            <p className="text-gray-500 text-lg">Premium disposables — $30 each</p>
           </div>
-          <div className="grid sm:grid-cols-2 gap-6">
-            {STEPS.map((s) => (
-              <div key={s.num} className="flex gap-5 items-start bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6 hover:border-emerald-500/30 transition-all">
-                <div className="font-['Bebas_Neue'] text-4xl text-emerald-500/30 leading-none shrink-0">{s.num}</div>
-                <div>
-                  <h3 className="text-white font-semibold text-lg mb-1">{s.title}</h3>
-                  <p className="text-white/40 text-sm leading-relaxed">{s.desc}</p>
-                </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-lg mx-auto">
+            {DISPOSABLES.map((p, i) => (
+              <div
+                key={p.name}
+                className={`bg-gradient-to-br from-[#29292C] to-[#1a1a1d] border border-white/10 rounded-2xl p-8 text-center hover:border-[#13EEEF]/40 hover:shadow-lg hover:shadow-[#13EEEF]/10 transition-all duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                style={{ transitionDelay: `${(CARTRIDGES.length + i) * 40}ms` }}
+              >
+                <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">{p.emoji}</div>
+                <h3 className="text-lg font-semibold text-white mb-2" style={{ fontFamily: '"Varela Round", sans-serif' }}>
+                  {p.name}
+                </h3>
+                <div className="text-[#13EEEF] text-sm font-bold uppercase tracking-wider mb-2">2g Disposable</div>
+                <div className="text-[#22c55e] text-sm font-medium mb-3">✓ In Stock</div>
+                <div className="text-3xl font-bold text-[#FABF39]" style={{ fontFamily: '"Varela Round", sans-serif' }}>${p.price}</div>
               </div>
             ))}
           </div>
@@ -224,47 +215,78 @@ export function MenuPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="bg-gradient-to-b from-emerald-500/10 to-transparent border border-emerald-500/20 rounded-3xl p-10 sm:p-14 relative overflow-hidden">
-            <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute -top-20 -right-20 w-60 h-60 bg-emerald-500/10 rounded-full blur-[80px]" />
-              <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-purple-500/10 rounded-full blur-[80px]" />
-            </div>
-            <div className="relative z-10">
-              <h2 className="font-['Bebas_Neue'] text-4xl sm:text-5xl tracking-wider text-white mb-4">
-                READY TO <span className="text-emerald-400">TRACK?</span>
-              </h2>
-              <p className="text-white/50 text-lg mb-8">Join the community. Start your collection today.</p>
-              <button
-                onClick={() => navigate('/')}
-                className="px-10 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl text-white font-bold text-lg shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all hover:scale-105"
+      <section className="bg-[#29292C] py-16 px-6">
+        <div className="max-w-[1000px] mx-auto text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4" style={{ fontFamily: '"Varela Round", sans-serif' }}>
+            Track Your Collection With <span className="text-[#EF1187]">Stash Tracker</span>
+          </h2>
+          <p className="text-white/50 text-lg mb-8 max-w-xl mx-auto">
+            Log these cartridges, rate your favorites, see your stats. Free PWA — no account needed.
+          </p>
+          <button
+            onClick={() => navigate('/')}
+            className="px-10 py-4 bg-[#EF1187] text-white rounded-[10px] text-lg font-bold hover:bg-[#BF0F6C] transition-all shadow-lg shadow-[#EF1187]/25 hover:shadow-[#EF1187]/40 hover:scale-105"
+          >
+            Open Stash Tracker →
+          </button>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-16 px-6 bg-gray-50">
+        <div className="max-w-[1000px] mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl sm:text-5xl font-bold mb-3" style={{ fontFamily: '"Varela Round", sans-serif', color: '#EF1187' }}>
+              Why Stash Tracker?
+            </h2>
+            <p className="text-gray-500 text-lg">One app. Your whole collection. Always with you.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {FEATURES.map((f) => (
+              <div
+                key={f.title}
+                className="bg-white border border-gray-100 rounded-2xl p-6 hover:border-[#13EEEF]/40 hover:shadow-lg transition-all group"
               >
-                Open Stash Tracker →
-              </button>
-            </div>
+                <div className="text-3xl mb-4 group-hover:scale-110 transition-transform">{f.icon}</div>
+                <h3 className="font-semibold text-lg mb-2 text-[#111]" style={{ fontFamily: '"Varela Round", sans-serif' }}>{f.title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
+      {/* Newsletter-style CTA */}
+      <section className="bg-[#13EEEF] py-14 px-6">
+        <div className="max-w-[600px] mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-3 text-[#111]" style={{ fontFamily: '"Varela Round", sans-serif' }}>
+            Ready to Start?
+          </h2>
+          <p className="text-[#29292C]/70 text-lg mb-6">
+            Free PWA. Works offline. No account required.
+          </p>
+          <button
+            onClick={() => navigate('/')}
+            className="px-8 py-4 bg-[#EF1187] text-white rounded-[10px] text-lg font-bold hover:bg-[#BF0F6C] transition-all shadow-lg"
+          >
+            Launch Stash Tracker
+          </button>
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer className="border-t border-white/5 py-10 px-6">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <footer className="bg-[#29292C] py-8 px-6">
+        <div className="max-w-[1000px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center text-sm">🌿</div>
-            <span className="font-['Bebas_Neue'] text-lg tracking-wider text-white/60">Stash Tracker</span>
+            <div className="w-8 h-8 bg-gradient-to-br from-[#EF1187] to-[#BF0F6C] rounded-lg flex items-center justify-center text-sm">🌿</div>
+            <span className="text-white/60 text-sm" style={{ fontFamily: '"Varela Round", sans-serif' }}>Stash Tracker</span>
           </div>
           <div className="text-white/30 text-sm">
             st-sh.vercel.app · Free PWA · Open Source
           </div>
-          <div className="flex items-center gap-4">
-            <a href="https://github.com/Robonator9000/Stash-Tracker" target="_blank" rel="noreferrer" className="text-white/40 hover:text-white/70 transition-colors text-sm">
-              GitHub
-            </a>
-            <button onClick={() => navigate('/')} className="text-emerald-400 hover:text-emerald-300 transition-colors text-sm font-medium">
-              Launch App →
-            </button>
-          </div>
+          <button onClick={() => navigate('/')} className="text-[#13EEEF] hover:text-[#0fc5c6] transition-colors text-sm font-medium">
+            Launch App →
+          </button>
         </div>
       </footer>
     </div>
