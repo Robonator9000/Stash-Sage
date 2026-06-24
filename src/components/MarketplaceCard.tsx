@@ -3,6 +3,7 @@ import type { MarketplaceListing } from '../types';
 import { t } from '../utils/translations';
 import { getContactUrl, copyToClipboard } from '../utils/helpers';
 import { Tag, Clock, DollarSign, ExternalLink, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ReviewSection } from './ReviewSection';
 
 const PLATFORM_COLORS: Record<string, string> = {
   phone: '#22c55e',
@@ -216,6 +217,9 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, 
           </button>
         </div>
       )}
+
+      {/* Reviews */}
+      <ReviewSection listingId={listing.id} isOwner={isOwner} currentUserId={currentUserId} isDark={isDark} lang={lang} onViewProfile={onViewProfile} />
 
       {confirmAction && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setConfirmAction(null)}>

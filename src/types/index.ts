@@ -163,6 +163,19 @@ export interface MarketplaceListing {
   };
 }
 
+export interface ListingReview {
+  id: string;
+  listing_id: string;
+  user_id: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+  author?: {
+    username: string;
+    avatar_url?: string;
+  };
+}
+
 export const CONTACT_PLATFORMS = [
   'email',
   'phone',
