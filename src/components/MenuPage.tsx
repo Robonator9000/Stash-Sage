@@ -151,8 +151,8 @@ function DisposableCard({ product, index, visible, isDark }: { product: Product;
 
 function SnapchatIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
-      <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.9 11.9 0 0 0 5.683 1.448h.005c6.624 0 11.99-5.367 11.99-11.988C24.002 5.367 18.636 0 12.017 0" />
+    <svg viewBox="0 0 501 501" className="w-5 h-5" fill="currentColor">
+      <path d="M250.5 0C113.1 0 1 111.5 1 247.8c0 41.5 10.9 81.9 31.5 117.5L11 475.6l124.8-32.7a236.3 236.3 0 0 0 112.3 28.7h1.1c130.9 0 237.2-106.1 237.2-237.1C486.4 111.5 374.8 0 250.5 0zm-58.5 234.9a25.8 25.8 0 1 1 0-51.6 25.8 25.8 0 0 1 0 51.6zm116.9 0a25.8 25.8 0 1 1 0-51.6 25.8 25.8 0 0 1 0 51.6z" fillRule="evenodd" />
     </svg>
   );
 }
