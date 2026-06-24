@@ -157,13 +157,6 @@ export function MenuPage() {
 
   return (
     <div className="min-h-screen bg-white text-black overflow-x-hidden" style={{ fontFamily: 'Inter, sans-serif' }}>
-      {/* WIP Banner */}
-      <div className="bg-[#FABF39] px-4 py-2 text-center relative z-50">
-        <span className="text-[#111] font-bold text-sm tracking-wide uppercase" style={{ fontFamily: '"Varela Round", sans-serif' }}>
-          🚧 Work In Progress — This page is under construction 🚧
-        </span>
-      </div>
-
       {/* Top bar */}
       <div className="bg-[#29292C] text-white text-center py-2 text-xs tracking-widest uppercase font-medium">
         🔥 21 Exotic Flavors — All $15 — Limited Time 🔥
