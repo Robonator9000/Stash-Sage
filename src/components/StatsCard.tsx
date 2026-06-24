@@ -20,11 +20,13 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
     const totalProducts = products.length;
     const totalAmount = roundToHundredth(products.reduce((sum, p) => sum + p.amount, 0));
     const totalSessions = products.reduce((sum, p) => sum + (p.consumptionCount || 0), 0);
-    const averageRating = products.filter(p => p.rating > 0).length > 0
-      ? roundToHundredth(products.filter(p => p.rating > 0).reduce((sum, p) => sum + p.rating, 0) / products.filter(p => p.rating > 0).length)
+    const rated = products.filter(p => p.rating > 0);
+    const averageRating = rated.length > 0
+      ? roundToHundredth(rated.reduce((sum, p) => sum + p.rating, 0) / rated.length)
       : 0;
-    const averageTHC = products.filter(p => p.thc > 0).length > 0
-      ? roundToHundredth(products.filter(p => p.thc > 0).reduce((sum, p) => sum + p.thc, 0) / products.filter(p => p.thc > 0).length)
+    const thcProducts = products.filter(p => p.thc > 0);
+    const averageTHC = thcProducts.length > 0
+      ? roundToHundredth(thcProducts.reduce((sum, p) => sum + p.thc, 0) / thcProducts.length)
       : 0;
     const totalValue = roundToHundredth(products.reduce((sum, p) => sum + (p.price || 0) * p.amount, 0));
     const pricePerGram = totalAmount > 0 ? roundToHundredth(totalValue / totalAmount) : 0;

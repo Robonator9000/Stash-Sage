@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import { supabase } from '../utils/supabase';
 import { showToast } from './Toast';
 import { Shield, ShieldOff, Ban, CheckCircle, Trash2, Search, X } from 'lucide-react';
@@ -9,7 +9,7 @@ interface AdminDashboardProps {
   onViewProfile?: (userId: string) => void;
 }
 
-export function AdminDashboard({ isDark, currentUserId, onViewProfile }: AdminDashboardProps) {
+export const AdminDashboard = memo(function AdminDashboard({ isDark, currentUserId, onViewProfile }: AdminDashboardProps) {
   const [tab, setTab] = useState<'users' | 'posts' | 'listings'>('users');
   const [users, setUsers] = useState<any[]>([]);
   const [posts, setPosts] = useState<any[]>([]);
@@ -263,4 +263,4 @@ export function AdminDashboard({ isDark, currentUserId, onViewProfile }: AdminDa
       )}
     </div>
   );
-}
+});

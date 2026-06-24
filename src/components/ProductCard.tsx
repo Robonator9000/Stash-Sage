@@ -10,16 +10,16 @@ import { showToast } from './Toast';
 
 interface ProductCardProps {
   product: Product;
-  onClick: () => void;
-  onConsume: () => void;
-  onSell: () => void;
-  onToggleFavorite: () => void;
+  onClick: (product: Product) => void;
+  onConsume: (product: Product) => void;
+  onSell: (product: Product) => void;
+  onToggleFavorite: (id: string) => void;
   isDark?: boolean;
   layout?: 'grid' | 'list' | 'compact';
   precision?: number;
   isSelectMode?: boolean;
   selected?: boolean;
-  onToggleSelect?: () => void;
+  onToggleSelect?: (id: string) => void;
 }
 
 const COLOR_PRESETS = ['#a855f7', '#f59e0b', '#10b981', '#ef4444', '#3b82f6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16'];
@@ -138,12 +138,12 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      if (isSelectMode) { onToggleSelect?.(); } else { onClick(); }
+      if (isSelectMode) { onToggleSelect?.(product.id); } else { onClick(product); }
     }
   };
 
   const handleCardClick = () => {
-    if (isSelectMode) { onToggleSelect?.(); } else { onClick(); }
+    if (isSelectMode) { onToggleSelect?.(product.id); } else { onClick(product); }
   };
 
   const buttonAction = (e: React.MouseEvent, action: () => void) => {
@@ -186,7 +186,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
                 ? 'bg-cyanx border-cyanx'
                 : isDark ? 'border-slate-600' : 'border-gray-300'
             }`}
-              onClick={(e) => { e.stopPropagation(); onToggleSelect?.(); }}
+              onClick={(e) => { e.stopPropagation(); onToggleSelect?.(product.id); }}
             >
               {selected && (
                 <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -239,21 +239,21 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
 
           <div className="flex items-center gap-2">
             <button
-              onClick={(e) => buttonAction(e, onConsume)}
+              onClick={(e) => buttonAction(e, () => onConsume(product))}
               aria-label={t('consume', lang)}
               className={`p-2 rounded-lg transition-all ${isDark ? 'bg-cyanx/12 text-cyanx hover:bg-cyanx/20' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'}`}
             >
               <Flame className="w-4 h-4" />
             </button>
             <button
-              onClick={(e) => buttonAction(e, onSell)}
+              onClick={(e) => buttonAction(e, () => onSell(product))}
               aria-label={t('sell', lang)}
               className={`p-2 rounded-lg transition-all ${isDark ? 'bg-amberx/12 text-amberx hover:bg-amberx/20' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'}`}
             >
               <DollarSign className="w-4 h-4" />
             </button>
             <button
-              onClick={(e) => buttonAction(e, onToggleFavorite)}
+              onClick={(e) => buttonAction(e, () => onToggleFavorite(product.id))}
               aria-label={product.favorite ? t('filterFavorites', lang) : t('addToFavorites', lang)}
               className={`p-2 rounded-lg transition-all ${product.favorite ? 'text-amberx' : isDark ? 'text-haze hover:text-amberx' : 'text-gray-400 hover:text-amber-500'}`}
             >
@@ -282,7 +282,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
               ? 'bg-cyanx border-cyanx'
               : isDark ? 'border-slate-600 bg-deep/80' : 'border-gray-300 bg-white/90'
           }`}
-            onClick={(e) => { e.stopPropagation(); onToggleSelect?.(); }}
+            onClick={(e) => { e.stopPropagation(); onToggleSelect?.(product.id); }}
           >
             {selected && (
               <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -326,15 +326,15 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
           )}
         </div>
         <div className="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
-          <button onClick={(e) => buttonAction(e, onConsume)} aria-label={t('consume', lang)}
+          <button onClick={(e) => buttonAction(e, () => onConsume(product))} aria-label={t('consume', lang)}
             className={`p-1.5 rounded-lg ${isDark ? 'bg-cyanx/15 text-cyanx hover:bg-cyanx/25' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'}`}>
             <Flame className="w-3.5 h-3.5" />
           </button>
-          <button onClick={(e) => buttonAction(e, onSell)} aria-label="Sell"
+          <button onClick={(e) => buttonAction(e, () => onSell(product))} aria-label="Sell"
             className={`p-1.5 rounded-lg ${isDark ? 'bg-amberx/15 text-amberx hover:bg-amberx/25' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'}`}>
             <DollarSign className="w-3.5 h-3.5" />
           </button>
-          <button onClick={(e) => buttonAction(e, onToggleFavorite)} aria-label={product.favorite ? t('filterFavorites', lang) : 'Add to favourites'}
+          <button onClick={(e) => buttonAction(e, () => onToggleFavorite(product.id))} aria-label={product.favorite ? t('filterFavorites', lang) : 'Add to favourites'}
             className={`p-1.5 rounded-lg ${product.favorite ? 'text-amberx' : isDark ? 'text-haze hover:text-amberx' : 'text-gray-400 hover:text-amber-500'}`}>
             <Heart className={`w-3.5 h-3.5 ${product.favorite ? 'fill-current' : ''}`} />
           </button>
@@ -359,7 +359,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
             ? 'bg-cyanx border-cyanx'
             : isDark ? 'border-slate-600 bg-deep/80' : 'border-gray-300 bg-white/90'
         }`}
-          onClick={(e) => { e.stopPropagation(); onToggleSelect?.(); }}
+          onClick={(e) => { e.stopPropagation(); onToggleSelect?.(product.id); }}
         >
           {selected && (
             <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -404,13 +404,13 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
         <div className="absolute top-3 right-3 z-20 transition-all duration-200">
           {product.favorite ? (
             <div className="w-8 h-8 bg-amberx rounded-full flex items-center justify-center shadow-lg"
-              onClick={(e) => buttonAction(e, onToggleFavorite)}
+              onClick={(e) => buttonAction(e, () => onToggleFavorite(product.id))}
             >
               <Heart className="w-4 h-4 text-white fill-white" />
             </div>
           ) : (
             <button
-              onClick={(e) => buttonAction(e, onToggleFavorite)}
+              onClick={(e) => buttonAction(e, () => onToggleFavorite(product.id))}
               className={`w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 ${
                 isDark ? 'bg-deep/80 text-mist hover:text-amberx' : 'bg-white/90 text-gray-400 hover:text-amber-500'
               }`}
@@ -499,7 +499,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
 
         <div className={`flex items-center gap-2 mt-auto pt-4 border-t border-dashed ${isDark ? 'border-edge' : 'border-gray-200'}`}>
           <button
-            onClick={(e) => buttonAction(e, onConsume)}
+            onClick={(e) => buttonAction(e, () => onConsume(product))}
             aria-label={t('consume', lang)}
             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98] ${
               isDark
@@ -511,7 +511,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
             <span className="text-sm">{t('consume', lang)}</span>
           </button>
           <button
-            onClick={(e) => buttonAction(e, onSell)}
+            onClick={(e) => buttonAction(e, () => onSell(product))}
             aria-label="Sell"
             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98] ${
               isDark
@@ -523,7 +523,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
             <span className="text-sm">{t('sell', lang)}</span>
           </button>
           <button
-            onClick={(e) => buttonAction(e, onToggleFavorite)}
+            onClick={(e) => buttonAction(e, () => onToggleFavorite(product.id))}
             aria-label={product.favorite ? t('filterFavorites', lang) : 'Add to favourites'}
             className={`p-2 rounded-xl transition-all ${
               product.favorite

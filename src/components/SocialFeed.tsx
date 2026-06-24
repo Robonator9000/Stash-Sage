@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import type { Post, Product, Profile } from '../types';
 import { supabase } from '../utils/supabase';
 import { t } from '../utils/translations';
@@ -19,7 +19,7 @@ interface SocialFeedProps {
 
 const PAGE_SIZE = 10;
 
-export function SocialFeed({ isDark, lang, currentUserId, username, products, profile, onViewProfile }: SocialFeedProps) {
+export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId, username, products, profile, onViewProfile }: SocialFeedProps) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -562,4 +562,4 @@ export function SocialFeed({ isDark, lang, currentUserId, username, products, pr
       <div ref={observerRef} className="h-4" />
     </div>
   );
-}
+});

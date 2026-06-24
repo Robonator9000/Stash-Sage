@@ -56,16 +56,16 @@ export const ProductGrid = memo(function ProductGrid({
               <ProductCard
                 key={product.id}
                 product={product}
-                onClick={() => onEditProduct(product)}
-                onConsume={() => onConsumeProduct(product)}
-                onSell={() => onSellProduct(product)}
-                onToggleFavorite={() => onToggleFavorite(product.id)}
+                onClick={onEditProduct}
+                onConsume={onConsumeProduct}
+                onSell={onSellProduct}
+                onToggleFavorite={onToggleFavorite}
                 isDark={isDark}
                 layout={layout}
                 precision={precision}
                 isSelectMode={isSelectMode}
                 selected={selectedIds?.has(product.id) || false}
-                onToggleSelect={() => onToggleSelect?.(product.id)}
+                onToggleSelect={onToggleSelect}
               />
           ))}
         </div>

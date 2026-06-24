@@ -4,7 +4,7 @@ import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { hashPin } from '../utils/helpers';
 import { createExportData, downloadExport, downloadCsvExport, copyExportToClipboard, parseImportData, ImportResult } from '../utils/dataTransfer';
-import { exportProductsPdf } from '../utils/pdfExport';
+// jspdf loaded dynamically on PDF export only
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../utils/supabase';
 import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, Users, Scale, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, Camera, Mail, Phone, MessageCircle, Send, MapPin, Bell, Rss } from 'lucide-react';
@@ -116,8 +116,9 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
     }
   };
 
-  const handleExportPdf = () => {
+  const handleExportPdf = async () => {
     try {
+      const { exportProductsPdf } = await import('../utils/pdfExport');
       exportProductsPdf(products, settings);
       setFeedback({ type: 'success', message: t('exportSuccess', settings.language) });
     } catch {

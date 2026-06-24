@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react';
 import type { MarketplaceListing, Product } from '../types';
 import { MARKETPLACE_CATEGORIES } from '../types';
 import { supabase, deleteStorageImages } from '../utils/supabase';
@@ -16,7 +16,7 @@ interface MarketplaceFeedProps {
   onViewProfile?: (userId: string) => void;
 }
 
-export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewProfile }: MarketplaceFeedProps) {
+export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewProfile }: MarketplaceFeedProps) {
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -301,4 +301,4 @@ export function MarketplaceFeed({ isDark, lang, currentUserId, products, onViewP
       )}
     </div>
   );
-}
+});
