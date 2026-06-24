@@ -152,7 +152,7 @@ function DisposableCard({ product, index, visible, isDark }: { product: Product;
 function SnapchatIcon() {
   return (
     <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
-      <path d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12.922-.214.093-.04.195-.06.3-.06.34 0 .594.165.745.375.09.12.15.27.165.435 0 .06-.015.135-.03.21-.255.975-1.485 1.665-2.866 1.92-.045.09-.09.21-.135.33-.06.165-.12.33-.2.48-.285.525-.66.765-1.155.765-.21 0-.39-.045-.555-.12a2.7 2.7 0 0 0-.315-.105c-.165-.045-.33-.075-.51-.075-.15 0-.315.03-.48.075l-.33.09c-.165.045-.33.075-.51.075-.66 0-1.17-.39-1.485-.78-.33-.405-.6-.825-.795-1.11-.255-.375-.81-.81-1.53-.81-.255 0-.48.06-.69.15-.15.06-.285.135-.405.21-.27.15-.57.285-.945.285-.3 0-.555-.06-.78-.18a2.48 2.48 0 0 1-.51-.36c-.225-.195-.42-.42-.585-.675-.42-.66-.72-1.44-.72-2.34 0-.51.09-1.005.27-1.44.18-.42.42-.78.72-1.08.285-.285.615-.51.99-.66.345-.135.72-.21 1.11-.21.12 0 .24.015.36.045.105.03.21.06.315.105.105.045.195.09.285.135.33.165.585.285.825.375.39.15.78.225 1.2.225.165 0 .33-.015.48-.045.135-.015.255-.045.375-.075.15-.045.3-.075.45-.075.21 0 .39.06.525.165.12.09.195.225.24.375.03.105.045.225.045.36 0 .135-.03.27-.06.405a1.2 1.2 0 0 1-.24.405c-.09.09-.195.165-.315.225a1.5 1.5 0 0 1-.405.12c-.135.03-.27.045-.405.06-.075.015-.15.015-.225.03-.12.03-.225.06-.33.09-.21.06-.39.105-.57.15-.39.09-.72.15-1.05.21-.3.06-.57.105-.84.15-.45.075-.84.135-1.14.195-.375.075-.645.135-.81.195-.195.06-.3.12-.345.18-.045.06-.06.135-.06.225 0 .15.06.285.165.39.21.195.555.345 1.02.435.135.03.27.045.405.06.15.015.3.03.45.045.3.03.57.06.81.09.375.045.675.09.915.135.27.06.495.105.675.165.15.045.27.105.36.165.09.06.15.135.18.225.03.09.045.195.045.315 0 .165-.03.315-.09.45-.15.345-.54.6-1.08.75-.09.03-.195.045-.3.06-.15.015-.3.03-.465.045l-.06.015c-.24.045-.465.075-.69.105-.375.045-.72.09-1.05.135-.45.06-.84.12-1.17.18-.39.075-.72.15-.96.24-.195.06-.36.135-.48.225-.12.09-.195.195-.225.33-.015.075-.015.15-.015.225z" />
+      <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.9 11.9 0 0 0 5.683 1.448h.005c6.624 0 11.99-5.367 11.99-11.988C24.002 5.367 18.636 0 12.017 0" />
     </svg>
   );
 }
@@ -184,7 +184,7 @@ export function MenuPage() {
             </div>
             <div>
               <div className="text-[#EF1187] font-bold text-lg leading-none" style={{ fontFamily: '"Varela Round", sans-serif' }}>
-                KOTY CANNA CO
+                KOTY CANNA CO.
               </div>
               <div className="text-[#13EEEF] text-[10px] tracking-widest uppercase">Premium Vape Products</div>
             </div>
@@ -208,7 +208,7 @@ export function MenuPage() {
           <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#EF1187]/10 rounded-full blur-[150px]" />
           <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-[#13EEEF]/10 rounded-full blur-[120px]" />
         </div>
-        <div className={`max-w-[1000px] mx-auto px-6 py-16 sm:py-20 relative z-10 transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+        <div className={`max-w-[1000px] mx-auto px-6 py-10 sm:py-12 relative z-10 transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
           <div className="flex flex-col sm:flex-row items-center gap-10">
             <div className="flex-1">
               <div className="inline-flex items-center gap-2 bg-[#13EEEF]/15 border border-[#13EEEF]/40 rounded-full px-4 py-1.5 mb-6">
@@ -264,7 +264,7 @@ export function MenuPage() {
       </div>
 
       {/* How to Order */}
-      <section className="bg-[#FFFC00]/10 border-y border-[#FFFC00]/30 py-10 px-6">
+      <section className="bg-[#FFFC00]/10 border-y border-[#FFFC00]/30 py-6 px-6">
         <div className="max-w-[1000px] mx-auto text-center">
           <h2 className="text-2xl font-bold mb-2 text-[#111]" style={{ fontFamily: '"Varela Round", sans-serif' }}>
             How to Order
@@ -290,9 +290,9 @@ export function MenuPage() {
       </section>
 
       {/* Products: Cartridges */}
-      <section className="py-16 px-6">
+      <section className="py-10 px-6">
         <div className="max-w-[1000px] mx-auto">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h2 className="text-4xl sm:text-5xl font-bold mb-3" style={{ fontFamily: '"Varela Round", sans-serif', color: '#EF1187' }}>
               1g Cartridges
             </h2>
@@ -317,10 +317,10 @@ export function MenuPage() {
       </div>
 
       {/* Products: Disposables */}
-      <section className="py-16 px-6">
+      <section className="py-10 px-6">
         <div className="max-w-[1000px] mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl sm:text-5xl font-bold mb-3" style={{ fontFamily: '"Varela Round", sans-serif', color: '#EF1187' }}>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-2" style={{ fontFamily: '"Varela Round", sans-serif', color: '#EF1187' }}>
               2g Disposables
             </h2>
             <p className="text-gray-500 text-lg">Premium disposables — $30 each</p>
@@ -334,7 +334,7 @@ export function MenuPage() {
       </section>
 
       {/* Final Order CTA */}
-      <section className="bg-[#29292C] py-12 px-6">
+      <section className="bg-[#29292C] py-8 px-6">
         <div className="max-w-[1000px] mx-auto text-center">
           <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3" style={{ fontFamily: '"Varela Round", sans-serif' }}>
             Ready to Order?
@@ -356,7 +356,7 @@ export function MenuPage() {
 
 
       {/* ========== DIVIDER — SEPARATE FROM PRODUCTS ========== */}
-      <div className="relative py-12 overflow-hidden">
+      <div className="relative py-6 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#29292C] via-[#0b1120] to-[#0b1120]" />
         <div className="relative z-10 max-w-[800px] mx-auto text-center px-6">
           <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-[#13EEEF] to-transparent mx-auto mb-6" />
@@ -375,10 +375,10 @@ export function MenuPage() {
       {/* ========== STASH TRACKER APP SECTION ========== */}
 
       {/* Features */}
-      <section className="py-16 px-6 bg-[#0b1120]">
+      <section className="py-10 px-6 bg-[#0b1120]">
         <div className="max-w-[1000px] mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl sm:text-5xl font-bold mb-3" style={{ fontFamily: '"Varela Round", sans-serif', color: '#13EEEF' }}>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-2" style={{ fontFamily: '"Varela Round", sans-serif', color: '#13EEEF' }}>
               Why Stash Tracker?
             </h2>
             <p className="text-white/40 text-lg">One app. Your whole collection. Always with you.</p>
@@ -399,7 +399,7 @@ export function MenuPage() {
       </section>
 
       {/* App CTA */}
-      <section className="bg-[#13EEEF] py-14 px-6">
+      <section className="bg-[#13EEEF] py-10 px-6">
         <div className="max-w-[600px] mx-auto text-center">
           <h2 className="text-3xl font-bold mb-3 text-[#111]" style={{ fontFamily: '"Varela Round", sans-serif' }}>
             Try Stash Tracker
@@ -422,7 +422,7 @@ export function MenuPage() {
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-[#EF1187] to-[#BF0F6C] rounded-lg flex items-center justify-center text-sm">🌿</div>
             <div>
-              <span className="text-white/60 text-sm font-bold" style={{ fontFamily: '"Varela Round", sans-serif' }}>Koty Canna Co</span>
+              <span className="text-white/60 text-sm font-bold" style={{ fontFamily: '"Varela Round", sans-serif' }}>KOTY CANNA CO.</span>
               <span className="text-white/20 text-xs mx-2">•</span>
               <span className="text-white/40 text-sm" style={{ fontFamily: '"Varela Round", sans-serif' }}>Stash Tracker</span>
             </div>
