@@ -73,7 +73,7 @@ function ProductCard({ product, index, visible, isDark }: { product: Product; in
       style={{ transitionDelay: `${index * 40}ms` }}
     >
       {product.image ? (
-        <div className="relative h-44 overflow-hidden bg-[#1a1a1d]">
+        <div className="relative aspect-square overflow-hidden bg-[#1a1a1d]">
           <img
             src={product.image}
             alt={product.name}
@@ -87,7 +87,7 @@ function ProductCard({ product, index, visible, isDark }: { product: Product; in
           </div>
         </div>
       ) : (
-        <div className="relative h-44 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="relative aspect-square flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
           <span className="text-6xl group-hover:scale-110 transition-transform">🌿</span>
           <div className="absolute top-2 right-2">
             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${strainInfo.bg} ${strainInfo.text}`}>
@@ -114,7 +114,7 @@ function DisposableCard({ product, index, visible, isDark }: { product: Product;
 
   return (
     <div
-      className={`${isDark ? 'bg-gradient-to-br from-[#29292C] to-[#1a1a1d] border-white/10 hover:border-[#13EEEF]/40' : 'bg-gradient-to-br from-gray-900 to-gray-800 border-white/10 hover:border-[#13EEEF]/40'} border rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-[#13EEEF]/10 transition-all duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+      className={`${isDark ? 'bg-[#1a1a1d] border-white/10 hover:border-[#13EEEF]/40' : 'bg-gray-800 border-white/10 hover:border-[#13EEEF]/40'} border rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-[#13EEEF]/10 transition-all duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
       style={{ transitionDelay: `${index * 40}ms` }}
     >
       {product.image ? (
@@ -260,7 +260,7 @@ export function MenuPage() {
         <div className="flex animate-marquee whitespace-nowrap">
           {[...Array(2)].map((_, i) => (
             <span key={i} className="mx-8 text-sm font-bold uppercase tracking-wider">
-              Apple Candy &bull; Frosted Grapes &bull; Banana Daze &bull; Cherry Candy Ice &bull; Watermelon &bull; Golden Mango &bull; Grand Daddy Purple &bull; Pink Flamingo &bull; Clementine Ice &bull; Champagne &bull; Island Sweet Skunk &bull; Rootbeer &bull;
+              🍎 Apple Candy   🍇 Frosted Grapes   🍌 Banana Daze   🍒 Cherry Candy Ice   🍉 Watermelon   🥭 Golden Mango   👑 Grand Daddy Purple   🦩 Pink Flamingo   🍊 Clementine Ice   🥂 Champagne   🌴 Island Sweet Skunk   🍺 Rootbeer   
             </span>
           ))}
         </div>
@@ -311,19 +311,19 @@ export function MenuPage() {
       </section>
 
       {/* Bottom Snapchat CTA */}
-      <section className="bg-[#FFFC00] py-8 px-6">
+      <section className="bg-[#29292C] py-8 px-6">
         <div className="max-w-[600px] mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#111] mb-3" style={{ fontFamily: '"Varela Round", sans-serif' }}>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3" style={{ fontFamily: '"Varela Round", sans-serif' }}>
             Ready to Order?
           </h2>
-          <p className="text-[#111]/60 text-lg mb-6">
+          <p className="text-white/60 text-lg mb-6">
             Message {SNAPCHAT_HANDLE} on Snapchat
           </p>
           <a
             href={SNAPCHAT_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 px-8 py-4 bg-[#111] text-[#FFFC00] rounded-[10px] text-lg font-bold hover:bg-[#222] transition-colors shadow-lg"
+            className="inline-flex items-center gap-3 px-8 py-4 bg-[#FFFC00] text-[#111] rounded-[10px] text-lg font-bold hover:bg-[#e6e300] transition-colors shadow-lg"
           >
             <SnapchatIcon className="w-8 h-8" />
             Open Snapchat
