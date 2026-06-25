@@ -45,12 +45,6 @@ const STRAIN_COLORS: Record<StrainType, { bg: string; text: string; label: strin
   hybrid: { bg: 'bg-emerald-500/15', text: 'text-emerald-400', label: 'Hybrid' },
 };
 
-const STRAIN_COLORS_LIGHT: Record<StrainType, { bg: string; text: string; label: string }> = {
-  indica: { bg: 'bg-indigo-50 border-indigo-200', text: 'text-indigo-700', label: 'Indica' },
-  sativa: { bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700', label: 'Sativa' },
-  hybrid: { bg: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700', label: 'Hybrid' },
-};
-
 const FEATURES = [
   { icon: '📦', title: 'Track Your Stash', desc: 'Add strains, cartridges, edibles — log THC/CBD levels, ratings, prices, and more.' },
   { icon: '🫧', title: 'Log Sessions', desc: 'Record every session with method, amount, and notes. See your usage over time.' },
@@ -63,14 +57,13 @@ const FEATURES = [
 const SNAPCHAT_URL = 'https://www.snapchat.com/add/kotycannaco';
 const SNAPCHAT_HANDLE = '@kotycannaco';
 
-function ProductCard({ product, index, visible, isDark }: { product: Product; index: number; visible: boolean; isDark: boolean }) {
-  const sc = isDark ? STRAIN_COLORS : STRAIN_COLORS_LIGHT;
-  const strainInfo = sc[product.strain];
+function ProductCard({ product, index, visible }: { product: Product; index: number; visible: boolean }) {
+  const strainInfo = STRAIN_COLORS[product.strain];
 
   return (
     <div
-      className={`aspect-square relative rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-[#EF1187]/10 transition-all duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-      style={{ transitionDelay: `${index * 40}ms` }}
+      className={`aspect-square relative rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-[#EF1187]/10 transition-[opacity,transform] duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+      style={{ transitionDelay: visible ? '0ms' : `${index * 40}ms` }}
     >
       {product.image ? (
         <img
@@ -100,11 +93,10 @@ function ProductCard({ product, index, visible, isDark }: { product: Product; in
   );
 }
 
-function DisposableCard({ product, index, visible }: { product: Product; index: number; visible: boolean }) {
+function DisposableCard({ product, visible }: { product: Product; visible: boolean }) {
   return (
     <div
-      className={`relative rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-[#13EEEF]/10 transition-all duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-      style={{ transitionDelay: `${index * 40}ms` }}
+      className={`relative rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-[#13EEEF]/10 transition-[opacity,transform] duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
     >
       {product.image ? (
         <div className="relative aspect-[4/5] overflow-hidden bg-[#1a1a1d]">
@@ -264,7 +256,7 @@ export function MenuPage() {
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-3">
             {CARTRIDGES.map((p, i) => (
-              <ProductCard key={p.name} product={p} index={i} visible={visible} isDark={false} />
+              <ProductCard key={p.name} product={p} index={i} visible={visible} />
             ))}
           </div>
         </div>
@@ -276,17 +268,17 @@ export function MenuPage() {
       </div>
 
       {/* Disposables */}
-      <section className="py-10 px-6">
+      <section className="py-10 px-6 bg-[#1a1a1d]">
         <div className="max-w-[1000px] mx-auto">
           <div className="text-center mb-8">
             <h2 className="text-3xl sm:text-4xl font-bold mb-2" style={{ fontFamily: '"Varela Round", sans-serif', color: '#EF1187' }}>
               2g Disposables
             </h2>
-            <p className="text-gray-500 text-lg">Premium disposables — $30 each</p>
+            <p className="text-white/50 text-lg">Premium disposables — $30 each</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-lg mx-auto">
-            {DISPOSABLES.map((p, i) => (
-              <DisposableCard key={p.name} product={p} index={i} visible={visible} />
+            {DISPOSABLES.map((p) => (
+              <DisposableCard key={p.name} product={p} visible={visible} />
             ))}
           </div>
         </div>
