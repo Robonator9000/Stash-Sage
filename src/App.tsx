@@ -607,12 +607,12 @@ export default function App() {
                 aria-selected={activeTab === tab.id}
                 aria-current={activeTab === tab.id ? 'page' : undefined}
                 onClick={() => setActiveTab(tab.id as 'stash' | 'community' | 'marketplace' | 'admin')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3.5 text-base font-medium transition-all duration-200 relative whitespace-nowrap overflow-hidden
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3.5 text-sm font-medium transition-colors duration-150 relative whitespace-nowrap overflow-hidden
                   ${activeTab === tab.id
                     ? isDark ? 'text-cyan-400' : 'text-cyan-600'
                     : isDark ? 'text-mist hover:text-frost' : 'text-gray-600 hover:text-gray-900'}`}
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d={tab.icon} />
                 </svg>
                 {tab.label}
@@ -635,7 +635,7 @@ export default function App() {
                   role="tab"
                   aria-selected={stashSection === section}
                   onClick={() => setStashSection(section)}
-                  className={`flex-1 px-5 py-2 rounded-xl text-sm font-medium transition-all ${
+                  className={`flex-1 px-5 py-2 rounded-xl text-sm font-medium transition-colors duration-150 ${
                     stashSection === section
                       ? 'bg-gradient-to-r from-cyanx to-emera text-white'
                       : isDark ? 'text-mist hover:text-frost hover:bg-midnight' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
