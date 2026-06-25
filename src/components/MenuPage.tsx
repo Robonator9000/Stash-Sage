@@ -69,80 +69,62 @@ function ProductCard({ product, index, visible, isDark }: { product: Product; in
 
   return (
     <div
-      className={`${isDark ? 'bg-white/5 border-white/10 hover:border-[#EF1187]/40' : 'bg-white border-gray-100 hover:border-[#EF1187]/40'} rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-[#EF1187]/5 transition-all duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+      className={`aspect-square relative rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-[#EF1187]/10 transition-all duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
       style={{ transitionDelay: `${index * 40}ms` }}
     >
       {product.image ? (
-        <div className="relative aspect-square overflow-hidden bg-[#1a1a1d]">
-          <img
-            src={product.image}
-            alt={product.name}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-          <div className="absolute top-2 right-2">
-            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${strainInfo.bg} ${strainInfo.text}`}>
-              {strainInfo.label}
-            </span>
-          </div>
-        </div>
+        <img
+          src={product.image}
+          alt={product.name}
+          loading="lazy"
+          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
       ) : (
-        <div className="relative aspect-square flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="absolute inset-0 flex items-center justify-center bg-[#1a1a1d]">
           <span className="text-6xl group-hover:scale-110 transition-transform">🌿</span>
-          <div className="absolute top-2 right-2">
-            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${strainInfo.bg} ${strainInfo.text}`}>
-              {strainInfo.label}
-            </span>
-          </div>
         </div>
       )}
-      <div className="p-4 text-center">
-        <h3 className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-[#111]'} mb-1.5 leading-tight`} style={{ fontFamily: '"Varela Round", sans-serif' }}>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+      <div className="absolute top-2 right-2">
+        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${strainInfo.bg} ${strainInfo.text}`}>
+          {strainInfo.label}
+        </span>
+      </div>
+      <div className="absolute bottom-0 left-0 right-0 p-3 text-center">
+        <h3 className="text-sm font-bold text-white mb-0.5 leading-tight" style={{ fontFamily: '"Varela Round", sans-serif' }}>
           {product.name}
         </h3>
-        <div className="text-[#13EEEF] text-[10px] font-bold uppercase tracking-wider mb-2">1g Cartridge</div>
-        <div className="text-[#22c55e] text-[10px] font-medium mb-2">✓ In Stock</div>
-        <div className={`text-xl font-bold ${isDark ? 'text-white' : 'text-[#111]'}`} style={{ fontFamily: '"Varela Round", sans-serif' }}>${product.price}</div>
+        <div className="text-xl font-bold text-white" style={{ fontFamily: '"Varela Round", sans-serif' }}>${product.price}</div>
       </div>
     </div>
   );
 }
 
-function DisposableCard({ product, index, visible, isDark }: { product: Product; index: number; visible: boolean; isDark: boolean }) {
-  const sc = isDark ? STRAIN_COLORS : STRAIN_COLORS_LIGHT;
-  const strainInfo = sc[product.strain];
-
+function DisposableCard({ product, index, visible }: { product: Product; index: number; visible: boolean }) {
   return (
     <div
-      className={`${isDark ? 'bg-[#1a1a1d] border-white/10 hover:border-[#13EEEF]/40' : 'bg-gray-800 border-white/10 hover:border-[#13EEEF]/40'} border rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-[#13EEEF]/10 transition-all duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+      className={`relative rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-[#13EEEF]/10 transition-all duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
       style={{ transitionDelay: `${index * 40}ms` }}
     >
       {product.image ? (
-        <div className="relative h-48 overflow-hidden bg-[#1a1a1d]">
+        <div className="relative aspect-[4/5] overflow-hidden bg-[#1a1a1d]">
           <img
             src={product.image}
             alt={product.name}
             loading="lazy"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          <div className="absolute top-2 right-2">
-            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${strainInfo.bg} ${strainInfo.text}`}>
-              {strainInfo.label}
-            </span>
-          </div>
         </div>
       ) : (
-        <div className="h-48 flex items-center justify-center">
+        <div className="aspect-[4/5] flex items-center justify-center bg-[#1a1a1d]">
           <div className="text-5xl group-hover:scale-110 transition-transform">🔥</div>
         </div>
       )}
-      <div className="p-6 text-center">
-        <h3 className="text-lg font-semibold text-white mb-2" style={{ fontFamily: '"Varela Round", sans-serif' }}>
+      <div className="p-5 text-center bg-[#1a1a1d]">
+        <h3 className="text-lg font-semibold text-white mb-1" style={{ fontFamily: '"Varela Round", sans-serif' }}>
           {product.name}
         </h3>
-        <div className="text-[#13EEEF] text-sm font-bold uppercase tracking-wider mb-2">2g Disposable</div>
-        <div className="text-[#22c55e] text-sm font-medium mb-3">✓ In Stock</div>
+        <div className="text-[#13EEEF] text-sm font-bold uppercase tracking-wider mb-1">2g Disposable</div>
         <div className="text-3xl font-bold text-[#FABF39]" style={{ fontFamily: '"Varela Round", sans-serif' }}>${product.price}</div>
       </div>
     </div>
@@ -280,7 +262,7 @@ export function MenuPage() {
               <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Hybrid</span>
             </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-3">
             {CARTRIDGES.map((p, i) => (
               <ProductCard key={p.name} product={p} index={i} visible={visible} isDark={false} />
             ))}
@@ -304,7 +286,7 @@ export function MenuPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-lg mx-auto">
             {DISPOSABLES.map((p, i) => (
-              <DisposableCard key={p.name} product={p} index={i} visible={visible} isDark={true} />
+              <DisposableCard key={p.name} product={p} index={i} visible={visible} />
             ))}
           </div>
         </div>
