@@ -594,7 +594,7 @@ export default function App() {
       <div className="max-w-7xl mx-auto px-4 py-4 flex-1">
         {/* Main tab bar */}
         <div className="flex items-center mb-4">
-          <div className={`flex w-full items-center gap-0`} role="tablist">
+          <div className={`grid w-full items-center ${isAdmin ? 'grid-cols-4' : 'grid-cols-3'}`} role="tablist">
             {[
               { id: 'stash', label: t('stash', lang), icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
               { id: 'community', label: t('community', lang), icon: 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z' },
@@ -607,7 +607,7 @@ export default function App() {
                 aria-selected={activeTab === tab.id}
                 aria-current={activeTab === tab.id ? 'page' : undefined}
                 onClick={() => setActiveTab(tab.id as 'stash' | 'community' | 'marketplace' | 'admin')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3.5 text-sm font-medium transition-colors duration-150 relative whitespace-nowrap overflow-hidden
+                className={`flex items-center justify-center gap-2 px-4 py-3.5 text-sm font-medium relative whitespace-nowrap overflow-hidden
                   ${activeTab === tab.id
                     ? isDark ? 'text-cyan-400' : 'text-cyan-600'
                     : isDark ? 'text-mist hover:text-frost' : 'text-gray-600 hover:text-gray-900'}`}
@@ -635,7 +635,7 @@ export default function App() {
                   role="tab"
                   aria-selected={stashSection === section}
                   onClick={() => setStashSection(section)}
-                  className={`flex-1 px-5 py-2 rounded-xl text-sm font-medium transition-colors duration-150 ${
+                  className={`flex-1 px-5 py-2 rounded-xl text-sm font-medium ${
                     stashSection === section
                       ? 'bg-gradient-to-r from-cyanx to-emera text-white'
                       : isDark ? 'text-mist hover:text-frost hover:bg-midnight' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
