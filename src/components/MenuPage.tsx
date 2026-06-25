@@ -39,10 +39,10 @@ const DISPOSABLES: Product[] = [
   { name: 'Galactic Grape', price: 30, strain: 'indica', image: 'https://mightypuff.ca/wp-content/uploads/2026/05/Mighty-Puff-2-GRAM-Disposable.jpg' },
 ];
 
-const STRAIN_COLORS: Record<StrainType, { bg: string; text: string; label: string }> = {
-  indica: { bg: 'bg-indigo-500/15', text: 'text-indigo-400', label: 'Indica' },
-  sativa: { bg: 'bg-amber-500/15', text: 'text-amber-400', label: 'Sativa' },
-  hybrid: { bg: 'bg-emerald-500/15', text: 'text-emerald-400', label: 'Hybrid' },
+const STRAIN_COLORS: Record<StrainType, { border: string; glow: string; text: string; label: string }> = {
+  indica: { border: 'border-indigo-500', glow: 'hover:shadow-indigo-500/20', text: 'text-indigo-400', label: 'Indica' },
+  sativa: { border: 'border-amber-500', glow: 'hover:shadow-amber-500/20', text: 'text-amber-400', label: 'Sativa' },
+  hybrid: { border: 'border-emerald-500', glow: 'hover:shadow-emerald-500/20', text: 'text-emerald-400', label: 'Hybrid' },
 };
 
 const FEATURES = [
@@ -62,7 +62,7 @@ function ProductCard({ product, index, visible }: { product: Product; index: num
 
   return (
     <div
-      className={`aspect-square relative rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-[#EF1187]/10 transition-[opacity,transform] duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+      className={`aspect-square relative rounded-2xl overflow-hidden border-2 ${strainInfo.border} hover:shadow-lg ${strainInfo.glow} transition-[opacity,transform] duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
       style={{ transitionDelay: visible ? '0ms' : `${index * 40}ms` }}
     >
       {product.image ? (
@@ -77,26 +77,22 @@ function ProductCard({ product, index, visible }: { product: Product; index: num
           <span className="text-6xl group-hover:scale-110 transition-transform">🌿</span>
         </div>
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-      <div className="absolute top-2 right-2">
-        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${strainInfo.bg} ${strainInfo.text}`}>
-          {strainInfo.label}
-        </span>
-      </div>
-      <div className="absolute bottom-0 left-0 right-0 p-3 text-center">
-        <h3 className="text-sm font-bold text-white mb-0.5 leading-tight" style={{ fontFamily: '"Varela Round", sans-serif' }}>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-transparent" />
+      <div className="absolute top-0 left-0 right-0 p-3 text-center">
+        <h3 className="text-base font-bold text-white leading-tight" style={{ fontFamily: '"Varela Round", sans-serif' }}>
           {product.name}
         </h3>
-        <div className="text-xl font-bold text-white" style={{ fontFamily: '"Varela Round", sans-serif' }}>${product.price}</div>
       </div>
     </div>
   );
 }
 
 function DisposableCard({ product, visible }: { product: Product; visible: boolean }) {
+  const strainInfo = STRAIN_COLORS[product.strain];
+
   return (
     <div
-      className={`relative rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-[#13EEEF]/10 transition-[opacity,transform] duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+      className={`relative rounded-2xl overflow-hidden border-2 ${strainInfo.border} hover:shadow-lg ${strainInfo.glow} transition-[opacity,transform] duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
     >
       {product.image ? (
         <div className="relative aspect-[4/5] overflow-hidden bg-[#1a1a1d]">
@@ -116,7 +112,11 @@ function DisposableCard({ product, visible }: { product: Product; visible: boole
         <h3 className="text-lg font-semibold text-white mb-1" style={{ fontFamily: '"Varela Round", sans-serif' }}>
           {product.name}
         </h3>
-        <div className="text-[#13EEEF] text-sm font-bold uppercase tracking-wider mb-1">2g Disposable</div>
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <span className={`text-sm font-bold uppercase tracking-wider ${strainInfo.text}`}>{strainInfo.label}</span>
+          <span className="text-white/30">·</span>
+          <span className="text-[#13EEEF] text-sm font-bold uppercase tracking-wider">2g Disposable</span>
+        </div>
         <div className="text-3xl font-bold text-[#FABF39]" style={{ fontFamily: '"Varela Round", sans-serif' }}>${product.price}</div>
       </div>
     </div>
@@ -248,11 +248,6 @@ export function MenuPage() {
               1g Cartridges
             </h2>
             <p className="text-gray-500 text-lg">All flavors — $15 each</p>
-            <div className="flex items-center justify-center gap-4 mt-4 text-xs font-medium">
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-indigo-500" /> Indica</span>
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Sativa</span>
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Hybrid</span>
-            </div>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-3">
             {CARTRIDGES.map((p, i) => (
