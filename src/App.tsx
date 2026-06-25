@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { Lock } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Product, Session, SortOption, FilterType } from './types';
+import { Product, Session, SortOption, FilterType, Profile } from './types';
 import { useProducts } from './utils/useProducts';
 import { useSessions } from './utils/useSessions';
 import { useSettings } from './utils/useSettings';
@@ -21,9 +21,11 @@ import { BackgroundCanvas } from './components/BackgroundCanvas';
 import { WelcomeModal } from './components/WelcomeModal';
 import { LogoIcon } from './components/LogoIcon';
 import { MarketplaceFeed } from './components/MarketplaceFeed';
+import { SocialFeed } from './components/SocialFeed';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NotificationBell } from './components/NotificationBell';
 import { useAuth } from './contexts/AuthContext';
+import { supabase } from './utils/supabase';
 import { AdminDashboard } from './components/AdminDashboard';
 import { MenuButton } from './components/MenuButton';
 const DashboardTab = lazy(() => import('./components/DashboardTab').then(m => ({ default: m.DashboardTab })));
@@ -32,12 +34,6 @@ const ProductModal = lazy(() => import('./components/ProductModal').then(m => ({
 const ConsumeModal = lazy(() => import('./components/ConsumeModal').then(m => ({ default: m.ConsumeModal })));
 const SellModal = lazy(() => import('./components/SellModal').then(m => ({ default: m.SellModal })));
 const SessionModal = lazy(() => import('./components/SessionModal').then(m => ({ default: m.SessionModal })));
-
-function NavigateToCommunity() {
-  const navigate = useNavigate();
-  useEffect(() => { navigate('/community', { replace: true }); }, [navigate]);
-  return null;
-}
 
 export default function App() {
   const { products, addProduct, updateProduct, deleteProduct, toggleFavorite, consumeProduct, replaceAllProducts } = useProducts();
@@ -82,6 +78,23 @@ export default function App() {
 
   const isDark = settings.theme === 'dark';
   const { user, isAdmin } = useAuth();
+
+  const [communityProfile, setCommunityProfile] = useState<Profile | undefined>(undefined);
+
+  useEffect(() => {
+    if (!user) { setCommunityProfile(undefined); return; }
+    supabase.from('profiles').select('display_name, avatar_url, location').eq('user_id', user.id).maybeSingle().then(({ data }) => {
+      if (data) {
+        setCommunityProfile({
+          username: data.display_name || user.email?.split('@')[0] || 'User',
+          bio: '',
+          joinedAt: user.created_at,
+          avatar_url: data.avatar_url,
+          location: data.location,
+        });
+      }
+    });
+  }, [user]);
 
   const browserLang = useMemo(() => {
     const raw = navigator.language || 'en';
@@ -594,7 +607,7 @@ export default function App() {
                 aria-selected={activeTab === tab.id}
                 aria-current={activeTab === tab.id ? 'page' : undefined}
                 onClick={() => setActiveTab(tab.id as 'stash' | 'community' | 'marketplace' | 'admin')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3.5 text-base font-medium transition-all duration-200 relative
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3.5 text-base font-medium transition-all duration-200 relative whitespace-nowrap overflow-hidden
                   ${activeTab === tab.id
                     ? isDark ? 'text-cyan-400' : 'text-cyan-600'
                     : isDark ? 'text-mist hover:text-frost' : 'text-gray-600 hover:text-gray-900'}`}
@@ -913,7 +926,15 @@ export default function App() {
                 </p>
               </div>
             ) : (
-              <NavigateToCommunity />
+              <SocialFeed
+                isDark={isDark}
+                lang={lang}
+                currentUserId={user?.id || ''}
+                username={communityProfile?.username || user?.email?.split('@')[0] || 'User'}
+                products={products}
+                profile={communityProfile}
+                onViewProfile={handleViewProfile}
+              />
             )}
           </div>
           </ErrorBoundary>

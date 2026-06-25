@@ -171,6 +171,16 @@ export function MenuPage() {
   return (
     <div className="min-h-screen bg-white text-black overflow-x-hidden" style={{ fontFamily: 'Inter, sans-serif' }}>
 
+      {/* Back button */}
+      <button
+        onClick={() => navigate('/')}
+        className="fixed top-4 left-4 z-50 w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm text-white flex items-center justify-center hover:bg-black/80 transition-colors shadow-lg"
+      >
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+        </svg>
+      </button>
+
       {/* ========== PRODUCT STORE SECTION ========== */}
       {/* Top bar */}
       <div className="bg-[#29292C] text-white text-center py-2 text-xs tracking-widest uppercase font-medium">
