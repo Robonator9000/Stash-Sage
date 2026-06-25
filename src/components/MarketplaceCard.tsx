@@ -2,7 +2,7 @@ import { memo, useState, useCallback, useEffect } from 'react';
 import type { MarketplaceListing } from '../types';
 import { t } from '../utils/translations';
 import { getContactUrl, copyToClipboard } from '../utils/helpers';
-import { Tag, Clock, DollarSign, ExternalLink, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Tag, Clock, DollarSign, ExternalLink, ChevronLeft, ChevronRight, X, Bookmark, MessageCircle } from 'lucide-react';
 import { ReviewSection } from './ReviewSection';
 
 const PLATFORM_COLORS: Record<string, string> = {
@@ -14,6 +14,7 @@ const PLATFORM_COLORS: Record<string, string> = {
   snapchat: '#fffc00',
   signal: '#0f7bf5',
   whatsapp: '#25d366',
+  chat: '#8b5cf6',
   other: '#94a3b8',
 };
 
@@ -38,6 +39,8 @@ interface MarketplaceCardProps {
   onDelete?: (id: string) => void;
   onMarkSold?: (id: string) => void;
   onViewProfile?: (userId: string) => void;
+  onSave?: (listingId: string) => void;
+  onStartChat?: (listingId: string) => void;
 }
 
 const PLATFORM_BRAND_ICONS: Record<string, string> = {
@@ -50,9 +53,10 @@ const PLATFORM_BRAND_ICONS: Record<string, string> = {
   signal: 'M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm.006 3.49c1.715 0 3.365.48 4.774 1.374l-1.424 2.465a6.327 6.327 0 00-3.35-.974 6.33 6.33 0 00-3.35.974L7.232 4.864a8.995 8.995 0 014.774-1.374zM5.655 6.782l1.585 2.708a6.357 6.357 0 00.101 6.456l-1.603 2.685A8.959 8.959 0 013 12c0-1.89.585-3.644 1.655-5.218zM9.93 9.078a3.76 3.76 0 012.076-.633 3.76 3.76 0 012.076.633l.75 1.055a3.76 3.76 0 01.751 1.267 3.76 3.76 0 01-1.084 3.11 3.76 3.76 0 01-2.493 1.084 3.76 3.76 0 01-2.076-.633l-.75-1.055a3.76 3.76 0 01-.751-1.267 3.76 3.76 0 011.084-3.11 3.76 3.76 0 011.417-.85zM12 9.047a2.953 2.953 0 100 5.906 2.953 2.953 0 000-5.906zM6.95 14.042a6.357 6.357 0 00.101 1.266l-1.585 2.708A8.96 8.96 0 003 18.35l1.603-2.685a6.357 6.357 0 00-.101-6.456L5.655 6.782a8.959 8.959 0 00-1.655 5.218c0 1.89.585 3.644 1.655 5.218zM12 20.51a8.995 8.995 0 01-4.774-1.374l1.424-2.465a6.327 6.327 0 003.35.974 6.33 6.33 0 003.35-.974l1.424 2.465A8.995 8.995 0 0112 20.51zm4.345-2.124l-1.585-2.708a6.357 6.357 0 00-.101-6.456l1.603-2.685A8.96 8.96 0 0121 12a8.96 8.96 0 01-1.655 5.218l-1.603-2.685a6.357 6.357 0 00.101 1.266z',
   whatsapp: 'M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z',
   other: 'M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418',
+  chat: 'M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z',
 };
 
-export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, lang, currentUserId, onEdit, onDelete, onMarkSold, onViewProfile }: MarketplaceCardProps) {
+export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, lang, currentUserId, onEdit, onDelete, onMarkSold, onViewProfile, onSave, onStartChat }: MarketplaceCardProps) {
   const isOwner = listing.user_id === currentUserId;
   const brandPath = PLATFORM_BRAND_ICONS[listing.contact_platform] || PLATFORM_BRAND_ICONS.other;
   const brandColor = PLATFORM_COLORS[listing.contact_platform] || PLATFORM_COLORS.other;
@@ -116,6 +120,12 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, 
             {t('statusSold', lang)}
           </span>
         )}
+        {currentUserId && currentUserId !== listing.user_id && (
+          <button onClick={() => onSave?.(listing.id)} aria-label={listing.saved_by_me ? t('unsaveListing', lang) : t('saveListing', lang)}
+            className={`p-2 rounded-xl transition-all ${listing.saved_by_me ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-midnight text-mist hover:text-frost' : 'bg-gray-100 text-gray-500 hover:text-gray-700'}`}>
+            <Bookmark className="w-4 h-4" fill={listing.saved_by_me ? 'currentColor' : 'none'} />
+          </button>
+        )}
       </div>
 
       {/* Image gallery */}
@@ -164,6 +174,15 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, 
         </span>
       </div>
 
+      {/* Seller reputation */}
+      {listing.avg_seller_rating != null && listing.seller_review_count != null && listing.seller_review_count > 0 && (
+        <div className={`flex items-center gap-2 mb-3 px-3 py-2 rounded-xl text-xs ${isDark ? 'bg-midnight/50 text-mist' : 'bg-amber-50 text-amber-700'}`}>
+          <span className="text-amber-500">{'★'.repeat(Math.round(listing.avg_seller_rating))}{'☆'.repeat(5 - Math.round(listing.avg_seller_rating))}</span>
+          <span className="font-medium">{listing.avg_seller_rating.toFixed(1)}</span>
+          <span className={isDark ? 'text-muted' : 'text-amber-400'}>({listing.seller_review_count})</span>
+        </div>
+      )}
+
       {/* Description */}
       {listing.description && (
         <p className={`text-sm mb-4 leading-relaxed ${isDark ? 'text-mist' : 'text-gray-600'}`}>
@@ -199,6 +218,15 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, 
           </span>
         )}
       </button>
+
+      {/* Send message button for non-owners */}
+      {!isOwner && currentUserId && onStartChat && (
+        <button onClick={() => onStartChat(listing.id)} aria-label={t('startChat', lang)}
+          className={`w-full flex items-center justify-center gap-2 mt-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${isDark ? 'bg-[#8b5cf6]/10 text-[#8b5cf6] hover:bg-[#8b5cf6]/20' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'}`}>
+          <MessageCircle className="w-4 h-4" />
+          {t('startChat', lang)}
+        </button>
+      )}
 
       {/* Owner actions */}
       {isOwner && listing.status === 'active' && (

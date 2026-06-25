@@ -5,8 +5,9 @@ import { supabase, deleteStorageImages } from '../utils/supabase';
 import { t } from '../utils/translations';
 import { MarketplaceCard } from './MarketplaceCard';
 import { CreateListingModal } from './CreateListingModal';
+import { ChatInbox } from './ChatInbox';
 import { showToast } from './Toast';
-import { Plus, Search, ArrowUpDown, SlidersHorizontal, X } from 'lucide-react';
+import { Plus, Search, ArrowUpDown, SlidersHorizontal, X, Bookmark, MessageCircle } from 'lucide-react';
 
 interface MarketplaceFeedProps {
   isDark: boolean;
@@ -32,6 +33,9 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingListing, setEditingListing] = useState<MarketplaceListing | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showSaved, setShowSaved] = useState(false);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     clearTimeout(debounceTimer.current);
@@ -42,10 +46,33 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
   const enrichListings = useCallback(async (rawListings: any[]): Promise<MarketplaceListing[]> => {
     if (rawListings.length === 0) return [];
     const userIds = [...new Set(rawListings.map(l => l.user_id))];
-    const { data: profiles } = await supabase.from('profiles').select('user_id, display_name, avatar_url').in('user_id', userIds);
-    const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
-    return rawListings.map(l => ({ ...l, author: { username: profileMap.get(l.user_id)?.display_name || 'User', avatar_url: profileMap.get(l.user_id)?.avatar_url } }));
-  }, []);
+    const listingIds = rawListings.map(l => l.id);
+    const [profilesRes, reviewsRes, savedRes] = await Promise.all([
+      supabase.from('profiles').select('user_id, display_name, avatar_url').in('user_id', userIds),
+      supabase.from('listing_reviews').select('listing_id, rating').in('listing_id', listingIds),
+      currentUserId ? supabase.from('saved_listings').select('listing_id').eq('user_id', currentUserId).in('listing_id', listingIds) : { data: null },
+    ]);
+    const profileMap = new Map((profilesRes.data || []).map(p => [p.user_id, p]));
+    const reviewsByListing = new Map<string, { sum: number; count: number }>();
+    for (const r of reviewsRes.data || []) {
+      const existing = reviewsByListing.get(r.listing_id) || { sum: 0, count: 0 };
+      existing.sum += r.rating;
+      existing.count += 1;
+      reviewsByListing.set(r.listing_id, existing);
+    }
+    const savedSet = new Set((savedRes.data || []).map(s => s.listing_id));
+    setSavedIds(savedSet);
+    return rawListings.map(l => {
+      const stats = reviewsByListing.get(l.id);
+      return {
+        ...l,
+        author: { username: profileMap.get(l.user_id)?.display_name || 'User', avatar_url: profileMap.get(l.user_id)?.avatar_url },
+        saved_by_me: savedSet.has(l.id),
+        avg_seller_rating: stats ? stats.sum / stats.count : undefined,
+        seller_review_count: stats?.count,
+      };
+    });
+  }, [currentUserId]);
 
   const fetchListings = useCallback(async () => {
     setLoading(true);
@@ -64,12 +91,13 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
   useEffect(() => { fetchListings().catch(e => { setError(e.message); setLoading(false); }); }, [fetchListings]);
 
   const filtered = useMemo(() => listings.filter(l => {
+    if (showSaved && !l.saved_by_me) return false;
     if (categoryFilter !== 'all' && l.category !== categoryFilter) return false;
     if (statusFilter !== 'all' && l.status !== statusFilter) return false;
     if (priceMin && l.price < parseFloat(priceMin)) return false;
     if (priceMax && l.price > parseFloat(priceMax)) return false;
     return true;
-  }), [listings, categoryFilter, statusFilter, priceMin, priceMax]);
+  }), [listings, categoryFilter, statusFilter, priceMin, priceMax, showSaved]);
 
   const sorted = useMemo(() => [...filtered].sort((a, b) => {
     if (sortBy === 'price_low') return a.price - b.price;
@@ -155,16 +183,56 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
   const handleCloseEdit = useCallback(() => setEditingListing(null), []);
   const handleOpenCreate = useCallback(() => setShowCreateModal(true), []);
 
+  const handleToggleSave = useCallback(async (listingId: string) => {
+    if (!currentUserId) return;
+    const isSaved = savedIds.has(listingId);
+    if (isSaved) {
+      await supabase.from('saved_listings').delete().eq('user_id', currentUserId).eq('listing_id', listingId);
+      setSavedIds(prev => { const next = new Set(prev); next.delete(listingId); return next; });
+    } else {
+      await supabase.from('saved_listings').insert({ user_id: currentUserId, listing_id: listingId });
+      setSavedIds(prev => new Set(prev).add(listingId));
+    }
+    setListings(prev => prev.map(l => l.id === listingId ? { ...l, saved_by_me: !isSaved } : l));
+  }, [currentUserId, savedIds]);
+
+  const handleStartChat = useCallback(async (listingId: string) => {
+    if (!currentUserId) return;
+    const { data: listing } = await supabase.from('marketplace_listings').select('user_id').eq('id', listingId).single();
+    if (!listing || listing.user_id === currentUserId) return;
+    const { data: existing } = await supabase.from('conversations')
+      .select('id').eq('listing_id', listingId).eq('buyer_id', currentUserId).maybeSingle();
+    if (!existing) {
+      await supabase.from('conversations')
+        .insert({ listing_id: listingId, buyer_id: currentUserId, seller_id: listing.user_id })
+        .then(undefined, () => {});
+    }
+    setShowChat(true);
+  }, [currentUserId]);
+
   return (
     <div className="space-y-5">
+      {showChat ? (
+        <ChatInbox currentUserId={currentUserId} isDark={isDark} lang={lang} onBack={() => setShowChat(false)} />
+      ) : (<>
       {/* Header + Create / Sign in */}
       <div className="flex items-center gap-2">
         {currentUserId ? (
-          <button onClick={handleOpenCreate} aria-label="Create new listing"
-            className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all shadow-lg shadow-cyanx/20">
-            <Plus className="w-4 h-4" />
-            {t('sellSomething', lang)}
-          </button>
+          <div className="flex items-center gap-2 flex-1">
+            <button onClick={handleOpenCreate} aria-label="Create new listing"
+              className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all shadow-lg shadow-cyanx/20">
+              <Plus className="w-4 h-4" />
+              {t('sellSomething', lang)}
+            </button>
+            <button onClick={() => setShowSaved(!showSaved)} aria-label="Toggle saved listings"
+              className={`p-3 rounded-xl transition-all ${showSaved ? 'bg-gradient-to-r from-cyanx to-emera text-white shadow-lg shadow-cyanx/20' : isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+              <Bookmark className="w-4 h-4" />
+            </button>
+            <button onClick={() => setShowChat(true)} aria-label="Open messages"
+              className={`p-3 rounded-xl transition-all ${isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+              <MessageCircle className="w-4 h-4" />
+            </button>
+          </div>
         ) : (
           <div className={`w-full p-4 rounded-2xl text-center text-sm ${isDark ? 'bg-surface/50 border border-edge text-mist' : 'bg-white border border-gray-200 text-gray-500'}`}>
             Sign in to create a listing.
@@ -289,7 +357,8 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
 
       {sorted.map(listing => (
         <MarketplaceCard key={listing.id} listing={listing} isDark={isDark} lang={lang} currentUserId={currentUserId}
-          onEdit={handleEditListing} onDelete={handleDelete} onMarkSold={handleMarkSold} onViewProfile={onViewProfile} />
+          onEdit={handleEditListing} onDelete={handleDelete} onMarkSold={handleMarkSold} onViewProfile={onViewProfile}
+          onSave={handleToggleSave} onStartChat={handleStartChat} />
       ))}
 
       {showCreateModal && (
@@ -299,6 +368,7 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
       {editingListing && (
         <CreateListingModal isDark={isDark} lang={lang} products={products} currentUserId={currentUserId} initial={editingListing} onSubmit={handleUpdate} onClose={handleCloseEdit} />
       )}
+      </>)}
     </div>
   );
 });

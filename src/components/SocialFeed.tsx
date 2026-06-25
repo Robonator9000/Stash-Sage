@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import type { Post, Product, Profile } from '../types';
-import { supabase } from '../utils/supabase';
+import { supabase, uploadPostImages } from '../utils/supabase';
 import { t } from '../utils/translations';
 import { PostCard } from './PostCard';
 import { CreatePostCard } from './CreatePostCard';
@@ -34,6 +34,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
   const [submitting, setSubmitting] = useState(false);
   const [activeHashtag, setActiveHashtag] = useState<string | null>(null);
   const [trendingTags, setTrendingTags] = useState<string[]>([]);
+  const [quotePostId, setQuotePostId] = useState<string | null>(null);
   const pageRef = useRef(0);
   const observerRef = useRef<HTMLDivElement>(null);
   const searchTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -55,12 +56,14 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
 
     const userIds = [...new Set(rawPosts.map(p => p.user_id))];
     const postIds = rawPosts.map(p => p.id);
+    const quoteIds = rawPosts.filter((p: any) => p.quoted_post_id).map((p: any) => p.quoted_post_id);
 
-    const [profilesResult, likesResult, followsResult, commentsResult] = await Promise.all([
+    const [profilesResult, likesResult, followsResult, commentsResult, bookmarksResult] = await Promise.all([
       supabase.from('profiles').select('user_id, display_name, avatar_url').in('user_id', userIds),
       supabase.from('post_likes').select('id, user_id, post_id').in('post_id', postIds),
       supabase.from('follows').select('following_id').eq('follower_id', currentUserId).in('following_id', userIds),
       supabase.from('post_comments').select('id, post_id').in('post_id', postIds),
+      currentUserId ? supabase.from('bookmarks').select('post_id').eq('user_id', currentUserId).in('post_id', postIds) : { data: [] },
     ]);
 
     const profileMap = new Map((profilesResult.data || []).map(p => [p.user_id, p]));
@@ -78,6 +81,26 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
     }
 
     const followingSet = new Set((followsResult.data || []).map((f: any) => f.following_id));
+    const bookmarkSet = new Set((bookmarksResult.data || []).map((b: any) => b.post_id));
+
+    let quotePostMap = new Map<string, Post>();
+    if (quoteIds.length > 0) {
+      const { data: quotePosts } = await supabase.from('posts').select('*').in('id', quoteIds);
+      if (quotePosts && quotePosts.length > 0) {
+        const quoteUserIds = [...new Set(quotePosts.map((p: any) => p.user_id))];
+        const { data: quoteProfiles } = await supabase.from('profiles').select('user_id, display_name, avatar_url').in('user_id', quoteUserIds);
+        const qProfileMap = new Map((quoteProfiles || []).map(p => [p.user_id, p]));
+        for (const qp of quotePosts) {
+          quotePostMap.set(qp.id, {
+            ...qp,
+            author: {
+              username: qProfileMap.get(qp.user_id)?.display_name || 'User',
+              avatar_url: qProfileMap.get(qp.user_id)?.avatar_url,
+            },
+          });
+        }
+      }
+    }
 
     return rawPosts.map(p => ({
       ...p,
@@ -89,6 +112,8 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       liked_by_me: userLikesSet.has(p.id),
       comments_count: commentsCountMap.get(p.id) || 0,
       is_following: followingSet.has(p.user_id),
+      bookmarked_by_me: bookmarkSet.has(p.id),
+      quoted_post: p.quoted_post_id ? quotePostMap.get(p.quoted_post_id) : undefined,
     }));
   }, [currentUserId]);
 
@@ -209,7 +234,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
     });
   }, []);
 
-  const notifyUser = useCallback(async (targetUserId: string, type: 'like' | 'comment' | 'follow', postId?: string) => {
+  const notifyUser = useCallback(async (targetUserId: string, type: 'like' | 'comment' | 'follow' | 'mention', postId?: string) => {
     if (targetUserId === currentUserId) return;
     await supabase.from('notifications').insert({
       user_id: targetUserId,
@@ -219,15 +244,21 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
     }).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
   }, [currentUserId]);
 
-  const handleCreatePost = useCallback(async (content: string, productId?: string, productName?: string) => {
+  const handleCreatePost = useCallback(async (content: string, productId?: string, productName?: string, imageFiles?: File[]) => {
     if (submitting) return;
     setSubmitting(true);
     try {
+      let images: string[] | undefined;
+      if (imageFiles && imageFiles.length > 0) {
+        images = await uploadPostImages(currentUserId, imageFiles);
+      }
+
       const { data, error: insertError } = await supabase.from('posts').insert({
         user_id: currentUserId,
         content,
         product_id: productId || null,
         product_name: productName || null,
+        images: images || null,
       }).select('*').single();
 
       if (insertError || !data) {
@@ -241,13 +272,25 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
         await supabase.from('post_hashtags').insert(uniqueTags.map(tag => ({ post_id: data.id, tag })));
       }
 
+      const mentions = content.match(/@(\w+)/g);
+      if (mentions) {
+        const usernames = [...new Set(mentions.map(m => m.slice(1)))];
+        const { data: mentionedUsers } = await supabase.from('profiles').select('user_id, display_name').in('display_name', usernames);
+        if (mentionedUsers) {
+          for (const u of mentionedUsers) {
+            await supabase.from('mentions').insert({ post_id: data.id, user_id: u.user_id });
+            notifyUser(u.user_id, 'mention', data.id);
+          }
+        }
+      }
+
       const enriched = await enrichPosts([data]);
       setPosts(prev => [enriched[0], ...prev]);
       showToast({ id: 'post-created', title: '', body: t('postCreated', lang) });
     } finally {
       setSubmitting(false);
     }
-  }, [submitting, currentUserId, lang, enrichPosts]);
+  }, [submitting, currentUserId, lang, enrichPosts, notifyUser]);
 
   const handleEditPost = useCallback(async (postId: string, content: string) => {
     if (submitting) return;
@@ -366,6 +409,52 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
     notifyUser(userId, 'comment', postId);
   }, [notifyUser]);
 
+  const handleBookmark = useCallback(async (postId: string) => {
+    const { error } = await supabase.from('bookmarks').insert({ user_id: currentUserId, post_id: postId });
+    if (error) {
+      showToast({ id: 'bookmark-error', title: t('somethingWentWrong', lang), body: error.message });
+      return;
+    }
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, bookmarked_by_me: true } : p));
+  }, [currentUserId, lang]);
+
+  const handleUnbookmark = useCallback(async (postId: string) => {
+    const { error } = await supabase.from('bookmarks').delete().eq('user_id', currentUserId).eq('post_id', postId);
+    if (error) {
+      showToast({ id: 'unbookmark-error', title: t('somethingWentWrong', lang), body: error.message });
+      return;
+    }
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, bookmarked_by_me: false } : p));
+  }, [currentUserId, lang]);
+
+  const handleQuote = useCallback((postId: string) => {
+    setQuotePostId(postId);
+  }, []);
+
+  const handleQuotePost = useCallback(async (content: string) => {
+    if (!quotePostId || submitting) return;
+    setSubmitting(true);
+    try {
+      const { data, error: insertError } = await supabase.from('posts').insert({
+        user_id: currentUserId,
+        content,
+        quoted_post_id: quotePostId,
+      }).select('*').single();
+
+      if (insertError || !data) {
+        showToast({ id: 'quote-error', title: t('somethingWentWrong', lang), body: insertError?.message || '' });
+        return;
+      }
+
+      const enriched = await enrichPosts([data]);
+      setPosts(prev => [enriched[0], ...prev]);
+      setQuotePostId(null);
+      showToast({ id: 'post-created', title: '', body: t('postCreated', lang) });
+    } finally {
+      setSubmitting(false);
+    }
+  }, [quotePostId, submitting, currentUserId, lang, enrichPosts]);
+
   const handleSearchSelect = useCallback((userId: string) => {
     onViewProfile?.(userId);
     setSearchQuery('');
@@ -392,8 +481,59 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
     return filtered;
   }, [posts, feedFilter, currentUserId, activeHashtag]);
 
+  const quotePost = quotePostId ? posts.find(p => p.id === quotePostId) : null;
+
   return (
     <div className="space-y-4">
+      {quotePostId && quotePost && (
+        <div className={`p-4 rounded-2xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+          <div className="flex items-center justify-between mb-3">
+            <span className={`text-sm font-medium ${isDark ? 'text-frost' : 'text-gray-800'}`}>{t('sharePost', lang)}</span>
+            <button onClick={() => setQuotePostId(null)} className={isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}>
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className={`p-3 rounded-xl border mb-3 ${isDark ? 'bg-midnight/50 border-edge' : 'bg-gray-50 border-gray-200'}`}>
+            <div className="flex items-center gap-2 mb-1">
+              <span className={`text-xs font-display font-bold ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+                {quotePost.author?.username || 'Unknown'}
+              </span>
+            </div>
+            <p className={`text-xs whitespace-pre-wrap ${isDark ? 'text-mist' : 'text-gray-600'}`}>
+              {quotePost.content}
+            </p>
+          </div>
+          <textarea
+            value={quotePostId ? '' : ''}
+            onChange={e => (e.target as HTMLTextAreaElement)}
+            placeholder={`${t('sharePost', lang)}...`}
+            className={`w-full text-sm px-3 py-2 rounded-xl outline-none resize-none mb-2 ${
+              isDark ? 'bg-midnight text-frost border border-edge focus:border-cyanx/50 placeholder-muted' : 'bg-gray-50 text-gray-800 border border-gray-200 focus:border-cyan-500 placeholder-gray-400'
+            }`}
+            rows={2}
+            autoFocus
+            onKeyDown={e => {
+              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                const val = (e.target as HTMLTextAreaElement).value.trim();
+                if (val) handleQuotePost(val);
+              }
+            }}
+            id="quote-input"
+          />
+          <div className="flex justify-end">
+            <button
+              onClick={() => {
+                const input = document.getElementById('quote-input') as HTMLTextAreaElement;
+                if (input?.value.trim()) handleQuotePost(input.value.trim());
+              }}
+              className="px-3 py-1.5 rounded-xl text-xs font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark"
+            >
+              {t('postButton', lang)}
+            </button>
+          </div>
+        </div>
+      )}
+
       {showCreatePostCard && (
         <CreatePostCard
           isDark={isDark}
@@ -547,6 +687,9 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
           onViewProfile={onViewProfile}
           onComment={handleComment}
           onHashtagClick={handleHashtagClick}
+          onBookmark={handleBookmark}
+          onUnbookmark={handleUnbookmark}
+          onQuote={handleQuote}
         />
       ))}
 

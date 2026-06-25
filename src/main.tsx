@@ -8,6 +8,14 @@ import { AuthProvider } from './contexts/AuthContext';
 import './index.css';
 
 const MenuPage = lazy(() => import('./components/MenuPage').then(m => ({ default: m.MenuPage })));
+const CommunityPage = lazy(() => import('./components/CommunityPage').then(m => ({ default: m.CommunityPage })));
+const ProfilePage = lazy(() => import('./components/ProfilePage').then(m => ({ default: m.ProfilePage })));
+
+const LoadingFallback = (
+  <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+    <div className="w-10 h-10 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin" />
+  </div>
+);
 
 registerSW({
   immediate: true,
@@ -22,7 +30,9 @@ createRoot(document.getElementById('root')!).render(
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/menu" element={<Suspense fallback={<div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center"><div className="w-10 h-10 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin" /></div>}><MenuPage /></Suspense>} />
+            <Route path="/menu" element={<Suspense fallback={LoadingFallback}><MenuPage /></Suspense>} />
+            <Route path="/community" element={<Suspense fallback={LoadingFallback}><CommunityPage /></Suspense>} />
+            <Route path="/profile/:userId" element={<Suspense fallback={LoadingFallback}><ProfilePage /></Suspense>} />
             <Route path="*" element={<App />} />
           </Routes>
         </AuthProvider>

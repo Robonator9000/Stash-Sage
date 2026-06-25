@@ -20,6 +20,24 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<{ id: string; username: string } | null>(null);
+
+  const buildThread = useCallback((flat: PostComment[]): PostComment[] => {
+    const map = new Map<string, PostComment>();
+    const roots: PostComment[] = [];
+    for (const c of flat) {
+      map.set(c.id, { ...c, replies: [] });
+    }
+    for (const c of flat) {
+      const node = map.get(c.id)!;
+      if (c.parent_id && map.has(c.parent_id)) {
+        map.get(c.parent_id)!.replies!.push(node);
+      } else {
+        roots.push(node);
+      }
+    }
+    return roots;
+  }, []);
 
   const fetchComments = useCallback(async () => {
     setLoading(true);
@@ -49,15 +67,17 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
 
     const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
 
-    setComments(data.map(c => ({
+    const enriched = data.map(c => ({
       ...c,
       author: {
         username: profileMap.get(c.user_id)?.display_name || 'Unknown',
         avatar_url: profileMap.get(c.user_id)?.avatar_url,
       },
-    })));
+    }));
+
+    setComments(buildThread(enriched));
     setLoading(false);
-  }, [postId]);
+  }, [postId, buildThread]);
 
   useEffect(() => {
     fetchComments();
@@ -71,6 +91,7 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
       user_id: currentUserId,
       post_id: postId,
       content: trimmed,
+      parent_id: replyingTo?.id || null,
     }).select('*').single();
 
     if (insertError || !data) {
@@ -79,13 +100,11 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
       return;
     }
 
-    setComments(prev => [...prev, {
-      ...data,
-      author: { username, avatar_url: undefined },
-    }]);
     setNewComment('');
+    setReplyingTo(null);
     setSubmitting(false);
     onComment?.(postUserId, postId);
+    fetchComments();
   }
 
   async function handleDelete(commentId: string) {
@@ -94,7 +113,63 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
       setError(delError.message);
       return;
     }
-    setComments(prev => prev.filter(c => c.id !== commentId));
+    fetchComments();
+  }
+
+  function CommentItem({ comment, depth = 0 }: { comment: PostComment; depth?: number }) {
+    const isOwner = comment.user_id === currentUserId;
+    return (
+      <div role="listitem" className={depth > 0 ? 'ml-6 mt-2' : 'mt-3'}>
+        <div className="flex items-start gap-2">
+          <div className={`w-6 h-6 rounded-lg flex items-center justify-center bg-gradient-to-br from-cyanx to-emera shrink-0`}>
+            <span className="text-white font-display font-bold text-xs">
+              {(comment.author?.username?.[0] || '?').toUpperCase()}
+            </span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className={`font-display font-bold text-xs ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+                {comment.author?.username || 'Unknown'}
+              </span>
+              <span className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+                {timeAgo(comment.created_at, lang)}
+              </span>
+            </div>
+            <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-600'}`}>
+              {comment.content}
+            </p>
+            <div className="flex items-center gap-3 mt-1">
+              {depth < 2 && (
+                <button
+                  onClick={() => setReplyingTo({ id: comment.id, username: comment.author?.username || 'Unknown' })}
+                  className={`text-xs font-medium ${isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                  {t('reply', lang)}
+                </button>
+              )}
+              {isOwner && (
+                <button
+                  onClick={() => handleDelete(comment.id)}
+                  aria-label="Delete comment"
+                  className={`text-xs ${isDark ? 'text-muted hover:text-red-400' : 'text-gray-400 hover:text-red-500'}`}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+        {comment.replies && comment.replies.length > 0 && (
+          <div role="list">
+            {comment.replies.map(reply => (
+              <CommentItem key={reply.id} comment={reply} depth={depth + 1} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -123,44 +198,22 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
         </p>
       )}
 
-      <div role="list" className="space-y-3">
-        {comments.map(comment => {
-          const isOwner = comment.user_id === currentUserId;
-          return (
-            <div key={comment.id} role="listitem" className="flex items-start gap-2">
-              <div className={`w-6 h-6 rounded-lg flex items-center justify-center bg-gradient-to-br from-cyanx to-emera shrink-0`}>
-                <span className="text-white font-display font-bold text-xs">
-                  {(comment.author?.username?.[0] || '?').toUpperCase()}
-                </span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className={`font-display font-bold text-xs ${isDark ? 'text-frost' : 'text-gray-800'}`}>
-                    {comment.author?.username || 'Unknown'}
-                  </span>
-                  <span className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>
-                    {timeAgo(comment.created_at, lang)}
-                  </span>
-                </div>
-                <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-600'}`}>
-                  {comment.content}
-                </p>
-              </div>
-              {isOwner && (
-                <button
-                  onClick={() => handleDelete(comment.id)}
-                  aria-label="Delete comment"
-                  className={`text-xs shrink-0 ${isDark ? 'text-muted hover:text-red-400' : 'text-gray-400 hover:text-red-500'}`}
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                  </svg>
-                </button>
-              )}
-            </div>
-          );
-        })}
+      <div role="list" className="space-y-1">
+        {comments.map(comment => (
+          <CommentItem key={comment.id} comment={comment} />
+        ))}
       </div>
+
+      {replyingTo && (
+        <div className={`flex items-center gap-2 mt-2 px-2 py-1 rounded-lg text-xs ${isDark ? 'bg-midnight text-mist' : 'bg-gray-50 text-gray-500'}`}>
+          <span>{t('replyTo', lang)} <span className="font-medium">{replyingTo.username}</span></span>
+          <button onClick={() => setReplyingTo(null)} className="ml-auto hover:opacity-70">
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       <div className="flex items-center gap-2 mt-3">
         <div className={`w-6 h-6 rounded-lg flex items-center justify-center bg-gradient-to-br from-cyanx to-emera shrink-0`}>
@@ -174,7 +227,7 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
             name="comment"
             value={newComment}
             onChange={e => setNewComment(e.target.value.slice(0, 500))}
-            placeholder={t('writeComment', lang)}
+            placeholder={replyingTo ? `${t('replyTo', lang)} ${replyingTo.username}...` : t('writeComment', lang)}
             className={`flex-1 text-sm px-3 py-1.5 rounded-xl outline-none transition-colors ${
               isDark ? 'bg-midnight text-frost placeholder-muted border border-edge focus:border-cyanx/50' : 'bg-gray-50 text-gray-800 placeholder-gray-400 border border-gray-200 focus:border-cyan-500'
             }`}
@@ -205,5 +258,3 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
     </div>
   );
 }
-
-

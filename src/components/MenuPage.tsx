@@ -73,7 +73,7 @@ function ProductCard({ product, index, visible, isDark }: { product: Product; in
       style={{ transitionDelay: `${index * 40}ms` }}
     >
       {product.image ? (
-        <div className="relative h-44 overflow-hidden bg-gray-100">
+        <div className="relative h-44 overflow-hidden bg-[#1a1a1d]">
           <img
             src={product.image}
             alt={product.name}
@@ -118,7 +118,7 @@ function DisposableCard({ product, index, visible, isDark }: { product: Product;
       style={{ transitionDelay: `${index * 40}ms` }}
     >
       {product.image ? (
-        <div className="relative h-48 overflow-hidden">
+        <div className="relative h-48 overflow-hidden bg-[#1a1a1d]">
           <img
             src={product.image}
             alt={product.name}

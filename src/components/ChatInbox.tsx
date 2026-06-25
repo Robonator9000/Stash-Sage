@@ -1,0 +1,122 @@
+import { useState } from 'react';
+import { useConversations } from '../hooks/useConversations';
+import { ChatThread } from './ChatThread';
+import { t } from '../utils/translations';
+import { MessageCircle, ArrowLeft } from 'lucide-react';
+import type { Conversation } from '../types';
+
+interface ChatInboxProps {
+  currentUserId: string;
+  isDark: boolean;
+  lang: string;
+  onBack?: () => void;
+}
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'now';
+  if (mins < 60) return `${mins}m`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  return `${days}d`;
+}
+
+export function ChatInbox({ currentUserId, isDark, lang, onBack }: ChatInboxProps) {
+  const { conversations, loading } = useConversations(currentUserId);
+  const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
+
+  if (activeConversation) {
+    return (
+      <ChatThread
+        conversation={activeConversation}
+        currentUserId={currentUserId}
+        isDark={isDark}
+        lang={lang}
+        onBack={() => setActiveConversation(null)}
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-3">
+        {onBack && (
+          <button onClick={onBack} className={`p-1 rounded-lg ${isDark ? 'hover:bg-midnight text-frost' : 'hover:bg-gray-200 text-gray-600'}`}>
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+        )}
+        <h2 className={`text-lg font-display font-bold ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+          {t('messages', lang)}
+        </h2>
+      </div>
+
+      {loading ? (
+        <div className="space-y-2">
+          {[1, 2, 3].map(i => (
+            <div key={i} className={`p-3 rounded-xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-full animate-pulse ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
+                <div className="flex-1 space-y-2">
+                  <div className={`h-3 w-24 rounded animate-pulse ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
+                  <div className={`h-3 w-40 rounded animate-pulse ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : conversations.length === 0 ? (
+        <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+          <MessageCircle className={`w-10 h-10 mx-auto mb-2 ${isDark ? 'text-muted' : 'text-gray-300'}`} />
+          <p className={`text-sm ${isDark ? 'text-muted' : 'text-gray-400'}`}>{t('noMessages', lang)}</p>
+        </div>
+      ) : (
+        <div className="space-y-1">
+          {conversations.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => setActiveConversation(c)}
+              className={`w-full p-3 rounded-xl flex items-center gap-3 text-left transition-colors ${
+                isDark ? 'hover:bg-surface/50' : 'hover:bg-gray-50'
+              }`}
+            >
+              {c.other_user?.avatar_url ? (
+                <img src={c.other_user.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyanx to-emera flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-sm font-bold">{(c.other_user?.username?.[0] || '?').toUpperCase()}</span>
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <p className={`text-sm font-display font-bold truncate ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+                    {c.other_user?.username}
+                  </p>
+                  {c.last_message && (
+                    <span className={`text-xs flex-shrink-0 ml-2 ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+                      {timeAgo(c.last_message.created_at)}
+                    </span>
+                  )}
+                </div>
+                <p className={`text-xs truncate ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+                  {c.listing?.title ? `Re: ${c.listing.title}` : 'Conversation'}
+                </p>
+                {c.last_message && (
+                  <p className={`text-xs truncate mt-0.5 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+                    {c.last_message.user_id === currentUserId ? 'You: ' : ''}{c.last_message.content}
+                  </p>
+                )}
+              </div>
+              {(c.unread_count || 0) > 0 && (
+                <div className="w-5 h-5 rounded-full bg-cyan-500 flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-[10px] font-bold">{c.unread_count}</span>
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

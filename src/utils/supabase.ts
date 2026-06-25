@@ -77,3 +77,32 @@ export async function deleteStorageImages(urls: string[]): Promise<void> {
   if (paths.length === 0) return;
   await supabase.storage.from('listing-images').remove(paths);
 }
+
+export async function uploadPostImages(userId: string, files: File[]): Promise<string[]> {
+  if (!isConfigured || files.length === 0) return [];
+  const urls: string[] = [];
+  for (const file of files) {
+    const ext = file.name.split('.').pop() || 'webp';
+    const fileName = `${crypto.randomUUID()}.${ext}`;
+    const filePath = `${userId}/${fileName}`;
+    const { error } = await supabase.storage.from('post-images').upload(filePath, file, {
+      contentType: file.type,
+      upsert: false,
+    });
+    if (error) continue;
+    const { data: { publicUrl } } = supabase.storage.from('post-images').getPublicUrl(filePath);
+    urls.push(publicUrl);
+  }
+  return urls;
+}
+
+export async function deletePostImages(urls: string[]): Promise<void> {
+  if (!isConfigured || urls.length === 0) return;
+  const paths: string[] = [];
+  for (const url of urls) {
+    const parts = url.split('/post-images/');
+    if (parts.length === 2) paths.push(parts[1]);
+  }
+  if (paths.length === 0) return;
+  await supabase.storage.from('post-images').remove(paths);
+}

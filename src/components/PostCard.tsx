@@ -22,6 +22,9 @@ interface PostCardProps {
   onViewProfile?: (userId: string) => void;
   onComment?: (userId: string, postId: string) => void;
   onHashtagClick?: (tag: string) => void;
+  onBookmark?: (postId: string) => Promise<void>;
+  onUnbookmark?: (postId: string) => Promise<void>;
+  onQuote?: (postId: string) => void;
 }
 
 function renderContent(text: string, isDark: boolean, onHashtagClick?: (tag: string) => void) {
@@ -39,7 +42,77 @@ function renderContent(text: string, isDark: boolean, onHashtagClick?: (tag: str
   });
 }
 
-export const PostCard = memo(function PostCard({ post, isDark, lang, currentUserId, username, isFollowing, onLike, onUnlike, onDelete, onEdit, onFollow, onUnfollow, onViewProfile, onComment, onHashtagClick }: PostCardProps) {
+function PostImages({ images }: { images: string[] }) {
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const count = images.length;
+  if (count === 0) return null;
+
+  if (count === 1) {
+    return (
+      <div className="mt-2 mb-1 rounded-xl overflow-hidden">
+        <img src={images[0]} alt="" loading="lazy" className="w-full max-h-80 object-cover" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-2 mb-1 relative rounded-xl overflow-hidden">
+      <img src={images[currentIdx]} alt="" loading="lazy" className="w-full max-h-80 object-cover" />
+      {count > 1 && (
+        <>
+          <button
+            onClick={(e) => { e.stopPropagation(); setCurrentIdx(prev => prev === 0 ? count - 1 : prev - 1); }}
+            aria-label="Previous image"
+            className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); setCurrentIdx(prev => (prev + 1) % count); }}
+            aria-label="Next image"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+            {images.map((_, i) => (
+              <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === currentIdx ? 'bg-white' : 'bg-white/40'}`} />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function QuotedPost({ post, isDark, onHashtagClick }: { post: Post; isDark: boolean; onHashtagClick?: (tag: string) => void }) {
+  return (
+    <div className={`mt-2 p-3 rounded-xl border ${isDark ? 'bg-midnight/50 border-edge' : 'bg-gray-50 border-gray-200'}`}>
+      <div className="flex items-center gap-2 mb-1">
+        <div className={`w-5 h-5 rounded-md flex items-center justify-center ${post.author?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
+          {post.author?.avatar_url ? (
+            <img src={post.author.avatar_url} alt="" className="w-full h-full object-cover rounded-md" />
+          ) : (
+            <span className="text-white text-[8px] font-bold">{(post.author?.username?.[0] || '?').toUpperCase()}</span>
+          )}
+        </div>
+        <span className={`text-xs font-display font-bold ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+          {post.author?.username || 'Unknown'}
+        </span>
+        <span className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>{timeAgo(post.created_at, 'en')}</span>
+      </div>
+      <p className={`text-xs whitespace-pre-wrap ${isDark ? 'text-mist' : 'text-gray-600'}`}>
+        {renderContent(post.content, isDark, onHashtagClick)}
+      </p>
+    </div>
+  );
+}
+
+export const PostCard = memo(function PostCard({ post, isDark, lang, currentUserId, username, isFollowing, onLike, onUnlike, onDelete, onEdit, onFollow, onUnfollow, onViewProfile, onComment, onHashtagClick, onBookmark, onUnbookmark, onQuote }: PostCardProps) {
   const [liking, setLiking] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -49,6 +122,9 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
   const isOwner = post.user_id === currentUserId;
   const liked = post.liked_by_me ?? false;
   const likesCount = post.likes_count ?? 0;
+  const bookmarked = post.bookmarked_by_me ?? false;
+
+  const postImages = (post.images?.filter(Boolean)) || (post.image_url ? [post.image_url] : []);
 
   async function handleEdit() {
     if (!onEdit || !editContent.trim() || editSubmitting) return;
@@ -76,8 +152,24 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
     }
   }
 
+  async function handleToggleBookmark() {
+    if (bookmarked) {
+      await onUnbookmark?.(post.id);
+    } else {
+      await onBookmark?.(post.id);
+    }
+  }
+
   return (
-    <div className={`p-4 rounded-2xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+    <div className={`p-4 rounded-2xl ${post.pinned ? (isDark ? 'bg-cyanx/5 border border-cyanx/20' : 'bg-cyan-50/50 border border-cyan-200') : isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+      {post.pinned && (
+        <div className={`flex items-center gap-1.5 mb-2 text-xs font-medium ${isDark ? 'text-cyanx' : 'text-cyan-600'}`}>
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+          </svg>
+          {t('pinnedPost', lang)}
+        </div>
+      )}
       <div className="flex items-start gap-3">
         <button
           onClick={() => onViewProfile?.(post.user_id)}
@@ -144,9 +236,13 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
               </div>
             </div>
           ) : (
-            <p className={`text-sm mb-2 whitespace-pre-wrap ${isDark ? 'text-mist' : 'text-gray-600'}`}>
-              {renderContent(post.content, isDark, onHashtagClick)}
-            </p>
+            <>
+              <p className={`text-sm mb-2 whitespace-pre-wrap ${isDark ? 'text-mist' : 'text-gray-600'}`}>
+                {renderContent(post.content, isDark, onHashtagClick)}
+              </p>
+              {postImages.length > 0 && <PostImages images={postImages} />}
+              {post.quoted_post && <QuotedPost post={post.quoted_post} isDark={isDark} onHashtagClick={onHashtagClick} />}
+            </>
           )}
 
           {post.product_name && (
@@ -201,6 +297,40 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
               </svg>
               {(post.comments_count ?? 0) > 0 && <span>{post.comments_count}</span>}
             </button>
+
+            {onBookmark && (
+              <button
+                onClick={handleToggleBookmark}
+                aria-label={bookmarked ? t('bookmarked', lang) : t('bookmark', lang)}
+                className={`transition-all ${
+                  bookmarked
+                    ? 'text-cyanx'
+                    : isDark ? 'text-muted hover:text-cyan-400' : 'text-gray-400 hover:text-cyan-600'
+                }`}
+              >
+                {bookmarked ? (
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M5.25 3A2.25 2.25 0 003 5.25v14.25l9-5.25-9-5.25z" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+                  </svg>
+                )}
+              </button>
+            )}
+
+            {onQuote && !isOwner && (
+              <button
+                onClick={() => onQuote(post.id)}
+                aria-label={t('sharePost', lang)}
+                className={`transition-all ${isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}`}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+                </svg>
+              </button>
+            )}
 
             {isOwner && (
               <>

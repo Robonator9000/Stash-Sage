@@ -98,6 +98,9 @@ export interface Post {
   product_id?: string | null;
   product_name?: string | null;
   image_url?: string | null;
+  images?: string[];
+  quoted_post_id?: string | null;
+  pinned?: boolean;
   created_at: string;
   updated_at: string;
   author?: {
@@ -108,6 +111,8 @@ export interface Post {
   liked_by_me?: boolean;
   comments_count?: number;
   is_following?: boolean;
+  bookmarked_by_me?: boolean;
+  quoted_post?: Post;
 }
 
 export interface PostLike {
@@ -121,15 +126,17 @@ export interface PostComment {
   id: string;
   user_id: string;
   post_id: string;
+  parent_id?: string | null;
   content: string;
   created_at: string;
   author?: {
     username: string;
     avatar_url?: string;
   };
+  replies?: PostComment[];
 }
 
-export type NotificationType = 'like' | 'comment' | 'follow' | 'new_listing' | 'listing_sold';
+export type NotificationType = 'like' | 'comment' | 'follow' | 'new_listing' | 'listing_sold' | 'mention';
 
 export interface Notification {
   id: string;
@@ -163,6 +170,9 @@ export interface MarketplaceListing {
   status: 'active' | 'sold';
   created_at: string;
   updated_at: string;
+  saved_by_me?: boolean;
+  avg_seller_rating?: number;
+  seller_review_count?: number;
   author?: {
     username: string;
     avatar_url?: string;
@@ -191,6 +201,7 @@ export const CONTACT_PLATFORMS = [
   'snapchat',
   'signal',
   'whatsapp',
+  'chat',
   'other',
 ] as const;
 
@@ -209,3 +220,46 @@ export const MARKETPLACE_CATEGORIES = [
 
 export type SortOption = 'newest' | 'oldest' | 'name' | 'rating' | 'thc' | 'amount' | 'price' | 'favorites';
 export type FilterType = string;
+
+export interface Bookmark {
+  id: string;
+  user_id: string;
+  post_id: string;
+  created_at: string;
+}
+
+export interface Mention {
+  id: string;
+  post_id: string;
+  user_id: string;
+  created_at: string;
+}
+
+export interface Conversation {
+  id: string;
+  listing_id: string;
+  buyer_id: string;
+  seller_id: string;
+  last_message_at: string;
+  created_at: string;
+  listing?: MarketplaceListing;
+  other_user?: { username: string; avatar_url?: string };
+  last_message?: Message;
+  unread_count?: number;
+}
+
+export interface Message {
+  id: string;
+  conversation_id: string;
+  user_id: string;
+  content: string;
+  read: boolean;
+  created_at: string;
+}
+
+export interface SavedListing {
+  id: string;
+  user_id: string;
+  listing_id: string;
+  created_at: string;
+}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { Lock } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Product, Session, SortOption, FilterType } from './types';
 import { useProducts } from './utils/useProducts';
 import { useSessions } from './utils/useSessions';
@@ -20,11 +20,9 @@ import { PinModal } from './components/PinModal';
 import { BackgroundCanvas } from './components/BackgroundCanvas';
 import { WelcomeModal } from './components/WelcomeModal';
 import { LogoIcon } from './components/LogoIcon';
-import { SocialFeed } from './components/SocialFeed';
 import { MarketplaceFeed } from './components/MarketplaceFeed';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NotificationBell } from './components/NotificationBell';
-import { UserProfileModal } from './components/UserProfileModal';
 import { useAuth } from './contexts/AuthContext';
 import { AdminDashboard } from './components/AdminDashboard';
 import { MenuButton } from './components/MenuButton';
@@ -34,6 +32,12 @@ const ProductModal = lazy(() => import('./components/ProductModal').then(m => ({
 const ConsumeModal = lazy(() => import('./components/ConsumeModal').then(m => ({ default: m.ConsumeModal })));
 const SellModal = lazy(() => import('./components/SellModal').then(m => ({ default: m.SellModal })));
 const SessionModal = lazy(() => import('./components/SessionModal').then(m => ({ default: m.SessionModal })));
+
+function NavigateToCommunity() {
+  const navigate = useNavigate();
+  useEffect(() => { navigate('/community', { replace: true }); }, [navigate]);
+  return null;
+}
 
 export default function App() {
   const { products, addProduct, updateProduct, deleteProduct, toggleFavorite, consumeProduct, replaceAllProducts } = useProducts();
@@ -66,12 +70,11 @@ export default function App() {
   const [settingsDefaultTab, setSettingsDefaultTab] = useState<'profile' | 'preferences' | 'session' | 'budget' | 'data' | 'security'>('preferences');
 
   const [showSmoke, setShowSmoke] = useState(false);
-  const [viewProfileUserId, setViewProfileUserId] = useState<string | null>(null);
 
+  const navigate = useNavigate();
   const handleViewProfile = useCallback((uid: string) => {
-    setViewProfileUserId(uid);
-    setActiveTab('community');
-  }, []);
+    navigate(`/profile/${uid}`);
+  }, [navigate]);
 
   const [historyFilterType, setHistoryFilterType] = useState<string>('all');
   const [historyDateFilter, setHistoryDateFilter] = useState<string>('all');
@@ -910,36 +913,7 @@ export default function App() {
                 </p>
               </div>
             ) : (
-              <>
-            {!user && (
-              <div className={`p-4 rounded-2xl text-center text-sm ${isDark ? 'bg-surface/50 border border-edge text-mist' : 'bg-white border border-gray-200 text-gray-500'}`}>
-                Sign in to like, comment, and post in the community.
-                <button onClick={() => { setSettingsDefaultTab('profile'); setIsSettingsOpen(true); }}
-                  className="ml-2 font-medium text-cyanx hover:underline">Sign in</button>
-              </div>
-            )}
-
-            {viewProfileUserId && (
-              <UserProfileModal
-                userId={viewProfileUserId}
-                isDark={isDark}
-                lang={lang}
-                onBack={() => setViewProfileUserId(null)}
-              />
-            )}
-
-            {!viewProfileUserId && (
-              <SocialFeed
-                isDark={isDark}
-                lang={lang}
-                currentUserId={user?.id || ''}
-                username={settings.profile?.username || 'User'}
-                products={products}
-                profile={settings.profile}
-                onViewProfile={handleViewProfile}
-              />
-            )}
-              </>
+              <NavigateToCommunity />
             )}
           </div>
           </ErrorBoundary>
