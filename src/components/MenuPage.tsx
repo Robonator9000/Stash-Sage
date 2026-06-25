@@ -62,7 +62,7 @@ function ProductCard({ product, index, visible }: { product: Product; index: num
 
   return (
     <div
-      className={`aspect-square relative rounded-2xl overflow-hidden border-2 ${strainInfo.border} hover:shadow-lg ${strainInfo.glow} transition-[opacity,transform] duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+      className={`aspect-square relative rounded-2xl overflow-hidden border-[3px] ${strainInfo.border} hover:shadow-lg ${strainInfo.glow} transition-[opacity,transform] duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
       style={{ transitionDelay: visible ? '0ms' : `${index * 40}ms` }}
     >
       {product.image ? (
@@ -92,7 +92,7 @@ function DisposableCard({ product, visible }: { product: Product; visible: boole
 
   return (
     <div
-      className={`relative rounded-2xl overflow-hidden border-2 ${strainInfo.border} hover:shadow-lg ${strainInfo.glow} transition-[opacity,transform] duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+      className={`relative rounded-2xl overflow-hidden border-[3px] ${strainInfo.border} hover:shadow-lg ${strainInfo.glow} transition-[opacity,transform] duration-300 hover:-translate-y-1 group ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
     >
       {product.image ? (
         <div className="relative aspect-[4/5] overflow-hidden bg-[#1a1a1d]">
@@ -248,6 +248,11 @@ export function MenuPage() {
               1g Cartridges
             </h2>
             <p className="text-gray-500 text-lg">All flavors — $15 each</p>
+            <div className="flex items-center justify-center gap-4 mt-4 text-xs font-medium">
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-indigo-500" /> Indica</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Sativa</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Hybrid</span>
+            </div>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-3">
             {CARTRIDGES.map((p, i) => (
