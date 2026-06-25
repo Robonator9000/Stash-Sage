@@ -19,13 +19,14 @@ const CARTRIDGES: Product[] = [
   { name: 'Blueberry Oatmeal', price: 15, strain: 'indica', image: 'https://mightypuff.ca/wp-content/uploads/2026/05/Blueberry-Oatmeal-1.jpg' },
   { name: 'Blueberry Pie', price: 15, strain: 'indica', image: 'https://mightypuff.ca/wp-content/uploads/2026/05/Blueberry-Pie-1.jpg' },
   { name: 'Champagne', price: 15, strain: 'sativa', image: 'https://mightypuff.ca/wp-content/uploads/2026/04/Champagne.jpg' },
-  { name: 'Cherry Candy Ice', price: 15, strain: 'hybrid', image: 'https://mightypuff.ca/wp-content/uploads/2026/06/Cherry-Candy-Ice-1.jpg' },
+  { name: 'Mint Chocolate', price: 15, strain: 'hybrid', image: 'https://mightypuff.ca/wp-content/uploads/2026/06/Mint-Chocolate-1-400x400.jpg' },
   { name: 'Clementine Ice', price: 15, strain: 'hybrid', image: 'https://mightypuff.ca/wp-content/uploads/2026/05/Clementine-ice-1-400x400.jpg' },
   { name: 'Frosted Grapes', price: 15, strain: 'indica', image: 'https://mightypuff.ca/wp-content/uploads/2026/05/FROSTED-GRAPES-1.jpg' },
+  { name: 'Green Crack', price: 15, strain: 'sativa', image: 'https://mightypuff.ca/wp-content/uploads/2026/04/green-crack-400x400.jpg' },
   { name: 'Golden Mango', price: 15, strain: 'sativa', image: 'https://mightypuff.ca/wp-content/uploads/2025/10/Mango-01-400x400.jpg' },
   { name: 'Grand Daddy Purple', price: 15, strain: 'indica', image: 'https://mightypuff.ca/wp-content/uploads/2026/04/Grand-Daddy-Purple-400x400.jpg' },
   { name: 'Irish Cream', price: 15, strain: 'indica', image: 'https://mightypuff.ca/wp-content/uploads/2026/04/Irish-Cream-400x400.jpg' },
-  { name: 'Island Sweet Skunk', price: 15, strain: 'sativa', image: 'https://mightypuff.ca/wp-content/uploads/2026/05/Island-Sweet-Skunk-1.jpg' },
+  { name: 'Red Berry Punch', price: 15, strain: 'hybrid', image: 'https://mightypuff.ca/wp-content/uploads/2026/04/red-berry-punch-1-400x400.jpg' },
   { name: 'Maple Pumpkin Pie', price: 15, strain: 'indica', image: 'https://mightypuff.ca/wp-content/uploads/2026/04/Maple-Pumpkin-Pie.jpg' },
   { name: 'Pink Flamingo', price: 15, strain: 'hybrid', image: 'https://mightypuff.ca/wp-content/uploads/2026/06/Pink-Flamingo-1-400x400.jpg' },
   { name: 'Rootbeer', price: 15, strain: 'indica', image: 'https://mightypuff.ca/wp-content/uploads/2025/11/Rootbeer-cart.jpg' },
@@ -234,7 +235,7 @@ export function MenuPage() {
         <div className="flex animate-marquee whitespace-nowrap">
           {[...Array(2)].map((_, i) => (
             <span key={i} className="mx-8 text-sm font-bold uppercase tracking-wider">
-              🍎 Apple Candy   🍇 Frosted Grapes   🍌 Banana Daze   🍒 Cherry Candy Ice   🍉 Watermelon   🥭 Golden Mango   👑 Grand Daddy Purple   🦩 Pink Flamingo   🍊 Clementine Ice   🥂 Champagne   🌴 Island Sweet Skunk   🍺 Rootbeer   
+              🍎 Apple Candy   🍇 Frosted Grapes   🍌 Banana Daze   🍒 Mint Chocolate   🍉 Watermelon   🥭 Golden Mango   👑 Grand Daddy Purple   💚 Green Crack   🦩 Pink Flamingo   🍊 Clementine Ice   🥂 Champagne   🍓 Red Berry Punch   🍺 Rootbeer   
             </span>
           ))}
         </div>

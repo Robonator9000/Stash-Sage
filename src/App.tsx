@@ -594,7 +594,7 @@ export default function App() {
       <div className="max-w-7xl mx-auto px-4 py-4 flex-1">
         {/* Main tab bar */}
         <div className="flex items-center justify-center mb-4">
-          <div className="flex items-center gap-1" role="tablist">
+          <div className="flex items-center gap-4" role="tablist">
             {[
               { id: 'stash', label: t('stash', lang), icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
               { id: 'community', label: t('community', lang), icon: 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z' },
@@ -607,7 +607,7 @@ export default function App() {
                 aria-selected={activeTab === tab.id}
                 aria-current={activeTab === tab.id ? 'page' : undefined}
                 onClick={() => setActiveTab(tab.id as 'stash' | 'community' | 'marketplace' | 'admin')}
-                className={`w-28 flex items-center justify-center gap-2 px-3 py-3.5 text-sm font-medium relative whitespace-nowrap overflow-hidden
+                className={`flex-1 max-w-[200px] flex items-center justify-center gap-2.5 px-5 py-3.5 text-sm font-medium relative whitespace-nowrap overflow-hidden
                   ${activeTab === tab.id
                     ? isDark ? 'text-cyan-400' : 'text-cyan-600'
                     : isDark ? 'text-mist hover:text-frost' : 'text-gray-600 hover:text-gray-900'}`}
