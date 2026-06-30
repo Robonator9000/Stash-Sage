@@ -5,7 +5,7 @@ import { t } from '../utils/translations';
 import { PostCard } from './PostCard';
 import { CreatePostCard } from './CreatePostCard';
 import { showToast } from './Toast';
-import { Search, X } from 'lucide-react';
+import { Search, X, Bookmark } from 'lucide-react';
 
 interface SocialFeedProps {
   isDark: boolean;
@@ -25,7 +25,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [feedFilter, setFeedFilter] = useState<'latest' | 'following' | 'trending'>('latest');
+  const [feedFilter, setFeedFilter] = useState<'latest' | 'following' | 'trending' | 'bookmarked'>('latest');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<{ user_id: string; display_name: string; avatar_url?: string | null }[]>([]);
   const [searching, setSearching] = useState(false);
@@ -127,6 +127,14 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       query = query.textSearch('search_vector', debouncedPostSearch.trim(), { config: 'english' });
     } else if (sort === 'trending') {
       query = query.order('created_at', { ascending: false }).gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+    } else if (sort === 'bookmarked') {
+      if (!currentUserId) return [];
+      const { data: bookmarks } = await supabase.from('bookmarks').select('post_id').eq('user_id', currentUserId).order('created_at', { ascending: false }).range(from, to);
+      if (!bookmarks || bookmarks.length === 0) return [];
+      const bIds = bookmarks.map(b => b.post_id);
+      const { data } = await supabase.from('posts').select('*').in('id', bIds).order('created_at', { ascending: false });
+      if (!data) return [];
+      return enrichPosts(data);
     } else {
       query = query.order('created_at', { ascending: false });
     }
@@ -546,19 +554,20 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
 
       {/* Feed filter */}
       <div role="tablist" className={`flex items-center gap-1 p-1 rounded-xl ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
-        {(['latest', 'following', 'trending'] as const).map(f => (
+        {(['latest', 'following', 'trending', 'bookmarked'] as const).map(f => (
           <button
             key={f}
             role="tab"
             aria-selected={feedFilter === f}
             onClick={() => setFeedFilter(f)}
-            className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
+            className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 ${
               feedFilter === f
                 ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm'
                 : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            {f === 'latest' ? 'Latest' : f === 'following' ? 'Following' : 'Trending'}
+            {f === 'bookmarked' && <Bookmark className={`w-3.5 h-3.5 ${feedFilter === f ? 'fill-current' : ''}`} />}
+            {f === 'latest' ? 'Latest' : f === 'following' ? 'Following' : f === 'trending' ? 'Trending' : 'Bookmarked'}
           </button>
         ))}
       </div>
