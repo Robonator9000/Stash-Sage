@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useConversations } from '../hooks/useConversations';
 import { ChatThread } from './ChatThread';
 import { t } from '../utils/translations';
+import { timeAgo } from '../utils/helpers';
 import { MessageCircle, ArrowLeft } from 'lucide-react';
 import type { Conversation } from '../types';
 
@@ -10,17 +11,6 @@ interface ChatInboxProps {
   isDark: boolean;
   lang: string;
   onBack?: () => void;
-}
-
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'now';
-  if (mins < 60) return `${mins}m`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h`;
-  const days = Math.floor(hours / 24);
-  return `${days}d`;
 }
 
 export function ChatInbox({ currentUserId, isDark, lang, onBack }: ChatInboxProps) {
@@ -95,7 +85,7 @@ export function ChatInbox({ currentUserId, isDark, lang, onBack }: ChatInboxProp
                   </p>
                   {c.last_message && (
                     <span className={`text-xs flex-shrink-0 ml-2 ${isDark ? 'text-muted' : 'text-gray-400'}`}>
-                      {timeAgo(c.last_message.created_at)}
+                      {timeAgo(c.last_message.created_at, lang)}
                     </span>
                   )}
                 </div>

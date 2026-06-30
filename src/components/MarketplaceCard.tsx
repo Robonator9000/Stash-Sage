@@ -1,7 +1,7 @@
 import { memo, useState, useCallback, useEffect } from 'react';
 import type { MarketplaceListing } from '../types';
 import { t } from '../utils/translations';
-import { getContactUrl, copyToClipboard } from '../utils/helpers';
+import { getContactUrl, copyToClipboard, timeAgo } from '../utils/helpers';
 import { Tag, Clock, DollarSign, ExternalLink, ChevronLeft, ChevronRight, X, Bookmark, MessageCircle } from 'lucide-react';
 import { ReviewSection } from './ReviewSection';
 
@@ -18,17 +18,6 @@ const PLATFORM_COLORS: Record<string, string> = {
   other: '#94a3b8',
 };
 
-function timeAgo(dateStr: string, lang?: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return new Date(dateStr).toLocaleDateString(lang);
-}
 
 interface MarketplaceCardProps {
   listing: MarketplaceListing;
