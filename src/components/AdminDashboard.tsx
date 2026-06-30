@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, memo } from 'react';
 import type { Post, MarketplaceListing } from '../types';
 import { supabase } from '../utils/supabase';
 import { showToast } from './Toast';
-import { Shield, ShieldOff, Ban, CheckCircle, Trash2, Search, X } from 'lucide-react';
+import { Shield, ShieldOff, Ban, CheckCircle, Trash2, Search, X, MessageSquare, Star } from 'lucide-react';
 
 interface AdminUser {
   user_id: string;
@@ -21,6 +21,26 @@ interface AdminListing extends MarketplaceListing {
   author_name?: string;
 }
 
+interface AdminComment {
+  id: string;
+  user_id: string;
+  post_id: string;
+  content: string;
+  created_at: string;
+  author_name?: string;
+}
+
+interface AdminReview {
+  id: string;
+  listing_id: string;
+  user_id: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+  author_name?: string;
+  listing_title?: string;
+}
+
 interface AdminDashboardProps {
   isDark: boolean;
   currentUserId: string;
@@ -28,10 +48,12 @@ interface AdminDashboardProps {
 }
 
 export const AdminDashboard = memo(function AdminDashboard({ isDark, currentUserId, onViewProfile }: AdminDashboardProps) {
-  const [tab, setTab] = useState<'users' | 'posts' | 'listings'>('users');
+  const [tab, setTab] = useState<'users' | 'posts' | 'listings' | 'comments' | 'reviews'>('users');
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [posts, setPosts] = useState<AdminPost[]>([]);
   const [listings, setListings] = useState<AdminListing[]>([]);
+  const [comments, setComments] = useState<AdminComment[]>([]);
+  const [reviews, setReviews] = useState<AdminReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [userSearch, setUserSearch] = useState('');
 
@@ -58,12 +80,41 @@ export const AdminDashboard = memo(function AdminDashboard({ isDark, currentUser
     setListings(data.map(l => ({ ...l, author_name: profileMap.get(l.user_id) || 'Unknown' })));
   }, []);
 
+  const fetchComments = useCallback(async () => {
+    const { data } = await supabase.from('post_comments').select('*').order('created_at', { ascending: false }).limit(100);
+    if (!data) { setComments([]); return; }
+    const userIds = [...new Set(data.map(c => c.user_id))];
+    const { data: profiles } = await supabase.from('profiles').select('user_id, display_name').in('user_id', userIds);
+    const profileMap = new Map((profiles || []).map(p => [p.user_id, p.display_name || 'Unknown']));
+    setComments(data.map(c => ({ ...c, author_name: profileMap.get(c.user_id) || 'Unknown' })));
+  }, []);
+
+  const fetchReviews = useCallback(async () => {
+    const { data } = await supabase.from('listing_reviews').select('*').order('created_at', { ascending: false }).limit(100);
+    if (!data) { setReviews([]); return; }
+    const userIds = [...new Set(data.map(r => r.user_id))];
+    const listingIds = [...new Set(data.map(r => r.listing_id))];
+    const [{ data: profiles }, { data: listingsData }] = await Promise.all([
+      supabase.from('profiles').select('user_id, display_name').in('user_id', userIds),
+      supabase.from('marketplace_listings').select('id, title').in('id', listingIds),
+    ]);
+    const profileMap = new Map((profiles || []).map(p => [p.user_id, p.display_name || 'Unknown']));
+    const listingMap = new Map((listingsData || []).map(l => [l.id, l.title]));
+    setReviews(data.map(r => ({
+      ...r,
+      author_name: profileMap.get(r.user_id) || 'Unknown',
+      listing_title: listingMap.get(r.listing_id) || 'Unknown',
+    })));
+  }, []);
+
   useEffect(() => {
     setLoading(true);
     if (tab === 'users') fetchUsers().then(() => setLoading(false));
     else if (tab === 'posts') fetchPosts().then(() => setLoading(false));
-    else fetchListings().then(() => setLoading(false));
-  }, [tab, fetchUsers, fetchPosts, fetchListings]);
+    else if (tab === 'listings') fetchListings().then(() => setLoading(false));
+    else if (tab === 'comments') fetchComments().then(() => setLoading(false));
+    else fetchReviews().then(() => setLoading(false));
+  }, [tab, fetchUsers, fetchPosts, fetchListings, fetchComments, fetchReviews]);
 
   const handleSetRole = useCallback(async (userId: string, role: string) => {
     const { error } = await supabase.rpc('admin_set_role', { target_id: userId, new_role: role });
@@ -93,22 +144,47 @@ export const AdminDashboard = memo(function AdminDashboard({ isDark, currentUser
     showToast({ id: 'listing-deleted', title: '', body: 'Listing deleted' });
   }, []);
 
+  const handleDeleteComment = useCallback(async (commentId: string) => {
+    const { error } = await supabase.from('post_comments').delete().eq('id', commentId);
+    if (error) { showToast({ id: 'admin-err', title: 'Error', body: error.message }); return; }
+    setComments(prev => prev.filter(c => c.id !== commentId));
+    showToast({ id: 'comment-deleted', title: '', body: 'Comment deleted' });
+  }, []);
+
+  const handleDeleteReview = useCallback(async (reviewId: string) => {
+    const { error } = await supabase.from('listing_reviews').delete().eq('id', reviewId);
+    if (error) { showToast({ id: 'admin-err', title: 'Error', body: error.message }); return; }
+    setReviews(prev => prev.filter(r => r.id !== reviewId));
+    showToast({ id: 'review-deleted', title: '', body: 'Review deleted' });
+  }, []);
+
   const filteredUsers = users.filter(u =>
     !userSearch.trim() || u.display_name?.toLowerCase().includes(userSearch.toLowerCase())
   );
 
+  const tabs = [
+    { id: 'users', label: 'Users', icon: Shield, count: users.length },
+    { id: 'posts', label: 'Posts', icon: MessageSquare, count: posts.length },
+    { id: 'comments', label: 'Comments', icon: MessageSquare, count: comments.length },
+    { id: 'listings', label: 'Listings', icon: Trash2, count: listings.length },
+    { id: 'reviews', label: 'Reviews', icon: Star, count: reviews.length },
+  ] as const;
+
   return (
     <div className="space-y-4">
-      {/* Tab bar */}
-      <div role="tablist" className={`flex items-center gap-1 p-1 rounded-xl ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
-        {(['users', 'posts', 'listings'] as const).map(t => (
-          <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
-            className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all capitalize ${
-              tab === t
-                ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm'
-                : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'
+      <div role="tablist" className="flex flex-wrap items-center gap-1 p-1 rounded-xl" style={{ backgroundColor: isDark ? '#1a1a2e' : '#f3f4f6' }}>
+        {tabs.map(t => (
+          <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => setTab(t.id)}
+            className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-all ${
+              tab === t.id
+                ? isDark ? 'bg-[#0b1120] text-cyan-400' : 'bg-white text-gray-900 shadow-sm'
+                : isDark ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
             }`}>
-            {t} {tab === 'users' ? `(${users.length})` : tab === 'posts' ? `(${posts.length})` : `(${listings.length})`}
+            <t.icon className="w-3.5 h-3.5" />
+            {t.label}
+            <span className={`text-xs ml-0.5 ${tab === t.id ? (isDark ? 'text-cyan-400' : 'text-gray-600') : (isDark ? 'text-gray-500' : 'text-gray-400')}`}>
+              ({t.count})
+            </span>
           </button>
         ))}
       </div>
@@ -242,6 +318,38 @@ export const AdminDashboard = memo(function AdminDashboard({ isDark, currentUser
         </div>
       )}
 
+      {!loading && tab === 'comments' && (
+        <div className="space-y-2">
+          {comments.length === 0 ? (
+            <p className={`text-center py-12 text-sm ${isDark ? 'text-muted' : 'text-gray-400'}`}>No comments yet</p>
+          ) : (
+            comments.map(c => (
+              <div key={c.id} className={`flex items-start gap-3 p-4 rounded-2xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold ${isDark ? 'bg-midnight text-mist' : 'bg-gray-100 text-gray-500'}`}>
+                  {c.author_name?.[0]?.toUpperCase() || '?'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <button onClick={() => onViewProfile?.(c.user_id)}
+                      className={`text-xs font-semibold hover:underline ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+                      {c.author_name}
+                    </button>
+                    <span className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+                      {new Date(c.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className={`text-sm line-clamp-2 ${isDark ? 'text-mist' : 'text-gray-600'}`}>{c.content}</p>
+                </div>
+                <button onClick={() => handleDeleteComment(c.id)} title="Delete comment"
+                  className={`p-1.5 rounded-lg shrink-0 transition-all ${isDark ? 'text-muted hover:text-red-400 hover:bg-midnight' : 'text-gray-400 hover:text-red-600 hover:bg-gray-100'}`}>
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
       {!loading && tab === 'listings' && (
         <div className="space-y-2">
           {listings.length === 0 ? (
@@ -271,6 +379,41 @@ export const AdminDashboard = memo(function AdminDashboard({ isDark, currentUser
                   <p className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>{new Date(l.created_at).toLocaleDateString()}</p>
                 </div>
                 <button onClick={() => handleDeleteListing(l.id)} title="Delete listing"
+                  className={`p-1.5 rounded-lg shrink-0 transition-all ${isDark ? 'text-muted hover:text-red-400 hover:bg-midnight' : 'text-gray-400 hover:text-red-600 hover:bg-gray-100'}`}>
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {!loading && tab === 'reviews' && (
+        <div className="space-y-2">
+          {reviews.length === 0 ? (
+            <p className={`text-center py-12 text-sm ${isDark ? 'text-muted' : 'text-gray-400'}`}>No reviews yet</p>
+          ) : (
+            reviews.map(r => (
+              <div key={r.id} className={`flex items-start gap-3 p-4 rounded-2xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold ${isDark ? 'bg-midnight text-mist' : 'bg-gray-100 text-gray-500'}`}>
+                  {r.author_name?.[0]?.toUpperCase() || '?'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <button onClick={() => onViewProfile?.(r.user_id)}
+                      className={`text-xs font-semibold hover:underline ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+                      {r.author_name}
+                    </button>
+                    <span className={`text-xs flex items-center gap-1 ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
+                      <Star className="w-3 h-3 fill-current" /> {r.rating}/5
+                    </span>
+                    <span className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+                      on {r.listing_title}
+                    </span>
+                  </div>
+                  <p className={`text-sm line-clamp-2 ${isDark ? 'text-mist' : 'text-gray-600'}`}>{r.comment}</p>
+                </div>
+                <button onClick={() => handleDeleteReview(r.id)} title="Delete review"
                   className={`p-1.5 rounded-lg shrink-0 transition-all ${isDark ? 'text-muted hover:text-red-400 hover:bg-midnight' : 'text-gray-400 hover:text-red-600 hover:bg-gray-100'}`}>
                   <Trash2 className="w-4 h-4" />
                 </button>

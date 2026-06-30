@@ -129,11 +129,13 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       query = query.order('created_at', { ascending: false }).gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
     } else if (sort === 'bookmarked') {
       if (!currentUserId) return [];
-      const { data: bookmarks } = await supabase.from('bookmarks').select('post_id').eq('user_id', currentUserId).order('created_at', { ascending: false }).range(from, to);
+      const { data: bookmarks, count } = await supabase.from('bookmarks').select('post_id', { count: 'exact' }).eq('user_id', currentUserId).order('created_at', { ascending: false }).range(from, to);
       if (!bookmarks || bookmarks.length === 0) return [];
       const bIds = bookmarks.map(b => b.post_id);
       const { data } = await supabase.from('posts').select('*').in('id', bIds).order('created_at', { ascending: false });
       if (!data) return [];
+      const remaining = (count ?? bookmarks.length) - (from + bookmarks.length);
+      if (remaining <= 0) setHasMore(false);
       return enrichPosts(data);
     } else {
       query = query.order('created_at', { ascending: false });

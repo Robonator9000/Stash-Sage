@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Conversation } from '../types';
 import { supabase } from '../utils/supabase';
 
@@ -39,20 +39,24 @@ export function useConversations(userId: string | undefined) {
     setLoading(false);
   }, [userId]);
 
+  const fetchRef = useRef(fetchConversations);
+  fetchRef.current = fetchConversations;
+
   useEffect(() => { fetchConversations(); }, [fetchConversations]);
 
   useEffect(() => {
     if (!userId) return;
-    const channel = supabase.channel('conversations-listen')
+    const channelName = `conversations-${userId}`;
+    const channel = supabase.channel(channelName)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
-        fetchConversations();
+        fetchRef.current();
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, () => {
-        fetchConversations();
+        fetchRef.current();
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [userId, fetchConversations]);
+  }, [userId]);
 
   return { conversations, loading, refresh: fetchConversations };
 }
