@@ -909,7 +909,7 @@ export default function App() {
         {activeTab === 'community' && (
           <ErrorBoundary isDark={isDark} lang={lang}>
           <div className="space-y-4">
-            {!isAdmin ? (
+            {!user ? (
               <div className={`flex flex-col items-center justify-center py-20 px-6 text-center rounded-2xl ${
                 isDark ? 'bg-slate-800/40 border border-slate-700/50' : 'bg-gray-50 border border-gray-200'
               }`}>
@@ -944,7 +944,7 @@ export default function App() {
         {activeTab === 'marketplace' && (
           <ErrorBoundary isDark={isDark} lang={lang}>
           <div className="space-y-4">
-            {!isAdmin ? (
+            {!user ? (
               <div className={`flex flex-col items-center justify-center py-20 px-6 text-center rounded-2xl ${
                 isDark ? 'bg-slate-800/40 border border-slate-700/50' : 'bg-gray-50 border border-gray-200'
               }`}>

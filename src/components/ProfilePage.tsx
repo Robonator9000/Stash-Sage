@@ -6,6 +6,7 @@ import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { FollowButton } from './FollowButton';
 import { PostCard } from './PostCard';
+import type { Post, Product } from '../types';
 
 interface ProfileData {
   display_name: string;
@@ -25,8 +26,8 @@ export function ProfilePage() {
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'posts' | 'products'>('posts');
-  const [userPosts, setUserPosts] = useState<any[]>([]);
-  const [userProducts, setUserProducts] = useState<any[]>([]);
+  const [userPosts, setUserPosts] = useState<Post[]>([]);
+  const [userProducts, setUserProducts] = useState<Product[]>([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
@@ -230,7 +231,7 @@ export function ProfilePage() {
               <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>No products yet</p>
             </div>
           )}
-          {userProducts.map((product: any) => (
+          {userProducts.map((product: Product) => (
             <div key={product.id} className={`p-4 rounded-2xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
               <div className="flex items-center gap-3">
                 {product.picture && (

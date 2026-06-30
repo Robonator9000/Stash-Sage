@@ -43,7 +43,7 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
     return () => clearTimeout(debounceTimer.current);
   }, [searchQuery]);
 
-  const enrichListings = useCallback(async (rawListings: any[]): Promise<MarketplaceListing[]> => {
+  const enrichListings = useCallback(async (rawListings: MarketplaceListing[]): Promise<MarketplaceListing[]> => {
     if (rawListings.length === 0) return [];
     const userIds = [...new Set(rawListings.map(l => l.user_id))];
     const listingIds = rawListings.map(l => l.id);

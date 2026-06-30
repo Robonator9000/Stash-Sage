@@ -27,7 +27,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
   const [error, setError] = useState<string | null>(null);
   const [feedFilter, setFeedFilter] = useState<'latest' | 'following' | 'trending'>('latest');
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<{ user_id: string; display_name: string; avatar_url?: string | null }[]>([]);
   const [searching, setSearching] = useState(false);
   const [postSearch, setPostSearch] = useState('');
   const [debouncedPostSearch, setDebouncedPostSearch] = useState('');
@@ -51,12 +51,12 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const enrichPosts = useCallback(async (rawPosts: any[]): Promise<Post[]> => {
+  const enrichPosts = useCallback(async (rawPosts: Post[]): Promise<Post[]> => {
     if (rawPosts.length === 0) return [];
 
     const userIds = [...new Set(rawPosts.map(p => p.user_id))];
     const postIds = rawPosts.map(p => p.id);
-    const quoteIds = rawPosts.filter((p: any) => p.quoted_post_id).map((p: any) => p.quoted_post_id);
+    const quoteIds = rawPosts.filter(p => p.quoted_post_id).map(p => p.quoted_post_id!);
 
     const [profilesResult, likesResult, followsResult, commentsResult, bookmarksResult] = await Promise.all([
       supabase.from('profiles').select('user_id, display_name, avatar_url').in('user_id', userIds),
@@ -80,14 +80,14 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       commentsCountMap.set(c.post_id, (commentsCountMap.get(c.post_id) || 0) + 1);
     }
 
-    const followingSet = new Set((followsResult.data || []).map((f: any) => f.following_id));
-    const bookmarkSet = new Set((bookmarksResult.data || []).map((b: any) => b.post_id));
+    const followingSet = new Set((followsResult.data || []).map(f => f.following_id));
+    const bookmarkSet = new Set((bookmarksResult.data || []).map(b => b.post_id));
 
     let quotePostMap = new Map<string, Post>();
     if (quoteIds.length > 0) {
       const { data: quotePosts } = await supabase.from('posts').select('*').in('id', quoteIds);
       if (quotePosts && quotePosts.length > 0) {
-        const quoteUserIds = [...new Set(quotePosts.map((p: any) => p.user_id))];
+        const quoteUserIds = [...new Set(quotePosts.map(p => p.user_id))];
         const { data: quoteProfiles } = await supabase.from('profiles').select('user_id, display_name, avatar_url').in('user_id', quoteUserIds);
         const qProfileMap = new Map((quoteProfiles || []).map(p => [p.user_id, p]));
         for (const qp of quotePosts) {
@@ -169,7 +169,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       const channel = supabase.channel('social-feed')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, async (payload) => {
           try {
-            const newPost = payload.new as any;
+            const newPost = payload.new as Post;
             if (newPost.user_id === currentUserId) return;
             const enriched = await enrichPosts([newPost]);
             setPosts(prev => [enriched[0], ...prev]);

@@ -1,7 +1,25 @@
 import { useState, useEffect, useCallback, memo } from 'react';
+import type { Post, MarketplaceListing } from '../types';
 import { supabase } from '../utils/supabase';
 import { showToast } from './Toast';
 import { Shield, ShieldOff, Ban, CheckCircle, Trash2, Search, X } from 'lucide-react';
+
+interface AdminUser {
+  user_id: string;
+  display_name?: string;
+  avatar_url?: string;
+  role?: string;
+  is_banned?: boolean;
+  created_at: string;
+}
+
+interface AdminPost extends Post {
+  author_name?: string;
+}
+
+interface AdminListing extends MarketplaceListing {
+  author_name?: string;
+}
 
 interface AdminDashboardProps {
   isDark: boolean;
@@ -11,9 +29,9 @@ interface AdminDashboardProps {
 
 export const AdminDashboard = memo(function AdminDashboard({ isDark, currentUserId, onViewProfile }: AdminDashboardProps) {
   const [tab, setTab] = useState<'users' | 'posts' | 'listings'>('users');
-  const [users, setUsers] = useState<any[]>([]);
-  const [posts, setPosts] = useState<any[]>([]);
-  const [listings, setListings] = useState<any[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [posts, setPosts] = useState<AdminPost[]>([]);
+  const [listings, setListings] = useState<AdminListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [userSearch, setUserSearch] = useState('');
 

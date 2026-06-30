@@ -29,7 +29,7 @@ export function useConversations(userId: string | undefined) {
       return {
         ...c,
         other_user: { username: profileRes.data?.display_name || 'User', avatar_url: profileRes.data?.avatar_url },
-        listing: listingRes.data as any,
+        listing: listingRes.data ?? undefined,
         last_message: msgRes.data,
         unread_count: unreadRes.count || 0,
       } as Conversation;

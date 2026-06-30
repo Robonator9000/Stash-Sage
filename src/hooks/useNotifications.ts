@@ -61,7 +61,7 @@ export function useNotifications(userId: string | undefined): UseNotificationsRe
         { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
         async (payload) => {
           try {
-            const newNotif = payload.new as any;
+            const newNotif = payload.new as Notification;
             const { data: profiles } = await supabase
               .from('profiles')
               .select('display_name, avatar_url')
