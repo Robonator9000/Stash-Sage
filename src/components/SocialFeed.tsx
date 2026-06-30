@@ -37,6 +37,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
   const [quotePostId, setQuotePostId] = useState<string | null>(null);
   const pageRef = useRef(0);
   const observerRef = useRef<HTMLDivElement>(null);
+  const channelIdRef = useRef(0);
   const searchTimer = useRef<ReturnType<typeof setTimeout>>();
   const postSearchTimer = useRef<ReturnType<typeof setTimeout>>();
   const searchRef = useRef<HTMLDivElement>(null);
@@ -130,7 +131,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
     } else if (sort === 'bookmarked') {
       if (!currentUserId) return [];
       const { data: bookmarks, count } = await supabase.from('bookmarks').select('post_id', { count: 'exact' }).eq('user_id', currentUserId).order('created_at', { ascending: false }).range(from, to);
-      if (!bookmarks || bookmarks.length === 0) return [];
+      if (!bookmarks || bookmarks.length === 0) { setHasMore(false); return []; }
       const bIds = bookmarks.map(b => b.post_id);
       const { data } = await supabase.from('posts').select('*').in('id', bIds).order('created_at', { ascending: false });
       if (!data) return [];
@@ -176,7 +177,8 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
     }).catch(console.error);
 
     if (!debouncedPostSearch.trim()) {
-      const channel = supabase.channel('social-feed')
+      channelIdRef.current += 1;
+      const channel = supabase.channel(`social-feed-${channelIdRef.current}`)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, async (payload) => {
           try {
             const newPost = payload.new as Post;

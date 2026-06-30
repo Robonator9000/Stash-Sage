@@ -32,11 +32,14 @@ export function useChat(conversationId: string | null, userId: string | undefine
 
   useEffect(() => { fetchMessages(); }, [fetchMessages]);
 
+  const channelIdRef = useRef(0);
+
   // Real-time subscription for new messages
   useEffect(() => {
     if (!conversationId) return;
+    channelIdRef.current += 1;
 
-    const channel = supabase.channel(`chat-${conversationId}`)
+    const channel = supabase.channel(`chat-${conversationId}-${channelIdRef.current}`)
       .on('postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },
         (payload) => {

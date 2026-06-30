@@ -41,13 +41,14 @@ export function useConversations(userId: string | undefined) {
 
   const fetchRef = useRef(fetchConversations);
   fetchRef.current = fetchConversations;
+  const channelIdRef = useRef(0);
 
   useEffect(() => { fetchConversations(); }, [fetchConversations]);
 
   useEffect(() => {
     if (!userId) return;
-    const channelName = `conversations-${userId}`;
-    const channel = supabase.channel(channelName)
+    channelIdRef.current += 1;
+    const channel = supabase.channel(`conversations-${userId}-${channelIdRef.current}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
         fetchRef.current();
       })
