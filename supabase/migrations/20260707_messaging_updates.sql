@@ -18,10 +18,18 @@ CREATE TABLE IF NOT EXISTS blocked_users (
 
 ALTER TABLE blocked_users ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Users can manage their own blocks"
-  ON blocked_users
-  USING (auth.uid() = blocker_id)
-  WITH CHECK (auth.uid() = blocker_id);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'blocked_users' AND policyname = 'Users can manage their own blocks'
+  ) THEN
+    CREATE POLICY "Users can manage their own blocks"
+      ON blocked_users
+      USING (auth.uid() = blocker_id)
+      WITH CHECK (auth.uid() = blocker_id);
+  END IF;
+END
+$$;
 
 -- Phase 4: Message editing / soft delete
 ALTER TABLE messages ADD COLUMN IF NOT EXISTS edited_at TIMESTAMPTZ;
@@ -48,10 +56,18 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
 
 ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Users manage own subscriptions"
-  ON push_subscriptions
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'push_subscriptions' AND policyname = 'Users manage own subscriptions'
+  ) THEN
+    CREATE POLICY "Users manage own subscriptions"
+      ON push_subscriptions
+      USING (auth.uid() = user_id)
+      WITH CHECK (auth.uid() = user_id);
+  END IF;
+END
+$$;
 
 CREATE OR REPLACE FUNCTION messages_search_update() RETURNS TRIGGER AS $$
 BEGIN
