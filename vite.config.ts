@@ -26,8 +26,10 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       registerType: 'prompt',
-      includeAssets: ['icon.svg'],
       manifest: {
         name: 'Stash Tracker',
         short_name: 'Stash',
@@ -53,11 +55,6 @@ export default defineConfig({
             purpose: 'maskable',
           },
         ],
-      },
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,svg,woff2}'],
-        navigateFallback: 'index.html',
-        navigateFallbackDenylist: [/^\/api/],
       },
       devOptions: {
         enabled: false,

@@ -3,6 +3,7 @@ import { supabase, isConfigured } from '../utils/supabase';
 import type { User } from '@supabase/supabase-js';
 import { AuthError } from '@supabase/supabase-js';
 import { showToast } from '../components/Toast';
+import { subscribeToPush, unsubscribeFromPush } from '../utils/pushNotifications';
 
 interface AuthState {
   user: User | null;
@@ -59,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user?.id && isConfigured) {
+        subscribeToPush();
         supabase.from('profiles').upsert(
           { user_id: session.user.id, display_name: session.user.email?.split('@')[0] || 'User' },
           { onConflict: 'user_id' }
@@ -69,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user?.id && isConfigured) {
+        subscribeToPush();
         supabase.from('profiles').upsert(
           { user_id: session.user.id, display_name: session.user.email?.split('@')[0] || 'User' },
           { onConflict: 'user_id' }
@@ -100,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setError(handleAuthError(err));
         throw err;
       }
+      subscribeToPush();
       showToast({ id: 'auth-signin', title: 'Signed in', body: 'Welcome back!' });
     } catch (err: any) {
       if (!(err instanceof AuthError)) {
@@ -139,6 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     setError(null);
+    await unsubscribeFromPush();
     const { error: err } = await supabase.auth.signOut();
     if (err) {
       setError(handleAuthError(err));
