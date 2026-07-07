@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { Lock } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
-import { Product, Session, SortOption, FilterType, Profile } from './types';
+import { Product, Session, SortOption, FilterType } from './types';
 import { useProducts } from './utils/useProducts';
 import { useSessions } from './utils/useSessions';
 import { useSettings } from './utils/useSettings';
@@ -21,10 +21,10 @@ import { BackgroundCanvas } from './components/BackgroundCanvas';
 import { WelcomeModal } from './components/WelcomeModal';
 import { Header } from './components/Header';
 import { MarketplaceFeed } from './components/MarketplaceFeed';
-import { SocialFeed } from './components/SocialFeed';
+import { CommunityPage } from './components/CommunityPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useAuth } from './contexts/AuthContext';
-import { supabase } from './utils/supabase';
+
 import { AdminDashboard } from './components/AdminDashboard';
 import { MenuButton } from './components/MenuButton';
 import { MessagePopup } from './components/MessagePopup';
@@ -80,22 +80,7 @@ export default function App() {
   const isDark = settings.theme === 'dark';
   const { user, isAdmin } = useAuth();
 
-  const [communityProfile, setCommunityProfile] = useState<Profile | undefined>(undefined);
 
-  useEffect(() => {
-    if (!user) { setCommunityProfile(undefined); return; }
-    supabase.from('profiles').select('display_name, avatar_url, location').eq('user_id', user.id).maybeSingle().then(({ data }) => {
-      if (data) {
-        setCommunityProfile({
-          username: data.display_name || user.email?.split('@')[0] || 'User',
-          bio: '',
-          joinedAt: user.created_at,
-          avatar_url: data.avatar_url,
-          location: data.location,
-        });
-      }
-    });
-  }, [user]);
 
   useEffect(() => {
     const target = searchParams.get('openChat');
@@ -822,15 +807,7 @@ export default function App() {
                 </p>
               </div>
             ) : (
-              <SocialFeed
-                isDark={isDark}
-                lang={lang}
-                currentUserId={user?.id || ''}
-                username={communityProfile?.username || user?.email?.split('@')[0] || 'User'}
-                products={products}
-                profile={communityProfile}
-                onViewProfile={handleViewProfile}
-              />
+              <CommunityPage />
             )}
           </div>
           </ErrorBoundary>
