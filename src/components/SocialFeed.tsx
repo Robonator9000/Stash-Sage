@@ -18,6 +18,7 @@ interface SocialFeedProps {
 }
 
 const PAGE_SIZE = 10;
+let socialFeedChannelCounter = 0;
 
 export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId, username, products, profile, onViewProfile }: SocialFeedProps) {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -37,7 +38,6 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
   const [quotePostId, setQuotePostId] = useState<string | null>(null);
   const pageRef = useRef(0);
   const observerRef = useRef<HTMLDivElement>(null);
-  const channelIdRef = useRef(0);
   const searchTimer = useRef<ReturnType<typeof setTimeout>>();
   const postSearchTimer = useRef<ReturnType<typeof setTimeout>>();
   const searchRef = useRef<HTMLDivElement>(null);
@@ -177,8 +177,9 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
     }).catch(console.error);
 
     if (!debouncedPostSearch.trim()) {
-      channelIdRef.current += 1;
-      const channel = supabase.channel(`social-feed-${channelIdRef.current}`)
+      socialFeedChannelCounter += 1;
+      const id = socialFeedChannelCounter;
+      const channel = supabase.channel(`social-feed-${id}`)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, async (payload) => {
           try {
             const newPost = payload.new as Post;

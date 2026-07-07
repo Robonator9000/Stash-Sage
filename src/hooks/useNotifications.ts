@@ -1,7 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Notification } from '../types';
 import { supabase } from '../utils/supabase';
 import { playNotificationSound } from '../utils/sounds';
+
+let notificationChannelCounter = 0;
 
 interface UseNotificationsReturn {
   notifications: Notification[];
@@ -14,7 +16,6 @@ interface UseNotificationsReturn {
 export function useNotifications(userId: string | undefined): UseNotificationsReturn {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
-  const channelIdRef = useRef(0);
 
   useEffect(() => {
     if (!userId) {
@@ -57,8 +58,9 @@ export function useNotifications(userId: string | undefined): UseNotificationsRe
         }
       });
 
-    channelIdRef.current += 1;
-    const channel = supabase.channel(`notifications-${userId}-${channelIdRef.current}`)
+    notificationChannelCounter += 1;
+    const id = notificationChannelCounter;
+    const channel = supabase.channel(`notifications-${userId}-${id}`)
       .on('postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
         async (payload) => {

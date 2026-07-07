@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Conversation } from '../types';
 import { supabase } from '../utils/supabase';
 
+let channelCounter = 0;
+
 export function useConversations(userId: string | undefined) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,14 +43,14 @@ export function useConversations(userId: string | undefined) {
 
   const fetchRef = useRef(fetchConversations);
   fetchRef.current = fetchConversations;
-  const channelIdRef = useRef(0);
 
   useEffect(() => { fetchConversations(); }, [fetchConversations]);
 
   useEffect(() => {
     if (!userId) return;
-    channelIdRef.current += 1;
-    const channel = supabase.channel(`conversations-${userId}-${channelIdRef.current}`)
+    channelCounter += 1;
+    const id = channelCounter;
+    const channel = supabase.channel(`conversations-${userId}-${id}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
         fetchRef.current();
       })

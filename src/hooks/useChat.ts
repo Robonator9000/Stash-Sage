@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Message } from '../types';
 import { supabase } from '../utils/supabase';
 
+let chatChannelCounter = 0;
+
 export function useChat(conversationId: string | null, userId: string | undefined) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,14 +34,13 @@ export function useChat(conversationId: string | null, userId: string | undefine
 
   useEffect(() => { fetchMessages(); }, [fetchMessages]);
 
-  const channelIdRef = useRef(0);
-
   // Real-time subscription for new messages
   useEffect(() => {
     if (!conversationId) return;
-    channelIdRef.current += 1;
+    chatChannelCounter += 1;
+    const id = chatChannelCounter;
 
-    const channel = supabase.channel(`chat-${conversationId}-${channelIdRef.current}`)
+    const channel = supabase.channel(`chat-${conversationId}-${id}`)
       .on('postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },
         (payload) => {
