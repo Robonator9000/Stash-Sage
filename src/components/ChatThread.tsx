@@ -66,7 +66,7 @@ export function ChatThread({ conversation, currentUserId, isDark, lang, onBack }
   const listingTitle = conversation.listing?.title || 'listing';
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-8rem)]">
+    <div className="flex flex-col min-h-0 flex-1">
       {/* Header */}
       <div className={`flex items-center gap-3 p-3 border-b ${isDark ? 'border-edge bg-surface/50' : 'border-gray-200 bg-gray-50'}`}>
         <button onClick={onBack} className={`p-1 rounded-lg ${isDark ? 'hover:bg-midnight text-frost' : 'hover:bg-gray-200 text-gray-600'}`}>

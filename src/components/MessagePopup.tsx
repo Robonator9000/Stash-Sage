@@ -78,8 +78,8 @@ export function MessagePopup({ currentUserId, isDark, lang, initialTargetUserId,
           </button>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-3">
-        {activeConversation ? (
+      {activeConversation ? (
+        <div className="flex-1 min-h-0 flex flex-col">
           <ChatThread
             conversation={activeConversation}
             currentUserId={currentUserId}
@@ -87,7 +87,9 @@ export function MessagePopup({ currentUserId, isDark, lang, initialTargetUserId,
             lang={lang}
             onBack={() => setActiveConversation(null)}
           />
-        ) : (
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto p-3">
           <ChatInbox
             currentUserId={currentUserId}
             isDark={isDark}
@@ -95,8 +97,8 @@ export function MessagePopup({ currentUserId, isDark, lang, initialTargetUserId,
             onSelectConversation={(c) => setActiveConversation(c)}
             popover
           />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
