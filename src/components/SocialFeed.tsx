@@ -106,9 +106,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
 
     let query = supabase.from('posts').select('*');
 
-    if (debouncedPostSearch.trim()) {
-      query = query.textSearch('search_vector', debouncedPostSearch.trim(), { config: 'english' });
-    } else if (sort === 'trending') {
+    if (sort === 'trending') {
       query = query.order('created_at', { ascending: false }).gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
     } else if (sort === 'bookmarked') {
       if (!currentUserId) return [];
@@ -140,12 +138,12 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
 
     const enriched = await enrichPosts(data);
 
-    if (!debouncedPostSearch.trim() && sort === 'trending') {
+    if (sort === 'trending') {
       return enriched.sort((a, b) => ((b.likes_count ?? 0) * 3 + (b.comments_count ?? 0) * 2) - ((a.likes_count ?? 0) * 3 + (a.comments_count ?? 0) * 2));
     }
 
     return enriched;
-  }, [enrichPosts, debouncedPostSearch]);
+  }, [enrichPosts]);
 
   useEffect(() => {
     setLoading(true);
@@ -158,24 +156,22 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       setLoading(false);
     }).catch(console.error);
 
-    if (!debouncedPostSearch.trim()) {
-      socialFeedChannelCounter += 1;
-      const id = socialFeedChannelCounter;
-      const channel = supabase.channel(`social-feed-${id}`)
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, async (payload) => {
-          try {
-            const newPost = payload.new as Post;
-            if (newPost.user_id === currentUserId) return;
-            const enriched = await enrichPosts([newPost]);
-            setPosts(prev => [enriched[0], ...prev]);
-          } catch (e) { console.error('Realtime post error:', e); }
-        })
-        .subscribe((status) => {
-          if (status === 'CHANNEL_ERROR') console.error('Realtime social-feed channel error');
-        });
-      return () => { supabase.removeChannel(channel); };
-    }
-  }, [fetchPosts, enrichPosts, currentUserId, feedFilter, debouncedPostSearch]);
+    socialFeedChannelCounter += 1;
+    const id = socialFeedChannelCounter;
+    const channel = supabase.channel(`social-feed-${id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, async (payload) => {
+        try {
+          const newPost = payload.new as Post;
+          if (newPost.user_id === currentUserId) return;
+          const enriched = await enrichPosts([newPost]);
+          setPosts(prev => [enriched[0], ...prev]);
+        } catch (e) { console.error('Realtime post error:', e); }
+      })
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR') console.error('Realtime social-feed channel error');
+      });
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchPosts, enrichPosts, currentUserId, feedFilter]);
 
   useEffect(() => {
     const el = observerRef.current;
@@ -428,12 +424,6 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
     }
   }, [quotePostId, submitting, currentUserId, lang, enrichPosts]);
 
-  const handleSearchSelect = useCallback((userId: string) => {
-    onViewProfile?.(userId);
-    setSearchQuery('');
-    setSearchResults([]);
-  }, [onViewProfile]);
-
   const handleHashtagClick = useCallback((tag: string) => {
     setActiveHashtag(prev => prev === tag ? null : tag);
   }, []);
@@ -585,7 +575,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       {!loading && !error && displayedPosts.length === 0 && (
         <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
           <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
-            {activeHashtag ? `No posts tagged #${activeHashtag}` : debouncedPostSearch.trim() ? `No posts matching "${debouncedPostSearch}"` : feedFilter === 'following' ? 'No posts from people you follow yet' : t('noPostsYet', lang)}
+            {activeHashtag ? `No posts tagged #${activeHashtag}` : feedFilter === 'following' ? 'No posts from people you follow yet' : t('noPostsYet', lang)}
           </p>
         </div>
       )}
