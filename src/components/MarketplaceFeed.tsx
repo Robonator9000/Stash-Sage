@@ -7,7 +7,7 @@ import { MarketplaceCard } from './MarketplaceCard';
 import { CreateListingModal } from './CreateListingModal';
 import { ChatInbox } from './ChatInbox';
 import { showToast } from './Toast';
-import { Plus, Search, ArrowUpDown, SlidersHorizontal, X, Bookmark, MessageCircle } from 'lucide-react';
+import { Plus, Search, ArrowUpDown, SlidersHorizontal, X } from 'lucide-react';
 
 interface MarketplaceFeedProps {
   isDark: boolean;
@@ -33,7 +33,6 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingListing, setEditingListing] = useState<MarketplaceListing | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [showSaved, setShowSaved] = useState(false);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [showChat, setShowChat] = useState(false);
 
@@ -91,13 +90,12 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
   useEffect(() => { fetchListings().catch(e => { setError(e.message); setLoading(false); }); }, [fetchListings]);
 
   const filtered = useMemo(() => listings.filter(l => {
-    if (showSaved && !l.saved_by_me) return false;
     if (categoryFilter !== 'all' && l.category !== categoryFilter) return false;
     if (statusFilter !== 'all' && l.status !== statusFilter) return false;
     if (priceMin && l.price < parseFloat(priceMin)) return false;
     if (priceMax && l.price > parseFloat(priceMax)) return false;
     return true;
-  }), [listings, categoryFilter, statusFilter, priceMin, priceMax, showSaved]);
+  }), [listings, categoryFilter, statusFilter, priceMin, priceMax]);
 
   const sorted = useMemo(() => [...filtered].sort((a, b) => {
     if (sortBy === 'price_low') return a.price - b.price;
@@ -215,24 +213,14 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
       {showChat ? (
         <ChatInbox currentUserId={currentUserId} isDark={isDark} lang={lang} onBack={() => setShowChat(false)} />
       ) : (<>
-      {/* Header + Create / Sign in */}
-      <div className="flex items-center gap-2">
+      {/* Sell button - centered prominent */}
+      <div className="flex justify-center">
         {currentUserId ? (
-          <div className="flex items-center gap-2 flex-1">
-            <button onClick={handleOpenCreate} aria-label="Create new listing"
-              className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all shadow-lg shadow-cyanx/20">
-              <Plus className="w-4 h-4" />
-              {t('sellSomething', lang)}
-            </button>
-            <button onClick={() => setShowSaved(!showSaved)} aria-label="Toggle saved listings"
-              className={`p-3 rounded-xl transition-all ${showSaved ? 'bg-gradient-to-r from-cyanx to-emera text-white shadow-lg shadow-cyanx/20' : isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-              <Bookmark className="w-4 h-4" />
-            </button>
-            <button onClick={() => setShowChat(true)} aria-label="Open messages"
-              className={`p-3 rounded-xl transition-all ${isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-              <MessageCircle className="w-4 h-4" />
-            </button>
-          </div>
+          <button onClick={handleOpenCreate} aria-label="Create new listing"
+            className="flex items-center gap-2.5 px-7 py-3.5 rounded-xl text-base font-bold text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all shadow-lg shadow-cyanx/25 hover:shadow-xl hover:shadow-cyanx/30 hover:scale-[1.02] active:scale-[0.98]">
+            <Plus className="w-5 h-5" />
+            {t('sellSomething', lang)}
+          </button>
         ) : (
           <div className={`w-full p-4 rounded-2xl text-center text-sm ${isDark ? 'bg-surface/50 border border-edge text-mist' : 'bg-white border border-gray-200 text-gray-500'}`}>
             Sign in to create a listing.
@@ -309,16 +297,16 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
         </div>
       )}
 
-      {/* Sort */}
-      <div className={`flex items-center gap-1.5 p-1.5 rounded-xl ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
-        <ArrowUpDown className={`w-4 h-4 ml-2 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
+      {/* Compact sort */}
+      <div className={`flex items-center gap-1 p-1 rounded-xl w-fit ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
+        <ArrowUpDown className={`w-3.5 h-3.5 ml-1.5 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
         {([
           { id: 'newest' as const, label: t('sortNewest', lang) },
           { id: 'price_low' as const, label: t('sortPriceLow', lang) },
           { id: 'price_high' as const, label: t('sortPriceHigh', lang) },
         ]).map(s => (
           <button key={s.id} onClick={() => setSortBy(s.id)} aria-pressed={sortBy === s.id}
-            className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${sortBy === s.id ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm' : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'}`}>
+            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${sortBy === s.id ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm' : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'}`}>
             {s.label}
           </button>
         ))}
@@ -355,11 +343,13 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
         </div>
       )}
 
-      {sorted.map(listing => (
-        <MarketplaceCard key={listing.id} listing={listing} isDark={isDark} lang={lang} currentUserId={currentUserId}
-          onEdit={handleEditListing} onDelete={handleDelete} onMarkSold={handleMarkSold} onViewProfile={onViewProfile}
-          onSave={handleToggleSave} onStartChat={handleStartChat} />
-      ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {sorted.map(listing => (
+          <MarketplaceCard key={listing.id} listing={listing} isDark={isDark} lang={lang} currentUserId={currentUserId}
+            onEdit={handleEditListing} onDelete={handleDelete} onMarkSold={handleMarkSold} onViewProfile={onViewProfile}
+            onSave={handleToggleSave} onStartChat={handleStartChat} />
+        ))}
+      </div>
 
       {showCreateModal && (
         <CreateListingModal isDark={isDark} lang={lang} products={products} currentUserId={currentUserId} onSubmit={handleCreate} onClose={handleCloseCreate} />

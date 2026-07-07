@@ -130,7 +130,7 @@ export function SessionModal({
 
   return (
       <div className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-200 ${
-      isVisible ? 'bg-black/80 backdrop-blur-sm' : 'bg-black/0'
+      isVisible ? 'bg-black/10 backdrop-blur-[2px]' : 'bg-black/0'
     }`}
     onClick={handleClose}
     role="dialog"

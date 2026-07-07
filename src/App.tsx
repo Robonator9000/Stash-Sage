@@ -919,6 +919,16 @@ export default function App() {
         </Suspense>
       )}
 
+      {user && (
+        <MessagePopup
+          currentUserId={user.id}
+          isDark={isDark}
+          lang={lang}
+          initialTargetUserId={showChat ? (chatTargetUserId || undefined) : undefined}
+          onClose={() => { setShowChat(false); setChatTargetUserId(null); }}
+        />
+      )}
+
       {isSettingsOpen && (
         <SettingsSheet
           products={products}
@@ -927,16 +937,6 @@ export default function App() {
           onClose={() => setIsSettingsOpen(false)}
           isDark={isDark}
           defaultTab={settingsDefaultTab}
-        />
-      )}
-
-      {user && (
-        <MessagePopup
-          currentUserId={user.id}
-          isDark={isDark}
-          lang={lang}
-          initialTargetUserId={showChat ? (chatTargetUserId || undefined) : undefined}
-          onClose={() => { setShowChat(false); setChatTargetUserId(null); }}
         />
       )}
 

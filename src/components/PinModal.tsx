@@ -44,7 +44,7 @@ export function PinModal({ pinHash, onSuccess, isDark = true, language }: PinMod
 
   return (
     <div className={`fixed inset-0 flex items-center justify-center z-[200] p-4 transition-all duration-200 ${
-      isVisible ? 'bg-black/80 backdrop-blur-sm' : 'bg-black/0'
+      isVisible ? 'bg-black/10 backdrop-blur-[2px]' : 'bg-black/0'
     }`}>
       <div className={`w-full max-w-sm rounded-2xl border-2 shadow-2xl p-6 transition-all duration-200 ${
         isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'

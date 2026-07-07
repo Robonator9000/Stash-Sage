@@ -247,7 +247,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
     <div ref={focusTrapRef} className="fixed inset-0 z-50 flex justify-end" onClick={handleClose}>
       <div
         className={`absolute inset-0 transition-all duration-200 ${
-          visible ? 'bg-black/60 backdrop-blur-sm' : 'bg-black/0'
+          visible ? 'bg-black/10 backdrop-blur-[2px]' : 'bg-black/0'
         }`}
       />
       <div
