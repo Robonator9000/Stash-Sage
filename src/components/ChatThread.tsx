@@ -3,7 +3,7 @@ import { useChat } from '../hooks/useChat';
 import { ChatBubble } from './ChatBubble';
 import { t } from '../utils/translations';
 import { uploadMessageImage } from '../utils/supabase';
-import { ArrowLeft, Send, Image, X } from 'lucide-react';
+import { ArrowLeft, Send, Image, X, Ban } from 'lucide-react';
 import type { Conversation } from '../types';
 
 interface ChatThreadProps {
@@ -15,17 +15,29 @@ interface ChatThreadProps {
 }
 
 export function ChatThread({ conversation, currentUserId, isDark, lang, onBack }: ChatThreadProps) {
-  const { messages, loading, sending, sendMessage, bottomRef } = useChat(conversation.id, currentUserId);
+  const otherUserId = conversation.buyer_id === currentUserId ? conversation.seller_id : conversation.buyer_id;
+  const { messages, loading, sending, sendMessage, bottomRef, otherUserTyping, broadcastTyping, blockedByOther, iBlockedOther, blockUser, unblockUser } = useChat(conversation.id, currentUserId, otherUserId);
   const [input, setInput] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [showBlockConfirm, setShowBlockConfirm] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingBroadcastRef = useRef<ReturnType<typeof setInterval>>();
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, bottomRef]);
+
+  useEffect(() => {
+    if (input && !blockedByOther && !iBlockedOther) {
+      broadcastTyping();
+      clearInterval(typingBroadcastRef.current);
+      typingBroadcastRef.current = setInterval(() => broadcastTyping(), 2000);
+    }
+    return () => clearInterval(typingBroadcastRef.current);
+  }, [input, broadcastTyping, blockedByOther, iBlockedOther]);
 
   async function handleSend() {
     if ((!input.trim() && !imageFile) || sending || uploading) return;
@@ -57,7 +69,7 @@ export function ChatThread({ conversation, currentUserId, isDark, lang, onBack }
         <button onClick={onBack} className={`p-1 rounded-lg ${isDark ? 'hover:bg-midnight text-frost' : 'hover:bg-gray-200 text-gray-600'}`}>
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           {conversation.other_user?.avatar_url ? (
             <img src={conversation.other_user.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
           ) : (
@@ -65,16 +77,39 @@ export function ChatThread({ conversation, currentUserId, isDark, lang, onBack }
               <span className="text-white text-xs font-bold">{(conversation.other_user?.username?.[0] || '?').toUpperCase()}</span>
             </div>
           )}
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className={`text-sm font-display font-bold truncate ${isDark ? 'text-frost' : 'text-gray-800'}`}>
               {conversation.other_user?.username}
             </p>
             <p className={`text-xs truncate ${isDark ? 'text-muted' : 'text-gray-400'}`}>
-              {t('conversationAbout', lang).replace('{title}', listingTitle)}
+              {blockedByOther ? 'Blocked you' : iBlockedOther ? 'Blocked' : t('conversationAbout', lang).replace('{title}', listingTitle)}
             </p>
           </div>
+          {!showBlockConfirm ? (
+            <button
+              onClick={() => setShowBlockConfirm(true)}
+              className={`p-1.5 rounded-lg ${isDark ? 'text-muted hover:text-red-400 hover:bg-midnight' : 'text-gray-400 hover:text-red-500 hover:bg-gray-200'}`}
+              title={iBlockedOther ? 'Unblock' : 'Block'}
+            >
+              <Ban className="w-4 h-4" />
+            </button>
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <button onClick={() => { setShowBlockConfirm(false); if (iBlockedOther) unblockUser(); else blockUser(); }} className={`px-2 py-1 rounded-lg text-xs font-medium ${isDark ? 'text-red-400 hover:bg-red-900/20' : 'text-red-600 hover:bg-red-50'}`}>
+                {iBlockedOther ? 'Unblock' : 'Block'}
+              </button>
+              <button onClick={() => setShowBlockConfirm(false)} className={`px-2 py-1 rounded-lg text-xs font-medium ${isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}`}>Cancel</button>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Typing indicator */}
+      {otherUserTyping && (
+        <div className={`px-4 py-1.5 text-xs italic ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+          {conversation.other_user?.username} is typing...
+        </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-1">
@@ -113,40 +148,46 @@ export function ChatThread({ conversation, currentUserId, isDark, lang, onBack }
 
       {/* Input */}
       <div className={`p-3 border-t ${isDark ? 'border-edge bg-surface/50' : 'border-gray-200 bg-gray-50'}`}>
-        <form
-          onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-          className="flex items-center gap-2"
-        >
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className={`p-2.5 rounded-xl transition-all ${isDark ? 'text-muted hover:text-frost hover:bg-midnight' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200'}`}
+        {blockedByOther || iBlockedOther ? (
+          <p className={`text-center text-xs py-2 ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+            {blockedByOther ? conversation.other_user?.username + ' has blocked you' : 'You blocked ' + conversation.other_user?.username}
+          </p>
+        ) : (
+          <form
+            onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+            className="flex items-center gap-2"
           >
-            <Image className="w-5 h-5" />
-          </button>
-          <input ref={fileInputRef} type="file" accept="image/webp,image/jpeg,image/png" className="hidden" onChange={handleImageSelect} />
-          <input
-            ref={inputRef}
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={t('typeMessage', lang)}
-            className={`flex-1 px-4 py-2.5 rounded-xl text-sm outline-none transition-colors ${
-              isDark ? 'bg-midnight text-frost placeholder:text-muted border border-edge focus:border-cyan-500/50' : 'bg-white text-gray-800 placeholder:text-gray-400 border border-gray-200 focus:border-cyan-400'
-            }`}
-          />
-          <button
-            type="submit"
-            disabled={(!input.trim() && !imageFile) || sending || uploading}
-            className={`p-2.5 rounded-xl transition-all ${
-              (input.trim() || imageFile) && !sending && !uploading
-                ? 'bg-gradient-to-r from-cyanx to-emera text-white shadow-lg shadow-cyan-500/20'
-                : isDark ? 'bg-midnight text-muted' : 'bg-gray-100 text-gray-400'
-            }`}
-          >
-            <Send className="w-5 h-5" />
-          </button>
-        </form>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className={`p-2.5 rounded-xl transition-all ${isDark ? 'text-muted hover:text-frost hover:bg-midnight' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200'}`}
+            >
+              <Image className="w-5 h-5" />
+            </button>
+            <input ref={fileInputRef} type="file" accept="image/webp,image/jpeg,image/png" className="hidden" onChange={handleImageSelect} />
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={t('typeMessage', lang)}
+              className={`flex-1 px-4 py-2.5 rounded-xl text-sm outline-none transition-colors ${
+                isDark ? 'bg-midnight text-frost placeholder:text-muted border border-edge focus:border-cyan-500/50' : 'bg-white text-gray-800 placeholder:text-gray-400 border border-gray-200 focus:border-cyan-400'
+              }`}
+            />
+            <button
+              type="submit"
+              disabled={(!input.trim() && !imageFile) || sending || uploading}
+              className={`p-2.5 rounded-xl transition-all ${
+                (input.trim() || imageFile) && !sending && !uploading
+                  ? 'bg-gradient-to-r from-cyanx to-emera text-white shadow-lg shadow-cyan-500/20'
+                  : isDark ? 'bg-midnight text-muted' : 'bg-gray-100 text-gray-400'
+              }`}
+            >
+              <Send className="w-5 h-5" />
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );
