@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { Lock } from 'lucide-react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { Product, Session, SortOption, FilterType, Profile } from './types';
 import { useProducts } from './utils/useProducts';
 import { useSessions } from './utils/useSessions';
@@ -69,10 +69,9 @@ export default function App() {
 
   const [showSmoke, setShowSmoke] = useState(false);
 
-  const navigate = useNavigate();
   const handleViewProfile = useCallback((uid: string) => {
-    navigate(`/profile/${uid}`);
-  }, [navigate]);
+    setSearchParams(prev => { prev.set('tab', 'community'); prev.set('profile', uid); return prev; }, { replace: true });
+  }, [setSearchParams]);
 
   const [historyFilterType, setHistoryFilterType] = useState<string>('all');
   const [historyDateFilter, setHistoryDateFilter] = useState<string>('all');

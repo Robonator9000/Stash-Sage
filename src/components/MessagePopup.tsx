@@ -78,7 +78,7 @@ export function MessagePopup({ currentUserId, isDark, lang, initialTargetUserId,
           </button>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto p-3">
         {activeConversation ? (
           <ChatThread
             conversation={activeConversation}
@@ -93,6 +93,7 @@ export function MessagePopup({ currentUserId, isDark, lang, initialTargetUserId,
             isDark={isDark}
             lang={lang}
             onSelectConversation={(c) => setActiveConversation(c)}
+            popover
           />
         )}
       </div>

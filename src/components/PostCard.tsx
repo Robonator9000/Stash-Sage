@@ -357,7 +357,7 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
                   </button>
                 )}
                 {showConfirm && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowConfirm(false)}>
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowConfirm(false)}>
                     <div className={`p-6 rounded-2xl max-w-xs w-full mx-4 ${isDark ? 'bg-card border border-edge' : 'bg-white border border-gray-200'}`}
                       onClick={e => e.stopPropagation()}>
                       <p className={`text-sm font-medium mb-4 ${isDark ? 'text-frost' : 'text-gray-800'}`}>

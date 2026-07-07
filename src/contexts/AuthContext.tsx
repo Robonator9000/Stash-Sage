@@ -82,6 +82,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  useEffect(() => {
+    if (!user || !isConfigured) return;
+    const update = () => { supabase.from('profiles').update({ last_seen: new Date().toISOString() }).eq('user_id', user.id).then(undefined, () => {}); };
+    update();
+    const interval = setInterval(update, 60000);
+    return () => clearInterval(interval);
+  }, [user]);
+
   const handleAuthError = useCallback((err: AuthError | Error): string => {
     const msg = err?.message ?? 'An unknown error occurred.';
     if (msg.includes('Invalid login credentials')) return 'Invalid email or password.';

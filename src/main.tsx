@@ -31,6 +31,7 @@ createRoot(document.getElementById('root')!).render(
           <Routes>
             <Route path="/menu" element={<Suspense fallback={LoadingFallback}><MenuPage /></Suspense>} />
             <Route path="/profile/:userId" element={<Suspense fallback={LoadingFallback}><ProfilePage /></Suspense>} />
+            <Route path="/redirect-profile" element={<div />} />
             <Route path="*" element={<App />} />
           </Routes>
         </AuthProvider>

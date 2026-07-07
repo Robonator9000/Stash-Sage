@@ -13,10 +13,11 @@ interface ChatInboxProps {
   lang: string;
   onBack?: () => void;
   initialTargetUserId?: string;
-  onSelectConversation?: (conv: Conversation) => void;
+  onSelectConversation?: (c: Conversation) => void;
+  popover?: boolean;
 }
 
-export function ChatInbox({ currentUserId, isDark, lang, onBack, initialTargetUserId, onSelectConversation }: ChatInboxProps) {
+export function ChatInbox({ currentUserId, isDark, lang, onBack, initialTargetUserId, onSelectConversation, popover }: ChatInboxProps) {
   const { conversations, loading, refresh } = useConversations(currentUserId);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -70,16 +71,18 @@ export function ChatInbox({ currentUserId, isDark, lang, onBack, initialTargetUs
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-3">
-        {onBack && (
-          <button onClick={onBack} className={`p-1 rounded-lg ${isDark ? 'hover:bg-midnight text-frost' : 'hover:bg-gray-200 text-gray-600'}`}>
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-        )}
-        <h2 className={`text-lg font-display font-bold ${isDark ? 'text-frost' : 'text-gray-800'}`}>
-          {t('messages', lang)}
-        </h2>
-      </div>
+      {!popover && (
+        <div className="flex items-center gap-3">
+          {onBack && (
+            <button onClick={onBack} className={`p-1 rounded-lg ${isDark ? 'hover:bg-midnight text-frost' : 'hover:bg-gray-200 text-gray-600'}`}>
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          )}
+          <h2 className={`text-lg font-display font-bold ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+            {t('messages', lang)}
+          </h2>
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-2">

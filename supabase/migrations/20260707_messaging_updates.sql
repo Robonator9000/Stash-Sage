@@ -1,3 +1,6 @@
+-- Online status tracking
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS last_seen TIMESTAMPTZ;
+
 -- Phase 1: Allow conversations without a listing (DMs)
 ALTER TABLE conversations ALTER COLUMN listing_id DROP NOT NULL;
 

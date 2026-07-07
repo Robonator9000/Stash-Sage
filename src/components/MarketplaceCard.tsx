@@ -239,7 +239,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, 
       <ReviewSection listingId={listing.id} isOwner={isOwner} currentUserId={currentUserId} isDark={isDark} lang={lang} onViewProfile={onViewProfile} />
 
       {confirmAction && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setConfirmAction(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setConfirmAction(null)}>
           <div className={`p-6 rounded-2xl max-w-xs w-full mx-4 shadow-xl ${isDark ? 'bg-card border border-edge' : 'bg-white border border-gray-200'}`}
             onClick={e => e.stopPropagation()}>
             <p className={`text-sm font-medium mb-4 ${isDark ? 'text-frost' : 'text-gray-800'}`}>

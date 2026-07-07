@@ -15,8 +15,14 @@ interface ProfileData {
   location?: string;
 }
 
-export function ProfilePage() {
-  const { userId } = useParams<{ userId: string }>();
+interface ProfilePageProps {
+  userId?: string;
+  onBack?: () => void;
+}
+
+export function ProfilePage({ userId: propUserId, onBack }: ProfilePageProps = {}) {
+  const params = useParams();
+  const userId = propUserId || params.userId;
   const navigate = useNavigate();
   const { user } = useAuth();
   const { settings } = useSettings();
@@ -33,6 +39,7 @@ export function ProfilePage() {
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [postCount, setPostCount] = useState(0);
+  const [isOnline, setIsOnline] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -44,7 +51,8 @@ export function ProfilePage() {
       currentUserId ? supabase.from('follows').select('following_id').eq('follower_id', currentUserId).eq('following_id', userId).maybeSingle() : { data: null },
       supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('following_id', userId),
       supabase.from('follows').select('following_id', { count: 'exact', head: true }).eq('follower_id', userId),
-    ]).then(([profileRes, postsRes, productsRes, followRes, followersRes, followingRes]) => {
+      supabase.from('profiles').select('last_seen').eq('user_id', userId).maybeSingle(),
+    ]).then(([profileRes, postsRes, productsRes, followRes, followersRes, followingRes, lastSeenRes]) => {
       if (profileRes.data) setProfileData(profileRes.data);
       setPostCount(postsRes.count || 0);
       setUserPosts(postsRes.data || []);
@@ -52,6 +60,10 @@ export function ProfilePage() {
       setIsFollowing(!!followRes.data);
       setFollowerCount(followersRes.count || 0);
       setFollowingCount(followingRes.count || 0);
+      if (lastSeenRes?.data?.last_seen) {
+        const diff = Date.now() - new Date(lastSeenRes.data.last_seen).getTime();
+        setIsOnline(diff < 5 * 60 * 1000);
+      }
       setLoading(false);
     });
   }, [userId, currentUserId]);
@@ -116,10 +128,14 @@ export function ProfilePage() {
     );
   }
 
+  function handleBack() {
+    if (onBack) { onBack(); } else { navigate('/?tab=community'); }
+  }
+
   return (
     <div className="max-w-2xl mx-auto space-y-4">
-      <button onClick={() => navigate(-1)} className={`flex items-center gap-2 text-sm font-medium ${isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}`}>
-        <ArrowLeft className="w-4 h-4" /> {t('back', lang)}
+      <button onClick={handleBack} className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium bg-gradient-to-r from-cyanx/20 to-emera/20 text-cyanx hover:from-cyanx/30 hover:to-emera/30 transition-all">
+        <ArrowLeft className="w-5 h-5" /> Back
       </button>
 
       {/* Cover + Avatar */}
@@ -135,7 +151,10 @@ export function ProfilePage() {
         <div className={`pt-14 sm:pt-16 pb-4 px-4 sm:px-6 ${isDark ? 'bg-surface/30' : 'bg-white'}`}>
           <div className="flex items-start justify-between">
             <div className="min-w-0">
-              <h1 className={`text-lg font-bold truncate ${isDark ? 'text-frost' : 'text-gray-900'}`}>{profileData.display_name || 'Unknown'}</h1>
+              <div className="flex items-center gap-2">
+                <h1 className={`text-lg font-bold truncate ${isDark ? 'text-frost' : 'text-gray-900'}`}>{profileData.display_name || 'Unknown'}</h1>
+                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isOnline ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]' : 'bg-gray-500'}`} title={isOnline ? 'Online' : 'Offline'} />
+              </div>
               {profileData.location && <p className={`flex items-center gap-1 text-xs mt-0.5 ${isDark ? 'text-muted' : 'text-gray-400'}`}><MapPin className="w-3 h-3" />{profileData.location}</p>}
             </div>
             {!isOwnProfile && currentUserId && (

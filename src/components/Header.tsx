@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../utils/useSettings';
 import { useProducts } from '../utils/useProducts';
@@ -22,7 +22,6 @@ export function Header({ searchQuery, setSearchQuery, setIsAddModalOpen, setIsSe
   const { user } = useAuth();
   const { products } = useProducts();
   const [, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   const isDark = settings.theme === 'dark';
   const lang = settings.language;
@@ -39,7 +38,7 @@ export function Header({ searchQuery, setSearchQuery, setIsAddModalOpen, setIsSe
   };
 
   const handleViewProfile = (uid: string) => {
-    navigate(`/profile/${uid}`);
+    setSearchParams(prev => { prev.set('tab', 'community'); prev.set('profile', uid); return prev; }, { replace: true });
   };
 
   return (
