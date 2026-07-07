@@ -5,7 +5,7 @@ import { t } from '../utils/translations';
 import { PostCard } from './PostCard';
 import { CreatePostCard } from './CreatePostCard';
 import { showToast } from './Toast';
-import { Search, X, Bookmark } from 'lucide-react';
+import { Bookmark, X } from 'lucide-react';
 
 interface SocialFeedProps {
   isDark: boolean;
@@ -27,30 +27,12 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [feedFilter, setFeedFilter] = useState<'latest' | 'following' | 'trending' | 'bookmarked'>('latest');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<{ user_id: string; display_name: string; avatar_url?: string | null }[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [postSearch, setPostSearch] = useState('');
-  const [debouncedPostSearch, setDebouncedPostSearch] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [activeHashtag, setActiveHashtag] = useState<string | null>(null);
   const [trendingTags, setTrendingTags] = useState<string[]>([]);
   const [quotePostId, setQuotePostId] = useState<string | null>(null);
   const pageRef = useRef(0);
   const observerRef = useRef<HTMLDivElement>(null);
-  const searchTimer = useRef<ReturnType<typeof setTimeout>>();
-  const postSearchTimer = useRef<ReturnType<typeof setTimeout>>();
-  const searchRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setSearchResults([]);
-      }
-    }
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
 
   const enrichPosts = useCallback(async (rawPosts: Post[]): Promise<Post[]> => {
     if (rawPosts.length === 0) return [];
@@ -215,28 +197,6 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
     observer.observe(el);
     return () => observer.disconnect();
   }, [hasMore, loading, loadingMore, fetchPosts, feedFilter]);
-
-  useEffect(() => {
-    if (!searchQuery.trim()) { setSearchResults([]); return; }
-    clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(async () => {
-      setSearching(true);
-      const { data } = await supabase
-        .from('profiles')
-        .select('user_id, display_name, avatar_url')
-        .ilike('display_name', `%${searchQuery}%`)
-        .limit(10);
-      setSearchResults(data || []);
-      setSearching(false);
-    }, 300);
-    return () => clearTimeout(searchTimer.current);
-  }, [searchQuery]);
-
-  useEffect(() => {
-    clearTimeout(postSearchTimer.current);
-    postSearchTimer.current = setTimeout(() => setDebouncedPostSearch(postSearch), 300);
-    return () => clearTimeout(postSearchTimer.current);
-  }, [postSearch]);
 
   useEffect(() => {
     supabase.from('post_hashtags').select('tag, created_at').gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()).then(({ data }) => {
@@ -575,59 +535,6 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
             {f === 'latest' ? 'Latest' : f === 'following' ? 'Following' : f === 'trending' ? 'Trending' : 'Bookmarked'}
           </button>
         ))}
-      </div>
-
-      {/* User search */}
-      <div ref={searchRef} className="relative">
-          <input
-            id="user-search"
-            name="user-search"
-            type="text"
-            aria-label="Search users"
-            value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          placeholder="Search users..."
-          className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-colors ${
-            isDark ? 'bg-midnight text-frost border border-edge focus:border-cyanx/50 placeholder-muted' : 'bg-gray-50 text-gray-800 border border-gray-200 focus:border-cyan-400 placeholder-gray-400'
-          }`}
-        />
-        {searching && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            <div className={`w-4 h-4 rounded-full border-2 border-t-transparent animate-spin ${isDark ? 'border-edge' : 'border-gray-300'}`} />
-          </div>
-        )}
-        {searchResults.length > 0 && (
-          <div className={`absolute top-full mt-1 left-0 right-0 rounded-xl shadow-xl border overflow-hidden z-20 ${isDark ? 'bg-card border-edge' : 'bg-white border-gray-200'}`}>
-            {searchResults.map(r => (
-              <button
-                key={r.user_id}
-                onClick={() => handleSearchSelect(r.user_id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors ${isDark ? 'hover:bg-surface text-frost' : 'hover:bg-gray-50 text-gray-800'}`}
-              >
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-cyanx to-emera">
-                  <span className="text-white font-display font-bold text-xs">{(r.display_name?.[0] || '?').toUpperCase()}</span>
-                </div>
-                <span className="font-medium">{r.display_name}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Post search */}
-      <div className="relative">
-        <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
-        <input type="text" value={postSearch} onChange={e => setPostSearch(e.target.value)} aria-label="Search posts"
-          placeholder="Search posts..."
-          className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none transition-colors ${
-            isDark ? 'bg-midnight text-frost border border-edge focus:border-cyanx/50 placeholder-muted' : 'bg-gray-50 text-gray-800 border border-gray-200 focus:border-cyan-400 placeholder-gray-400'
-          }`} />
-        {postSearch && (
-          <button onClick={() => setPostSearch('')} aria-label="Clear post search"
-            className={`absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded transition-all ${isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}`}>
-            <X className="w-4 h-4" />
-          </button>
-        )}
       </div>
 
       {loading && (
