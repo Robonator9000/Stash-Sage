@@ -6,6 +6,7 @@ import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { FollowButton } from './FollowButton';
 import { PostCard } from './PostCard';
+import { MessageCircle } from 'lucide-react';
 import type { Post, Product } from '../types';
 
 interface ProfileData {
@@ -110,6 +111,24 @@ export function ProfilePage() {
     }
   }
 
+  async function handleMessage() {
+    if (!currentUserId || !userId) return;
+    const { data: existing } = await supabase
+      .from('conversations')
+      .select('id')
+      .or(`and(buyer_id.eq.${currentUserId},seller_id.eq.${userId}),and(buyer_id.eq.${userId},seller_id.eq.${currentUserId})`)
+      .is('listing_id', null)
+      .maybeSingle();
+    if (!existing) {
+      await supabase.from('conversations').insert({
+        buyer_id: currentUserId,
+        seller_id: userId,
+        listing_id: null,
+      }).then(undefined, () => {});
+    }
+    navigate('/?tab=community&openChat=' + encodeURIComponent(userId));
+  }
+
   const isOwnProfile = currentUserId === userId;
 
   if (loading) {
@@ -167,7 +186,7 @@ export function ProfilePage() {
               <span><strong className={isDark ? 'text-frost' : 'text-gray-800'}>{followingCount}</strong> {t('followedBy', lang)}</span>
             </div>
             {!isOwnProfile && currentUserId && (
-              <div className="mt-3">
+              <div className="mt-3 flex items-center gap-2">
                 <FollowButton
                   userId={userId!}
                   currentUserId={currentUserId}
@@ -176,6 +195,15 @@ export function ProfilePage() {
                   onFollow={handleFollow}
                   onUnfollow={handleUnfollow}
                 />
+                <button
+                  onClick={handleMessage}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+                    isDark ? 'bg-cyanx/10 text-cyanx hover:bg-cyanx/20' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'
+                  }`}
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  Message
+                </button>
               </div>
             )}
           </div>

@@ -65,6 +65,7 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settingsDefaultTab, setSettingsDefaultTab] = useState<'profile' | 'preferences' | 'session' | 'budget' | 'data' | 'security'>('preferences');
   const [showChat, setShowChat] = useState(false);
+  const [chatTargetUserId, setChatTargetUserId] = useState<string | null>(null);
 
   const [showSmoke, setShowSmoke] = useState(false);
 
@@ -96,6 +97,19 @@ export default function App() {
       }
     });
   }, [user]);
+
+  useEffect(() => {
+    const target = searchParams.get('openChat');
+    if (target) {
+      setChatTargetUserId(target);
+      setShowChat(true);
+      setSearchParams(prev => { prev.delete('openChat'); return prev; }, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
+  useEffect(() => {
+    if (!showChat) setChatTargetUserId(null);
+  }, [showChat]);
 
   const browserLang = useMemo(() => {
     const raw = navigator.language || 'en';
@@ -950,6 +964,7 @@ export default function App() {
                 isDark={isDark}
                 lang={lang}
                 onBack={() => setShowChat(false)}
+                initialTargetUserId={chatTargetUserId || undefined}
               />
             </div>
           </div>
