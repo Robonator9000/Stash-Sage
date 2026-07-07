@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useConversations } from '../hooks/useConversations';
 import { ChatThread } from './ChatThread';
 import { t } from '../utils/translations';
 import { timeAgo } from '../utils/helpers';
 import { supabase } from '../utils/supabase';
-import { MessageCircle, ArrowLeft, Trash2 } from 'lucide-react';
+import { ArrowLeft, Trash2, Search } from 'lucide-react';
 import type { Conversation } from '../types';
 
 interface ChatInboxProps {
@@ -20,6 +20,17 @@ export function ChatInbox({ currentUserId, isDark, lang, onBack, initialTargetUs
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredConversations = useMemo(() => {
+    if (!searchQuery.trim()) return conversations;
+    const q = searchQuery.toLowerCase();
+    return conversations.filter(c =>
+      c.other_user?.username?.toLowerCase().includes(q) ||
+      c.last_message?.content?.toLowerCase().includes(q) ||
+      c.listing?.title?.toLowerCase().includes(q)
+    );
+  }, [conversations, searchQuery]);
 
   useEffect(() => {
     if (!initialTargetUserId || loading || conversations.length === 0 && !loading) return;
@@ -82,14 +93,20 @@ export function ChatInbox({ currentUserId, isDark, lang, onBack, initialTargetUs
             </div>
           ))}
         </div>
-      ) : conversations.length === 0 ? (
-        <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
-          <MessageCircle className={`w-10 h-10 mx-auto mb-2 ${isDark ? 'text-muted' : 'text-gray-300'}`} />
-          <p className={`text-sm ${isDark ? 'text-muted' : 'text-gray-400'}`}>{t('noMessages', lang)}</p>
-        </div>
       ) : (
-        <div className="space-y-1">
-          {conversations.map((c) => (
+        <>
+          {/* Search */}
+          <div className={`flex items-center gap-2 px-3 py-2 rounded-xl ${isDark ? 'bg-midnight border border-edge' : 'bg-white border border-gray-200'}`}>
+            <Search className={`w-4 h-4 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
+            <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search messages..." className={`flex-1 text-sm bg-transparent outline-none ${isDark ? 'text-frost placeholder:text-muted' : 'text-gray-800 placeholder:text-gray-400'}`} />
+          </div>
+          {filteredConversations.length === 0 ? (
+            <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+              <p className={`text-sm ${isDark ? 'text-muted' : 'text-gray-400'}`}>No results</p>
+            </div>
+          ) : (
+          <div className="space-y-1">
+          {filteredConversations.map((c) => (
             <div key={c.id} className="group relative">
               {confirmDelete === c.id ? (
                 <div className={`p-3 rounded-xl flex items-center justify-between ${isDark ? 'bg-red-900/20 border border-red-900/30' : 'bg-red-50 border border-red-200'}`}>
@@ -153,6 +170,8 @@ export function ChatInbox({ currentUserId, isDark, lang, onBack, initialTargetUs
           ))}
         </div>
       )}
+      </>
+    )}
     </div>
   );
 }

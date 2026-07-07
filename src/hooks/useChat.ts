@@ -21,7 +21,7 @@ export function useChat(conversationId: string | null, userId: string | undefine
     const [messagesRes, blockedRes] = await Promise.all([
       supabase
         .from('messages')
-        .select('*')
+        .select('*, reply_to:reply_to_id(id, content, user_id)')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true }),
       otherUserId && userId
@@ -71,6 +71,13 @@ export function useChat(conversationId: string | null, userId: string | undefine
           }
         }
       )
+      .on('postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },
+        (payload) => {
+          const updated = payload.new as Message;
+          setMessages(prev => prev.map(m => m.id === updated.id ? { ...m, content: updated.content, edited_at: updated.edited_at, deleted_at: updated.deleted_at, image_url: updated.image_url } : m));
+        }
+      )
       .on('broadcast', { event: 'typing' }, (payload) => {
         if (payload.payload?.userId === otherUserId) {
           setOtherUserTyping(true);
@@ -86,7 +93,7 @@ export function useChat(conversationId: string | null, userId: string | undefine
     };
   }, [conversationId, userId, otherUserId]);
 
-  const sendMessage = useCallback(async (content?: string, image_url?: string) => {
+  const sendMessage = useCallback(async (content?: string, image_url?: string, reply_to_id?: string) => {
     if (!conversationId || !userId || (!content?.trim() && !image_url) || sending || blockedByOther) return;
     setSending(true);
     try {
@@ -95,6 +102,7 @@ export function useChat(conversationId: string | null, userId: string | undefine
         user_id: userId,
         content: content?.trim() || '',
         image_url: image_url || null,
+        reply_to_id: reply_to_id || null,
       });
     } finally {
       setSending(false);
@@ -119,5 +127,21 @@ export function useChat(conversationId: string | null, userId: string | undefine
     setIBlockedOther(true);
   }, [userId, otherUserId]);
 
-  return { messages, loading, sending, sendMessage, bottomRef, otherUserTyping, broadcastTyping, blockedByOther, iBlockedOther, blockUser, unblockUser };
+  const editMessage = useCallback(async (messageId: string, content: string) => {
+    if (!content.trim() || !userId) return;
+    const now = new Date().toISOString();
+    await supabase.from('messages').update({ content: content.trim(), edited_at: now }).eq('id', messageId).eq('user_id', userId);
+    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, content: content.trim(), edited_at: now } : m));
+  }, [userId]);
+
+  const deleteMessage = useCallback(async (messageId: string) => {
+    if (!userId) return;
+    const now = new Date().toISOString();
+    await supabase.from('messages').update({ deleted_at: now, content: '' }).eq('id', messageId).eq('user_id', userId);
+    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, deleted_at: now, content: '' } : m));
+  }, [userId]);
+
+  const replyToMessage = useRef<{ id: string; content: string; userId: string } | null>(null);
+
+  return { messages, loading, sending, sendMessage, bottomRef, otherUserTyping, broadcastTyping, blockedByOther, iBlockedOther, blockUser, unblockUser, editMessage, deleteMessage, replyToMessage };
 }

@@ -257,6 +257,10 @@ export interface Message {
   created_at: string;
   image_url?: string;
   read_at?: string;
+  edited_at?: string;
+  deleted_at?: string;
+  reply_to_id?: string;
+  reply_to?: { content: string; user_id: string };
 }
 
 export interface SavedListing {

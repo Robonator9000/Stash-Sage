@@ -16,12 +16,13 @@ interface ChatThreadProps {
 
 export function ChatThread({ conversation, currentUserId, isDark, lang, onBack }: ChatThreadProps) {
   const otherUserId = conversation.buyer_id === currentUserId ? conversation.seller_id : conversation.buyer_id;
-  const { messages, loading, sending, sendMessage, bottomRef, otherUserTyping, broadcastTyping, blockedByOther, iBlockedOther, blockUser, unblockUser } = useChat(conversation.id, currentUserId, otherUserId);
+  const { messages, loading, sending, sendMessage, bottomRef, otherUserTyping, broadcastTyping, blockedByOther, iBlockedOther, blockUser, unblockUser, editMessage, deleteMessage } = useChat(conversation.id, currentUserId, otherUserId);
   const [input, setInput] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<{ id: string; content: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingBroadcastRef = useRef<ReturnType<typeof setInterval>>();
@@ -44,11 +45,13 @@ export function ChatThread({ conversation, currentUserId, isDark, lang, onBack }
     setUploading(true);
     const imageUrl = imageFile ? await uploadMessageImage(currentUserId, imageFile) : null;
     const msgText = input.trim();
+    const replyId = replyingTo?.id;
     setInput('');
     setImageFile(null);
     setImagePreview(null);
+    setReplyingTo(null);
     setUploading(false);
-    await sendMessage(msgText, imageUrl || undefined);
+    await sendMessage(msgText, imageUrl || undefined, replyId);
     inputRef.current?.focus();
   }
 
@@ -128,11 +131,24 @@ export function ChatThread({ conversation, currentUserId, isDark, lang, onBack }
               message={msg}
               isDark={isDark}
               isOwn={msg.user_id === currentUserId}
+              onEdit={msg.user_id === currentUserId ? editMessage : undefined}
+              onDelete={msg.user_id === currentUserId ? deleteMessage : undefined}
+              onReply={() => setReplyingTo({ id: msg.id, content: msg.content.substring(0, 60) })}
             />
           ))
         )}
         <div ref={bottomRef} />
       </div>
+
+      {/* Reply preview */}
+      {replyingTo && (
+        <div className={`flex items-center gap-2 px-3 py-1.5 border-t ${isDark ? 'border-edge bg-surface/30' : 'border-gray-200 bg-gray-50'}`}>
+          <div className={`flex-1 text-xs truncate ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+            Replying to: <span className={isDark ? 'text-frost' : 'text-gray-600'}>{replyingTo.content}</span>
+          </div>
+          <button onClick={() => setReplyingTo(null)} className={`p-0.5 rounded ${isDark ? 'hover:bg-midnight text-muted' : 'hover:bg-gray-200 text-gray-400'}`}><X className="w-3 h-3" /></button>
+        </div>
+      )}
 
       {/* Image preview */}
       {imagePreview && (
