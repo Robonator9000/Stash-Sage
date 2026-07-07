@@ -7,7 +7,8 @@ BEGIN
   VALUES
     ('avatars', 'avatars', true, 2097152, ARRAY['image/webp', 'image/jpeg', 'image/png']::text[]),
     ('listing-images', 'listing-images', true, 10485760, ARRAY['image/webp', 'image/jpeg', 'image/png']::text[]),
-    ('post-images', 'post-images', true, 10485760, ARRAY['image/webp', 'image/jpeg', 'image/png']::text[])
+    ('post-images', 'post-images', true, 10485760, ARRAY['image/webp', 'image/jpeg', 'image/png']::text[]),
+    ('message-images', 'message-images', true, 10485760, ARRAY['image/webp', 'image/jpeg', 'image/png']::text[])
   ON CONFLICT (id) DO NOTHING;
 END $$;
 
@@ -66,4 +67,23 @@ CREATE POLICY "posts_update_own"
 CREATE POLICY "posts_delete_own"
   ON storage.objects FOR DELETE USING (
     bucket_id = 'post-images' AND auth.uid() = (storage.foldername(name))[1]::uuid
+  );
+
+-- Message images: public read, authenticated insert/update/delete own
+CREATE POLICY "messages_select_anyone"
+  ON storage.objects FOR SELECT USING (bucket_id = 'message-images' AND auth.role() IS NOT NULL);
+
+CREATE POLICY "messages_insert_own"
+  ON storage.objects FOR INSERT WITH CHECK (
+    bucket_id = 'message-images' AND auth.uid() = (storage.foldername(name))[1]::uuid
+  );
+
+CREATE POLICY "messages_update_own"
+  ON storage.objects FOR UPDATE USING (
+    bucket_id = 'message-images' AND auth.uid() = (storage.foldername(name))[1]::uuid
+  );
+
+CREATE POLICY "messages_delete_own"
+  ON storage.objects FOR DELETE USING (
+    bucket_id = 'message-images' AND auth.uid() = (storage.foldername(name))[1]::uuid
   );

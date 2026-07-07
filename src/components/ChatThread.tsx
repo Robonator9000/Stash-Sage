@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useChat } from '../hooks/useChat';
 import { ChatBubble } from './ChatBubble';
 import { t } from '../utils/translations';
-import { ArrowLeft, Send } from 'lucide-react';
+import { uploadMessageImage } from '../utils/supabase';
+import { ArrowLeft, Send, Image, X } from 'lucide-react';
 import type { Conversation } from '../types';
 
 interface ChatThreadProps {
@@ -16,18 +17,35 @@ interface ChatThreadProps {
 export function ChatThread({ conversation, currentUserId, isDark, lang, onBack }: ChatThreadProps) {
   const { messages, loading, sending, sendMessage, bottomRef } = useChat(conversation.id, currentUserId);
   const [input, setInput] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, bottomRef]);
 
   async function handleSend() {
-    if (!input.trim() || sending) return;
-    const msg = input;
+    if ((!input.trim() && !imageFile) || sending || uploading) return;
+    setUploading(true);
+    const imageUrl = imageFile ? await uploadMessageImage(currentUserId, imageFile) : null;
+    const msgText = input.trim();
     setInput('');
-    await sendMessage(msg);
+    setImageFile(null);
+    setImagePreview(null);
+    setUploading(false);
+    await sendMessage(msgText, imageUrl || undefined);
     inputRef.current?.focus();
+  }
+
+  function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
   const listingTitle = conversation.listing?.title || 'listing';
@@ -81,12 +99,32 @@ export function ChatThread({ conversation, currentUserId, isDark, lang, onBack }
         <div ref={bottomRef} />
       </div>
 
+      {/* Image preview */}
+      {imagePreview && (
+        <div className={`px-3 py-2 border-t ${isDark ? 'border-edge bg-surface/50' : 'border-gray-200 bg-gray-50'}`}>
+          <div className="relative inline-block">
+            <img src={imagePreview} alt="" className="h-20 rounded-lg object-cover" />
+            <button onClick={() => { setImageFile(null); setImagePreview(null); }} className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center">
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Input */}
       <div className={`p-3 border-t ${isDark ? 'border-edge bg-surface/50' : 'border-gray-200 bg-gray-50'}`}>
         <form
           onSubmit={(e) => { e.preventDefault(); handleSend(); }}
           className="flex items-center gap-2"
         >
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className={`p-2.5 rounded-xl transition-all ${isDark ? 'text-muted hover:text-frost hover:bg-midnight' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200'}`}
+          >
+            <Image className="w-5 h-5" />
+          </button>
+          <input ref={fileInputRef} type="file" accept="image/webp,image/jpeg,image/png" className="hidden" onChange={handleImageSelect} />
           <input
             ref={inputRef}
             type="text"
@@ -99,9 +137,9 @@ export function ChatThread({ conversation, currentUserId, isDark, lang, onBack }
           />
           <button
             type="submit"
-            disabled={!input.trim() || sending}
+            disabled={(!input.trim() && !imageFile) || sending || uploading}
             className={`p-2.5 rounded-xl transition-all ${
-              input.trim() && !sending
+              (input.trim() || imageFile) && !sending && !uploading
                 ? 'bg-gradient-to-r from-cyanx to-emera text-white shadow-lg shadow-cyan-500/20'
                 : isDark ? 'bg-midnight text-muted' : 'bg-gray-100 text-gray-400'
             }`}

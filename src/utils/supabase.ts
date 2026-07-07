@@ -96,6 +96,20 @@ export async function uploadPostImages(userId: string, files: File[]): Promise<s
   return urls;
 }
 
+export async function uploadMessageImage(userId: string, file: File): Promise<string | null> {
+  if (!isConfigured) return null;
+  const ext = file.name.split('.').pop() || 'webp';
+  const fileName = `${crypto.randomUUID()}.${ext}`;
+  const filePath = `${userId}/${fileName}`;
+  const { error } = await supabase.storage.from('message-images').upload(filePath, file, {
+    contentType: file.type,
+    upsert: false,
+  });
+  if (error) return null;
+  const { data: { publicUrl } } = supabase.storage.from('message-images').getPublicUrl(filePath);
+  return publicUrl;
+}
+
 export async function deletePostImages(urls: string[]): Promise<void> {
   if (!isConfigured || urls.length === 0) return;
   const paths: string[] = [];

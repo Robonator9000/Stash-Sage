@@ -255,6 +255,8 @@ export interface Message {
   content: string;
   read: boolean;
   created_at: string;
+  image_url?: string;
+  read_at?: string;
 }
 
 export interface SavedListing {
