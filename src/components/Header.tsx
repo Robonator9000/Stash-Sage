@@ -7,7 +7,6 @@ import { searchProducts, formatPrecision } from '../utils/helpers';
 import { t } from '../utils/translations';
 import { LogoIcon } from './LogoIcon';
 import { NotificationBell } from './NotificationBell';
-import { useConversations } from '../hooks/useConversations';
 
 interface HeaderProps {
   searchQuery: string;
@@ -16,10 +15,9 @@ interface HeaderProps {
   setIsSettingsOpen: (v: boolean) => void;
   setSettingsDefaultTab: (tab: 'profile' | 'preferences' | 'session' | 'budget' | 'data' | 'security') => void;
   setStashSection: (section: 'products' | 'dashboard' | 'history') => void;
-  setShowChat: (v: boolean) => void;
 }
 
-export function Header({ searchQuery, setSearchQuery, setIsAddModalOpen, setIsSettingsOpen, setSettingsDefaultTab, setStashSection, setShowChat }: HeaderProps) {
+export function Header({ searchQuery, setSearchQuery, setIsAddModalOpen, setIsSettingsOpen, setSettingsDefaultTab, setStashSection }: HeaderProps) {
   const { settings, updateSettings } = useSettings();
   const { user } = useAuth();
   const { products } = useProducts();
@@ -30,11 +28,6 @@ export function Header({ searchQuery, setSearchQuery, setIsAddModalOpen, setIsSe
   const lang = settings.language;
 
   const [showSearchPreview, setShowSearchPreview] = useState(false);
-  const currentUserId = user?.id;
-  const { conversations } = useConversations(currentUserId);
-  const unreadCount = useMemo(() =>
-    conversations.reduce((sum, c) => sum + (c.unread_count || 0), 0),
-  [conversations]);
 
   const previewProducts = useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -51,16 +44,14 @@ export function Header({ searchQuery, setSearchQuery, setIsAddModalOpen, setIsSe
 
   return (
     <header className={`sticky top-0 z-50 ${isDark ? 'bg-[#0b1120]/80' : 'bg-[#e2e8f0]/80'} backdrop-blur-xl`}>
-      <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
-        <h1 className="m-0">
-          <button
-            onClick={() => { setActiveTab('stash'); setStashSection('products'); }}
-            className="font-display text-2xl font-extrabold hover:opacity-80 transition-opacity shrink-0 flex items-center gap-1.5"
-          >
-            <LogoIcon className="w-8 h-8" />
-            <span className="bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent font-display font-extrabold text-xl tracking-tight">STASH</span>
-          </button>
-        </h1>
+      <div className="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+        <button
+          onClick={() => { setActiveTab('stash'); setStashSection('products'); }}
+          className="flex items-center gap-1.5 shrink-0"
+        >
+          <LogoIcon className="w-7 h-7" />
+          <span className="bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent font-display font-extrabold text-lg tracking-tight">STASH</span>
+        </button>
 
         <div className="relative flex-1 max-w-xl mx-auto">
           <div className="relative">
@@ -123,21 +114,6 @@ export function Header({ searchQuery, setSearchQuery, setIsAddModalOpen, setIsSe
             {t('addProduct', lang)}
           </button>
           {user && <NotificationBell isDark={isDark} lang={lang} onViewProfile={handleViewProfile} />}
-          {user && (
-            <button
-              onClick={() => setShowChat(true)}
-              className={`p-1.5 rounded-xl relative ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-              </svg>
-              {unreadCount > 0 && (
-                <div className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 rounded-full bg-cyan-500 flex items-center justify-center">
-                  <span className="text-white text-[9px] font-bold leading-none">{unreadCount > 9 ? '9+' : unreadCount}</span>
-                </div>
-              )}
-            </button>
-          )}
           <button
             onClick={() => { setSettingsDefaultTab('profile'); setIsSettingsOpen(true); }}
             className={`p-1.5 rounded-xl transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}

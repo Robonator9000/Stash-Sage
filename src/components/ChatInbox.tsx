@@ -13,9 +13,10 @@ interface ChatInboxProps {
   lang: string;
   onBack?: () => void;
   initialTargetUserId?: string;
+  onSelectConversation?: (conv: Conversation) => void;
 }
 
-export function ChatInbox({ currentUserId, isDark, lang, onBack, initialTargetUserId }: ChatInboxProps) {
+export function ChatInbox({ currentUserId, isDark, lang, onBack, initialTargetUserId, onSelectConversation }: ChatInboxProps) {
   const { conversations, loading, refresh } = useConversations(currentUserId);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -39,9 +40,10 @@ export function ChatInbox({ currentUserId, isDark, lang, onBack, initialTargetUs
       (c.seller_id === initialTargetUserId && c.buyer_id === currentUserId)
     );
     if (existing) {
-      setActiveConversation(existing);
+      if (onSelectConversation) onSelectConversation(existing);
+      else setActiveConversation(existing);
     }
-  }, [initialTargetUserId, loading, conversations, currentUserId]);
+  }, [initialTargetUserId, loading, conversations, currentUserId, onSelectConversation]);
 
   async function handleDelete(convId: string) {
     setDeleting(convId);
@@ -54,7 +56,7 @@ export function ChatInbox({ currentUserId, isDark, lang, onBack, initialTargetUs
     refresh();
   }
 
-  if (activeConversation) {
+  if (!onSelectConversation && activeConversation) {
     return (
       <ChatThread
         conversation={activeConversation}
@@ -118,7 +120,7 @@ export function ChatInbox({ currentUserId, isDark, lang, onBack, initialTargetUs
                 </div>
               ) : (
                 <button
-                  onClick={() => setActiveConversation(c)}
+                  onClick={() => { if (onSelectConversation) onSelectConversation(c); else setActiveConversation(c); }}
                   className={`w-full p-3 rounded-xl flex items-center gap-3 text-left transition-colors ${
                     isDark ? 'hover:bg-surface/50' : 'hover:bg-gray-50'
                   }`}

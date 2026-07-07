@@ -27,7 +27,7 @@ import { useAuth } from './contexts/AuthContext';
 import { supabase } from './utils/supabase';
 import { AdminDashboard } from './components/AdminDashboard';
 import { MenuButton } from './components/MenuButton';
-import { ChatInbox } from './components/ChatInbox';
+import { MessagePopup } from './components/MessagePopup';
 const DashboardTab = lazy(() => import('./components/DashboardTab').then(m => ({ default: m.DashboardTab })));
 const HistoryTab = lazy(() => import('./components/HistoryTab').then(m => ({ default: m.HistoryTab })));
 const ProductModal = lazy(() => import('./components/ProductModal').then(m => ({ default: m.ProductModal })));
@@ -484,7 +484,6 @@ export default function App() {
         setIsSettingsOpen={setIsSettingsOpen}
         setSettingsDefaultTab={setSettingsDefaultTab}
         setStashSection={setStashSection}
-        setShowChat={setShowChat}
       />
 
 
@@ -955,21 +954,14 @@ export default function App() {
         />
       )}
 
-      {showChat && user && (
-        <div className="fixed inset-0 z-[60] flex">
-          <div className={`w-full max-w-2xl mx-auto mt-16 mb-4 px-4 overflow-y-auto ${isDark ? '' : ''}`}>
-            <div className={`rounded-2xl p-4 ${isDark ? 'bg-[#0b1120] border border-edge' : 'bg-white border border-gray-200 shadow-xl'}`}>
-              <ChatInbox
-                currentUserId={user.id}
-                isDark={isDark}
-                lang={lang}
-                onBack={() => setShowChat(false)}
-                initialTargetUserId={chatTargetUserId || undefined}
-              />
-            </div>
-          </div>
-          <div className="fixed inset-0 bg-black/40 -z-10" onClick={() => setShowChat(false)} />
-        </div>
+      {user && (
+        <MessagePopup
+          currentUserId={user.id}
+          isDark={isDark}
+          lang={lang}
+          initialTargetUserId={showChat ? (chatTargetUserId || undefined) : undefined}
+          onClose={() => { setShowChat(false); setChatTargetUserId(null); }}
+        />
       )}
 
       {/* Toast */}
