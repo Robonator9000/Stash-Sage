@@ -1,8 +1,8 @@
 import { memo, useState, useCallback, useEffect } from 'react';
-import type { MarketplaceListing } from '../types';
+import type { MarketplaceListing, Product } from '../types';
 import { t } from '../utils/translations';
 import { getContactUrl, copyToClipboard, timeAgo } from '../utils/helpers';
-import { Tag, Clock, DollarSign, ExternalLink, ChevronLeft, ChevronRight, X, Bookmark, MessageCircle } from 'lucide-react';
+import { Tag, Clock, DollarSign, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, X, Bookmark, MessageCircle, Star, FlaskConical, Scale, Calendar, StickyNote } from 'lucide-react';
 import { ReviewSection } from './ReviewSection';
 
 const PLATFORM_COLORS: Record<string, string> = {
@@ -20,6 +20,7 @@ const PLATFORM_COLORS: Record<string, string> = {
 
 interface MarketplaceCardProps {
   listing: MarketplaceListing;
+  products: Product[];
   isDark: boolean;
   lang: string;
   currentUserId: string;
@@ -44,7 +45,7 @@ const PLATFORM_BRAND_ICONS: Record<string, string> = {
   chat: 'M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z',
 };
 
-export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, lang, currentUserId, onEdit, onDelete, onMarkSold, onViewProfile, onSave, onStartChat }: MarketplaceCardProps) {
+export const MarketplaceCard = memo(function MarketplaceCard({ listing, products, isDark, lang, currentUserId, onEdit, onDelete, onMarkSold, onViewProfile, onSave, onStartChat }: MarketplaceCardProps) {
   const isOwner = listing.user_id === currentUserId;
   const brandPath = PLATFORM_BRAND_ICONS[listing.contact_platform] || PLATFORM_BRAND_ICONS.other;
   const brandColor = PLATFORM_COLORS[listing.contact_platform] || PLATFORM_COLORS.other;
@@ -53,6 +54,11 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, 
   const [showDetail, setShowDetail] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{ type: 'delete' | 'sold', listingId: string } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showProductDetail, setShowProductDetail] = useState(false);
+
+  const linkedProduct = listing.product_id
+    ? products.find(p => p.id === listing.product_id)
+    : null;
 
   const handleContactClick = useCallback(async () => {
     const url = getContactUrl(listing.contact_platform, listing.contact_value);
@@ -158,10 +164,80 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, isDark, 
             </p>
           )}
 
-          {listing.product_name && (
-            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium mb-2 ${isDark ? 'bg-midnight text-cyanx' : 'bg-cyan-50 text-cyan-600'}`}>
-              <Tag className="w-3 h-3" />
-              {listing.product_name}
+          {linkedProduct && (
+            <div className={`mb-3 rounded-xl overflow-hidden border transition-all ${isDark ? 'border-edge bg-midnight/50 hover:border-cyanx/30' : 'border-gray-200 bg-gray-50 hover:border-cyan-400/30'}`}>
+              <button type="button" onClick={() => setShowProductDetail(s => !s)} className="w-full text-left">
+                <div className="flex items-start gap-3 p-3">
+                  {linkedProduct.picture && (
+                    <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0">
+                      <img src={linkedProduct.picture} alt={linkedProduct.name} loading="lazy" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <Tag className={`w-3 h-3 shrink-0 ${isDark ? 'text-cyanx' : 'text-cyan-600'}`} />
+                      <span className={`text-sm font-semibold truncate ${isDark ? 'text-frost' : 'text-gray-800'}`}>{linkedProduct.name}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
+                      {linkedProduct.brand && <span className={isDark ? 'text-mist' : 'text-gray-500'}>{linkedProduct.brand}</span>}
+                      {linkedProduct.strain && (
+                        <span className={isDark ? 'text-mist' : 'text-gray-500'}>
+                          {linkedProduct.strain}
+                        </span>
+                      )}
+                      {linkedProduct.thc > 0 && (
+                        <span className="text-orange-500 font-medium">THC {linkedProduct.thc}%</span>
+                      )}
+                      {linkedProduct.cbd > 0 && (
+                        <span className="text-blue-500 font-medium">CBD {linkedProduct.cbd}%</span>
+                      )}
+                      {linkedProduct.rating > 0 && (
+                        <span className="text-amber-500 flex items-center gap-0.5">
+                          <Star className="w-2.5 h-2.5" />{linkedProduct.rating.toFixed(1)}
+                        </span>
+                      )}
+                      <span className={`flex items-center gap-0.5 ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+                        <Scale className="w-2.5 h-2.5" />{linkedProduct.amount}g
+                      </span>
+                    </div>
+                  </div>
+                  <div className="shrink-0 pt-0.5">
+                    {showProductDetail ? <ChevronUp className="w-4 h-4 text-muted" /> : <ChevronDown className="w-4 h-4 text-muted" />}
+                  </div>
+                </div>
+              </button>
+
+              {showProductDetail && (
+                <div className={`px-3 pb-3 space-y-2 text-xs border-t ${isDark ? 'border-edge' : 'border-gray-200'}`}>
+                  {linkedProduct.notes && (
+                    <div className="flex items-start gap-2 pt-2">
+                      <StickyNote className={`w-3 h-3 mt-0.5 shrink-0 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
+                      <span className={isDark ? 'text-mist' : 'text-gray-600'}>{linkedProduct.notes}</span>
+                    </div>
+                  )}
+                  {linkedProduct.tags && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {linkedProduct.tags.split(',').map(t => t.trim()).filter(Boolean).map(tag => (
+                        <span key={tag} className={`px-2 py-0.5 rounded-md text-[10px] font-medium ${isDark ? 'bg-surface text-cyanx' : 'bg-cyan-50 text-cyan-600'}`}>{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                  {linkedProduct.effects && (
+                    <div className="flex items-start gap-2">
+                      <FlaskConical className={`w-3 h-3 mt-0.5 shrink-0 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
+                      <span className={isDark ? 'text-mist' : 'text-gray-600'}>{linkedProduct.effects}</span>
+                    </div>
+                  )}
+                  {linkedProduct.purchasedAt && (
+                    <div className="flex items-center gap-2">
+                      <Calendar className={`w-3 h-3 shrink-0 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
+                      <span className={isDark ? 'text-mist' : 'text-gray-500'}>
+                        Purchased {new Date(linkedProduct.purchasedAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

@@ -345,7 +345,7 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {sorted.map(listing => (
-          <MarketplaceCard key={listing.id} listing={listing} isDark={isDark} lang={lang} currentUserId={currentUserId}
+          <MarketplaceCard key={listing.id} listing={listing} products={products} isDark={isDark} lang={lang} currentUserId={currentUserId}
             onEdit={handleEditListing} onDelete={handleDelete} onMarkSold={handleMarkSold} onViewProfile={onViewProfile}
             onSave={handleToggleSave} onStartChat={handleStartChat} />
         ))}
