@@ -42,7 +42,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
     const quoteIds = rawPosts.filter(p => p.quoted_post_id).map(p => p.quoted_post_id!);
 
     const [profilesResult, likesResult, followsResult, commentsResult, bookmarksResult] = await Promise.all([
-      supabase.from('profiles').select('user_id, display_name, username, avatar_url').in('user_id', userIds),
+      supabase.from('profiles').select('*').in('user_id', userIds),
       supabase.from('post_likes').select('id, user_id, post_id').in('post_id', postIds),
       supabase.from('follows').select('following_id').eq('follower_id', currentUserId).in('following_id', userIds),
       supabase.from('post_comments').select('id, post_id').in('post_id', postIds),
@@ -71,14 +71,14 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       const { data: quotePosts } = await supabase.from('posts').select('*').in('id', quoteIds);
       if (quotePosts && quotePosts.length > 0) {
         const quoteUserIds = [...new Set(quotePosts.map(p => p.user_id))];
-        const { data: quoteProfiles } = await supabase.from('profiles').select('user_id, display_name, username, avatar_url').in('user_id', quoteUserIds);
+        const { data: quoteProfiles } = await supabase.from('profiles').select('*').in('user_id', quoteUserIds);
         const qProfileMap = new Map((quoteProfiles || []).map(p => [p.user_id, p]));
         for (const qp of quotePosts) {
           const qpProf = qProfileMap.get(qp.user_id);
           quotePostMap.set(qp.id, {
             ...qp,
             author: {
-              username: qpProf?.username || qpProf?.display_name || 'User',
+              username: qpProf?.username || qpProf?.display_name?.toLowerCase().replace(/\s+/g, '_') || 'User',
               display_name: qpProf?.display_name || qpProf?.username || 'User',
               avatar_url: qpProf?.avatar_url,
             },
@@ -92,7 +92,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       return {
       ...p,
       author: {
-        username: prof?.username || prof?.display_name || 'User',
+        username: prof?.username || prof?.display_name?.toLowerCase().replace(/\s+/g, '_') || 'User',
         display_name: prof?.display_name || prof?.username || 'User',
         avatar_url: prof?.avatar_url,
       },

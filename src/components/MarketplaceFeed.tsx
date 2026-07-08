@@ -226,7 +226,8 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
       </div>
 
       {/* Category tiles */}
-      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1">
+      <div className="flex justify-center">
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
         {[
           { id: 'all', label: 'All', icon: '📋', gradient: 'from-cyan-500 to-blue-500' },
           { id: 'flower', label: 'Flower', icon: '🌿', gradient: 'from-emerald-500 to-green-600' },
@@ -250,6 +251,7 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
             <span className="text-[10px] font-semibold">{cat.label}</span>
           </button>
         ))}
+      </div>
       </div>
 
       {/* Compact sort */}

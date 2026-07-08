@@ -99,9 +99,9 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
   }, [showOwnerMenu]);
 
   return (
-    <div className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-surface/60 border border-edge hover:border-cyanx/30' : 'bg-white border border-gray-200 hover:border-cyan-400/30'} shadow-sm`} role="article">
+    <div className={`p-3 rounded-2xl transition-all ${isDark ? 'bg-surface/60 border border-edge hover:border-cyanx/30' : 'bg-white border border-gray-200 hover:border-cyan-400/30'} shadow-sm flex flex-col`} role="article">
       {/* Header: avatar, username, time, category, sold badge, save, owner menu */}
-      <div className="flex items-start justify-between gap-2 mb-3">
+      <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-2.5 min-w-0">
           <button onClick={() => onViewProfile?.(listing.user_id)} aria-label={'View ' + (listing.author?.username || 'user') + '\'s profile'} className="shrink-0">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden ${listing.author?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
@@ -179,7 +179,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
       {allImages.length > 0 && (
         <div className="mb-3 rounded-xl overflow-hidden relative group">
           <button type="button" onClick={() => setShowDetail(true)} className="w-full block">
-            <img src={allImages[currentImageIndex]} alt={listing.title} loading="lazy" className="w-full h-72 object-cover" />
+            <img src={allImages[currentImageIndex]} alt={listing.title} loading="lazy" className="w-full h-40 object-cover" />
           </button>
           {allImages.length > 1 && (
             <>

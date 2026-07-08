@@ -22,15 +22,28 @@ export function CommunityPage() {
   useEffect(() => {
     if (!profileUser) { setProfileUserId(null); return; }
     setResolvingProfile(true);
-    supabase.from('profiles').select('user_id').eq('username', profileUser).single().then(({ data }) => {
-      setProfileUserId(data?.user_id || null);
-      setResolvingProfile(false);
+    supabase.from('profiles').select('*').eq('username', profileUser).maybeSingle().then(({ data }) => {
+      if (data?.user_id) {
+        setProfileUserId(data.user_id);
+        setResolvingProfile(false);
+      } else {
+        supabase.from('profiles').select('*').eq('display_name', profileUser).maybeSingle().then(({ data: d2 }) => {
+          if (d2?.user_id) {
+            setProfileUserId(d2.user_id);
+          } else if (profileUser.includes('-') && profileUser.length > 30) {
+            setProfileUserId(profileUser);
+          } else {
+            setProfileUserId(null);
+          }
+          setResolvingProfile(false);
+        });
+      }
     });
   }, [profileUser]);
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('profiles').select('display_name, username, avatar_url, banner_url, bio, location').eq('user_id', user.id).maybeSingle().then(({ data }) => {
+    supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle().then(({ data }) => {
       if (data) {
         setCommunityProfile({
           username: data.username || data.display_name || user.email?.split('@')[0] || 'User',
@@ -82,8 +95,8 @@ export function CommunityPage() {
       products={products}
       profile={communityProfile}
       onViewProfile={(uid) => {
-        supabase.from('profiles').select('username').eq('user_id', uid).single().then(({ data }) => {
-          setSearchParams(prev => { prev.set('user', data?.username || uid); return prev; }, { replace: true });
+        supabase.from('profiles').select('*').eq('user_id', uid).maybeSingle().then(({ data }) => {
+          setSearchParams(prev => { prev.set('user', data?.username || data?.display_name || uid); return prev; }, { replace: true });
         });
       }}
     />

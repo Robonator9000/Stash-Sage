@@ -32,7 +32,7 @@ export function Header({ searchQuery, setSearchQuery, setIsAddModalOpen, setIsSe
   const [allListings, setAllListings] = useState<ListingRow[]>([]);
 
   useEffect(() => {
-    supabase.from('profiles').select('user_id, display_name, username, avatar_url').limit(100).then(({ data }) => { if (data) setAllUsers(data); }).then(undefined, () => {});
+    supabase.from('profiles').select('*').limit(100).then(({ data }) => { if (data) setAllUsers(data); }).then(undefined, () => {});
     supabase.from('posts').select('id, content, created_at, user_id').order('created_at', { ascending: false }).limit(100).then(({ data }) => { if (data) setAllPosts(data); }).then(undefined, () => {});
     supabase.from('marketplace_listings').select('id, title, price, image_url').eq('status', 'active').order('created_at', { ascending: false }).limit(100).then(({ data }) => { if (data) setAllListings(data); }).then(undefined, () => {});
   }, []);
@@ -61,8 +61,8 @@ export function Header({ searchQuery, setSearchQuery, setIsAddModalOpen, setIsSe
   };
 
   const handleViewProfile = (uid: string) => {
-    supabase.from('profiles').select('username').eq('user_id', uid).single().then(({ data }) => {
-      setSearchParams(prev => { prev.set('tab', 'community'); prev.set('user', data?.username || uid); return prev; }, { replace: true });
+    supabase.from('profiles').select('*').eq('user_id', uid).maybeSingle().then(({ data }) => {
+      setSearchParams(prev => { prev.set('tab', 'community'); prev.set('user', data?.username || data?.display_name || uid); return prev; }, { replace: true });
       setShowSearchPreview(false);
     });
   };
