@@ -1,8 +1,8 @@
-import { memo, useState, useCallback, useEffect } from 'react';
+import { memo, useState, useCallback, useEffect, useRef } from 'react';
 import type { MarketplaceListing, Product } from '../types';
 import { t } from '../utils/translations';
 import { getContactUrl, copyToClipboard, timeAgo } from '../utils/helpers';
-import { Tag, Clock, DollarSign, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, X, Bookmark, MessageCircle, Star, FlaskConical, Scale, Calendar, StickyNote } from 'lucide-react';
+import { Tag, Clock, DollarSign, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, X, Bookmark, MessageCircle, Star, Scale, MoreVertical } from 'lucide-react';
 import { ReviewSection } from './ReviewSection';
 
 const PLATFORM_COLORS: Record<string, string> = {
@@ -55,6 +55,8 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
   const [confirmAction, setConfirmAction] = useState<{ type: 'delete' | 'sold', listingId: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const [showProductDetail, setShowProductDetail] = useState(false);
+  const [showOwnerMenu, setShowOwnerMenu] = useState(false);
+  const ownerMenuRef = useRef<HTMLDivElement>(null);
 
   const linkedProduct = listing.product_id
     ? products.find(p => p.id === listing.product_id)
@@ -83,67 +85,106 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
     return () => window.removeEventListener('keydown', onKey);
   }, [showDetail, allImages.length]);
 
+  useEffect(() => {
+    if (!showOwnerMenu) return;
+    function onClick(e: MouseEvent) {
+      if (ownerMenuRef.current && !ownerMenuRef.current.contains(e.target as Node)) {
+        setShowOwnerMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, [showOwnerMenu]);
+
   return (
-    <div className={`p-5 rounded-2xl transition-all ${isDark ? 'bg-surface/60 border border-edge hover:border-cyanx/30' : 'bg-white border border-gray-200 hover:border-cyan-400/30'} shadow-sm`} role="article">
-      {/* Header row: avatar, username, time, sold badge, save button */}
-      <div className="flex items-start justify-between gap-3 mb-4">
-        <div className="flex items-center gap-3 min-w-0">
+    <div className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-surface/60 border border-edge hover:border-cyanx/30' : 'bg-white border border-gray-200 hover:border-cyan-400/30'} shadow-sm`} role="article">
+      {/* Header: avatar, username, time, category, sold badge, save, owner menu */}
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2.5 min-w-0">
           <button onClick={() => onViewProfile?.(listing.user_id)} aria-label={'View ' + (listing.author?.username || 'user') + '\'s profile'} className="shrink-0">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden ${listing.author?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden ${listing.author?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
               {listing.author?.avatar_url ? (
                 <img src={listing.author.avatar_url} alt="" loading="lazy" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-white font-display font-bold text-base">
+                <span className="text-white font-display font-bold text-sm">
                   {(listing.author?.username?.[0] || '?').toUpperCase()}
                 </span>
               )}
             </div>
           </button>
           <div className="min-w-0">
-            <button onClick={() => onViewProfile?.(listing.user_id)} aria-label={'View ' + (listing.author?.username || 'user') + '\'s profile'} className={`font-semibold truncate block w-full text-left hover:underline ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+            <button onClick={() => onViewProfile?.(listing.user_id)} className={`font-medium text-sm truncate block w-full text-left hover:underline ${isDark ? 'text-frost' : 'text-gray-800'}`}>
               {listing.author?.username || 'User'}
             </button>
-            <div className={`flex items-center gap-1.5 text-sm ${isDark ? 'text-muted' : 'text-gray-400'}`}>
-              <Clock className="w-3.5 h-3.5" />
+            <div className={`flex items-center gap-1.5 text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+              <Clock className="w-3 h-3" />
               <time dateTime={listing.created_at}>{timeAgo(listing.created_at, lang)}</time>
             </div>
           </div>
+          {listing.category && (
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-medium shrink-0 ${isDark ? 'bg-midnight text-cyanx' : 'bg-cyan-50 text-cyan-600'}`}>
+              <Tag className="w-2.5 h-2.5" />
+              {listing.category}
+            </span>
+          )}
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
           {listing.status === 'sold' && (
-            <span className={`px-3 py-1 rounded-lg text-xs font-bold tracking-wider uppercase ${isDark ? 'bg-red-900/30 text-red-400' : 'bg-red-50 text-red-500'}`}>
+            <span className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold tracking-wider uppercase ${isDark ? 'bg-red-900/30 text-red-400' : 'bg-red-50 text-red-500'}`}>
               {t('statusSold', lang)}
             </span>
           )}
           {currentUserId && currentUserId !== listing.user_id && (
             <button onClick={() => onSave?.(listing.id)} aria-label={listing.saved_by_me ? t('unsaveListing', lang) : t('saveListing', lang)}
-              className={`p-2 rounded-xl transition-all ${listing.saved_by_me ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-midnight text-mist hover:text-frost' : 'bg-gray-100 text-gray-500 hover:text-gray-700'}`}>
-              <Bookmark className="w-4 h-4" fill={listing.saved_by_me ? 'currentColor' : 'none'} />
+              className={`p-1.5 rounded-lg transition-all ${listing.saved_by_me ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-midnight text-mist hover:text-frost' : 'bg-gray-100 text-gray-500 hover:text-gray-700'}`}>
+              <Bookmark className="w-3.5 h-3.5" fill={listing.saved_by_me ? 'currentColor' : 'none'} />
             </button>
+          )}
+          {isOwner && listing.status === 'active' && (
+            <div ref={ownerMenuRef} className="relative">
+              <button onClick={() => setShowOwnerMenu(s => !s)} aria-label="Listing options"
+                className={`p-1.5 rounded-lg transition-all ${isDark ? 'hover:bg-midnight text-muted hover:text-frost' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700'}`}>
+                <MoreVertical className="w-4 h-4" />
+              </button>
+              {showOwnerMenu && (
+                <div className={`absolute right-0 top-full mt-1 w-44 rounded-xl shadow-xl border overflow-hidden z-30 ${isDark ? 'bg-card border-edge' : 'bg-white border-gray-200'}`}>
+                  <button onClick={() => { onEdit?.(listing); setShowOwnerMenu(false); }} className={`w-full px-4 py-2.5 text-sm text-left transition-all flex items-center gap-2.5 ${isDark ? 'text-frost hover:bg-surface' : 'text-gray-700 hover:bg-gray-50'}`}>
+                    {t('editProduct', lang)}
+                  </button>
+                  <button onClick={() => { setConfirmAction({ type: 'sold', listingId: listing.id }); setShowOwnerMenu(false); }} className={`w-full px-4 py-2.5 text-sm text-left transition-all flex items-center gap-2.5 ${isDark ? 'text-emera hover:bg-surface' : 'text-emerald-600 hover:bg-gray-50'}`}>
+                    {t('markAsSold', lang)}
+                  </button>
+                  <div className={`h-px ${isDark ? 'bg-edge' : 'bg-gray-200'}`} />
+                  <button onClick={() => { setConfirmAction({ type: 'delete', listingId: listing.id }); setShowOwnerMenu(false); }} className={`w-full px-4 py-2.5 text-sm text-left transition-all flex items-center gap-2.5 ${isDark ? 'text-red-400 hover:bg-surface' : 'text-red-500 hover:bg-gray-50'}`}>
+                    {t('delete', lang)}
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
 
-      {/* Image gallery - full width, prominent */}
+      {/* Image gallery */}
       {allImages.length > 0 && (
-        <div className="mb-4 rounded-xl overflow-hidden relative group">
+        <div className="mb-3 rounded-xl overflow-hidden relative group">
           <button type="button" onClick={() => setShowDetail(true)} className="w-full block">
             <img src={allImages[currentImageIndex]} alt={listing.title} loading="lazy" className="w-full h-56 object-cover" />
           </button>
           {allImages.length > 1 && (
             <>
               <button type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i => (i - 1 + allImages.length) % allImages.length); }} aria-label="Previous image"
-                className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-black/60">
-                <ChevronLeft className="w-5 h-5" />
+                className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-black/60">
+                <ChevronLeft className="w-4 h-4" />
               </button>
               <button type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i => (i + 1) % allImages.length); }} aria-label="Next image"
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-black/60">
-                <ChevronRight className="w-5 h-5" />
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-black/60">
+                <ChevronRight className="w-4 h-4" />
               </button>
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
                 {allImages.map((_, i) => (
                   <button key={i} type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i); }} aria-label={`Image ${i + 1}`}
-                    className={`w-2 h-2 rounded-full transition-all ${i === currentImageIndex ? 'bg-white scale-125' : 'bg-white/60 hover:bg-white/80'}`} />
+                    className={`w-1.5 h-1.5 rounded-full transition-all ${i === currentImageIndex ? 'bg-white scale-125' : 'bg-white/60 hover:bg-white/80'}`} />
                 ))}
               </div>
             </>
@@ -152,167 +193,141 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
       )}
 
       {/* Title */}
-      <h3 className={`font-display font-bold text-xl mb-2 ${isDark ? 'text-frost' : 'text-gray-900'}`}>
+      <h3 className={`font-display font-bold text-xl mb-1.5 ${isDark ? 'text-frost' : 'text-gray-900'}`}>
         {listing.title}
       </h3>
 
-      {/* Description - no line-clamp, full readable text */}
+      {/* Description */}
       {listing.description && (
-        <p className={`text-sm mb-4 leading-relaxed ${isDark ? 'text-mist' : 'text-gray-600'}`}>
+        <p className={`text-sm mb-3 leading-relaxed ${isDark ? 'text-mist' : 'text-gray-600'}`}>
           {listing.description}
         </p>
       )}
 
-      {/* Price options - grid of weight+price cards, or single price */}
-      {listing.price_options && listing.price_options.length > 0 ? (
-        <div className="mb-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {listing.price_options.map((opt, i) => (
-              <div key={i} className={`flex flex-col items-center px-4 py-3 rounded-xl border text-center ${isDark ? 'bg-midnight/80 border-edge' : 'bg-gray-50 border-gray-200'}`}>
-                <span className={`text-xs font-medium ${isDark ? 'text-muted' : 'text-gray-500'}`}>{opt.amount}g</span>
-                <span className={`text-lg font-bold ${isDark ? 'text-emera' : 'text-emerald-600'}`}>${opt.price.toFixed(2)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className={`mb-4 inline-flex items-center gap-2 px-5 py-3 rounded-xl ${isDark ? 'bg-emera/10' : 'bg-emerald-50'}`}>
-          <DollarSign className={`w-6 h-6 ${isDark ? 'text-emera' : 'text-emerald-600'}`} />
-          <span className={`text-2xl font-bold ${isDark ? 'text-emera' : 'text-emerald-600'}`}>
-            {listing.price.toFixed(2)}
-          </span>
-        </div>
-      )}
-
-      {/* Category + Seller rating row */}
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        {listing.category && (
-          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium ${isDark ? 'bg-midnight text-cyanx' : 'bg-cyan-50 text-cyan-600'}`}>
-            <Tag className="w-3.5 h-3.5" />
-            {listing.category}
-          </span>
-        )}
-        {listing.avg_seller_rating != null && listing.seller_review_count != null && listing.seller_review_count > 0 && (
-          <span className={`inline-flex items-center gap-1.5 text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
-            <span className="text-amber-500">{'★'.repeat(Math.round(listing.avg_seller_rating))}{'☆'.repeat(5 - Math.round(listing.avg_seller_rating))}</span>
-            <span className="font-medium">{listing.avg_seller_rating.toFixed(1)}</span>
-            <span className={isDark ? 'text-muted' : 'text-gray-400'}>({listing.seller_review_count})</span>
-          </span>
-        )}
-      </div>
-
-      {/* Linked product - spacious card, all info visible */}
+      {/* Linked product - VERTICAL layout */}
       {linkedProduct && (
-        <div className={`mb-4 rounded-xl overflow-hidden border ${isDark ? 'border-edge bg-midnight/50' : 'border-gray-200 bg-gray-50'}`}>
-          <button type="button" onClick={() => setShowProductDetail(s => !s)} className="w-full text-left">
-            <div className="flex items-start gap-4 p-4">
-              {linkedProduct.picture && (
-                <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0">
-                  <img src={linkedProduct.picture} alt={linkedProduct.name} loading="lazy" className="w-full h-full object-cover" />
-                </div>
-              )}
+        <div className={`mb-3 rounded-xl overflow-hidden border ${isDark ? 'border-edge' : 'border-gray-200'}`}>
+          {linkedProduct.picture && (
+            <div className="w-full h-48 overflow-hidden">
+              <img src={linkedProduct.picture} alt={linkedProduct.name} loading="lazy" className="w-full h-full object-cover" />
+            </div>
+          )}
+          <div className={`p-4 ${isDark ? 'bg-midnight/50' : 'bg-gray-50'}`}>
+            <div className="flex items-start justify-between gap-2 mb-2">
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <Tag className={`w-4 h-4 shrink-0 ${isDark ? 'text-cyanx' : 'text-cyan-600'}`} />
-                  <span className={`font-semibold ${isDark ? 'text-frost' : 'text-gray-800'}`}>{linkedProduct.name}</span>
-                  {showProductDetail ? <ChevronUp className="w-4 h-4 ml-auto shrink-0 text-muted" /> : <ChevronDown className="w-4 h-4 ml-auto shrink-0 text-muted" />}
-                </div>
-                <div className="flex flex-wrap gap-x-4 gap-y-1">
-                  {linkedProduct.brand && <span className={`text-sm ${isDark ? 'text-mist' : 'text-gray-600'}`}>{linkedProduct.brand}</span>}
-                  {linkedProduct.strain && <span className={`text-sm ${isDark ? 'text-mist' : 'text-gray-600'}`}>{linkedProduct.strain}</span>}
-                  {linkedProduct.thc > 0 && <span className="text-sm font-semibold text-orange-500">THC {linkedProduct.thc}%</span>}
-                  {linkedProduct.cbd > 0 && <span className="text-sm font-semibold text-blue-500">CBD {linkedProduct.cbd}%</span>}
+                <div className="font-semibold text-base mb-1">{linkedProduct.name}</div>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  {linkedProduct.thc > 0 && <span className="text-sm font-bold text-orange-500">THC {linkedProduct.thc}%</span>}
+                  {linkedProduct.cbd > 0 && <span className="text-sm font-bold text-blue-500">CBD {linkedProduct.cbd}%</span>}
+                  <span className={`text-sm flex items-center gap-1 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+                    <Scale className="w-3.5 h-3.5" />{linkedProduct.amount}g
+                  </span>
                   {linkedProduct.rating > 0 && (
                     <span className="text-sm text-amber-500 flex items-center gap-1">
                       <Star className="w-3.5 h-3.5" />{linkedProduct.rating.toFixed(1)}
                     </span>
                   )}
-                  <span className={`text-sm flex items-center gap-1 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
-                    <Scale className="w-3.5 h-3.5" />{linkedProduct.amount}g
-                  </span>
-                  {linkedProduct.purchasedAt && (
-                    <span className={`text-sm flex items-center gap-1 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
-                      <Calendar className="w-3.5 h-3.5" />{new Date(linkedProduct.purchasedAt).toLocaleDateString()}
-                    </span>
-                  )}
                 </div>
               </div>
+              <button type="button" onClick={() => setShowProductDetail(s => !s)} className={`p-1 rounded-lg shrink-0 transition-all ${isDark ? 'hover:bg-surface text-muted' : 'hover:bg-gray-200 text-gray-400'}`}>
+                {showProductDetail ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              </button>
             </div>
-          </button>
 
-          {showProductDetail && (
-            <div className={`px-4 pb-4 space-y-3 text-sm border-t ${isDark ? 'border-edge' : 'border-gray-200'}`}>
-              {linkedProduct.notes && (
-                <div className="flex items-start gap-2 pt-3">
-                  <StickyNote className={`w-4 h-4 mt-0.5 shrink-0 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
-                  <span className={isDark ? 'text-mist' : 'text-gray-600'}>{linkedProduct.notes}</span>
-                </div>
-              )}
-              {linkedProduct.tags && (
-                <div className="flex flex-wrap gap-1.5">
-                  {linkedProduct.tags.split(',').map(t => t.trim()).filter(Boolean).map(tag => (
-                    <span key={tag} className={`px-2.5 py-1 rounded-lg text-xs font-medium ${isDark ? 'bg-surface text-cyanx' : 'bg-cyan-50 text-cyan-600'}`}>{tag}</span>
-                  ))}
-                </div>
-              )}
-              {linkedProduct.effects && (
-                <div className="flex items-start gap-2">
-                  <FlaskConical className={`w-4 h-4 mt-0.5 shrink-0 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
-                  <span className={isDark ? 'text-mist' : 'text-gray-600'}>{linkedProduct.effects}</span>
-                </div>
-              )}
-            </div>
-          )}
+            {showProductDetail && (
+              <div className={`pt-3 space-y-3 border-t text-sm ${isDark ? 'border-edge' : 'border-gray-200'}`}>
+                {linkedProduct.brand && (
+                  <div>
+                    <div className={`text-xs font-medium uppercase tracking-wider mb-1 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Brand</div>
+                    <div className={isDark ? 'text-frost' : 'text-gray-800'}>{linkedProduct.brand}</div>
+                  </div>
+                )}
+                {linkedProduct.purchasedAt && (
+                  <div>
+                    <div className={`text-xs font-medium uppercase tracking-wider mb-1 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Purchased</div>
+                    <div className={isDark ? 'text-frost' : 'text-gray-800'}>{new Date(linkedProduct.purchasedAt).toLocaleDateString()}</div>
+                  </div>
+                )}
+                {linkedProduct.tags && (
+                  <div>
+                    <div className={`text-xs font-medium uppercase tracking-wider mb-1.5 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Tags</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {linkedProduct.tags.split(',').map(t => t.trim()).filter(Boolean).map(tag => (
+                        <span key={tag} className={`px-2.5 py-1 rounded-lg text-xs font-medium ${isDark ? 'bg-surface text-cyanx' : 'bg-cyan-50 text-cyan-600'}`}>{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {linkedProduct.effects && (
+                  <div>
+                    <div className={`text-xs font-medium uppercase tracking-wider mb-1 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Effects</div>
+                    <div className={isDark ? 'text-mist' : 'text-gray-600'}>{linkedProduct.effects}</div>
+                  </div>
+                )}
+                {linkedProduct.notes && (
+                  <div>
+                    <div className={`text-xs font-medium uppercase tracking-wider mb-1 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Notes</div>
+                    <div className={isDark ? 'text-mist' : 'text-gray-600'}>{linkedProduct.notes}</div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Contact + Actions row */}
-      <div className="flex flex-wrap items-stretch gap-2 mb-4">
+      {/* Seller rating */}
+      {listing.avg_seller_rating != null && listing.seller_review_count != null && listing.seller_review_count > 0 && (
+        <div className={`flex items-center gap-1.5 text-sm mb-3 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+          <span className="text-amber-500">{'★'.repeat(Math.round(listing.avg_seller_rating))}{'☆'.repeat(5 - Math.round(listing.avg_seller_rating))}</span>
+          <span className="font-medium">{listing.avg_seller_rating.toFixed(1)}</span>
+          <span className={isDark ? 'text-muted' : 'text-gray-400'}>({listing.seller_review_count})</span>
+        </div>
+      )}
+
+      {/* Price + Contact row */}
+      <div className="flex flex-wrap items-stretch gap-2 mb-3">
+        {listing.price_options && listing.price_options.length > 0 ? (
+          <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
+            {listing.price_options.map((opt, i) => (
+              <span key={i} className={`inline-flex items-center gap-1 px-3 py-2 rounded-xl border text-sm font-semibold ${isDark ? 'bg-midnight/80 border-edge text-emera' : 'bg-gray-50 border-gray-200 text-emerald-600'}`}>
+                <Scale className="w-3.5 h-3.5" />{opt.amount}g &middot; ${opt.price.toFixed(2)}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <span className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-base font-bold ${isDark ? 'bg-emera/10 text-emera' : 'bg-emerald-50 text-emerald-600'}`}>
+            <DollarSign className="w-4 h-4" />{listing.price.toFixed(2)}
+          </span>
+        )}
         <button onClick={handleContactClick} aria-label={`Contact via ${listing.contact_platform}: ${listing.contact_value}`}
-          className={`flex-1 flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium transition-all min-w-[140px] ${isDark ? 'bg-midnight text-frost hover:bg-midnight/80' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all shrink-0 ${isDark ? 'bg-midnight text-frost hover:bg-midnight/80' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
           <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" style={{ color: brandColor }} aria-hidden="true">
             <path d={brandPath} />
           </svg>
-          <span className="truncate">
+          <span className="hidden sm:inline truncate max-w-[120px]">
             {listing.contact_platform === 'email' ? listing.contact_value :
              listing.contact_platform === 'phone' ? listing.contact_value :
              `@${listing.contact_value.replace(/^@+/, '')}`}
           </span>
+          <span className="sm:hidden capitalize">{listing.contact_platform}</span>
           {copied ? (
-            <span className="text-xs text-emera font-semibold shrink-0">Copied!</span>
+            <span className="text-[11px] text-emera font-semibold shrink-0">Copied!</span>
           ) : (
-            <ExternalLink className="w-3.5 h-3.5 shrink-0 text-muted" />
+            <ExternalLink className="w-3 h-3 shrink-0 text-muted" />
           )}
         </button>
-
         {!isOwner && currentUserId && onStartChat && (
           <button onClick={() => onStartChat(listing.id)} aria-label={t('startChat', lang)}
-            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all ${isDark ? 'bg-[#8b5cf6]/10 text-[#8b5cf6] hover:bg-[#8b5cf6]/20' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'}`}>
+            className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all shrink-0 ${isDark ? 'bg-[#8b5cf6]/10 text-[#8b5cf6] hover:bg-[#8b5cf6]/20' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'}`}>
             <MessageCircle className="w-4 h-4" />
-            {t('message', lang)}
+            <span className="hidden sm:inline">{t('startChat', lang)}</span>
           </button>
-        )}
-
-        {isOwner && listing.status === 'active' && (
-          <>
-            <button onClick={() => onEdit?.(listing)} aria-label="Edit listing"
-              className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${isDark ? 'bg-midnight text-mist hover:text-frost hover:bg-surface' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-              {t('editProduct', lang)}
-            </button>
-            <button onClick={() => setConfirmAction({ type: 'sold', listingId: listing.id })} aria-label="Mark listing as sold"
-              className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${isDark ? 'bg-midnight text-emera hover:bg-emera/10' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}>
-              {t('markAsSold', lang)}
-            </button>
-            <button onClick={() => setConfirmAction({ type: 'delete', listingId: listing.id })} aria-label="Delete listing"
-              className={`px-3 py-3 rounded-xl text-sm font-medium transition-all ${isDark ? 'bg-midnight text-red-400 hover:bg-red-900/20' : 'bg-red-50 text-red-500 hover:bg-red-100'}`}>
-              {t('delete', lang)}
-            </button>
-          </>
         )}
       </div>
 
       {/* Reviews */}
-      <div className="mt-4 pt-3 border-t border-edge">
+      <div className="pt-2 border-t border-edge">
         <ReviewSection listingId={listing.id} isOwner={isOwner} currentUserId={currentUserId} isDark={isDark} lang={lang} onViewProfile={onViewProfile} />
       </div>
 
@@ -321,7 +336,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
           <div className={`p-6 rounded-2xl max-w-xs w-full mx-4 shadow-xl ${isDark ? 'bg-card border border-edge' : 'bg-white border border-gray-200'}`}
             onClick={e => e.stopPropagation()}>
             <p className={`text-sm font-medium mb-4 ${isDark ? 'text-frost' : 'text-gray-800'}`}>
-              {confirmAction.type === 'delete' ? 'Delete this listing?' : 'Mark as sold?'}
+              {confirmAction.type === 'delete' ? 'Delete this listing permanently?' : `Mark this listing as sold?${listing.price_options?.length ? ` (${listing.price_options.length} weight options)` : ''}`}
             </p>
             <div className="flex gap-2">
               <button
