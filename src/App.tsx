@@ -24,6 +24,7 @@ import { MarketplaceFeed } from './components/MarketplaceFeed';
 import { CommunityPage } from './components/CommunityPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useAuth } from './contexts/AuthContext';
+import { supabase } from './utils/supabase';
 
 import { AdminDashboard } from './components/AdminDashboard';
 import { MenuButton } from './components/MenuButton';
@@ -44,7 +45,7 @@ export default function App() {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = (searchParams.get('tab') as 'stash' | 'community' | 'marketplace' | 'admin') || 'stash';
   function setActiveTab(tab: 'stash' | 'community' | 'marketplace' | 'admin') {
-    setSearchParams(prev => { prev.set('tab', tab); return prev; }, { replace: true });
+    setSearchParams(prev => { prev.set('tab', tab); prev.delete('user'); return prev; }, { replace: true });
   }
   const [stashSection, setStashSection] = useState<'products' | 'dashboard' | 'history'>('products');
   const [searchQuery, setSearchQuery] = useState('');
@@ -70,7 +71,9 @@ export default function App() {
   const [showSmoke, setShowSmoke] = useState(false);
 
   const handleViewProfile = useCallback((uid: string) => {
-    setSearchParams(prev => { prev.set('tab', 'community'); prev.set('profile', uid); return prev; }, { replace: true });
+    supabase.from('profiles').select('username').eq('user_id', uid).single().then(({ data }) => {
+      setSearchParams(prev => { prev.set('tab', 'community'); prev.set('user', data?.username || uid); return prev; }, { replace: true });
+    });
   }, [setSearchParams]);
 
   const [historyFilterType, setHistoryFilterType] = useState<string>('all');

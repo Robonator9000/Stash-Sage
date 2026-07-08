@@ -15,7 +15,18 @@ export function CommunityPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const isDark = settings.theme === 'dark';
   const [communityProfile, setCommunityProfile] = useState<Profile | undefined>(undefined);
-  const profileUserId = searchParams.get('profile');
+  const profileUser = searchParams.get('user');
+  const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  const [resolvingProfile, setResolvingProfile] = useState(false);
+
+  useEffect(() => {
+    if (!profileUser) { setProfileUserId(null); return; }
+    setResolvingProfile(true);
+    supabase.from('profiles').select('user_id').eq('username', profileUser).single().then(({ data }) => {
+      setProfileUserId(data?.user_id || null);
+      setResolvingProfile(false);
+    });
+  }, [profileUser]);
 
   useEffect(() => {
     if (!user) return;
@@ -43,10 +54,23 @@ export function CommunityPage() {
     );
   }
 
-  if (profileUserId) {
+  if (profileUser && profileUserId) {
     return <ProfilePage userId={profileUserId} onBack={() => {
-      setSearchParams(prev => { prev.delete('profile'); return prev; }, { replace: true });
+      setSearchParams(prev => { prev.delete('user'); return prev; }, { replace: true });
     }} />;
+  }
+
+  if (profileUser && resolvingProfile) {
+    return (
+      <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+        <div className="flex justify-center">
+          <svg className={`w-6 h-6 animate-spin ${isDark ? 'text-muted' : 'text-gray-400'}`} viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -58,7 +82,9 @@ export function CommunityPage() {
       products={products}
       profile={communityProfile}
       onViewProfile={(uid) => {
-        setSearchParams(prev => { prev.set('profile', uid); return prev; }, { replace: true });
+        supabase.from('profiles').select('username').eq('user_id', uid).single().then(({ data }) => {
+          setSearchParams(prev => { prev.set('user', data?.username || uid); return prev; }, { replace: true });
+        });
       }}
     />
   );

@@ -7,13 +7,14 @@ interface CreatePostCardProps {
   lang: string;
   username: string;
   products: Product[];
+  avatarUrl?: string;
   onSubmit: (content: string, productId?: string, productName?: string, imageFiles?: File[]) => Promise<void>;
 }
 
 const MAX_CHARS = 500;
 const MAX_IMAGES = 4;
 
-export function CreatePostCard({ isDark, lang, username, products, onSubmit }: CreatePostCardProps) {
+export function CreatePostCard({ isDark, lang, username, products, avatarUrl, onSubmit }: CreatePostCardProps) {
   const [content, setContent] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showProductPicker, setShowProductPicker] = useState(false);
@@ -85,10 +86,16 @@ export function CreatePostCard({ isDark, lang, username, products, onSubmit }: C
   return (
     <div className={`p-4 rounded-2xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
       <div className="flex items-start gap-3">
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-cyanx to-emera shrink-0`}>
-          <span className="text-white font-display font-bold text-sm">
-            {(username[0] || '?').toUpperCase()}
-          </span>
+        <div className="w-9 h-9 rounded-xl shrink-0 overflow-hidden">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-cyanx to-emera">
+              <span className="text-white font-display font-bold text-sm">
+                {(username[0] || '?').toUpperCase()}
+              </span>
+            </div>
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <textarea

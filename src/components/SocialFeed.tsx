@@ -434,7 +434,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
     setActiveHashtag(prev => prev === tag ? null : tag);
   }, []);
 
-  const showCreatePostCard = !!profile;
+  const showCreatePostCard = !!currentUserId;
 
   const displayedPosts = useMemo(() => {
     let filtered = feedFilter === 'following'
@@ -509,6 +509,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
           lang={lang}
           username={username}
           products={products}
+          avatarUrl={profile?.avatar_url}
           onSubmit={handleCreatePost}
         />
       )}

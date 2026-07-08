@@ -61,8 +61,10 @@ export function Header({ searchQuery, setSearchQuery, setIsAddModalOpen, setIsSe
   };
 
   const handleViewProfile = (uid: string) => {
-    setSearchParams(prev => { prev.set('tab', 'community'); prev.set('profile', uid); return prev; }, { replace: true });
-    setShowSearchPreview(false);
+    supabase.from('profiles').select('username').eq('user_id', uid).single().then(({ data }) => {
+      setSearchParams(prev => { prev.set('tab', 'community'); prev.set('user', data?.username || uid); return prev; }, { replace: true });
+      setShowSearchPreview(false);
+    });
   };
 
   function handleResultClick() {
