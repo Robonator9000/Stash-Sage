@@ -11,6 +11,7 @@ import type { Post, Product } from '../types';
 
 interface ProfileData {
   display_name: string;
+  username?: string;
   avatar_url?: string;
   banner_url?: string;
   bio?: string;
@@ -48,7 +49,7 @@ export function ProfilePage({ userId: propUserId, onBack }: ProfilePageProps = {
     if (!userId) return;
     setLoading(true);
     Promise.all([
-      supabase.from('profiles').select('display_name, avatar_url, banner_url, bio, contacts, location').eq('user_id', userId).maybeSingle(),
+      supabase.from('profiles').select('display_name, username, avatar_url, banner_url, bio, contacts, location').eq('user_id', userId).maybeSingle(),
       supabase.from('posts').select('*', { count: 'exact' }).eq('user_id', userId).order('created_at', { ascending: false }).limit(50),
       supabase.from('products').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(50),
       currentUserId ? supabase.from('follows').select('following_id').eq('follower_id', currentUserId).eq('following_id', userId).maybeSingle() : { data: null },
@@ -178,6 +179,7 @@ const isOwnProfile = currentUserId === userId;
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h1 className={`text-lg font-bold truncate ${isDark ? 'text-frost' : 'text-gray-900'}`}>{profileData.display_name || 'Unknown'}</h1>
+                {profileData.username && <p className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>@{profileData.username}</p>}
                 <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isOnline ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]' : 'bg-gray-500'}`} title={isOnline ? 'Online' : 'Offline'} />
               </div>
               {profileData.location && <p className={`flex items-center gap-1 text-xs mt-0.5 ${isDark ? 'text-muted' : 'text-gray-400'}`}><MapPin className="w-3 h-3" />{profileData.location}</p>}
@@ -230,7 +232,7 @@ const isOwnProfile = currentUserId === userId;
       {activeTab === 'posts' && (
         <div className="space-y-3">
           {userPosts.length === 0 ? <p className={`p-8 text-center text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>No posts yet</p> : (
-            userPosts.map(post => <PostCard key={post.id} post={{ ...post, author: { username: profileData.display_name, avatar_url: profileData.avatar_url } }} isDark={isDark} lang={lang} currentUserId={currentUserId} username={profileData.display_name} onLike={handleLike} onUnlike={handleUnlike} onDelete={isOwnProfile ? handleDelete : undefined} onEdit={isOwnProfile ? handleEdit : undefined} />)
+            userPosts.map(post => <PostCard key={post.id} post={{ ...post, author: { username: profileData.username || profileData.display_name, display_name: profileData.display_name, avatar_url: profileData.avatar_url } }} isDark={isDark} lang={lang} currentUserId={currentUserId} username={profileData.display_name} onLike={handleLike} onUnlike={handleUnlike} onDelete={isOwnProfile ? handleDelete : undefined} onEdit={isOwnProfile ? handleEdit : undefined} />)
           )}
         </div>
       )}

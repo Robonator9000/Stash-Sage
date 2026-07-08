@@ -97,12 +97,13 @@ function QuotedPost({ post, isDark, onHashtagClick }: { post: Post; isDark: bool
           {post.author?.avatar_url ? (
             <img src={post.author.avatar_url} alt="" className="w-full h-full object-cover rounded-md" />
           ) : (
-            <span className="text-white text-[8px] font-bold">{(post.author?.username?.[0] || '?').toUpperCase()}</span>
+            <span className="text-white text-[8px] font-bold">{(post.author?.display_name?.[0] || post.author?.username?.[0] || '?').toUpperCase()}</span>
           )}
         </div>
         <span className={`text-xs font-display font-bold ${isDark ? 'text-frost' : 'text-gray-800'}`}>
-          {post.author?.username || 'Unknown'}
+          {post.author?.display_name || post.author?.username || 'Unknown'}
         </span>
+        <span className={`text-[10px] ${isDark ? 'text-muted' : 'text-gray-400'}`}>@{post.author?.username || 'user'}</span>
         <span className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>{timeAgo(post.created_at, 'en')}</span>
       </div>
       <p className={`text-xs whitespace-pre-wrap ${isDark ? 'text-mist' : 'text-gray-600'}`}>
@@ -180,19 +181,20 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
             <img src={post.author.avatar_url} alt="" loading="lazy" className="w-full h-full object-cover" />
           ) : (
             <span className="text-white font-display font-bold text-sm">
-              {(post.author?.username?.[0] || '?').toUpperCase()}
+              {(post.author?.display_name?.[0] || post.author?.username?.[0] || '?').toUpperCase()}
             </span>
           )}
         </button>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <button
-              onClick={() => onViewProfile?.(post.user_id)}
-              aria-label={`View ${post.author?.username || 'user'}'s profile`}
-              className={`font-display font-bold text-sm hover:underline ${isDark ? 'text-frost' : 'text-gray-800'}`}
-            >
-              {post.author?.username || 'Unknown'}
-            </button>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 mb-1">
+              <button
+                onClick={() => onViewProfile?.(post.user_id)}
+                aria-label={`View ${post.author?.display_name || 'user'}'s profile`}
+                className={`font-display font-bold text-sm hover:underline ${isDark ? 'text-frost' : 'text-gray-800'}`}
+              >
+                {post.author?.display_name || post.author?.username || 'Unknown'}
+              </button>
+              <span className={`text-[10px] ${isDark ? 'text-muted' : 'text-gray-400'}`}>@{post.author?.username || 'user'}</span>
             {onFollow && onUnfollow && (
               <FollowButton
                 userId={post.user_id}

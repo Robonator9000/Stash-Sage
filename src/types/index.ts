@@ -74,6 +74,7 @@ export interface ContactEntry {
 
 export interface Profile {
   username: string;
+  displayName?: string;
   bio: string;
   joinedAt: string;
   avatar_url?: string;
@@ -110,6 +111,7 @@ export interface Post {
   updated_at: string;
   author?: {
     username: string;
+    display_name?: string;
     avatar_url?: string;
   };
   likes_count?: number;

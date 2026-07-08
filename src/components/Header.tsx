@@ -9,7 +9,7 @@ import { t } from '../utils/translations';
 import { LogoIcon } from './LogoIcon';
 import { NotificationBell } from './NotificationBell';
 
-interface UserRow { user_id: string; display_name: string; avatar_url: string | null; }
+interface UserRow { user_id: string; display_name: string; username?: string; avatar_url: string | null; }
 interface PostRow { id: string; content: string; created_at: string; user_id: string; }
 interface ListingRow { id: string; title: string; price: number; image_url: string | null; }
 
@@ -32,7 +32,7 @@ export function Header({ searchQuery, setSearchQuery, setIsAddModalOpen, setIsSe
   const [allListings, setAllListings] = useState<ListingRow[]>([]);
 
   useEffect(() => {
-    supabase.from('profiles').select('user_id, display_name, avatar_url').limit(100).then(({ data }) => { if (data) setAllUsers(data); }).then(undefined, () => {});
+    supabase.from('profiles').select('user_id, display_name, username, avatar_url').limit(100).then(({ data }) => { if (data) setAllUsers(data); }).then(undefined, () => {});
     supabase.from('posts').select('id, content, created_at, user_id').order('created_at', { ascending: false }).limit(100).then(({ data }) => { if (data) setAllPosts(data); }).then(undefined, () => {});
     supabase.from('marketplace_listings').select('id, title, price, image_url').eq('status', 'active').order('created_at', { ascending: false }).limit(100).then(({ data }) => { if (data) setAllListings(data); }).then(undefined, () => {});
   }, []);
@@ -48,7 +48,7 @@ export function Header({ searchQuery, setSearchQuery, setIsAddModalOpen, setIsSe
     if (!q) return { products: [], users: [], posts: [], listings: [] };
     return {
       products: searchProducts(products, searchQuery).slice(0, 5),
-      users: allUsers.filter(u => u.display_name?.toLowerCase().includes(q)).slice(0, 5),
+      users: allUsers.filter(u => u.display_name?.toLowerCase().includes(q) || u.username?.toLowerCase().includes(q)).slice(0, 5),
       posts: allPosts.filter(p => p.content?.toLowerCase().includes(q)).slice(0, 5),
       listings: allListings.filter(l => l.title?.toLowerCase().includes(q)).slice(0, 5),
     };
@@ -129,7 +129,10 @@ export function Header({ searchQuery, setSearchQuery, setIsAddModalOpen, setIsSe
                     <button key={u.user_id} onMouseDown={() => { handleViewProfile(u.user_id); }}
                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? 'hover:bg-[#0b1120] text-white' : 'hover:bg-gray-50 text-gray-900'}`}>
                       {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover" /> : <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyanx to-emera flex items-center justify-center"><span className="text-white text-[10px] font-bold">{(u.display_name?.[0] || '?').toUpperCase()}</span></div>}
-                      <span className="truncate">{u.display_name}</span>
+                      <div className="min-w-0">
+                        <span className="truncate block">{u.display_name}</span>
+                        {u.username && <span className={`text-[10px] ${isDark ? 'text-muted' : 'text-gray-400'}`}>@{u.username}</span>}
+                      </div>
                     </button>
                   ))}
                 </div>

@@ -19,10 +19,11 @@ export function CommunityPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('profiles').select('display_name, avatar_url, banner_url, bio, location').eq('user_id', user.id).maybeSingle().then(({ data }) => {
+    supabase.from('profiles').select('display_name, username, avatar_url, banner_url, bio, location').eq('user_id', user.id).maybeSingle().then(({ data }) => {
       if (data) {
         setCommunityProfile({
-          username: data.display_name || user.email?.split('@')[0] || 'User',
+          username: data.username || data.display_name || user.email?.split('@')[0] || 'User',
+          displayName: data.display_name || data.username || user.email?.split('@')[0] || 'User',
           bio: data.bio || '',
           joinedAt: user.created_at,
           avatar_url: data.avatar_url,

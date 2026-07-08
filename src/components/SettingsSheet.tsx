@@ -42,6 +42,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const { user, signIn, signUp, updatePassword, updateEmail, error: authError } = useAuth();
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
+  const [authUsername, setAuthUsername] = useState('');
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [authSubmitting, setAuthSubmitting] = useState(false);
   const [authLocalError, setAuthLocalError] = useState<string | null>(null);
@@ -59,7 +60,8 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [visible, setVisible] = useState(false);
-  const [profileUsername, setProfileUsername] = useState(settings.profile?.username || '');
+  const [profileUsername] = useState(settings.profile?.username || user?.email?.split('@')[0] || '');
+  const [profileDisplayName, setProfileDisplayName] = useState(settings.profile?.displayName || '');
   const [profileBio, setProfileBio] = useState(settings.profile?.bio || '');
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(settings.profile?.avatar_url);
   const [bannerPreview, setBannerPreview] = useState<string | undefined>(settings.profile?.banner_url);
@@ -145,12 +147,16 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
       setAuthLocalError(authMode === 'signin' ? 'Enter your email and password' : 'Password must be at least 6 characters');
       return;
     }
+    if (authMode === 'signup' && !authUsername.trim()) {
+      setAuthLocalError('Choose a username');
+      return;
+    }
     setAuthSubmitting(true);
     try {
       if (authMode === 'signin') {
         await signIn(authEmail.trim(), authPassword);
       } else {
-        await signUp(authEmail.trim(), authPassword);
+        await signUp(authEmail.trim(), authPassword, authUsername.trim());
       }
     } catch (err: any) {
       setAuthLocalError(err?.message || 'Something went wrong');
@@ -338,6 +344,17 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                       className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none ${
                         isDark ? 'bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
                       }`} />
+                    {authMode === 'signup' && (
+                      <>
+                        <input type="text" placeholder="Username" value={authUsername}
+                          onChange={e => { setAuthUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '')); setAuthLocalError(null); }}
+                          required minLength={2} maxLength={20}
+                          className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none ${
+                            isDark ? 'bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
+                          }`} />
+                        <p className={`text-[10px] -mt-2 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>Your unique @username — cannot be changed later</p>
+                      </>
+                    )}
                     {authMode === 'signin' && (
                       <button type="button" onClick={() => setShowResetPassword(true)}
                         className={`self-start text-xs -mt-2 ${isDark ? 'text-slate-400 hover:text-cyan-400' : 'text-gray-500 hover:text-cyan-600'}`}>
@@ -351,7 +368,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                     </button>
                   </form>
 
-                  <button onClick={() => { setAuthMode(authMode === 'signin' ? 'signup' : 'signin'); setAuthLocalError(null); }}
+                  <button onClick={() => { setAuthMode(authMode === 'signin' ? 'signup' : 'signin'); setAuthLocalError(null); setAuthUsername(''); }}
                     className={`w-full text-sm ${isDark ? 'text-slate-400 hover:text-cyan-400' : 'text-gray-500 hover:text-cyan-600'}`}>
                     {authMode === 'signin' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
                   </button>
@@ -361,7 +378,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               {/* Profile Completion Progress */}
               {(() => {
                 const filled = [
-                  !!profileUsername.trim(),
+                  !!profileDisplayName.trim(),
                   !!profileBio.trim(),
                   !!avatarPreview,
                   profileContacts.some(c => c.value.trim()),
@@ -384,17 +401,22 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               })()}
 
               <div>
-                <label className={sectionLabel}><User className="w-4 h-4" />{t('displayName', lang)} <span className="text-red-400">*</span></label>
+                <label className={sectionLabel}><User className="w-4 h-4" />Username <span className="text-red-400">*</span></label>
+                <div className={`px-4 py-3 rounded-xl border-2 text-sm font-medium ${isDark ? 'bg-slate-800/50 border-slate-700 text-slate-400' : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
+                  @{profileUsername}
+                </div>
+                <p className={`text-[10px] mt-1 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('usernamePermanent', lang)}</p>
+              </div>
+
+              <div>
+                <label className={sectionLabel}><User className="w-4 h-4" />{t('displayName', lang)}</label>
                 <div className="flex items-center gap-2 mb-1">
-                  <input type="text" value={profileUsername}
-                    onChange={e => setProfileUsername(e.target.value)} maxLength={24} placeholder="Your display name"
+                  <input type="text" value={profileDisplayName}
+                    onChange={e => setProfileDisplayName(e.target.value)} maxLength={24} placeholder="Your display name"
                     className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none ${
                       isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
                     }`} />
                 </div>
-                {!profileUsername.trim() && (
-                  <p className={`text-[10px] mt-1 ${isDark ? 'text-red-400/70' : 'text-red-500'}`}>{t('displayNameRequired', lang)}</p>
-                )}
               </div>
 
               <div>
@@ -441,7 +463,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                           setAvatarPreview(undefined);
                           const p = { ...settings.profile!, avatar_url: undefined };
                           updateSettings({ profile: p });
-                          if (user) supabase.from('profiles').upsert({ user_id: user.id, display_name: p.username || 'User', avatar_url: null }, { onConflict: 'user_id' }).then(undefined, () => {});
+                          if (user) supabase.from('profiles').upsert({ user_id: user.id, avatar_url: null }, { onConflict: 'user_id' }).then(undefined, () => {});
                         }}
                         className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
                           isDark ? 'border-red-500/30 text-red-400 hover:bg-red-500/10' : 'border-red-200 text-red-500 hover:bg-red-50'
@@ -580,6 +602,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                   }
                   const p = {
                     username: profileUsername.trim() || 'User',
+                    displayName: profileDisplayName.trim() || profileUsername.trim() || 'User',
                     bio: profileBio.trim(),
                     joinedAt: settings.profile?.joinedAt || new Date().toISOString(),
                     avatar_url: avatarUrl,
@@ -590,7 +613,8 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                   updateSettings({ profile: p });
                   supabase.from('profiles').upsert({
                     user_id: user.id,
-                    display_name: p.username,
+                    username: p.username,
+                    display_name: p.displayName,
                     avatar_url: p.avatar_url || null,
                     banner_url: p.banner_url || null,
                     bio: p.bio,

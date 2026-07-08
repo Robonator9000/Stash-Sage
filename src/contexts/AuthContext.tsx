@@ -11,7 +11,7 @@ interface AuthState {
   error: string | null;
   isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, username?: string) => Promise<void>;
   signOut: () => Promise<void>;
   updatePassword: (newPassword: string) => Promise<void>;
   updateEmail: (newEmail: string) => Promise<void>;
@@ -45,11 +45,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(session?.user ?? null);
           if (!sessionErr && session?.user?.id && isConfigured) {
             supabase.from('profiles').upsert(
-              { user_id: session.user.id, display_name: session.user.email?.split('@')[0] || 'User' },
+{ user_id: session.user.id, display_name: session.user.email?.split('@')[0] || 'User', username: session.user.email?.split('@')[0] || 'User' },
               { onConflict: 'user_id' }
             ).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
-            showToast({ id: 'auth-recovery', title: 'Password reset', body: 'Link accepted. Go to Profile to set a new password.' });
-          }
+        }
           setIsLoading(false);
         });
         window.location.hash = '';
@@ -62,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session?.user?.id && isConfigured) {
         subscribeToPush();
         supabase.from('profiles').upsert(
-          { user_id: session.user.id, display_name: session.user.email?.split('@')[0] || 'User' },
+          { user_id: session.user.id, display_name: session.user.email?.split('@')[0] || 'User', username: session.user.email?.split('@')[0] || 'User' },
           { onConflict: 'user_id' }
         ).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
       }
@@ -73,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session?.user?.id && isConfigured) {
         subscribeToPush();
         supabase.from('profiles').upsert(
-          { user_id: session.user.id, display_name: session.user.email?.split('@')[0] || 'User' },
+          { user_id: session.user.id, display_name: session.user.email?.split('@')[0] || 'User', username: session.user.email?.split('@')[0] || 'User' },
           { onConflict: 'user_id' }
         ).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
       }
@@ -121,7 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [handleAuthError]);
 
-  const signUp = useCallback(async (email: string, password: string) => {
+  const signUp = useCallback(async (email: string, password: string, username?: string) => {
     setError(null);
     if (!isConfigured) { setError('Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your .env file.'); throw new Error('Auth not configured'); }
     try {
@@ -132,8 +131,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       const uid = data?.user?.id;
       if (uid) {
+        const uname = username?.trim() || email.split('@')[0] || 'User';
         await supabase.from('profiles').upsert(
-          { user_id: uid, display_name: email.split('@')[0] || 'User' },
+          { user_id: uid, display_name: uname, username: uname },
           { onConflict: 'user_id' }
         );
       }
