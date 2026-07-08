@@ -163,7 +163,7 @@ export function CreateListingModal({ isDark, lang, products, currentUserId, init
         {/* Title */}
         <div>
           <label htmlFor="listing-title" className={`block text-xs font-medium mb-1 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-            {t('listingTitle', lang)} *
+            {t('listingTitle', lang)}
           </label>
           <input id="listing-title" name="title" type="text" value={title} onChange={e => setTitle(e.target.value)} required
             className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition-colors ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'}`} />
@@ -181,7 +181,7 @@ export function CreateListingModal({ isDark, lang, products, currentUserId, init
         {/* Pricing */}
         <div>
           <label className={`block text-xs font-medium mb-1.5 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-            Pricing *
+            Pricing
           </label>
 
           {priceOptions.length === 0 ? (
@@ -251,7 +251,7 @@ export function CreateListingModal({ isDark, lang, products, currentUserId, init
         {/* Contact */}
         <div>
           <label className={`block text-xs font-medium mb-1 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-            {t('contactInfo', lang)} *
+            {t('contactInfo', lang)}
           </label>
           <div className="flex gap-1.5 flex-wrap mb-1.5">
             {CONTACT_PLATFORMS.map(pf => {

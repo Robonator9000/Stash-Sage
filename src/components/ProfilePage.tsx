@@ -12,6 +12,7 @@ import type { Post, Product } from '../types';
 interface ProfileData {
   display_name: string;
   avatar_url?: string;
+  banner_url?: string;
   location?: string;
 }
 
@@ -45,7 +46,7 @@ export function ProfilePage({ userId: propUserId, onBack }: ProfilePageProps = {
     if (!userId) return;
     setLoading(true);
     Promise.all([
-      supabase.from('profiles').select('display_name, avatar_url, location').eq('user_id', userId).maybeSingle(),
+      supabase.from('profiles').select('display_name, avatar_url, banner_url, location').eq('user_id', userId).maybeSingle(),
       supabase.from('posts').select('*', { count: 'exact' }).eq('user_id', userId).order('created_at', { ascending: false }).limit(50),
       supabase.from('products').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(50),
       currentUserId ? supabase.from('follows').select('following_id').eq('follower_id', currentUserId).eq('following_id', userId).maybeSingle() : { data: null },
@@ -140,7 +141,10 @@ export function ProfilePage({ userId: propUserId, onBack }: ProfilePageProps = {
 
       {/* Cover + Avatar */}
       <div className={`rounded-2xl overflow-hidden ${isDark ? 'border border-edge' : 'border border-gray-200'}`}>
-        <div className="h-28 sm:h-36 bg-gradient-to-r from-cyanx/40 via-emera/40 to-cyanx/20 relative">
+        <div className={`h-28 sm:h-36 relative ${profileData.banner_url ? '' : 'bg-gradient-to-r from-cyanx/40 via-emera/40 to-cyanx/20'}`}>
+          {profileData.banner_url && (
+            <img src={profileData.banner_url} alt="" className="w-full h-full object-cover" />
+          )}
           <div className="absolute -bottom-12 left-4 sm:left-6">
             <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border-4 ${isDark ? 'border-[#0b1120]' : 'border-white'} overflow-hidden ${profileData.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera flex items-center justify-center'}`}>
               {profileData.avatar_url ? <img src={profileData.avatar_url} alt="" className="w-full h-full object-cover" /> : <span className="text-white font-display font-bold text-3xl">{(profileData.display_name?.[0] || '?').toUpperCase()}</span>}

@@ -147,7 +147,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
                 <MoreVertical className="w-4 h-4" />
               </button>
               {showOwnerMenu && (
-                <div className={`absolute right-0 top-full mt-1 w-44 rounded-xl shadow-xl border overflow-hidden z-30 ${isDark ? 'bg-card border-edge' : 'bg-white border-gray-200'}`}>
+                <div className={`absolute right-0 top-full mt-1 w-44 rounded-xl shadow-xl border overflow-hidden z-30 ${isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
                   <button onClick={() => { onEdit?.(listing); setShowOwnerMenu(false); }} className={`w-full px-4 py-2.5 text-sm text-left transition-all flex items-center gap-2.5 ${isDark ? 'text-frost hover:bg-surface' : 'text-gray-700 hover:bg-gray-50'}`}>
                     {t('editProduct', lang)}
                   </button>
@@ -169,7 +169,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
       {allImages.length > 0 && (
         <div className="mb-3 rounded-xl overflow-hidden relative group">
           <button type="button" onClick={() => setShowDetail(true)} className="w-full block">
-            <img src={allImages[currentImageIndex]} alt={listing.title} loading="lazy" className="w-full h-56 object-cover" />
+            <img src={allImages[currentImageIndex]} alt={listing.title} loading="lazy" className="w-full h-72 object-cover" />
           </button>
           {allImages.length > 1 && (
             <>
@@ -308,26 +308,26 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
           </span>
         )}
         <button onClick={handleContactClick} aria-label={`Contact via ${listing.contact_platform}: ${listing.contact_value}`}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shrink-0 ${isDark ? 'bg-midnight text-frost hover:bg-midnight/80' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
-          <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" style={{ color: brandColor }} aria-hidden="true">
+          className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-semibold transition-all shrink-0 ${isDark ? 'bg-midnight text-frost hover:bg-midnight/80' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+          <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" style={{ color: brandColor }} aria-hidden="true">
             <path d={brandPath} />
           </svg>
-          <span className="hidden sm:inline truncate max-w-[120px]">
+          <span className="hidden sm:inline truncate max-w-[140px]">
             {listing.contact_platform === 'email' ? listing.contact_value :
              listing.contact_platform === 'phone' ? listing.contact_value :
              `@${listing.contact_value.replace(/^@+/, '')}`}
           </span>
-          <span className="sm:hidden capitalize">{listing.contact_platform}</span>
+          <span className="sm:hidden capitalize font-medium">{listing.contact_platform}</span>
           {copied ? (
             <span className="text-xs text-emera font-bold shrink-0">Copied!</span>
           ) : (
-            <ExternalLink className="w-3 h-3 shrink-0 text-muted" />
+            <ExternalLink className="w-3.5 h-3.5 shrink-0 text-muted" />
           )}
         </button>
         {!isOwner && currentUserId && onStartChat && (
           <button onClick={() => onStartChat(listing.id)} aria-label={t('startChat', lang)}
-            className={`flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shrink-0 ${isDark ? 'bg-[#8b5cf6]/10 text-[#8b5cf6] hover:bg-[#8b5cf6]/20' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'}`}>
-            <MessageCircle className="w-4 h-4" />
+            className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-all shrink-0 ${isDark ? 'bg-[#8b5cf6]/10 text-[#8b5cf6] hover:bg-[#8b5cf6]/20' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'}`}>
+            <MessageCircle className="w-5 h-5" />
             <span className="hidden sm:inline">{t('startChat', lang)}</span>
           </button>
         )}

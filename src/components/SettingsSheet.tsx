@@ -6,7 +6,7 @@ import { hashPin } from '../utils/helpers';
 import { createExportData, downloadExport, downloadCsvExport, copyExportToClipboard, parseImportData, ImportResult } from '../utils/dataTransfer';
 // jspdf loaded dynamically on PDF export only
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../utils/supabase';
+import { supabase, uploadProfileImage, deleteProfileImage } from '../utils/supabase';
 import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, Users, Scale, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, Camera, Mail, Phone, MessageCircle, Send, MapPin, Bell, Rss } from 'lucide-react';
 import { ResetPasswordModal } from './ResetPasswordModal';
 import { useFocusTrap } from '../hooks/useFocusTrap';
@@ -47,6 +47,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mergeFileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<'profile' | 'preferences' | 'session' | 'budget' | 'data' | 'security'>(defaultTab);
   const [pinSetupValue, setPinSetupValue] = useState('');
   const [pinDisableValue, setPinDisableValue] = useState('');
@@ -60,6 +61,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const [profileUsername, setProfileUsername] = useState(settings.profile?.username || '');
   const [profileBio, setProfileBio] = useState(settings.profile?.bio || '');
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(settings.profile?.avatar_url);
+  const [bannerPreview, setBannerPreview] = useState<string | undefined>(settings.profile?.banner_url);
   const [profileContactPlatform, setProfileContactPlatform] = useState(settings.profile?.contact_platform || '');
   const [profileContactValue, setProfileContactValue] = useState(settings.profile?.contact_value || '');
   const [profileLocation, setProfileLocation] = useState(settings.profile?.location || '');
@@ -432,7 +434,13 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                     </button>
                     {avatarPreview && (
                       <button
-                        onClick={() => { setAvatarPreview(undefined); updateSettings({ profile: { ...settings.profile!, avatar_url: undefined } }); if (user) supabase.from('profiles').upsert({ user_id: user.id, display_name: settings.profile?.username || 'User', avatar_url: null }, { onConflict: 'user_id' }).then(undefined, (e: unknown) => { console.error('Avatar remove sync failed:', e); }); }}
+                        onClick={async () => {
+                          if (settings.profile?.avatar_url) await deleteProfileImage(settings.profile.avatar_url, 'profile-images');
+                          setAvatarPreview(undefined);
+                          const p = { ...settings.profile!, avatar_url: undefined };
+                          updateSettings({ profile: p });
+                          if (user) supabase.from('profiles').upsert({ user_id: user.id, display_name: p.username || 'User', avatar_url: null }, { onConflict: 'user_id' }).then(undefined, () => {});
+                        }}
                         className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
                           isDark ? 'border-red-500/30 text-red-400 hover:bg-red-500/10' : 'border-red-200 text-red-500 hover:bg-red-50'
                         }`}
@@ -441,6 +449,35 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                       </button>
                     )}
                     <span className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>Max 2MB, square</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className={sectionLabel}><Camera className="w-4 h-4" />Profile Banner</label>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="relative w-full h-20 rounded-xl overflow-hidden bg-gradient-to-r from-cyanx/40 via-emera/40 to-cyanx/20 shrink-0">
+                    {bannerPreview ? (
+                      <img src={bannerPreview} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Camera className={`w-6 h-6 ${isDark ? 'text-slate-600' : 'text-gray-300'}`} />
+                      </div>
+                    )}
+                    <button onClick={() => bannerInputRef.current?.click()} className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                      <Camera className="w-5 h-5 text-white" />
+                    </button>
+                  </div>
+                  <div className="flex flex-col gap-1.5 shrink-0">
+                    <button onClick={() => bannerInputRef.current?.click()} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${isDark ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                      Upload Banner
+                    </button>
+                    {bannerPreview && (
+                      <button onClick={() => setBannerPreview(undefined)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${isDark ? 'border-red-500/30 text-red-400 hover:bg-red-500/10' : 'border-red-200 text-red-500 hover:bg-red-50'}`}>
+                        Remove
+                      </button>
+                    )}
+                    <span className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>Max 5MB, 3:1 ratio</span>
                   </div>
                 </div>
               </div>
@@ -508,19 +545,40 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               </div>
 
               <button
-                onClick={() => {
-                  if (!profileUsername.trim()) return;
+                onClick={async () => {
+                  if (!profileUsername.trim() || !user) return;
+                  let avatarUrl = settings.profile?.avatar_url;
+                  if (avatarPreview && avatarPreview.startsWith('data:')) {
+                    const blob = await (await fetch(avatarPreview)).blob();
+                    const file = new File([blob], 'avatar.webp', { type: blob.type || 'image/webp' });
+                    const uploaded = await uploadProfileImage(user.id, file, 'profile-images');
+                    if (uploaded) {
+                      if (avatarUrl && !avatarUrl.startsWith('data:')) await deleteProfileImage(avatarUrl, 'profile-images');
+                      avatarUrl = uploaded;
+                    }
+                  }
+                  let bannerUrl = settings.profile?.banner_url;
+                  if (bannerPreview && bannerPreview.startsWith('data:')) {
+                    const blob = await (await fetch(bannerPreview)).blob();
+                    const file = new File([blob], 'banner.webp', { type: blob.type || 'image/webp' });
+                    const uploaded = await uploadProfileImage(user.id, file, 'profile-banners');
+                    if (uploaded) {
+                      if (bannerUrl && !bannerUrl.startsWith('data:')) await deleteProfileImage(bannerUrl, 'profile-banners');
+                      bannerUrl = uploaded;
+                    }
+                  }
                   const p = {
                     username: profileUsername.trim() || 'User',
                     bio: profileBio.trim(),
                     joinedAt: settings.profile?.joinedAt || new Date().toISOString(),
-                    avatar_url: avatarPreview,
+                    avatar_url: avatarUrl,
+                    banner_url: bannerUrl,
                     contact_platform: profileContactPlatform || undefined,
                     contact_value: profileContactValue.trim() || undefined,
                     location: profileLocation.trim() || undefined,
                   };
                   updateSettings({ profile: p });
-                  if (user) supabase.from('profiles').upsert({ user_id: user.id, display_name: p.username, avatar_url: p.avatar_url || null }, { onConflict: 'user_id' }).then(undefined, (e: unknown) => { console.error('Profile save sync failed:', e); });
+                  supabase.from('profiles').upsert({ user_id: user.id, display_name: p.username, avatar_url: p.avatar_url || null, location: p.location || null }, { onConflict: 'user_id' }).then(undefined, () => {});
                 }}
                 disabled={!profileUsername.trim()}
                 className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -535,6 +593,16 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                 if (file.size > 2 * 1024 * 1024) { alert('Image must be under 2MB'); return; }
                 const reader = new FileReader();
                 reader.onload = () => { const url = reader.result as string; setAvatarPreview(url); };
+                reader.readAsDataURL(file);
+              }} />
+
+              <input ref={bannerInputRef} type="file" accept="image/*" className="hidden" onChange={e => {
+                const file = e.target.files?.[0];
+                e.target.value = '';
+                if (!file) return;
+                if (file.size > 5 * 1024 * 1024) { alert('Banner must be under 5MB'); return; }
+                const reader = new FileReader();
+                reader.onload = () => { const url = reader.result as string; setBannerPreview(url); };
                 reader.readAsDataURL(file);
               }} />
 

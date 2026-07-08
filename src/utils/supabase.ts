@@ -120,3 +120,25 @@ export async function deletePostImages(urls: string[]): Promise<void> {
   if (paths.length === 0) return;
   await supabase.storage.from('post-images').remove(paths);
 }
+
+export async function uploadProfileImage(userId: string, file: File, bucket: 'profile-images' | 'profile-banners'): Promise<string | null> {
+  if (!isConfigured) return null;
+  const ext = file.name.split('.').pop() || 'webp';
+  const fileName = `${crypto.randomUUID()}.${ext}`;
+  const filePath = `${userId}/${fileName}`;
+  const { error } = await supabase.storage.from(bucket).upload(filePath, file, {
+    contentType: file.type,
+    upsert: false,
+  });
+  if (error) return null;
+  const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(filePath);
+  return publicUrl;
+}
+
+export async function deleteProfileImage(url: string, bucket: 'profile-images' | 'profile-banners'): Promise<void> {
+  if (!isConfigured || !url) return;
+  const parts = url.split(`/${bucket}/`);
+  if (parts.length === 2) {
+    await supabase.storage.from(bucket).remove([parts[1]]);
+  }
+}
