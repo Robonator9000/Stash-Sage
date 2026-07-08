@@ -2,7 +2,7 @@ import { memo, useState, useCallback, useEffect, useRef } from 'react';
 import type { MarketplaceListing, Product } from '../types';
 import { t } from '../utils/translations';
 import { getContactUrl, copyToClipboard, timeAgo } from '../utils/helpers';
-import { Tag, Clock, DollarSign, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, X, Bookmark, MessageCircle, Star, Scale, MoreVertical } from 'lucide-react';
+import { Tag, Clock, DollarSign, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, X, Bookmark, MessageCircle, Star, Scale, MoreVertical, FlaskConical, Calendar, StickyNote } from 'lucide-react';
 import { ReviewSection } from './ReviewSection';
 
 const PLATFORM_COLORS: Record<string, string> = {
@@ -122,15 +122,15 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
             </div>
           </div>
           {listing.category && (
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-medium shrink-0 ${isDark ? 'bg-midnight text-cyanx' : 'bg-cyan-50 text-cyan-600'}`}>
-              <Tag className="w-2.5 h-2.5" />
+            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-xs font-semibold shrink-0 ${isDark ? 'bg-midnight text-cyanx' : 'bg-cyan-50 text-cyan-600'}`}>
+              <Tag className="w-3 h-3" />
               {listing.category}
             </span>
           )}
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           {listing.status === 'sold' && (
-            <span className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold tracking-wider uppercase ${isDark ? 'bg-red-900/30 text-red-400' : 'bg-red-50 text-red-500'}`}>
+            <span className={`px-2.5 py-0.5 rounded-lg text-xs font-bold tracking-wider uppercase ${isDark ? 'bg-red-900/30 text-red-400' : 'bg-red-50 text-red-500'}`}>
               {t('statusSold', lang)}
             </span>
           )}
@@ -204,70 +204,77 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
         </p>
       )}
 
-      {/* Linked product - VERTICAL layout */}
+      {/* Linked product */}
       {linkedProduct && (
-        <div className={`mb-3 rounded-xl overflow-hidden border ${isDark ? 'border-edge' : 'border-gray-200'}`}>
+        <div className={`mb-3 rounded-xl border ${isDark ? 'border-edge' : 'border-gray-200'}`}>
           {linkedProduct.picture && (
-            <div className="w-full h-48 overflow-hidden">
+            <div className="w-full h-48 overflow-hidden rounded-t-xl">
               <img src={linkedProduct.picture} alt={linkedProduct.name} loading="lazy" className="w-full h-full object-cover" />
             </div>
           )}
-          <div className={`p-4 ${isDark ? 'bg-midnight/50' : 'bg-gray-50'}`}>
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-base mb-1">{linkedProduct.name}</div>
-                <div className="flex flex-wrap items-center gap-2.5">
-                  {linkedProduct.thc > 0 && <span className="text-sm font-bold text-orange-500">THC {linkedProduct.thc}%</span>}
-                  {linkedProduct.cbd > 0 && <span className="text-sm font-bold text-blue-500">CBD {linkedProduct.cbd}%</span>}
-                  <span className={`text-sm flex items-center gap-1 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
-                    <Scale className="w-3.5 h-3.5" />{linkedProduct.amount}g
-                  </span>
-                  {linkedProduct.rating > 0 && (
-                    <span className="text-sm text-amber-500 flex items-center gap-1">
-                      <Star className="w-3.5 h-3.5" />{linkedProduct.rating.toFixed(1)}
+          <div className={`p-4 ${isDark ? 'bg-midnight/50' : 'bg-gray-50'} ${linkedProduct.picture ? 'rounded-b-xl' : 'rounded-xl'}`}>
+            <button type="button" onClick={() => setShowProductDetail(s => !s)} className="w-full text-left">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className={`font-bold text-lg mb-1.5 ${isDark ? 'text-frost' : 'text-gray-900'}`}>{linkedProduct.name}</div>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    {linkedProduct.thc > 0 && <span className="text-sm font-bold text-orange-500">THC {linkedProduct.thc}%</span>}
+                    {linkedProduct.cbd > 0 && <span className="text-sm font-bold text-blue-500">CBD {linkedProduct.cbd}%</span>}
+                    <span className={`text-sm flex items-center gap-1 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+                      <Scale className="w-3.5 h-3.5" />{linkedProduct.amount}g
                     </span>
-                  )}
+                    {linkedProduct.rating > 0 && (
+                      <span className="text-sm text-amber-500 flex items-center gap-1">
+                        <Star className="w-3.5 h-3.5" />{linkedProduct.rating.toFixed(1)}
+                      </span>
+                    )}
+                    {linkedProduct.brand && (
+                      <span className={`text-sm ${isDark ? 'text-muted' : 'text-gray-400'}`}>{linkedProduct.brand}</span>
+                    )}
+                  </div>
+                </div>
+                <div className={`p-1 rounded-lg shrink-0 mt-0.5 transition-all ${isDark ? 'hover:bg-surface text-muted' : 'hover:bg-gray-200 text-gray-400'}`}>
+                  {showProductDetail ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                 </div>
               </div>
-              <button type="button" onClick={() => setShowProductDetail(s => !s)} className={`p-1 rounded-lg shrink-0 transition-all ${isDark ? 'hover:bg-surface text-muted' : 'hover:bg-gray-200 text-gray-400'}`}>
-                {showProductDetail ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-              </button>
-            </div>
+            </button>
 
             {showProductDetail && (
-              <div className={`pt-3 space-y-3 border-t text-sm ${isDark ? 'border-edge' : 'border-gray-200'}`}>
-                {linkedProduct.brand && (
+              <div className={`mt-3 pt-3 space-y-3 border-t ${isDark ? 'border-edge' : 'border-gray-200'}`}>
+                {linkedProduct.strain && (
                   <div>
-                    <div className={`text-xs font-medium uppercase tracking-wider mb-1 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Brand</div>
-                    <div className={isDark ? 'text-frost' : 'text-gray-800'}>{linkedProduct.brand}</div>
+                    <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Strain</div>
+                    <div className={`text-sm font-medium ${isDark ? 'text-frost' : 'text-gray-800'}`}>{linkedProduct.strain}</div>
                   </div>
                 )}
                 {linkedProduct.purchasedAt && (
-                  <div>
-                    <div className={`text-xs font-medium uppercase tracking-wider mb-1 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Purchased</div>
-                    <div className={isDark ? 'text-frost' : 'text-gray-800'}>{new Date(linkedProduct.purchasedAt).toLocaleDateString()}</div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className={`w-4 h-4 shrink-0 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
+                    <span className={`text-sm ${isDark ? 'text-mist' : 'text-gray-600'}`}>
+                      Purchased {new Date(linkedProduct.purchasedAt).toLocaleDateString()}
+                    </span>
                   </div>
                 )}
                 {linkedProduct.tags && (
                   <div>
-                    <div className={`text-xs font-medium uppercase tracking-wider mb-1.5 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Tags</div>
+                    <div className={`text-xs font-semibold uppercase tracking-wider mb-1.5 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Tags</div>
                     <div className="flex flex-wrap gap-1.5">
                       {linkedProduct.tags.split(',').map(t => t.trim()).filter(Boolean).map(tag => (
-                        <span key={tag} className={`px-2.5 py-1 rounded-lg text-xs font-medium ${isDark ? 'bg-surface text-cyanx' : 'bg-cyan-50 text-cyan-600'}`}>{tag}</span>
+                        <span key={tag} className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${isDark ? 'bg-surface text-cyanx' : 'bg-cyan-50 text-cyan-600'}`}>{tag}</span>
                       ))}
                     </div>
                   </div>
                 )}
                 {linkedProduct.effects && (
-                  <div>
-                    <div className={`text-xs font-medium uppercase tracking-wider mb-1 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Effects</div>
-                    <div className={isDark ? 'text-mist' : 'text-gray-600'}>{linkedProduct.effects}</div>
+                  <div className="flex items-start gap-2">
+                    <FlaskConical className={`w-4 h-4 mt-0.5 shrink-0 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
+                    <span className={`text-sm ${isDark ? 'text-mist' : 'text-gray-600'}`}>{linkedProduct.effects}</span>
                   </div>
                 )}
                 {linkedProduct.notes && (
-                  <div>
-                    <div className={`text-xs font-medium uppercase tracking-wider mb-1 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Notes</div>
-                    <div className={isDark ? 'text-mist' : 'text-gray-600'}>{linkedProduct.notes}</div>
+                  <div className="flex items-start gap-2">
+                    <StickyNote className={`w-4 h-4 mt-0.5 shrink-0 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
+                    <span className={`text-sm ${isDark ? 'text-mist' : 'text-gray-600'}`}>{linkedProduct.notes}</span>
                   </div>
                 )}
               </div>
@@ -288,20 +295,20 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
       {/* Price + Contact row */}
       <div className="flex flex-wrap items-stretch gap-2 mb-3">
         {listing.price_options && listing.price_options.length > 0 ? (
-          <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
+          <div className={`flex flex-wrap gap-2 flex-1 min-w-0 p-3 rounded-xl ${isDark ? 'bg-midnight/50 border border-edge' : 'bg-gray-50 border border-gray-200'}`}>
             {listing.price_options.map((opt, i) => (
-              <span key={i} className={`inline-flex items-center gap-1 px-3 py-2 rounded-xl border text-sm font-semibold ${isDark ? 'bg-midnight/80 border-edge text-emera' : 'bg-gray-50 border-gray-200 text-emerald-600'}`}>
+              <span key={i} className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold ${isDark ? 'bg-midnight text-emera' : 'bg-white text-emerald-600 shadow-sm'}`}>
                 <Scale className="w-3.5 h-3.5" />{opt.amount}g &middot; ${opt.price.toFixed(2)}
               </span>
             ))}
           </div>
         ) : (
-          <span className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-base font-bold ${isDark ? 'bg-emera/10 text-emera' : 'bg-emerald-50 text-emerald-600'}`}>
-            <DollarSign className="w-4 h-4" />{listing.price.toFixed(2)}
+          <span className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-lg font-bold ${isDark ? 'bg-emera/10 text-emera' : 'bg-emerald-50 text-emerald-600'}`}>
+            <DollarSign className="w-5 h-5" />{listing.price.toFixed(2)}
           </span>
         )}
         <button onClick={handleContactClick} aria-label={`Contact via ${listing.contact_platform}: ${listing.contact_value}`}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all shrink-0 ${isDark ? 'bg-midnight text-frost hover:bg-midnight/80' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shrink-0 ${isDark ? 'bg-midnight text-frost hover:bg-midnight/80' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
           <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" style={{ color: brandColor }} aria-hidden="true">
             <path d={brandPath} />
           </svg>
@@ -312,14 +319,14 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
           </span>
           <span className="sm:hidden capitalize">{listing.contact_platform}</span>
           {copied ? (
-            <span className="text-[11px] text-emera font-semibold shrink-0">Copied!</span>
+            <span className="text-xs text-emera font-bold shrink-0">Copied!</span>
           ) : (
             <ExternalLink className="w-3 h-3 shrink-0 text-muted" />
           )}
         </button>
         {!isOwner && currentUserId && onStartChat && (
           <button onClick={() => onStartChat(listing.id)} aria-label={t('startChat', lang)}
-            className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all shrink-0 ${isDark ? 'bg-[#8b5cf6]/10 text-[#8b5cf6] hover:bg-[#8b5cf6]/20' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'}`}>
+            className={`flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shrink-0 ${isDark ? 'bg-[#8b5cf6]/10 text-[#8b5cf6] hover:bg-[#8b5cf6]/20' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'}`}>
             <MessageCircle className="w-4 h-4" />
             <span className="hidden sm:inline">{t('startChat', lang)}</span>
           </button>
