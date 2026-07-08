@@ -21,20 +21,19 @@ export function CommunityPage() {
 
   useEffect(() => {
     if (!profileUser) { setProfileUserId(null); return; }
+    const isUuid = /^[0-9a-f-]{36}$/i.test(profileUser);
+    if (isUuid) {
+      setProfileUserId(profileUser);
+      return;
+    }
     setResolvingProfile(true);
-    supabase.from('profiles').select('*').eq('username', profileUser).maybeSingle().then(({ data }) => {
-      if (data?.user_id) {
+    supabase.from('profiles').select('*').eq('username', profileUser).maybeSingle().then(({ data, error }) => {
+      if (!error && data?.user_id) {
         setProfileUserId(data.user_id);
         setResolvingProfile(false);
       } else {
         supabase.from('profiles').select('*').eq('display_name', profileUser).maybeSingle().then(({ data: d2 }) => {
-          if (d2?.user_id) {
-            setProfileUserId(d2.user_id);
-          } else if (profileUser.includes('-') && profileUser.length > 30) {
-            setProfileUserId(profileUser);
-          } else {
-            setProfileUserId(null);
-          }
+          setProfileUserId(d2?.user_id || null);
           setResolvingProfile(false);
         });
       }
@@ -54,6 +53,14 @@ export function CommunityPage() {
           banner_url: data.banner_url,
           contacts: [],
           location: data.location,
+        });
+      } else {
+        setCommunityProfile({
+          username: user.email?.split('@')[0] || 'User',
+          displayName: user.email?.split('@')[0] || 'User',
+          bio: '',
+          joinedAt: user.created_at,
+          contacts: [],
         });
       }
     });
@@ -95,8 +102,8 @@ export function CommunityPage() {
       products={products}
       profile={communityProfile}
       onViewProfile={(uid) => {
-        supabase.from('profiles').select('*').eq('user_id', uid).maybeSingle().then(({ data }) => {
-          setSearchParams(prev => { prev.set('user', data?.username || data?.display_name || uid); return prev; }, { replace: true });
+        supabase.from('profiles').select('username').eq('user_id', uid).maybeSingle().then(({ data }) => {
+          setSearchParams(prev => { prev.set('user', data?.username || uid); return prev; }, { replace: true });
         });
       }}
     />

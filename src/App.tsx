@@ -71,8 +71,8 @@ export default function App() {
   const [showSmoke, setShowSmoke] = useState(false);
 
   const handleViewProfile = useCallback((uid: string) => {
-    supabase.from('profiles').select('*').eq('user_id', uid).maybeSingle().then(({ data }) => {
-      setSearchParams(prev => { prev.set('tab', 'community'); prev.set('user', data?.username || data?.display_name || uid); return prev; }, { replace: true });
+    supabase.from('profiles').select('username').eq('user_id', uid).maybeSingle().then(({ data }) => {
+      setSearchParams(prev => { prev.set('tab', 'community'); prev.set('user', data?.username || uid); return prev; }, { replace: true });
     });
   }, [setSearchParams]);
 

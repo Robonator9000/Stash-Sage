@@ -61,8 +61,8 @@ export function Header({ searchQuery, setSearchQuery, setIsAddModalOpen, setIsSe
   };
 
   const handleViewProfile = (uid: string) => {
-    supabase.from('profiles').select('*').eq('user_id', uid).maybeSingle().then(({ data }) => {
-      setSearchParams(prev => { prev.set('tab', 'community'); prev.set('user', data?.username || data?.display_name || uid); return prev; }, { replace: true });
+    supabase.from('profiles').select('username').eq('user_id', uid).maybeSingle().then(({ data }) => {
+      setSearchParams(prev => { prev.set('tab', 'community'); prev.set('user', data?.username || uid); return prev; }, { replace: true });
       setShowSearchPreview(false);
     });
   };
