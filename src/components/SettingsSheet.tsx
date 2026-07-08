@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase, uploadProfileImage, deleteProfileImage } from '../utils/supabase';
 import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, Users, Scale, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, Camera, Mail, Phone, MessageCircle, Send, MapPin, Bell, Rss } from 'lucide-react';
 import { ResetPasswordModal } from './ResetPasswordModal';
+import { showToast } from './Toast';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface SettingsSheetProps {
@@ -168,6 +169,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
       setPasswordChangeSuccess(true);
       setNewPassword('');
       setConfirmNewPassword('');
+      showToast({ id: 'password-updated', title: '', body: 'Password updated' });
       setTimeout(() => setPasswordChangeSuccess(false), 4000);
     } catch (err: any) {
       setPasswordChangeError(err?.message || 'Something went wrong');
@@ -183,6 +185,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
       await updateEmail(newEmail.trim());
       setEmailChangeSuccess(true);
       setNewEmail('');
+      showToast({ id: 'email-updated', title: '', body: 'Verification email sent' });
       setTimeout(() => setEmailChangeSuccess(false), 4000);
     } catch (err: any) {
       setEmailChangeError(err?.message || 'Something went wrong');
@@ -302,7 +305,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-6">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-5 space-y-6">
           {activeTab === 'profile' && (
             <>
               {!user ? (
@@ -579,6 +582,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                   };
                   updateSettings({ profile: p });
                   supabase.from('profiles').upsert({ user_id: user.id, display_name: p.username, avatar_url: p.avatar_url || null, location: p.location || null }, { onConflict: 'user_id' }).then(undefined, () => {});
+                  showToast({ id: 'profile-saved', title: '', body: 'Profile saved' });
                 }}
                 disabled={!profileUsername.trim()}
                 className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"

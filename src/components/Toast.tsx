@@ -1,6 +1,22 @@
 import { useEffect, useState, useCallback } from 'react';
 import { X, AlertTriangle, Info } from 'lucide-react';
 
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    osc.type = 'sine';
+    gain.gain.value = 0.1;
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.15);
+    osc.stop(ctx.currentTime + 0.15);
+  } catch {}
+}
+
 export interface ToastMessage {
   id: string;
   title: string;
@@ -12,6 +28,7 @@ export interface ToastMessage {
 let toastListeners: ((t: ToastMessage) => void)[] = [];
 
 export function showToast(toast: ToastMessage) {
+  playBeep();
   toastListeners.forEach((fn) => fn(toast));
 }
 
@@ -48,13 +65,13 @@ export function ToastContainer({ isDark = true }: ToastContainerProps) {
   }, [toasts, removeToast]);
 
   return (
-    <div className="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none" aria-live="polite">
+    <div className="fixed top-20 right-4 z-[200] flex flex-col gap-2 pointer-events-none" aria-live="polite">
       {toasts.map((toast) => {
         const isInfo = toast.variant === 'info' || (!toast.variant && toast.action);
         return (
           <div
             key={toast.id}
-            className={`pointer-events-auto flex items-start gap-3 px-4 py-3 rounded-xl border-2 shadow-2xl max-w-sm transition-all duration-300 ${
+            className={`pointer-events-auto flex items-start gap-3 px-4 py-3 rounded-xl border-2 shadow-2xl max-w-md transition-all duration-300 ${
               toast.leaving ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'
             } ${
               isInfo

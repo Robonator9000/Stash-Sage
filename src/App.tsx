@@ -839,6 +839,7 @@ export default function App() {
                 lang={lang}
                 currentUserId={user?.id || ''}
                 products={products}
+                searchQuery={searchQuery}
                 onViewProfile={handleViewProfile}
               />
             )}
