@@ -67,14 +67,18 @@ export interface Settings {
   showLocation?: boolean;
 }
 
+export interface ContactEntry {
+  platform: string;
+  value: string;
+}
+
 export interface Profile {
   username: string;
   bio: string;
   joinedAt: string;
   avatar_url?: string;
   banner_url?: string;
-  contact_platform?: string;
-  contact_value?: string;
+  contacts: ContactEntry[];
   location?: string;
 }
 

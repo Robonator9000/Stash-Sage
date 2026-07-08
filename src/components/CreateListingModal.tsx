@@ -30,8 +30,9 @@ export function CreateListingModal({ isDark, lang, products, currentUserId, init
   const [price, setPrice] = useState(initial?.price?.toString() || '');
   const [priceOptions, setPriceOptions] = useState<PriceOption[]>(initial?.price_options || []);
   const [category, setCategory] = useState(initial?.category || '');
-  const [contactPlatform, setContactPlatform] = useState(initial?.contact_platform || settings.profile?.contact_platform || 'email');
-  const [contactValue, setContactValue] = useState(initial?.contact_value || settings.profile?.contact_value || '');
+  const defaultContact = settings.profile?.contacts?.[0];
+  const [contactPlatform, setContactPlatform] = useState(initial?.contact_platform || defaultContact?.platform || 'email');
+  const [contactValue, setContactValue] = useState(initial?.contact_value || defaultContact?.value || '');
   const [linkedProductId, setLinkedProductId] = useState(initial?.product_id || '');
   const [existingImages, setExistingImages] = useState<string[]>(initial?.images || (initial?.image_url ? [initial.image_url] : []));
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);

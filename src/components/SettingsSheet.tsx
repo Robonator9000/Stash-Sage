@@ -7,7 +7,7 @@ import { createExportData, downloadExport, downloadCsvExport, copyExportToClipbo
 // jspdf loaded dynamically on PDF export only
 import { useAuth } from '../contexts/AuthContext';
 import { supabase, uploadProfileImage, deleteProfileImage } from '../utils/supabase';
-import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, Users, Scale, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, Camera, Mail, Phone, MessageCircle, Send, MapPin, Bell, Rss } from 'lucide-react';
+import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, Users, Scale, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, Camera, Mail, MessageCircle, MapPin, Bell, Rss } from 'lucide-react';
 import { ResetPasswordModal } from './ResetPasswordModal';
 import { showToast } from './Toast';
 import { useFocusTrap } from '../hooks/useFocusTrap';
@@ -63,8 +63,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const [profileBio, setProfileBio] = useState(settings.profile?.bio || '');
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(settings.profile?.avatar_url);
   const [bannerPreview, setBannerPreview] = useState<string | undefined>(settings.profile?.banner_url);
-  const [profileContactPlatform, setProfileContactPlatform] = useState(settings.profile?.contact_platform || '');
-  const [profileContactValue, setProfileContactValue] = useState(settings.profile?.contact_value || '');
+  const [profileContacts, setProfileContacts] = useState<{ platform: string; value: string }[]>(settings.profile?.contacts || []);
   const [profileLocation, setProfileLocation] = useState(settings.profile?.location || '');
   const [showResetPassword, setShowResetPassword] = useState(false);
   const focusTrapRef = useFocusTrap(true);
@@ -365,7 +364,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                   !!profileUsername.trim(),
                   !!profileBio.trim(),
                   !!avatarPreview,
-                  !!profileContactPlatform && !!profileContactValue.trim(),
+                  profileContacts.some(c => c.value.trim()),
                 ];
                 const pct = Math.round((filled.filter(Boolean).length / filled.length) * 100);
                 return (
@@ -458,8 +457,8 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
 
               <div>
                 <label className={sectionLabel}><Camera className="w-4 h-4" />Profile Banner</label>
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="relative w-full h-20 rounded-xl overflow-hidden bg-gradient-to-r from-cyanx/40 via-emera/40 to-cyanx/20 shrink-0">
+                <div className="space-y-2 mb-4">
+                  <div className="relative w-full h-20 rounded-xl overflow-hidden bg-gradient-to-r from-cyanx/40 via-emera/40 to-cyanx/20">
                     {bannerPreview ? (
                       <img src={bannerPreview} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -471,12 +470,12 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                       <Camera className="w-5 h-5 text-white" />
                     </button>
                   </div>
-                  <div className="flex flex-col gap-1.5 shrink-0">
-                    <button onClick={() => bannerInputRef.current?.click()} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${isDark ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => bannerInputRef.current?.click()} className={`px-4 py-2 rounded-lg text-xs font-medium transition-all border ${isDark ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
                       Upload Banner
                     </button>
                     {bannerPreview && (
-                      <button onClick={() => setBannerPreview(undefined)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${isDark ? 'border-red-500/30 text-red-400 hover:bg-red-500/10' : 'border-red-200 text-red-500 hover:bg-red-50'}`}>
+                      <button onClick={() => setBannerPreview(undefined)} className={`px-4 py-2 rounded-lg text-xs font-medium transition-all border ${isDark ? 'border-red-500/30 text-red-400 hover:bg-red-500/10' : 'border-red-200 text-red-500 hover:bg-red-50'}`}>
                         Remove
                       </button>
                     )}
@@ -496,23 +495,32 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
 
               <div>
                 <label className={sectionLabel}><MessageCircle className="w-4 h-4" />{t('contactInfo', lang)}</label>
-                <div className="flex gap-2 flex-wrap mb-2">
-                  {CONTACT_PLATFORMS.map(pf => {
-                    const Icon = pf === 'phone' ? Phone : pf === 'email' ? Mail : pf === 'discord' ? MessageCircle : pf === 'signal' ? MessageCircle : pf === 'whatsapp' ? MessageCircle : pf === 'instagram' ? Camera : pf === 'snapchat' ? Camera : pf === 'telegram' ? Send : Globe;
-                    return (
-                      <button key={pf} type="button" onClick={() => setProfileContactPlatform(profileContactPlatform === pf ? '' : pf)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${profileContactPlatform === pf ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                        <Icon className="w-3.5 h-3.5" />
-                        {pf}
+                <div className="space-y-2 mb-2">
+                  {profileContacts.map((contact, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <select value={contact.platform} onChange={e => {
+                        const next = [...profileContacts];
+                        next[idx] = { ...next[idx], platform: e.target.value };
+                        setProfileContacts(next);
+                      }} className={`flex-1 min-w-[100px] px-3 py-2.5 rounded-lg text-xs font-medium outline-none appearance-none cursor-pointer ${isDark ? 'bg-slate-800 text-white border border-slate-700' : 'bg-gray-100 text-gray-800 border border-gray-200'}`}>
+                        {CONTACT_PLATFORMS.map(pf => <option key={pf} value={pf}>{pf}</option>)}
+                      </select>
+                      <input type="text" value={contact.value} onChange={e => {
+                        const next = [...profileContacts];
+                        next[idx] = { ...next[idx], value: e.target.value };
+                        setProfileContacts(next);
+                      }} placeholder={contact.platform === 'email' ? 'user@example.com' : contact.platform === 'phone' ? '+1 555 0000' : '@username'}
+                        className={`flex-1 px-3 py-2.5 rounded-lg text-xs font-medium outline-none ${isDark ? 'bg-slate-800 text-white border border-slate-700 focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 text-gray-800 border border-gray-200 focus:border-cyan-400 placeholder-gray-400'}`} />
+                      <button onClick={() => setProfileContacts(profileContacts.filter((_, i) => i !== idx))} className={`p-2 rounded-lg text-xs font-medium transition-all ${isDark ? 'text-red-400 hover:bg-red-500/10' : 'text-red-500 hover:bg-red-50'}`}>
+                        <X className="w-3.5 h-3.5" />
                       </button>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
-                {profileContactPlatform && (
-                  <input type="text" value={profileContactValue} onChange={e => setProfileContactValue(e.target.value)}
-                    placeholder={profileContactPlatform === 'email' ? 'user@example.com' : profileContactPlatform === 'phone' ? '+1 555 0000' : '@username'}
-                    className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'}`} />
-                )}
+                <button onClick={() => setProfileContacts([...profileContacts, { platform: CONTACT_PLATFORMS[0], value: '' }])}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${isDark ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                  + Add Contact
+                </button>
               </div>
 
               {/* Visibility toggles */}
@@ -576,12 +584,19 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                     joinedAt: settings.profile?.joinedAt || new Date().toISOString(),
                     avatar_url: avatarUrl,
                     banner_url: bannerUrl,
-                    contact_platform: profileContactPlatform || undefined,
-                    contact_value: profileContactValue.trim() || undefined,
+                    contacts: profileContacts.filter(c => c.value.trim()),
                     location: profileLocation.trim() || undefined,
                   };
                   updateSettings({ profile: p });
-                  supabase.from('profiles').upsert({ user_id: user.id, display_name: p.username, avatar_url: p.avatar_url || null, location: p.location || null }, { onConflict: 'user_id' }).then(undefined, () => {});
+                  supabase.from('profiles').upsert({
+                    user_id: user.id,
+                    display_name: p.username,
+                    avatar_url: p.avatar_url || null,
+                    banner_url: p.banner_url || null,
+                    bio: p.bio,
+                    contacts: JSON.stringify(p.contacts),
+                    location: p.location || null,
+                  }, { onConflict: 'user_id' }).then(undefined, () => {});
                   showToast({ id: 'profile-saved', title: '', body: 'Profile saved' });
                 }}
                 disabled={!profileUsername.trim()}

@@ -6,13 +6,15 @@ import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { FollowButton } from './FollowButton';
 import { PostCard } from './PostCard';
-import { MessageCircle, MapPin, ArrowLeft } from 'lucide-react';
+import { MessageCircle, MapPin, ArrowLeft, Globe, Mail, Phone, Camera } from 'lucide-react';
 import type { Post, Product } from '../types';
 
 interface ProfileData {
   display_name: string;
   avatar_url?: string;
   banner_url?: string;
+  bio?: string;
+  contacts?: string;
   location?: string;
 }
 
@@ -46,7 +48,7 @@ export function ProfilePage({ userId: propUserId, onBack }: ProfilePageProps = {
     if (!userId) return;
     setLoading(true);
     Promise.all([
-      supabase.from('profiles').select('display_name, avatar_url, banner_url, location').eq('user_id', userId).maybeSingle(),
+      supabase.from('profiles').select('display_name, avatar_url, banner_url, bio, contacts, location').eq('user_id', userId).maybeSingle(),
       supabase.from('posts').select('*', { count: 'exact' }).eq('user_id', userId).order('created_at', { ascending: false }).limit(50),
       supabase.from('products').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(50),
       currentUserId ? supabase.from('follows').select('following_id').eq('follower_id', currentUserId).eq('following_id', userId).maybeSingle() : { data: null },
@@ -112,7 +114,26 @@ export function ProfilePage({ userId: propUserId, onBack }: ProfilePageProps = {
     navigate('/?tab=community&openChat=' + encodeURIComponent(userId));
   }
 
-  const isOwnProfile = currentUserId === userId;
+  function contactIcon(platform: string) {
+  switch (platform) {
+    case 'phone': return <Phone className="w-3.5 h-3.5" />;
+    case 'email': return <Mail className="w-3.5 h-3.5" />;
+    case 'instagram':
+    case 'snapchat': return <Camera className="w-3.5 h-3.5" />;
+    case 'telegram':
+    case 'signal':
+    case 'discord':
+    case 'whatsapp': return <MessageCircle className="w-3.5 h-3.5" />;
+    default: return <Globe className="w-3.5 h-3.5" />;
+  }
+}
+
+function parseContacts(raw: string | undefined): { platform: string; value: string }[] {
+  if (!raw) return [];
+  try { return JSON.parse(raw); } catch { return []; }
+}
+
+const isOwnProfile = currentUserId === userId;
 
   if (loading) {
     return (
@@ -176,6 +197,22 @@ export function ProfilePage({ userId: propUserId, onBack }: ProfilePageProps = {
             <span className={isDark ? 'text-muted' : 'text-gray-500'}><strong className={isDark ? 'text-frost' : 'text-gray-900'}>{followerCount}</strong> {t('followers', lang)}</span>
             <span className={isDark ? 'text-muted' : 'text-gray-500'}><strong className={isDark ? 'text-frost' : 'text-gray-900'}>{followingCount}</strong> {t('followedBy', lang)}</span>
           </div>
+          {(profileData.bio || isOwnProfile) && (
+            <p className={`text-sm mt-3 ${isDark ? 'text-mist' : 'text-gray-600'}`}>
+              {profileData.bio || (isOwnProfile ? settings.profile?.bio || '' : '')}
+            </p>
+          )}
+          {(parseContacts(profileData.contacts).length > 0 || (isOwnProfile && (settings.profile?.contacts || []).length > 0)) && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {(parseContacts(profileData.contacts).length > 0 ? parseContacts(profileData.contacts) : settings.profile?.contacts || []).map((c, i) => (
+                <a key={i} href={c.platform === 'email' ? `mailto:${c.value}` : c.platform === 'phone' ? `tel:${c.value}` : undefined}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${isDark ? 'bg-cyanx/10 text-cyanx hover:bg-cyanx/20' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'}`}>
+                  {contactIcon(c.platform)}
+                  {c.value}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
