@@ -154,12 +154,18 @@ export interface Notification {
   };
 }
 
+export interface PriceOption {
+  amount: number;
+  price: number;
+}
+
 export interface MarketplaceListing {
   id: string;
   user_id: string;
   title: string;
   description: string;
   price: number;
+  price_options?: PriceOption[];
   category: string;
   product_id?: string | null;
   product_name?: string | null;

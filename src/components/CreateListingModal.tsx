@@ -1,11 +1,11 @@
 import { useState, useRef } from 'react';
 import { useModalAnimation } from '../hooks/useModalAnimation';
 import { useSettings } from '../utils/useSettings';
-import type { MarketplaceListing, Product } from '../types';
+import type { MarketplaceListing, Product, PriceOption } from '../types';
 import { CONTACT_PLATFORMS, MARKETPLACE_CATEGORIES } from '../types';
 import { uploadListingImages } from '../utils/supabase';
 import { t } from '../utils/translations';
-import { X, Phone, Mail, MessageCircle, Send, Camera, Globe, Tag, DollarSign } from 'lucide-react';
+import { X, Phone, Mail, MessageCircle, Send, Camera, Globe, Tag, DollarSign, Plus, Trash2, Scale } from 'lucide-react';
 
 const PLATFORM_ICONS: Record<string, typeof Phone> = {
   phone: Phone, email: Mail, discord: MessageCircle, telegram: Send,
@@ -28,6 +28,7 @@ export function CreateListingModal({ isDark, lang, products, currentUserId, init
   const [title, setTitle] = useState(initial?.title || '');
   const [description, setDescription] = useState(initial?.description || '');
   const [price, setPrice] = useState(initial?.price?.toString() || '');
+  const [priceOptions, setPriceOptions] = useState<PriceOption[]>(initial?.price_options || []);
   const [category, setCategory] = useState(initial?.category || '');
   const [contactPlatform, setContactPlatform] = useState(initial?.contact_platform || settings.profile?.contact_platform || 'email');
   const [contactValue, setContactValue] = useState(initial?.contact_value || settings.profile?.contact_value || '');
@@ -73,10 +74,12 @@ export function CreateListingModal({ isDark, lang, products, currentUserId, init
         allImages = [...allImages, ...uploaded];
       }
       newImagePreviews.forEach(p => URL.revokeObjectURL(p));
+      const finalPriceOptions = priceOptions.length > 0 ? priceOptions : undefined;
       await onSubmit({
         title: title.trim(),
         description: description.trim(),
-        price: parseFloat(price),
+        price: priceOptions.length > 0 ? priceOptions[0].price : parseFloat(price),
+        price_options: finalPriceOptions,
         category: category || undefined,
         contact_platform: contactPlatform,
         contact_value: contactValue.trim(),
@@ -175,28 +178,74 @@ export function CreateListingModal({ isDark, lang, products, currentUserId, init
             className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none resize-none transition-colors ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'}`} />
         </div>
 
-        {/* Price + Category row */}
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label htmlFor="listing-price" className={`block text-xs font-medium mb-1 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-              {t('listingPrice', lang)} *
-            </label>
-            <div className="relative">
+        {/* Pricing */}
+        <div>
+          <label className={`block text-xs font-medium mb-1.5 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+            Pricing *
+          </label>
+
+          {priceOptions.length === 0 ? (
+            <div className="relative mb-2">
               <DollarSign className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${isDark ? 'text-slate-400' : 'text-gray-400'}`} />
               <input id="listing-price" name="price" type="number" step="0.01" min="0" value={price} onChange={e => setPrice(e.target.value)} required
                 className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm outline-none transition-colors ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'}`} />
             </div>
+          ) : (
+            <div className="space-y-1.5 mb-2">
+              {priceOptions.map((opt, i) => (
+                <div key={i} className="flex items-center gap-1.5">
+                  <div className="relative flex-1">
+                    <Scale className={`absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${isDark ? 'text-slate-400' : 'text-gray-400'}`} />
+                    <input type="number" step="0.1" min="0" value={opt.amount || ''} onChange={e => {
+                      const newOpts = [...priceOptions];
+                      newOpts[i] = { ...newOpts[i], amount: parseFloat(e.target.value) || 0 };
+                      setPriceOptions(newOpts);
+                    }} placeholder="Amount"
+                      className={`w-full pl-8 pr-7 py-2 rounded-lg border text-sm outline-none transition-colors ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'}`} />
+                    <span className={`absolute right-2.5 top-1/2 -translate-y-1/2 text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>g</span>
+                  </div>
+                  <div className="relative flex-[1.5]">
+                    <DollarSign className={`absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${isDark ? 'text-slate-400' : 'text-gray-400'}`} />
+                    <input type="number" step="0.01" min="0" value={opt.price || ''} onChange={e => {
+                      const newOpts = [...priceOptions];
+                      newOpts[i] = { ...newOpts[i], price: parseFloat(e.target.value) || 0 };
+                      setPriceOptions(newOpts);
+                    }} placeholder="Price"
+                      className={`w-full pl-8 pr-3 py-2 rounded-lg border text-sm outline-none transition-colors ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'}`} />
+                  </div>
+                  <button type="button" onClick={() => setPriceOptions(prev => prev.filter((_, j) => j !== i))} aria-label="Remove weight option"
+                    className={`p-2 rounded-lg transition-all shrink-0 ${isDark ? 'text-red-400 hover:bg-red-900/20' : 'text-red-500 hover:bg-red-50'}`}>
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex items-center gap-2">
+            {priceOptions.length > 0 && (
+              <button type="button" onClick={() => setPriceOptions([])} className={`text-xs font-medium transition-all ${isDark ? 'text-muted hover:text-frost' : 'text-gray-500 hover:text-gray-700'}`}>
+                Use single price
+              </button>
+            )}
+            <button type="button" onClick={() => setPriceOptions(prev => [...prev, { amount: 0, price: 0 }])}
+              className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${isDark ? 'bg-slate-800 text-cyanx hover:bg-slate-700' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'}`}>
+              <Plus className="w-3 h-3" />
+              Add weight
+            </button>
           </div>
-          <div>
-            <label htmlFor="listing-category" className={`block text-xs font-medium mb-1 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-              {t('listingCategory', lang)}
-            </label>
-            <select id="listing-category" name="category" value={category} onChange={e => setCategory(e.target.value)}
-              className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition-colors ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}>
-              <option value="">{t('listingCategory', lang)}...</option>
-              {MARKETPLACE_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-            </select>
-          </div>
+        </div>
+
+        {/* Category */}
+        <div>
+          <label htmlFor="listing-category" className={`block text-xs font-medium mb-1 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+            {t('listingCategory', lang)}
+          </label>
+          <select id="listing-category" name="category" value={category} onChange={e => setCategory(e.target.value)}
+            className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition-colors ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}>
+            <option value="">{t('listingCategory', lang)}...</option>
+            {MARKETPLACE_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+          </select>
         </div>
 
         {/* Contact */}
@@ -259,7 +308,7 @@ export function CreateListingModal({ isDark, lang, products, currentUserId, init
         </div>
 
         {/* Submit */}
-        <button type="submit" disabled={submitting || !title.trim() || !price.trim() || !contactValue.trim()}
+        <button type="submit" disabled={submitting || !title.trim() || !contactValue.trim() || (priceOptions.length === 0 && !price.trim()) || (priceOptions.length > 0 && priceOptions.some(o => !o.amount || !o.price))}
           className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-cyanx/20">
           {submitting ? '...' : initial ? t('editListing', lang) : t('createListing', lang)}
         </button>
