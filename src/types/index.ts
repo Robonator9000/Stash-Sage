@@ -258,7 +258,7 @@ export interface Conversation {
   last_message_at: string;
   created_at: string;
   listing?: MarketplaceListing;
-  other_user?: { username: string; avatar_url?: string };
+  other_user?: { username: string; display_name?: string; avatar_url?: string };
   last_message?: Message;
   unread_count?: number;
 }

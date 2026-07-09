@@ -218,7 +218,7 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
   }, [currentUserId, onOpenChat]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 mx-auto max-w-7xl px-1">
       <>
       {/* Sell button - centered prominent */}
       <div className="flex justify-center">
