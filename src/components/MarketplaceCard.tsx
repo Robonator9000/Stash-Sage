@@ -184,7 +184,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
       {allImages.length > 0 && (
         <div className="mb-2.5 rounded-xl overflow-hidden relative group">
           <button type="button" onClick={() => setShowDetail(true)} className="w-full block">
-            <img src={allImages[currentImageIndex]} alt={listing.title} loading="lazy" className="w-full h-36 object-cover" />
+            <img src={allImages[currentImageIndex]} alt={listing.title} loading="lazy" className="w-full aspect-square object-cover" />
           </button>
           {allImages.length > 1 && (
             <>
@@ -223,7 +223,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
       {linkedProduct && (
         <div className={`mb-2.5 rounded-xl border ${isDark ? 'border-edge' : 'border-gray-200'}`}>
           {linkedProduct.picture && (
-            <div className="w-full h-40 overflow-hidden rounded-t-xl">
+            <div className="w-full aspect-square overflow-hidden rounded-t-xl">
               <img src={linkedProduct.picture} alt={linkedProduct.name} loading="lazy" className="w-full h-full object-cover" />
             </div>
           )}
