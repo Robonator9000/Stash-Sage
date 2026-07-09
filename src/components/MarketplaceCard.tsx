@@ -115,8 +115,8 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
 
   return (
     <>
-      <div className={`relative aspect-square overflow-hidden rounded-2xl transition-shadow ${isDark ? 'bg-surface/60' : 'bg-white'} cursor-pointer group`}
-        style={{ boxShadow: `0 0 24px -6px rgba(${glowRgb},0.18)` }}
+      <div className={`relative aspect-square overflow-hidden rounded-2xl transition-all duration-300 ${isDark ? 'bg-surface/60' : 'bg-white'} cursor-zoom-in group hover:-translate-y-0.5`}
+        style={{ boxShadow: `0 0 35px -4px rgba(${glowRgb},0.35)` }}
         onClick={() => setShowDetailPopup(true)} role="article">
 
         {/* Full-bleed image */}
@@ -165,7 +165,8 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
         <div className="absolute inset-x-0 bottom-0 p-3 flex flex-col gap-1.5" onClick={e => e.stopPropagation()}>
           <div className="flex items-center gap-2 min-w-0">
             {listing.category && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-white/20 text-white backdrop-blur-sm shrink-0">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold text-white shrink-0"
+                style={{ backgroundColor: `rgba(${glowRgb},0.88)` }}>
                 <Tag className="w-3 h-3" />
                 {listing.category}
               </span>
@@ -173,8 +174,8 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
             <span className="text-xs text-white/70 shrink-0">{timeAgo(listing.created_at, lang)}</span>
             <div className="ml-auto flex items-center gap-1">
               {currentUserId && currentUserId !== listing.user_id && (
-                <button onClick={() => onSave?.(listing.id)} aria-label={listing.saved_by_me ? t('unsaveListing', lang) : t('saveListing', lang)}
-                  className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all backdrop-blur-sm ${listing.saved_by_me ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/30' : 'bg-black/20 text-white hover:bg-black/40'}`}>
+                  <button onClick={() => onSave?.(listing.id)} aria-label={listing.saved_by_me ? t('unsaveListing', lang) : t('saveListing', lang)}
+                  className={`min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg transition-all backdrop-blur-sm ${listing.saved_by_me ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/30' : 'bg-black/20 text-white hover:bg-black/40'}`}>
                   <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill={listing.saved_by_me ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
                     <path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z" />
                   </svg>
@@ -182,14 +183,14 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
               )}
               {isOwner && listing.status === 'active' && onPinToggle && (
                 <button onClick={() => onPinToggle(listing.id)} aria-label={isPinned ? 'Unpin listing' : 'Pin listing to top'}
-                  className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all backdrop-blur-sm ${isPinned ? 'bg-cyanx/30 text-cyanx' : 'bg-black/20 text-white hover:bg-black/40'}`}>
+                  className={`min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg transition-all backdrop-blur-sm ${isPinned ? 'bg-cyanx/30 text-cyanx' : 'bg-black/20 text-white hover:bg-black/40'}`}>
                   <Pin className="w-3.5 h-3.5" fill={isPinned ? 'currentColor' : 'none'} />
                 </button>
               )}
               {isOwner && listing.status === 'active' && (
                 <div ref={ownerMenuRef} className="relative">
                   <button onClick={() => setShowOwnerMenu(s => !s)} aria-label="Listing options"
-                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-black/20 text-white hover:bg-black/40 transition-all backdrop-blur-sm">
+                    className="min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg bg-black/20 text-white hover:bg-black/40 transition-all backdrop-blur-sm">
                     <MoreVertical className="w-3.5 h-3.5" />
                   </button>
                   {showOwnerMenu && (
@@ -222,12 +223,18 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
             ) : (
               <span className="text-white font-bold text-base">${listing.price.toFixed(2)}</span>
             )}
+            {listing.avg_seller_rating != null && listing.seller_review_count != null && listing.seller_review_count > 0 && (
+              <span className="ml-auto flex items-center gap-1 text-[11px] text-amber-400 font-semibold">
+                <Star className="w-3 h-3 fill-amber-400" />
+                {listing.avg_seller_rating.toFixed(1)}
+              </span>
+            )}
           </div>
         </div>
 
         {/* Details hint */}
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-          <span className="text-[10px] text-white/70 bg-black/30 px-2 py-1 rounded-full backdrop-blur-sm">
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none translate-x-2 group-hover:translate-x-0">
+          <span className="text-[11px] font-semibold text-white bg-black/50 px-2.5 py-1 rounded-full backdrop-blur-sm shadow-lg">
             Details &rarr;
           </span>
         </div>

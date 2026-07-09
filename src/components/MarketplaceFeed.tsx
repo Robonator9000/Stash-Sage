@@ -252,14 +252,14 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
           { id: 'other', label: 'Other', icon: '📦', gradient: 'from-stone-400 to-neutral-500' },
         ].map(cat => (
           <button key={cat.id} onClick={() => setCategoryFilter(cat.id)}
-            className={`shrink-0 flex flex-col items-center gap-1.5 w-20 h-20 rounded-2xl transition-all ${
+            className={`            shrink-0 flex flex-col items-center gap-1 w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-2xl transition-all ${
               categoryFilter === cat.id
                 ? `bg-gradient-to-br ${cat.gradient} text-white shadow-lg scale-105`
                 : isDark ? 'bg-midnight/80 border border-edge text-mist hover:text-frost' : 'bg-white border border-gray-200 text-gray-600 hover:text-gray-900 hover:shadow-sm'
             }`}>
-            <span className="text-2xl mt-3">{cat.icon}</span>
-            <span className="text-[10px] font-semibold leading-tight text-center">{cat.label}</span>
-            <span className={`text-[9px] leading-none ${categoryFilter === cat.id ? 'text-white/80' : isDark ? 'text-muted' : 'text-gray-400'}`}>
+            <span className="text-xl sm:text-2xl mt-2 sm:mt-3">{cat.icon}</span>
+            <span className="text-[9px] sm:text-[10px] font-semibold leading-tight text-center">{cat.label}</span>
+            <span className={`text-[8px] sm:text-[9px] leading-none ${categoryFilter === cat.id ? 'text-white/80' : isDark ? 'text-muted' : 'text-gray-400'}`}>
               {categoryCounts[cat.id] || 0}
             </span>
           </button>
@@ -284,18 +284,10 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
 
       {/* Loading */}
       {loading && (
-        <div className="space-y-4" aria-busy="true" aria-label="Loading listings">
-          {[1, 2, 3].map(i => (
-            <div key={i} className={`p-5 rounded-2xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
-              <div className="flex items-center gap-3 mb-3">
-                <div className={`w-10 h-10 rounded-xl animate-pulse ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
-                <div className="flex-1 space-y-2">
-                  <div className={`h-3 w-24 rounded animate-pulse ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
-                  <div className={`h-2.5 w-16 rounded animate-pulse ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
-                </div>
-              </div>
-              <div className={`h-3 w-3/4 rounded animate-pulse mb-2 ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
-              <div className={`h-3 w-1/2 rounded animate-pulse ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3" aria-busy="true" aria-label="Loading listings">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className={`aspect-square rounded-2xl overflow-hidden animate-pulse ${isDark ? 'bg-surface/60 border border-edge' : 'bg-white border border-gray-200'}`}>
+              <div className={`w-full h-full ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
             </div>
           ))}
         </div>
@@ -308,12 +300,22 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
       )}
 
       {!loading && !error && sorted.length === 0 && (
-        <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`} role="status">
-          <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>{t('noListings', lang)}</p>
+        <div className={`p-10 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`} role="status">
+          <div className="text-4xl mb-3 opacity-60">&#128270;</div>
+          <p className={`text-sm font-medium mb-2 ${isDark ? 'text-frost' : 'text-gray-800'}`}>No listings found</p>
+          <p className={`text-xs max-w-sm mx-auto leading-relaxed ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+            Try browsing a different category or adjust your search terms.
+          </p>
+          {categoryFilter !== 'all' && (
+            <button onClick={() => setCategoryFilter('all')}
+              className={`mt-4 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${isDark ? 'bg-midnight text-cyanx hover:bg-midnight/80' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              Browse all categories
+            </button>
+          )}
         </div>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {sorted.map(listing => (
           <MarketplaceCard key={listing.id} listing={listing} products={products} isDark={isDark} lang={lang} currentUserId={currentUserId}
             isPinned={pinnedIds.has(listing.id)} onPinToggle={handlePinToggle}
