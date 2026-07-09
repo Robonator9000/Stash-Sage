@@ -5,6 +5,20 @@ import { AuthError } from '@supabase/supabase-js';
 import { showToast } from '../components/Toast';
 import { subscribeToPush, unsubscribeFromPush } from '../utils/pushNotifications';
 
+async function upsertProfile(userId: string, displayName: string) {
+  const { error } = await supabase.from('profiles').upsert(
+    { user_id: userId, display_name: displayName, username: displayName },
+    { onConflict: 'user_id' }
+  );
+  if (error) {
+    const { error: fbError } = await supabase.from('profiles').upsert(
+      { user_id: userId, display_name: displayName },
+      { onConflict: 'user_id' }
+    );
+    if (fbError) throw fbError;
+  }
+}
+
 interface AuthState {
   user: User | null;
   isLoading: boolean;
@@ -44,10 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken || '' }).then(({ data: { session }, error: sessionErr }) => {
           setUser(session?.user ?? null);
           if (!sessionErr && session?.user?.id && isConfigured) {
-            supabase.from('profiles').upsert(
-{ user_id: session.user.id, display_name: session.user.email?.split('@')[0] || 'User', username: session.user.email?.split('@')[0] || 'User' },
-              { onConflict: 'user_id' }
-            ).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
+            upsertProfile(session.user.id, session.user.email?.split('@')[0] || 'User').then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
         }
           setIsLoading(false);
         });
@@ -60,10 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       if (session?.user?.id && isConfigured) {
         subscribeToPush();
-        supabase.from('profiles').upsert(
-          { user_id: session.user.id, display_name: session.user.email?.split('@')[0] || 'User', username: session.user.email?.split('@')[0] || 'User' },
-          { onConflict: 'user_id' }
-        ).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
+        upsertProfile(session.user.id, session.user.email?.split('@')[0] || 'User').then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
       }
       setIsLoading(false);
     });
@@ -71,10 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       if (session?.user?.id && isConfigured) {
         subscribeToPush();
-        supabase.from('profiles').upsert(
-          { user_id: session.user.id, display_name: session.user.email?.split('@')[0] || 'User', username: session.user.email?.split('@')[0] || 'User' },
-          { onConflict: 'user_id' }
-        ).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
+        upsertProfile(session.user.id, session.user.email?.split('@')[0] || 'User').then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
       }
     });
     return () => data?.subscription.unsubscribe();
@@ -132,10 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const uid = data?.user?.id;
       if (uid) {
         const uname = username?.trim() || email.split('@')[0] || 'User';
-        await supabase.from('profiles').upsert(
-          { user_id: uid, display_name: uname, username: uname },
-          { onConflict: 'user_id' }
-        );
+        await upsertProfile(uid, uname).catch(() => {});
       }
       showToast({
         id: 'auth-signup', title: 'Account created',

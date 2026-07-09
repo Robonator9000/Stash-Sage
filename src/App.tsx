@@ -76,6 +76,11 @@ export default function App() {
     });
   }, [setSearchParams]);
 
+  const handleOpenChat = useCallback((userId: string) => {
+    setChatTargetUserId(userId);
+    setShowChat(true);
+  }, []);
+
   const [historyFilterType, setHistoryFilterType] = useState<string>('all');
   const [historyDateFilter, setHistoryDateFilter] = useState<string>('all');
   const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
@@ -844,6 +849,7 @@ export default function App() {
                 products={products}
                 searchQuery={searchQuery}
                 onViewProfile={handleViewProfile}
+                onOpenChat={handleOpenChat}
               />
             )}
           </div>

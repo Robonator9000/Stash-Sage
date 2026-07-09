@@ -4,7 +4,6 @@ import { supabase, deleteStorageImages } from '../utils/supabase';
 import { t } from '../utils/translations';
 import { MarketplaceCard } from './MarketplaceCard';
 import { CreateListingModal } from './CreateListingModal';
-import { ChatInbox } from './ChatInbox';
 import { showToast } from './Toast';
 import { Plus, ArrowUpDown } from 'lucide-react';
 
@@ -15,9 +14,10 @@ interface MarketplaceFeedProps {
   products: Product[];
   searchQuery: string;
   onViewProfile?: (userId: string) => void;
+  onOpenChat?: (userId: string) => void;
 }
 
-export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, currentUserId, products, searchQuery, onViewProfile }: MarketplaceFeedProps) {
+export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, currentUserId, products, searchQuery, onViewProfile, onOpenChat }: MarketplaceFeedProps) {
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +28,6 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
   const [editingListing, setEditingListing] = useState<MarketplaceListing | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
-  const [showChat, setShowChat] = useState(false);
   const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
 
   const enrichListings = useCallback(async (rawListings: MarketplaceListing[]): Promise<MarketplaceListing[]> => {
@@ -202,14 +201,12 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
         .insert({ listing_id: listingId, buyer_id: currentUserId, seller_id: listing.user_id })
         .then(undefined, () => {});
     }
-    setShowChat(true);
-  }, [currentUserId]);
+    onOpenChat?.(listing.user_id);
+  }, [currentUserId, onOpenChat]);
 
   return (
     <div className="space-y-5">
-      {showChat ? (
-        <ChatInbox currentUserId={currentUserId} isDark={isDark} lang={lang} onBack={() => setShowChat(false)} />
-      ) : (<>
+      <>
       {/* Sell button - centered prominent */}
       <div className="flex justify-center">
         {currentUserId ? (
@@ -316,7 +313,7 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
       {editingListing && (
         <CreateListingModal isDark={isDark} lang={lang} products={products} currentUserId={currentUserId} initial={editingListing} onSubmit={handleUpdate} onClose={handleCloseEdit} />
       )}
-      </>)}
+      </>
     </div>
   );
 });
