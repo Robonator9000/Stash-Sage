@@ -118,6 +118,11 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
             <button onClick={() => onViewProfile?.(listing.user_id)} className={`font-medium text-sm truncate block w-full text-left hover:underline ${isDark ? 'text-frost' : 'text-gray-800'}`}>
               {listing.author?.username || 'User'}
             </button>
+            {listing.author?.display_name && listing.author.display_name !== listing.author.username && (
+              <div className={`text-xs truncate ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+                {listing.author.display_name}
+              </div>
+            )}
             <div className={`flex items-center gap-1.5 text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>
               <Clock className="w-3 h-3" />
               <time dateTime={listing.created_at}>{timeAgo(listing.created_at, lang)}</time>

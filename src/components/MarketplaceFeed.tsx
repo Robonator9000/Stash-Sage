@@ -6,6 +6,7 @@ import { MarketplaceCard } from './MarketplaceCard';
 import { CreateListingModal } from './CreateListingModal';
 import { showToast } from './Toast';
 import { Plus, ArrowUpDown } from 'lucide-react';
+import { getProfiles } from '../utils/profileCache';
 
 interface MarketplaceFeedProps {
   isDark: boolean;
@@ -34,12 +35,11 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
     if (rawListings.length === 0) return [];
     const userIds = [...new Set(rawListings.map(l => l.user_id))];
     const listingIds = rawListings.map(l => l.id);
-    const [profilesRes, reviewsRes, savedRes] = await Promise.all([
-      supabase.from('profiles').select('user_id, display_name, avatar_url').in('user_id', userIds),
+    const [profileMap, reviewsRes, savedRes] = await Promise.all([
+      getProfiles(userIds),
       supabase.from('listing_reviews').select('listing_id, rating').in('listing_id', listingIds),
       currentUserId ? supabase.from('saved_listings').select('listing_id').eq('user_id', currentUserId).in('listing_id', listingIds) : { data: null },
     ]);
-    const profileMap = new Map((profilesRes.data || []).map(p => [p.user_id, p]));
     const reviewsByListing = new Map<string, { sum: number; count: number }>();
     for (const r of reviewsRes.data || []) {
       const existing = reviewsByListing.get(r.listing_id) || { sum: 0, count: 0 };
@@ -50,10 +50,15 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
     const savedSet = new Set((savedRes.data || []).map(s => s.listing_id));
     setSavedIds(savedSet);
     return rawListings.map(l => {
+      const prof = profileMap.get(l.user_id);
       const stats = reviewsByListing.get(l.id);
       return {
         ...l,
-        author: { username: profileMap.get(l.user_id)?.display_name || 'User', avatar_url: profileMap.get(l.user_id)?.avatar_url },
+        author: {
+          username: prof?.username || 'User',
+          display_name: prof?.display_name,
+          avatar_url: prof?.avatar_url ?? undefined,
+        } as MarketplaceListing['author'],
         saved_by_me: savedSet.has(l.id),
         avg_seller_rating: stats ? stats.sum / stats.count : undefined,
         seller_review_count: stats?.count,
@@ -79,6 +84,14 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
     if (searchQuery.trim() && !l.title.toLowerCase().includes(searchQuery.trim().toLowerCase())) return false;
     return true;
   }), [listings, categoryFilter, searchQuery]);
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: listings.length };
+    for (const l of listings) {
+      counts[l.category] = (counts[l.category] || 0) + 1;
+    }
+    return counts;
+  }, [listings]);
 
   const sorted = useMemo(() => [...filtered].sort((a, b) => {
     const aPinned = pinnedIds.has(a.id);
@@ -245,7 +258,10 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
                 : isDark ? 'bg-midnight/80 border border-edge text-mist hover:text-frost' : 'bg-white border border-gray-200 text-gray-600 hover:text-gray-900 hover:shadow-sm'
             }`}>
             <span className="text-2xl mt-3">{cat.icon}</span>
-            <span className="text-[10px] font-semibold">{cat.label}</span>
+            <span className="text-[10px] font-semibold leading-tight text-center">{cat.label}</span>
+            <span className={`text-[9px] leading-none ${categoryFilter === cat.id ? 'text-white/80' : isDark ? 'text-muted' : 'text-gray-400'}`}>
+              {categoryCounts[cat.id] || 0}
+            </span>
           </button>
         ))}
       </div>

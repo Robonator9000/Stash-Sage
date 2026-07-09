@@ -6,6 +6,11 @@ import { PostCard } from './PostCard';
 import { CreatePostCard } from './CreatePostCard';
 import { showToast } from './Toast';
 import { Bookmark, X } from 'lucide-react';
+import { getProfiles } from '../utils/profileCache';
+
+const TRENDING_CACHE_TTL = 60 * 1000;
+let cachedTrendingTags: string[] | null = null;
+let cachedTrendingAt = 0;
 
 interface SocialFeedProps {
   isDark: boolean;
@@ -41,15 +46,25 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
     const postIds = rawPosts.map(p => p.id);
     const quoteIds = rawPosts.filter(p => p.quoted_post_id).map(p => p.quoted_post_id!);
 
-    const [profilesResult, likesResult, followsResult, commentsResult, bookmarksResult] = await Promise.all([
-      supabase.from('profiles').select('*').in('user_id', userIds),
+    let quotePostMapTmp = new Map<string, Post>();
+    const quoteUserIds: string[] = [];
+    if (quoteIds.length > 0) {
+      const { data: quotePosts } = await supabase.from('posts').select('*').in('id', quoteIds);
+      if (quotePosts && quotePosts.length > 0) {
+        quoteUserIds.push(...[...new Set(quotePosts.map(p => p.user_id))]);
+        for (const qp of quotePosts) {
+          quotePostMapTmp.set(qp.id, qp);
+        }
+      }
+    }
+
+    const [profileMap, likesResult, followsResult, commentsResult, bookmarksResult] = await Promise.all([
+      getProfiles([...userIds, ...quoteUserIds]),
       supabase.from('post_likes').select('id, user_id, post_id').in('post_id', postIds),
       supabase.from('follows').select('following_id').eq('follower_id', currentUserId).in('following_id', userIds),
       supabase.from('post_comments').select('id, post_id').in('post_id', postIds),
       currentUserId ? supabase.from('bookmarks').select('post_id').eq('user_id', currentUserId).in('post_id', postIds) : { data: [] },
     ]);
-
-    const profileMap = new Map((profilesResult.data || []).map(p => [p.user_id, p]));
     const likesArray = likesResult.data || [];
     const likesCountMap = new Map<string, number>();
     const userLikesSet = new Set<string>();
@@ -66,24 +81,18 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
     const followingSet = new Set((followsResult.data || []).map(f => f.following_id));
     const bookmarkSet = new Set((bookmarksResult.data || []).map(b => b.post_id));
 
-    let quotePostMap = new Map<string, Post>();
+    const quotePostMap = new Map<string, Post>();
     if (quoteIds.length > 0) {
-      const { data: quotePosts } = await supabase.from('posts').select('*').in('id', quoteIds);
-      if (quotePosts && quotePosts.length > 0) {
-        const quoteUserIds = [...new Set(quotePosts.map(p => p.user_id))];
-        const { data: quoteProfiles } = await supabase.from('profiles').select('*').in('user_id', quoteUserIds);
-        const qProfileMap = new Map((quoteProfiles || []).map(p => [p.user_id, p]));
-        for (const qp of quotePosts) {
-          const qpProf = qProfileMap.get(qp.user_id);
-          quotePostMap.set(qp.id, {
-            ...qp,
-            author: {
-              username: qpProf?.username || qpProf?.display_name?.toLowerCase().replace(/\s+/g, '_') || 'User',
-              display_name: qpProf?.display_name || qpProf?.username || 'User',
-              avatar_url: qpProf?.avatar_url,
-            },
-          });
-        }
+      for (const [qid, qp] of quotePostMapTmp) {
+        const qpProf = profileMap.get(qp.user_id);
+        quotePostMap.set(qid, {
+          ...qp,
+          author: {
+            username: qpProf?.username || 'User',
+            display_name: qpProf?.display_name || 'User',
+            avatar_url: qpProf?.avatar_url,
+          },
+        });
       }
     }
 
@@ -92,8 +101,8 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       return {
       ...p,
       author: {
-        username: prof?.username || prof?.display_name?.toLowerCase().replace(/\s+/g, '_') || 'User',
-        display_name: prof?.display_name || prof?.username || 'User',
+        username: prof?.username || 'User',
+        display_name: prof?.display_name || 'User',
         avatar_url: prof?.avatar_url,
       },
       likes_count: likesCountMap.get(p.id) || 0,
@@ -170,7 +179,11 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
           const newPost = payload.new as Post;
           if (newPost.user_id === currentUserId) return;
           const enriched = await enrichPosts([newPost]);
-          setPosts(prev => [enriched[0], ...prev]);
+          setPosts(prev => {
+            const next = [enriched[0], ...prev];
+            const seen = new Set<string>();
+            return next.filter(p => (seen.has(p.id) ? false : (seen.add(p.id), true)));
+          });
         } catch (e) { console.error('Realtime post error:', e); }
       })
       .subscribe((status) => {
@@ -201,11 +214,19 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
   }, [hasMore, loading, loadingMore, fetchPosts, feedFilter]);
 
   useEffect(() => {
+    const now = Date.now();
+    if (cachedTrendingTags && now - cachedTrendingAt < TRENDING_CACHE_TTL) {
+      setTrendingTags(cachedTrendingTags);
+      return;
+    }
     supabase.from('post_hashtags').select('tag, created_at').gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()).then(({ data }) => {
       if (!data) return;
       const counts: Record<string, number> = {};
       data.forEach(h => { counts[h.tag] = (counts[h.tag] || 0) + 1; });
-      setTrendingTags(Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10).map(e => e[0]));
+      const tags = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10).map(e => e[0]);
+      cachedTrendingTags = tags;
+      cachedTrendingAt = Date.now();
+      setTrendingTags(tags);
     });
   }, []);
 
@@ -250,7 +271,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       const mentions = content.match(/@(\w+)/g);
       if (mentions) {
         const usernames = [...new Set(mentions.map(m => m.slice(1)))];
-        const { data: mentionedUsers } = await supabase.from('profiles').select('user_id, display_name').in('display_name', usernames);
+        const { data: mentionedUsers } = await supabase.from('profiles').select('user_id, username').in('username', usernames);
         if (mentionedUsers) {
           for (const u of mentionedUsers) {
             await supabase.from('mentions').insert({ post_id: data.id, user_id: u.user_id });

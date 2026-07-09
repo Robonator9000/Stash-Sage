@@ -7,8 +7,21 @@ import { NetworkFirst } from 'workbox-strategies';
 precacheAndRoute((self as any).__WB_MANIFEST);
 
 registerRoute(
-  ({ url }) => url.pathname.startsWith('/') && !url.pathname.startsWith('/api/'),
-  new NetworkFirst({ cacheName: 'pages' })
+  ({ url }) => url.pathname.startsWith('/') && !url.pathname.startsWith('/api/') && !url.pathname.startsWith('/assets/'),
+  new NetworkFirst({ cacheName: 'pages', networkTimeoutSeconds: 3 })
+);
+
+// Offline fallback: serve the precached app shell for navigation requests.
+registerRoute(
+  ({ request, url }) => url.origin === (self as unknown as ServiceWorkerGlobalScope).location.origin && request.mode === 'navigate',
+  async ({ request }) => {
+    try {
+      return await fetch(request);
+    } catch {
+      const fallback = await caches.match('index.html');
+      return fallback || Response.error();
+    }
+  }
 );
 
 self.addEventListener('push', (event) => {

@@ -7,7 +7,7 @@ import { useSessions } from './utils/useSessions';
 import { useSettings } from './utils/useSettings';
 import { useDebounce } from './hooks/useDebounce';
 import { useActivity } from './utils/useActivity';
-import { ImportResult } from './utils/dataTransfer';
+import { ImportResult, mergeImportProducts } from './utils/dataTransfer';
 import { searchProducts, sortProducts, filterProducts, generateId, formatPrecision, roundToHundredth, formatCurrency } from './utils/helpers';
 import { t } from './utils/translations';
 import { playSmokeSound, playSellSound } from './utils/sounds';
@@ -69,6 +69,18 @@ export default function App() {
   const [chatTargetUserId, setChatTargetUserId] = useState<string | null>(null);
 
   const [showSmoke, setShowSmoke] = useState(false);
+
+  const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  useEffect(() => {
+    const goOnline = () => setIsOnline(true);
+    const goOffline = () => setIsOnline(false);
+    window.addEventListener('online', goOnline);
+    window.addEventListener('offline', goOffline);
+    return () => {
+      window.removeEventListener('online', goOnline);
+      window.removeEventListener('offline', goOffline);
+    };
+  }, []);
 
   const handleViewProfile = useCallback((uid: string) => {
     supabase.from('profiles').select('username').eq('user_id', uid).maybeSingle().then(({ data }) => {
@@ -275,10 +287,8 @@ export default function App() {
   }, [replaceAllProducts, replaceSettings]);
 
   const handleMergeImport = useCallback((data: ImportResult) => {
-    for (const product of data.products) {
-      addProduct({ ...product, id: generateId(), createdAt: new Date(), updatedAt: new Date() });
-    }
-  }, [addProduct]);
+    replaceAllProducts(mergeImportProducts(products, data.products));
+  }, [products, replaceAllProducts]);
 
   // Dashboard data
   const lang = settings.language;
@@ -443,7 +453,8 @@ export default function App() {
   if (!settings.onboardingDone) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
-        <BackgroundCanvas isDark={isDark} />
+      <BackgroundCanvas isDark={isDark} />
+
         <WelcomeModal
           onComplete={(language) => updateSettings({ language, onboardingDone: true })}
           isDark={isDark}
@@ -457,6 +468,15 @@ export default function App() {
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg)' }} id="main-content">
       <a href="#main-content" className="skip-link">Skip to content</a>
       <BackgroundCanvas isDark={isDark} />
+
+      {!isOnline && (
+        <div
+          role="status"
+          className={`w-full text-center text-sm font-medium py-2 px-4 ${isDark ? 'bg-amber-500/20 text-amber-200' : 'bg-amber-400 text-amber-900'}`}
+        >
+          {t('offlineBanner', lang)}
+        </div>
+      )}
 
       {!settings.coachMarksDone && (
         <CoachMarks

@@ -138,6 +138,7 @@ export interface PostComment {
   created_at: string;
   author?: {
     username: string;
+    display_name?: string;
     avatar_url?: string;
   };
   replies?: PostComment[];
@@ -188,6 +189,7 @@ export interface MarketplaceListing {
   seller_review_count?: number;
   author?: {
     username: string;
+    display_name?: string;
     avatar_url?: string;
   };
 }

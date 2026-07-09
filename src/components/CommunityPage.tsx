@@ -30,13 +30,10 @@ export function CommunityPage() {
     supabase.from('profiles').select('*').eq('username', profileUser).maybeSingle().then(({ data, error }) => {
       if (!error && data?.user_id) {
         setProfileUserId(data.user_id);
-        setResolvingProfile(false);
       } else {
-        supabase.from('profiles').select('*').eq('display_name', profileUser).maybeSingle().then(({ data: d2 }) => {
-          setProfileUserId(d2?.user_id || null);
-          setResolvingProfile(false);
-        });
+        setProfileUserId(null);
       }
+      setResolvingProfile(false);
     });
   }, [profileUser]);
 
@@ -78,6 +75,21 @@ export function CommunityPage() {
     return <ProfilePage userId={profileUserId} onBack={() => {
       setSearchParams(prev => { prev.delete('user'); return prev; }, { replace: true });
     }} />;
+  }
+
+  if (profileUser && !resolvingProfile && !profileUserId) {
+    return (
+      <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+        <p className={`text-sm font-medium ${isDark ? 'text-mist' : 'text-gray-500'}`}>User not found</p>
+        <p className={`text-xs mt-1 ${isDark ? 'text-muted' : 'text-gray-400'}`}>No profile exists for @{profileUser}</p>
+        <button
+          onClick={() => setSearchParams(prev => { prev.delete('user'); return prev; }, { replace: true })}
+          className={`mt-4 px-4 py-2 rounded-lg text-xs font-medium transition-all border ${isDark ? 'border-edge text-mist hover:bg-surface' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+        >
+          Back to community
+        </button>
+      </div>
+    );
   }
 
   if (profileUser && resolvingProfile) {

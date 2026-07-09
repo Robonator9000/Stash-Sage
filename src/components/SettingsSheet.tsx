@@ -60,7 +60,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [visible, setVisible] = useState(false);
-  const [profileUsername] = useState(settings.profile?.username || user?.email?.split('@')[0] || '');
+  const [profileUsername, setProfileUsername] = useState(settings.profile?.username || user?.email?.split('@')[0] || '');
   const [profileDisplayName, setProfileDisplayName] = useState(settings.profile?.displayName || '');
   const [profileBio, setProfileBio] = useState(settings.profile?.bio || '');
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(settings.profile?.avatar_url);
@@ -88,6 +88,10 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
     const timer = setTimeout(() => setFeedback(null), 4000);
     return () => clearTimeout(timer);
   }, [feedback]);
+
+  useEffect(() => {
+    setProfileUsername(settings.profile?.username || user?.email?.split('@')[0] || '');
+  }, [settings.profile, user]);
 
   const handleStatToggle = (key: keyof Settings['statsVisibility']) => {
     toggleStatVisibility(key);

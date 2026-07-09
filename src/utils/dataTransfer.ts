@@ -32,6 +32,19 @@ function normalizeProducts(raw: unknown[]): Product[] {
   return raw.filter(isValidProduct).map(parseProductDates);
 }
 
+// Merge imported products into an existing list, deduping by stable product id.
+// Imported products take precedence over existing ones with the same id.
+export function mergeImportProducts(existing: Product[], imported: Product[]): Product[] {
+  const byId = new Map<string, Product>();
+  for (const p of existing) {
+    if (p && typeof p.id === 'string') byId.set(p.id, p);
+  }
+  for (const p of imported) {
+    if (p && typeof p.id === 'string') byId.set(p.id, p);
+  }
+  return Array.from(byId.values());
+}
+
 export function createExportData(products: Product[], settings?: Settings): StashExportData {
   return {
     version: EXPORT_VERSION,

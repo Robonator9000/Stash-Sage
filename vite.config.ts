@@ -30,6 +30,9 @@ export default defineConfig({
       srcDir: 'src',
       filename: 'sw.ts',
       registerType: 'prompt',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,ico,png,woff2}'],
+      },
       manifest: {
         name: 'Stash Tracker',
         short_name: 'Stash',
