@@ -99,12 +99,12 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
   }, [showOwnerMenu]);
 
   return (
-    <div className={`p-3 rounded-2xl transition-all ${isDark ? 'bg-surface/60 border border-edge hover:border-cyanx/30' : 'bg-white border border-gray-200 hover:border-cyan-400/30'} shadow-sm flex flex-col`} role="article">
+    <div className={`p-2.5 rounded-2xl transition-all ${isDark ? 'bg-surface/60 border border-edge hover:border-cyanx/30' : 'bg-white border border-gray-200 hover:border-cyan-400/30'} shadow-sm flex flex-col`} role="article">
       {/* Header: avatar, username, time, category, sold badge, save, owner menu */}
-      <div className="flex items-start justify-between gap-2 mb-2">
+      <div className="flex items-start justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-2.5 min-w-0">
           <button onClick={() => onViewProfile?.(listing.user_id)} aria-label={'View ' + (listing.author?.username || 'user') + '\'s profile'} className="shrink-0">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden ${listing.author?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden ${listing.author?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
               {listing.author?.avatar_url ? (
                 <img src={listing.author.avatar_url} alt="" loading="lazy" className="w-full h-full object-cover" />
               ) : (
@@ -182,9 +182,9 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
 
       {/* Image gallery */}
       {allImages.length > 0 && (
-        <div className="mb-3 rounded-xl overflow-hidden relative group">
+        <div className="mb-2.5 rounded-xl overflow-hidden relative group">
           <button type="button" onClick={() => setShowDetail(true)} className="w-full block">
-            <img src={allImages[currentImageIndex]} alt={listing.title} loading="lazy" className="w-full h-40 object-cover" />
+            <img src={allImages[currentImageIndex]} alt={listing.title} loading="lazy" className="w-full h-36 object-cover" />
           </button>
           {allImages.length > 1 && (
             <>
@@ -208,30 +208,30 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
       )}
 
       {/* Title */}
-      <h3 className={`font-display font-bold text-xl mb-1.5 ${isDark ? 'text-frost' : 'text-gray-900'}`}>
+      <h3 className={`font-display font-bold text-lg mb-1 ${isDark ? 'text-frost' : 'text-gray-900'}`}>
         {listing.title}
       </h3>
 
       {/* Description */}
       {listing.description && (
-        <p className={`text-sm mb-3 leading-relaxed ${isDark ? 'text-mist' : 'text-gray-600'}`}>
+        <p className={`text-sm mb-2 leading-relaxed ${isDark ? 'text-mist' : 'text-gray-600'}`}>
           {listing.description}
         </p>
       )}
 
       {/* Linked product */}
       {linkedProduct && (
-        <div className={`mb-3 rounded-xl border ${isDark ? 'border-edge' : 'border-gray-200'}`}>
+        <div className={`mb-2.5 rounded-xl border ${isDark ? 'border-edge' : 'border-gray-200'}`}>
           {linkedProduct.picture && (
-            <div className="w-full h-48 overflow-hidden rounded-t-xl">
+            <div className="w-full h-40 overflow-hidden rounded-t-xl">
               <img src={linkedProduct.picture} alt={linkedProduct.name} loading="lazy" className="w-full h-full object-cover" />
             </div>
           )}
-          <div className={`p-4 ${isDark ? 'bg-midnight/50' : 'bg-gray-50'} ${linkedProduct.picture ? 'rounded-b-xl' : 'rounded-xl'}`}>
+          <div className={`p-3.5 ${isDark ? 'bg-midnight/50' : 'bg-gray-50'} ${linkedProduct.picture ? 'rounded-b-xl' : 'rounded-xl'}`}>
             <button type="button" onClick={() => setShowProductDetail(s => !s)} className="w-full text-left">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <div className={`font-bold text-lg mb-1.5 ${isDark ? 'text-frost' : 'text-gray-900'}`}>{linkedProduct.name}</div>
+                  <div className={`font-bold text-base mb-1 ${isDark ? 'text-frost' : 'text-gray-900'}`}>{linkedProduct.name}</div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     {linkedProduct.thc > 0 && <span className="text-sm font-bold text-orange-500">THC {linkedProduct.thc}%</span>}
                     {linkedProduct.cbd > 0 && <span className="text-sm font-bold text-blue-500">CBD {linkedProduct.cbd}%</span>}
@@ -300,7 +300,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
 
       {/* Seller rating */}
       {listing.avg_seller_rating != null && listing.seller_review_count != null && listing.seller_review_count > 0 && (
-        <div className={`flex items-center gap-1.5 text-sm mb-3 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+        <div className={`flex items-center gap-1.5 text-sm mb-2 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
           <span className="text-amber-500">{'★'.repeat(Math.round(listing.avg_seller_rating))}{'☆'.repeat(5 - Math.round(listing.avg_seller_rating))}</span>
           <span className="font-medium">{listing.avg_seller_rating.toFixed(1)}</span>
           <span className={isDark ? 'text-muted' : 'text-gray-400'}>({listing.seller_review_count})</span>
@@ -310,20 +310,20 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
       {/* Price + Contact row */}
       <div className="flex flex-wrap items-stretch gap-2 mb-3">
         {listing.price_options && listing.price_options.length > 0 ? (
-          <div className={`flex flex-wrap gap-2 flex-1 min-w-0 p-3 rounded-xl ${isDark ? 'bg-midnight/50 border border-edge' : 'bg-gray-50 border border-gray-200'}`}>
+          <div className={`flex flex-wrap gap-2 flex-1 min-w-0 p-2.5 rounded-xl ${isDark ? 'bg-midnight/50 border border-edge' : 'bg-gray-50 border border-gray-200'}`}>
             {listing.price_options.map((opt, i) => (
-              <span key={i} className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold ${isDark ? 'bg-midnight text-emera' : 'bg-white text-emerald-600 shadow-sm'}`}>
+              <span key={i} className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold ${isDark ? 'bg-midnight text-emera' : 'bg-white text-emerald-600 shadow-sm'}`}>
                 <Scale className="w-3.5 h-3.5" />{opt.amount}g &middot; ${opt.price.toFixed(2)}
               </span>
             ))}
           </div>
         ) : (
-          <span className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-lg font-bold ${isDark ? 'bg-emera/10 text-emera' : 'bg-emerald-50 text-emerald-600'}`}>
+          <span className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-base font-bold ${isDark ? 'bg-emera/10 text-emera' : 'bg-emerald-50 text-emerald-600'}`}>
             <DollarSign className="w-5 h-5" />{listing.price.toFixed(2)}
           </span>
         )}
         <button onClick={handleContactClick} aria-label={`Contact via ${listing.contact_platform}: ${listing.contact_value}`}
-          className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-semibold transition-all shrink-0 ${isDark ? 'bg-midnight text-frost hover:bg-midnight/80' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+          className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shrink-0 ${isDark ? 'bg-midnight text-frost hover:bg-midnight/80' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
           <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" style={{ color: brandColor }} aria-hidden="true">
             <path d={brandPath} />
           </svg>
@@ -341,7 +341,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
         </button>
         {!isOwner && currentUserId && onStartChat && (
           <button onClick={() => onStartChat(listing.id)} aria-label={t('startChat', lang)}
-            className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-all shrink-0 ${isDark ? 'bg-[#8b5cf6]/10 text-[#8b5cf6] hover:bg-[#8b5cf6]/20' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'}`}>
+            className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shrink-0 ${isDark ? 'bg-[#8b5cf6]/10 text-[#8b5cf6] hover:bg-[#8b5cf6]/20' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'}`}>
             <MessageCircle className="w-5 h-5" />
             <span className="hidden sm:inline">{t('startChat', lang)}</span>
           </button>
