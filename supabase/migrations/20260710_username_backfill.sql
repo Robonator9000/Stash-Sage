@@ -4,7 +4,7 @@
 UPDATE profiles
 SET username = CASE
   WHEN slug.s <> '' THEN slug.s
-  ELSE 'user_' || substr(user_id::text, 1, 8)
+  ELSE 'user_' || substr(profiles.user_id::text, 1, 8)
 END
 FROM (
   SELECT user_id,
