@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 export function MenuButton() {
-  const navigate = useNavigate();
   const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
@@ -23,7 +21,7 @@ export function MenuButton() {
 
   return (
     <button
-      onClick={() => navigate('/menu')}
+      onClick={() => window.open('https://grasstash.vercel.app/', '_blank')}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className="fixed bottom-6 left-6 z-50 group"

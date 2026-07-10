@@ -11,7 +11,7 @@ import type { Profile } from '../types';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../utils/supabase';
 
-export function CommunityPage() {
+export function CommunityPage({ onOpenChat }: { onOpenChat?: (userId: string) => void }) {
   const { user } = useAuth();
   const { settings } = useSettings();
   const { products } = useProducts();
@@ -91,7 +91,7 @@ export function CommunityPage() {
   if (profileUser && profileUserId) {
     return <ProfilePage userId={profileUserId} onBack={() => {
       setSearchParams(prev => { prev.delete('user'); return prev; }, { replace: true });
-    }} />;
+    }} onOpenChat={onOpenChat} />;
   }
 
   if (profileUser && !resolvingProfile && !profileUserId) {

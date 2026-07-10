@@ -26,8 +26,9 @@ export function BottomNav({ activeTab, onTabChange, isDark, lang }: BottomNavPro
   const { isAdmin } = useAuth();
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around px-2 py-1 safe-area-bottom backdrop-blur-lg border-t
-      bg-white/90 border-gray-200 dark:bg-slate-900/90 dark:border-slate-700/50">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around px-2 py-1 backdrop-blur-lg border-t
+      bg-white/90 border-gray-200 dark:bg-slate-900/90 dark:border-slate-700/50"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       {tabs.map(tab => (
         <button
           key={tab.id}

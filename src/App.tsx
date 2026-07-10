@@ -818,7 +818,7 @@ export default function App() {
                 </p>
               </div>
             ) : (
-              <CommunityPage />
+              <CommunityPage onOpenChat={handleOpenChat} />
             )}
           </div>
           </ErrorBoundary>

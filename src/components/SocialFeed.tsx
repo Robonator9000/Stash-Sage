@@ -43,6 +43,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
   const activeHashtag = externalHashtag ?? activeHashtagInternal;
   const [trendingTags, setTrendingTags] = useState<string[]>([]);
   const [quotePostId, setQuotePostId] = useState<string | null>(null);
+  const [quoteContent, setQuoteContent] = useState('');
   const pageRef = useRef(0);
   const observerRef = useRef<HTMLDivElement>(null);
 
@@ -459,6 +460,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       const enriched = await enrichPosts([data]);
       setPosts(prev => [enriched[0], ...prev]);
       setQuotePostId(null);
+      setQuoteContent('');
       showToast({ id: 'post-created', title: '', body: t('postCreated', lang) });
     } finally {
       setSubmitting(false);
@@ -499,7 +501,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
         <div className={`p-4 rounded-2xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
           <div className="flex items-center justify-between mb-3">
             <span className={`text-sm font-medium ${isDark ? 'text-frost' : 'text-gray-800'}`}>{t('sharePost', lang)}</span>
-            <button onClick={() => setQuotePostId(null)} className={isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}>
+            <button onClick={() => { setQuotePostId(null); setQuoteContent(''); }} className={isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}>
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -514,8 +516,8 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
             </p>
           </div>
           <textarea
-            value={quotePostId ? '' : ''}
-            onChange={e => (e.target as HTMLTextAreaElement)}
+            value={quoteContent}
+            onChange={e => setQuoteContent(e.target.value.slice(0, 500))}
             placeholder={`${t('sharePost', lang)}...`}
             className={`w-full text-sm px-3 py-2 rounded-xl outline-none resize-none mb-2 ${
               isDark ? 'bg-midnight text-frost border border-edge focus:border-cyanx/50 placeholder-muted' : 'bg-gray-50 text-gray-800 border border-gray-200 focus:border-cyan-500 placeholder-gray-400'
@@ -524,18 +526,15 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
             autoFocus
             onKeyDown={e => {
               if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                const val = (e.target as HTMLTextAreaElement).value.trim();
-                if (val) handleQuotePost(val);
+                if (quoteContent.trim()) handleQuotePost(quoteContent.trim());
               }
             }}
-            id="quote-input"
           />
           <div className="flex justify-end">
             <button
-              onClick={() => {
-                const input = document.getElementById('quote-input') as HTMLTextAreaElement;
-                if (input?.value.trim()) handleQuotePost(input.value.trim());
-              }}
+            onClick={() => {
+              if (quoteContent.trim()) handleQuotePost(quoteContent.trim());
+            }}
               className="px-3 py-1.5 rounded-xl text-xs font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark"
             >
               {t('postButton', lang)}

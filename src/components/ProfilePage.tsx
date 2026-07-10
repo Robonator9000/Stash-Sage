@@ -22,9 +22,10 @@ interface ProfileData {
 interface ProfilePageProps {
   userId?: string;
   onBack?: () => void;
+  onOpenChat?: (userId: string) => void;
 }
 
-export function ProfilePage({ userId: propUserId, onBack }: ProfilePageProps = {}) {
+export function ProfilePage({ userId: propUserId, onBack, onOpenChat }: ProfilePageProps = {}) {
   const params = useParams();
   const userId = propUserId || params.userId;
   const navigate = useNavigate();
@@ -119,7 +120,7 @@ export function ProfilePage({ userId: propUserId, onBack }: ProfilePageProps = {
     if (!currentUserId || !userId) return;
     const { data: existing } = await supabase.from('conversations').select('id').or(`and(buyer_id.eq.${currentUserId},seller_id.eq.${userId}),and(buyer_id.eq.${userId},seller_id.eq.${currentUserId})`).is('listing_id', null).maybeSingle();
     if (!existing) await supabase.from('conversations').insert({ buyer_id: currentUserId, seller_id: userId, listing_id: null }).then(undefined, () => {});
-    navigate('/?tab=community&openChat=' + encodeURIComponent(userId));
+    if (onOpenChat) { onOpenChat(userId); } else { navigate('/?tab=community&openChat=' + encodeURIComponent(userId)); }
   }
 
   function contactIcon(platform: string) {
