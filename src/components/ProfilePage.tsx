@@ -118,9 +118,9 @@ export function ProfilePage({ userId: propUserId, onBack, onOpenChat }: ProfileP
 
   async function handleMessage() {
     if (!currentUserId || !userId) return;
+    if (onOpenChat) { onOpenChat(userId); } else { navigate('/?tab=community&openChat=' + encodeURIComponent(userId)); }
     const { data: existing } = await supabase.from('conversations').select('id').or(`and(buyer_id.eq.${currentUserId},seller_id.eq.${userId}),and(buyer_id.eq.${userId},seller_id.eq.${currentUserId})`).is('listing_id', null).maybeSingle();
     if (!existing) await supabase.from('conversations').insert({ buyer_id: currentUserId, seller_id: userId, listing_id: null }).then(undefined, () => {});
-    if (onOpenChat) { onOpenChat(userId); } else { navigate('/?tab=community&openChat=' + encodeURIComponent(userId)); }
   }
 
   function contactIcon(platform: string) {

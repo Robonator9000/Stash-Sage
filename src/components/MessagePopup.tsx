@@ -33,7 +33,7 @@ export function MessagePopup({ currentUserId, isDark, lang, initialTargetUserId,
     return (
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-cyanx to-emera text-white shadow-2xl shadow-cyanx/30 flex items-center justify-center hover:scale-105 transition-transform"
+        className="fixed bottom-20 right-4 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-cyanx to-emera text-white shadow-2xl shadow-cyanx/30 flex items-center justify-center hover:scale-105 transition-transform sm:bottom-6 sm:right-6"
       >
         <MessageCircle className="w-6 h-6" />
         {unreadCount > 0 && (
@@ -49,7 +49,7 @@ export function MessagePopup({ currentUserId, isDark, lang, initialTargetUserId,
     return (
       <button
         onClick={() => setMinimized(false)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-cyanx to-emera text-white shadow-2xl shadow-cyanx/30 flex items-center justify-center hover:scale-105 transition-transform"
+        className="fixed bottom-20 right-4 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-cyanx to-emera text-white shadow-2xl shadow-cyanx/30 flex items-center justify-center hover:scale-105 transition-transform sm:bottom-6 sm:right-6"
       >
         <MessageCircle className="w-6 h-6" />
         {unreadCount > 0 && (
@@ -62,8 +62,8 @@ export function MessagePopup({ currentUserId, isDark, lang, initialTargetUserId,
   }
 
   return (
-    <div className={`fixed bottom-6 right-6 z-50 w-[380px] h-[560px] rounded-2xl shadow-2xl flex flex-col overflow-hidden ${
-      isDark ? 'bg-[#0b1120] border border-edge' : 'bg-white border border-gray-200 shadow-xl'
+    <div className={`fixed inset-0 z-50 h-[100dvh] w-full flex flex-col overflow-hidden sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[560px] sm:w-[380px] sm:rounded-2xl rounded-none ${
+      isDark ? 'bg-[#0b1120] border-0 sm:border sm:border-edge' : 'bg-white border-0 sm:border sm:border-gray-200 sm:shadow-xl'
     }`}>
       <div className={`flex items-center justify-between px-4 py-3 border-b shrink-0 ${isDark ? 'border-edge' : 'border-gray-200'}`}>
         <span className={`text-sm font-bold ${isDark ? 'text-frost' : 'text-gray-800'}`}>
