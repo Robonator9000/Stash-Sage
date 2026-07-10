@@ -2,7 +2,7 @@ import { memo, useState, useCallback, useEffect, useRef } from 'react';
 import type { MarketplaceListing, Product } from '../types';
 import { t } from '../utils/translations';
 import { getContactUrl, copyToClipboard, timeAgo } from '../utils/helpers';
-import { Tag, DollarSign, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, X, MessageCircle, Star, Scale, MoreVertical, FlaskConical, Calendar, StickyNote, Pin } from 'lucide-react';
+import { Tag, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, X, MessageCircle, Star, Scale, MoreVertical, FlaskConical, Calendar, StickyNote, Pin } from 'lucide-react';
 import { ReviewSection } from './ReviewSection';
 
 const CATEGORY_GLOW: Record<string, string> = {
@@ -161,56 +161,58 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
         {/* Gradient overlay */}
         <div className="absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
 
-        {/* Info bar */}
-        <div className="absolute inset-x-0 bottom-0 p-3 flex flex-col gap-1.5" onClick={e => e.stopPropagation()}>
-          <div className="flex items-center gap-2 min-w-0">
-            {listing.category && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold text-white shrink-0"
-                style={{ backgroundColor: `rgba(${glowRgb},0.88)` }}>
-                <Tag className="w-3 h-3" />
-                {listing.category}
-              </span>
-            )}
-            <span className="text-xs text-white/70 shrink-0">{timeAgo(listing.created_at, lang)}</span>
-            <div className="ml-auto flex items-center gap-1">
-              {currentUserId && currentUserId !== listing.user_id && (
-                  <button onClick={() => onSave?.(listing.id)} aria-label={listing.saved_by_me ? t('unsaveListing', lang) : t('saveListing', lang)}
-                  className={`min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg transition-all backdrop-blur-sm ${listing.saved_by_me ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/30' : 'bg-black/20 text-white hover:bg-black/40'}`}>
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill={listing.saved_by_me ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
-                    <path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z" />
-                  </svg>
-                </button>
-              )}
-              {isOwner && listing.status === 'active' && onPinToggle && (
-                <button onClick={() => onPinToggle(listing.id)} aria-label={isPinned ? 'Unpin listing' : 'Pin listing to top'}
-                  className={`min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg transition-all backdrop-blur-sm ${isPinned ? 'bg-cyanx/30 text-cyanx' : 'bg-black/20 text-white hover:bg-black/40'}`}>
-                  <Pin className="w-3.5 h-3.5" fill={isPinned ? 'currentColor' : 'none'} />
-                </button>
-              )}
-              {isOwner && listing.status === 'active' && (
-                <div ref={ownerMenuRef} className="relative">
-                  <button onClick={() => setShowOwnerMenu(s => !s)} aria-label="Listing options"
-                    className="min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg bg-black/20 text-white hover:bg-black/40 transition-all backdrop-blur-sm">
-                    <MoreVertical className="w-3.5 h-3.5" />
+        {/* Top-left category badge */}
+        {listing.category && (
+          <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold text-white z-10"
+            style={{ backgroundColor: `rgba(${glowRgb},0.88)` }}>
+            <Tag className="w-3 h-3" />
+            {listing.category}
+          </span>
+        )}
+
+        {/* Top-right controls */}
+        <div className="absolute top-2 right-2 flex items-center gap-1 z-10" onClick={e => e.stopPropagation()}>
+          {currentUserId && currentUserId !== listing.user_id && (
+            <button onClick={() => onSave?.(listing.id)} aria-label={listing.saved_by_me ? t('unsaveListing', lang) : t('saveListing', lang)}
+              className={`min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg transition-all backdrop-blur-sm ${listing.saved_by_me ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/30' : 'bg-black/20 text-white hover:bg-black/40'}`}>
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill={listing.saved_by_me ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
+                <path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z" />
+              </svg>
+            </button>
+          )}
+          {isOwner && listing.status === 'active' && onPinToggle && (
+            <button onClick={() => onPinToggle(listing.id)} aria-label={isPinned ? 'Unpin listing' : 'Pin listing to top'}
+              className={`min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg transition-all backdrop-blur-sm ${isPinned ? 'bg-cyanx/30 text-cyanx' : 'bg-black/20 text-white hover:bg-black/40'}`}>
+              <Pin className="w-3.5 h-3.5" fill={isPinned ? 'currentColor' : 'none'} />
+            </button>
+          )}
+          {isOwner && listing.status === 'active' && (
+            <div ref={ownerMenuRef} className="relative">
+              <button onClick={() => setShowOwnerMenu(s => !s)} aria-label="Listing options"
+                className="min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg bg-black/20 text-white hover:bg-black/40 transition-all backdrop-blur-sm">
+                <MoreVertical className="w-3.5 h-3.5" />
+              </button>
+              {showOwnerMenu && (
+                <div className={`absolute right-0 top-full mt-1 w-44 rounded-xl shadow-xl border overflow-hidden z-30 ${isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
+                  <button onClick={() => { onEdit?.(listing); setShowOwnerMenu(false); }} className={`w-full px-4 py-2.5 text-sm text-left transition-all flex items-center gap-2.5 ${isDark ? 'text-frost hover:bg-surface' : 'text-gray-700 hover:bg-gray-50'}`}>
+                    {t('editProduct', lang)}
                   </button>
-                  {showOwnerMenu && (
-                    <div className={`absolute right-0 bottom-full mb-2 w-44 rounded-xl shadow-xl border overflow-hidden z-30 ${isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
-                      <button onClick={() => { onEdit?.(listing); setShowOwnerMenu(false); }} className={`w-full px-4 py-2.5 text-sm text-left transition-all flex items-center gap-2.5 ${isDark ? 'text-frost hover:bg-surface' : 'text-gray-700 hover:bg-gray-50'}`}>
-                        {t('editProduct', lang)}
-                      </button>
-                      <button onClick={() => { setConfirmAction({ type: 'sold', listingId: listing.id }); setShowOwnerMenu(false); }} className={`w-full px-4 py-2.5 text-sm text-left transition-all flex items-center gap-2.5 ${isDark ? 'text-emera hover:bg-surface' : 'text-emerald-600 hover:bg-gray-50'}`}>
-                        {t('markAsSold', lang)}
-                      </button>
-                      <div className={`h-px ${isDark ? 'bg-edge' : 'bg-gray-200'}`} />
-                      <button onClick={() => { setConfirmAction({ type: 'delete', listingId: listing.id }); setShowOwnerMenu(false); }} className={`w-full px-4 py-2.5 text-sm text-left transition-all flex items-center gap-2.5 ${isDark ? 'text-red-400 hover:bg-surface' : 'text-red-500 hover:bg-gray-50'}`}>
-                        {t('delete', lang)}
-                      </button>
-                    </div>
-                  )}
+                  <button onClick={() => { setConfirmAction({ type: 'sold', listingId: listing.id }); setShowOwnerMenu(false); }} className={`w-full px-4 py-2.5 text-sm text-left transition-all flex items-center gap-2.5 ${isDark ? 'text-emera hover:bg-surface' : 'text-emerald-600 hover:bg-gray-50'}`}>
+                    {t('markAsSold', lang)}
+                  </button>
+                  <div className={`h-px ${isDark ? 'bg-edge' : 'bg-gray-200'}`} />
+                  <button onClick={() => { setConfirmAction({ type: 'delete', listingId: listing.id }); setShowOwnerMenu(false); }} className={`w-full px-4 py-2.5 text-sm text-left transition-all flex items-center gap-2.5 ${isDark ? 'text-red-400 hover:bg-surface' : 'text-red-500 hover:bg-gray-50'}`}>
+                    {t('delete', lang)}
+                  </button>
                 </div>
               )}
             </div>
-          </div>
+          )}
+        </div>
+
+        {/* Info bar */}
+        <div className="absolute inset-x-0 bottom-0 p-3 flex flex-col gap-1.5 pointer-events-none">
+          <span className="text-[11px] text-white/70 shrink-0">{timeAgo(listing.created_at, lang)}</span>
           <h3 className="text-white font-bold text-sm leading-tight line-clamp-1">{listing.title}</h3>
           <div className="flex items-center gap-2">
             {listing.price_options && listing.price_options.length > 0 ? (
@@ -231,73 +233,106 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
             )}
           </div>
         </div>
-
-        {/* Details hint */}
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none translate-x-2 group-hover:translate-x-0">
-          <span className="text-[11px] font-semibold text-white bg-black/50 px-2.5 py-1 rounded-full backdrop-blur-sm shadow-lg">
-            Details &rarr;
-          </span>
-        </div>
       </div>
 
-      {/* Detail popup */}
+      {/* Detail popup — Facebook-style fullscreen split */}
       {showDetailPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm" onClick={() => setShowDetailPopup(false)}>
-          <div className={`relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl ${isDark ? 'bg-card border border-edge' : 'bg-white border border-gray-200'}`}
-            onClick={e => e.stopPropagation()}>
-
+        <div className="fixed inset-0 z-50 bg-black/80 flex" onClick={() => setShowDetailPopup(false)}>
+          <div className="flex-1 flex items-center justify-center relative min-w-0" onClick={e => e.stopPropagation()}>
+            {/* Close button */}
             <button type="button" onClick={() => setShowDetailPopup(false)} aria-label="Close"
-              className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-all">
+              className="absolute top-4 left-4 z-10 p-2.5 rounded-full bg-black/40 text-white hover:bg-black/60 transition-all">
               <X className="w-5 h-5" />
             </button>
 
-            <div className="relative w-full aspect-video overflow-hidden">
-              {allImages.length > 0 ? (
-                <img src={allImages[currentImageIndex]} alt={listing.title} className="w-full h-full object-cover" />
-              ) : (
-                <div className={`w-full h-full flex items-center justify-center ${isDark ? 'bg-surface' : 'bg-gray-100'}`}>
-                  <span className={`text-sm ${isDark ? 'text-muted' : 'text-gray-400'}`}>No image</span>
+            {/* Image */}
+            {allImages.length > 0 ? (
+              <img src={allImages[currentImageIndex]} alt={listing.title} className="max-w-full max-h-full object-contain p-4" />
+            ) : (
+              <div className="flex items-center justify-center text-white/60">
+                <span>No image</span>
+              </div>
+            )}
+
+            {/* Image nav */}
+            {allImages.length > 1 && (
+              <>
+                <button type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i => (i - 1 + allImages.length) % allImages.length); }} aria-label="Previous image"
+                  className="absolute left-6 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all">
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i => (i + 1) % allImages.length); }} aria-label="Next image"
+                  className="absolute right-6 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all">
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+                  {allImages.map((_, i) => (
+                    <button key={i} type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i); }} aria-label={`Image ${i + 1}`}
+                      className={`w-2.5 h-2.5 rounded-full transition-all ${i === currentImageIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/80'}`} />
+                  ))}
                 </div>
-              )}
-              {allImages.length > 1 && (
-                <>
-                  <button type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i => (i - 1 + allImages.length) % allImages.length); }} aria-label="Previous image"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition-all">
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <button type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i => (i + 1) % allImages.length); }} aria-label="Next image"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition-all">
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                    {allImages.map((_, i) => (
-                      <button key={i} type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i); }} aria-label={`Image ${i + 1}`}
-                        className={`w-2 h-2 rounded-full transition-all ${i === currentImageIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/80'}`} />
-                    ))}
-                  </div>
-                </>
-              )}
-              {listing.status === 'sold' && (
-                <span className="absolute top-4 left-4 px-3 py-1 rounded-lg text-sm font-bold tracking-wider uppercase bg-red-500/90 text-white">
-                  {t('statusSold', lang)}
-                </span>
-              )}
-            </div>
+              </>
+            )}
+            {listing.status === 'sold' && (
+              <span className="absolute top-4 left-16 px-3 py-1 rounded-lg text-sm font-bold tracking-wider uppercase bg-red-500/90 text-white">
+                {t('statusSold', lang)}
+              </span>
+            )}
+          </div>
+
+          {/* Right info panel */}
+          <div className={`w-[420px] shrink-0 overflow-y-auto border-l ${isDark ? 'bg-gray-950 border-gray-800' : 'bg-white border-gray-200'}`}
+            onClick={e => e.stopPropagation()}>
 
             <div className="p-6 space-y-5">
-              <div className="flex items-center gap-3">
-                <button type="button" onClick={() => { onViewProfile?.(listing.user_id); setShowDetailPopup(false); }} aria-label={'View ' + (listing.author?.username || 'user') + '\'s profile'} className="shrink-0">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden ${listing.author?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
+              {/* Price */}
+              {listing.price_options && listing.price_options.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {listing.price_options.map((opt, i) => (
+                    <span key={i} className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-base font-bold ${isDark ? 'bg-midnight text-emera' : 'bg-emerald-50 text-emerald-600'}`}>
+                      <Scale className="w-4 h-4" />{opt.amount}g &middot; ${opt.price.toFixed(2)}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className={`text-2xl font-bold ${isDark ? 'text-frost' : 'text-gray-900'}`}>
+                  ${listing.price.toFixed(2)}
+                </div>
+              )}
+
+              {/* Title */}
+              <h2 className={`text-lg font-bold font-display leading-tight ${isDark ? 'text-frost' : 'text-gray-900'}`}>{listing.title}</h2>
+
+              {/* Meta */}
+              <div className={`flex items-center gap-2 text-sm ${isDark ? 'text-muted' : 'text-gray-500'}`}>
+                {listing.category && (
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold ${isDark ? 'bg-midnight text-cyanx' : 'bg-cyan-50 text-cyan-600'}`}>
+                    <Tag className="w-3 h-3" />{listing.category}
+                  </span>
+                )}
+                <span>{timeAgo(listing.created_at, lang)}</span>
+                {listing.seller_review_count != null && listing.seller_review_count > 0 && (
+                  <span className="flex items-center gap-1 text-amber-500 ml-auto">
+                    <Star className="w-3.5 h-3.5 fill-amber-500" />
+                    {listing.avg_seller_rating?.toFixed(1)} ({listing.seller_review_count})
+                  </span>
+                )}
+              </div>
+
+              {/* Seller card */}
+              <div className={`flex items-center gap-3 p-3 rounded-xl ${isDark ? 'bg-midnight/50' : 'bg-gray-50'}`}>
+                <button type="button" onClick={() => { onViewProfile?.(listing.user_id); setShowDetailPopup(false); }}>
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden ${listing.author?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
                     {listing.author?.avatar_url ? (
                       <img src={listing.author.avatar_url} alt="" loading="lazy" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-white font-display font-bold text-sm">
+                      <span className="text-white font-display font-bold text-base">
                         {(listing.author?.username?.[0] || '?').toUpperCase()}
                       </span>
                     )}
                   </div>
                 </button>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <button type="button" onClick={() => { onViewProfile?.(listing.user_id); setShowDetailPopup(false); }}
                     className={`font-semibold text-sm truncate block hover:underline ${isDark ? 'text-frost' : 'text-gray-900'}`}>
                     {listing.author?.username || 'User'}
@@ -308,34 +343,66 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
                     </div>
                   )}
                 </div>
-                {listing.category && (
-                  <span className={`ml-auto inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold shrink-0 ${isDark ? 'bg-midnight text-cyanx' : 'bg-cyan-50 text-cyan-600'}`}>
-                    <Tag className="w-3 h-3" />
-                    {listing.category}
-                  </span>
+                {isOwner && listing.status === 'active' && (
+                  <button onClick={() => { onEdit?.(listing); setShowDetailPopup(false); }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${isDark ? 'bg-surface text-frost hover:bg-surface/80' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
+                    {t('editProduct', lang)}
+                  </button>
                 )}
               </div>
 
-              <h2 className={`text-xl font-bold font-display ${isDark ? 'text-frost' : 'text-gray-900'}`}>{listing.title}</h2>
-
+              {/* Description */}
               {listing.description && (
                 <p className={`text-sm leading-relaxed ${isDark ? 'text-mist' : 'text-gray-600'}`}>{listing.description}</p>
               )}
 
-              {listing.price_options && listing.price_options.length > 0 ? (
-                <div className={`flex flex-wrap gap-2 p-3 rounded-xl ${isDark ? 'bg-midnight/50 border border-edge' : 'bg-gray-50 border border-gray-200'}`}>
-                  {listing.price_options.map((opt, i) => (
-                    <span key={i} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold ${isDark ? 'bg-midnight text-emera' : 'bg-white text-emerald-600 shadow-sm'}`}>
-                      <Scale className="w-3.5 h-3.5" />{opt.amount}g &middot; ${opt.price.toFixed(2)}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <div className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-lg font-bold ${isDark ? 'bg-emera/10 text-emera' : 'bg-emerald-50 text-emerald-600'}`}>
-                  <DollarSign className="w-5 h-5" />${listing.price.toFixed(2)}
-                </div>
-              )}
+              {/* Action buttons */}
+              <div className="flex flex-col gap-2">
+                <button onClick={handleContactClick} aria-label={`Contact via ${listing.contact_platform}: ${listing.contact_value}`}
+                  className={`flex items-center justify-center gap-2.5 w-full px-5 py-3 rounded-xl text-sm font-semibold transition-all ${isDark ? 'bg-cyanx/20 text-cyanx hover:bg-cyanx/30' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'}`}>
+                  <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" style={{ color: brandColor }} aria-hidden="true">
+                    <path d={brandPath} />
+                  </svg>
+                  <span>
+                    {listing.contact_platform === 'email' ? listing.contact_value :
+                     listing.contact_platform === 'phone' ? listing.contact_value :
+                     `@${listing.contact_value.replace(/^@+/, '')}`}
+                  </span>
+                  {copied ? (
+                    <span className="text-xs font-bold shrink-0">Copied!</span>
+                  ) : (
+                    <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                  )}
+                </button>
+                {!isOwner && currentUserId && onStartChat && (
+                  <button onClick={() => { onStartChat(listing.id); setShowDetailPopup(false); }} aria-label={t('startChat', lang)}
+                    className={`flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl text-sm font-semibold transition-all ${isDark ? 'bg-[#8b5cf6]/10 text-[#8b5cf6] hover:bg-[#8b5cf6]/20' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'}`}>
+                    <MessageCircle className="w-5 h-5" />
+                    {t('startChat', lang)}
+                  </button>
+                )}
+                {isOwner && listing.status === 'active' && (
+                  <div className="flex gap-2">
+                    {onPinToggle && (
+                      <button onClick={() => { onPinToggle(listing.id); setShowDetailPopup(false); }} aria-label={isPinned ? 'Unpin listing' : 'Pin listing to top'}
+                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${isDark ? 'bg-midnight text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:text-gray-700'}`}>
+                        <Pin className="w-4 h-4" fill={isPinned ? 'currentColor' : 'none'} />
+                        {isPinned ? 'Unpin' : 'Pin'}
+                      </button>
+                    )}
+                    <button onClick={() => { setConfirmAction({ type: 'sold', listingId: listing.id }); }} aria-label="Mark as sold"
+                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${isDark ? 'bg-emera/10 text-emera hover:bg-emera/20' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}>
+                      {t('markAsSold', lang)}
+                    </button>
+                    <button onClick={() => { setConfirmAction({ type: 'delete', listingId: listing.id }); }} aria-label="Delete listing"
+                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${isDark ? 'bg-red-900/20 text-red-400 hover:bg-red-900/30' : 'bg-red-50 text-red-500 hover:bg-red-100'}`}>
+                      {t('delete', lang)}
+                    </button>
+                  </div>
+                )}
+              </div>
 
+              {/* Linked product */}
               {linkedProduct && (
                 <div className={`rounded-xl border ${isDark ? 'border-edge' : 'border-gray-200'}`}>
                   {linkedProduct.picture && (
@@ -413,40 +480,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
                 </div>
               )}
 
-              {listing.avg_seller_rating != null && listing.seller_review_count != null && listing.seller_review_count > 0 && (
-                <div className={`flex items-center gap-1.5 text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
-                  <span className="text-amber-500">{'★'.repeat(Math.round(listing.avg_seller_rating))}{'☆'.repeat(5 - Math.round(listing.avg_seller_rating))}</span>
-                  <span className="font-medium">{listing.avg_seller_rating.toFixed(1)}</span>
-                  <span className={isDark ? 'text-muted' : 'text-gray-400'}>({listing.seller_review_count})</span>
-                </div>
-              )}
-
-              <div className="flex flex-wrap gap-3">
-                <button onClick={handleContactClick} aria-label={`Contact via ${listing.contact_platform}: ${listing.contact_value}`}
-                  className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-semibold transition-all ${isDark ? 'bg-midnight text-frost hover:bg-midnight/80' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
-                  <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" style={{ color: brandColor }} aria-hidden="true">
-                    <path d={brandPath} />
-                  </svg>
-                  <span>
-                    {listing.contact_platform === 'email' ? listing.contact_value :
-                     listing.contact_platform === 'phone' ? listing.contact_value :
-                     `@${listing.contact_value.replace(/^@+/, '')}`}
-                  </span>
-                  {copied ? (
-                    <span className="text-xs text-emera font-bold shrink-0">Copied!</span>
-                  ) : (
-                    <ExternalLink className="w-3.5 h-3.5 shrink-0 text-muted" />
-                  )}
-                </button>
-                {!isOwner && currentUserId && onStartChat && (
-                  <button onClick={() => { onStartChat(listing.id); setShowDetailPopup(false); }} aria-label={t('startChat', lang)}
-                    className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-all ${isDark ? 'bg-[#8b5cf6]/10 text-[#8b5cf6] hover:bg-[#8b5cf6]/20' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'}`}>
-                    <MessageCircle className="w-5 h-5" />
-                    {t('startChat', lang)}
-                  </button>
-                )}
-              </div>
-
+              {/* Reviews */}
               <div className="pt-4 border-t border-edge">
                 <ReviewSection listingId={listing.id} isOwner={isOwner} currentUserId={currentUserId} isDark={isDark} lang={lang} onViewProfile={(uid) => { onViewProfile?.(uid); setShowDetailPopup(false); }} />
               </div>
