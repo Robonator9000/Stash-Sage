@@ -19,7 +19,7 @@ interface HeaderProps {
   setIsAddModalOpen: (v: boolean) => void;
   setIsSettingsOpen: (v: boolean) => void;
   setSettingsDefaultTab: (tab: 'profile' | 'preferences' | 'session' | 'budget' | 'data' | 'security') => void;
-  setStashSection: (section: 'products' | 'dashboard' | 'history') => void;
+  setStashSection: (section: 'products' | 'dashboard') => void;
 }
 
 export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsAddModalOpen, setIsSettingsOpen, setSettingsDefaultTab, setStashSection }: HeaderProps) {

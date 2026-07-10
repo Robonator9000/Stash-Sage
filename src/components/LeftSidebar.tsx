@@ -10,6 +10,8 @@ interface LeftSidebarProps {
   lang: string;
   onSettings: () => void;
   currentUserId: string;
+  username: string;
+  viewingUser: string | null;
   onDashboard: () => void;
 }
 
@@ -22,13 +24,13 @@ const tabsConfig = [
   { id: 'bookmarks' as const, label: 'Bookmarks', icon: 'M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z' },
 ] as const;
 
-export function LeftSidebar({ activeTab, onTabChange, isDark, onSettings, currentUserId, onDashboard }: LeftSidebarProps) {
+export function LeftSidebar({ activeTab, onTabChange, isDark, onSettings, currentUserId, username, viewingUser, onDashboard }: LeftSidebarProps) {
   const { isAdmin } = useAuth();
   const navigate = useNavigate();
 
   function handleTabClick(tab: TabId | 'profile') {
     if (tab === 'profile') {
-      navigate('/?tab=community&user=' + encodeURIComponent(currentUserId));
+      navigate('/?tab=community&user=' + encodeURIComponent(username || currentUserId));
       return;
     }
     onTabChange(tab);
@@ -42,7 +44,7 @@ export function LeftSidebar({ activeTab, onTabChange, isDark, onSettings, curren
             key={tab.id}
             onClick={() => handleTabClick(tab.id)}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
-              ${activeTab === tab.id
+              ${activeTab === tab.id && !(tab.id === 'community' && viewingUser)
                 ? isDark ? 'bg-cyan-500/10 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
                 : isDark ? 'text-mist hover:bg-midnight hover:text-frost' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
@@ -56,7 +58,7 @@ export function LeftSidebar({ activeTab, onTabChange, isDark, onSettings, curren
         <button
           onClick={() => handleTabClick('profile')}
           className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
-            ${activeTab === 'community'
+            ${activeTab === 'community' && viewingUser
               ? isDark ? 'bg-cyan-500/10 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
               : isDark ? 'text-mist hover:bg-midnight hover:text-frost' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
             }`}

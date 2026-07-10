@@ -51,7 +51,7 @@ export default function App() {
   function setActiveTab(tab: 'stash' | 'community' | 'marketplace' | 'admin' | 'notifications' | 'bookmarks' | 'history') {
     setSearchParams(prev => { prev.set('tab', tab); prev.delete('user'); return prev; }, { replace: true });
   }
-  const [stashSection, setStashSection] = useState<'products' | 'dashboard' | 'history'>('products');
+  const [stashSection, setStashSection] = useState<'products' | 'dashboard'>('products');
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedQuery = useDebounce(searchQuery, 200);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -514,6 +514,8 @@ export default function App() {
             lang={lang}
             onSettings={() => { setIsSettingsOpen(true); }}
             currentUserId={user?.id || ''}
+            username={settings.profile?.username || user?.email?.split('@')[0] || ''}
+            viewingUser={searchParams.get('user')}
             onDashboard={() => { setStashSection('dashboard'); setActiveTab('stash'); }}
           />
         </div>
@@ -523,26 +525,24 @@ export default function App() {
           {/* ==================== STASH TAB ==================== */}
         {activeTab === 'stash' && (
           <div>
-            {/* Sub-navigation pills */}
-            <div className="flex items-center justify-center gap-2 mb-5 max-w-md mx-auto" role="tablist">
-              {(['products', 'dashboard'] as const).map(section => (
-                <button
-                  key={section}
-                  role="tab"
-                  aria-selected={stashSection === section}
-                  onClick={() => setStashSection(section)}
-                  className={`flex-1 px-5 py-2 rounded-xl text-sm font-medium ${
-                    stashSection === section
-                      ? 'bg-gradient-to-r from-cyanx to-emera text-white'
-                      : isDark ? 'text-mist hover:text-frost hover:bg-midnight' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  {section === 'products' ? t('products', lang) : t('dashboard', lang)}
-                </button>
-              ))}
-            </div>
-
-            {stashSection === 'products' && (
+            {stashSection === 'dashboard' ? (
+              <Suspense fallback={
+                <div className={`text-center py-16 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Loading dashboard...</div>
+              }>
+                <DashboardTab
+                  products={products}
+                  sessions={sessions}
+                  isDark={isDark}
+                  lang={lang}
+                  settings={settings}
+                  typeDistribution={typeDistribution}
+                  consumptionByMonth={consumptionByMonth}
+                  topStrains={topStrains}
+                  spendingByType={spendingByType}
+                  totalValue={totalValue}
+                />
+              </Suspense>
+            ) : (
             <div>
             <div className="mb-5" data-coach="stats">
               <StatsCard products={products} sessions={sessions} isDark={isDark} />
@@ -752,25 +752,6 @@ export default function App() {
               </div>
             )}
             </div>
-            )} {/* end products section */}
-
-            {stashSection === 'dashboard' && (
-              <Suspense fallback={
-                <div className={`text-center py-16 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Loading dashboard...</div>
-              }>
-                <DashboardTab
-                  products={products}
-                  sessions={sessions}
-                  isDark={isDark}
-                  lang={lang}
-                  settings={settings}
-                  typeDistribution={typeDistribution}
-                  consumptionByMonth={consumptionByMonth}
-                  topStrains={topStrains}
-                  spendingByType={spendingByType}
-                  totalValue={totalValue}
-                />
-              </Suspense>
             )}
           </div>
         )}
