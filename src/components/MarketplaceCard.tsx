@@ -2,7 +2,7 @@ import { memo, useState, useCallback, useEffect, useRef } from 'react';
 import type { MarketplaceListing, Product } from '../types';
 import { t } from '../utils/translations';
 import { getContactUrl, copyToClipboard, timeAgo } from '../utils/helpers';
-import { Tag, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, X, MessageCircle, Star, Scale, MoreVertical, FlaskConical, Calendar, StickyNote, Pin } from 'lucide-react';
+import { Tag, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, MessageCircle, Star, Scale, MoreVertical, FlaskConical, Calendar, StickyNote, Pin } from 'lucide-react';
 import { ReviewSection } from './ReviewSection';
 
 const CATEGORY_GLOW: Record<string, string> = {
@@ -240,11 +240,13 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
       {/* Detail popup — Facebook-style fullscreen split */}
       {showDetailPopup && (
         <div className="fixed inset-0 z-50 bg-black/80 flex" onClick={() => setShowDetailPopup(false)}>
-          {/* Close button — top-left of full overlay */}
-          <button type="button" onClick={e => { e.stopPropagation(); setShowDetailPopup(false); }} aria-label="Close"
-            className="absolute top-4 left-4 z-20 p-2.5 rounded-full bg-black/40 text-white hover:bg-black/60 transition-all">
-            <X className="w-5 h-5" />
-          </button>
+          {/* Back button — top-left of full overlay */}
+          <div onClick={e => { e.stopPropagation(); setShowDetailPopup(false); }}
+            className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-2 rounded-xl bg-black/40 text-white/90 cursor-pointer
+                       transition-all duration-300 hover:bg-black/60 hover:text-white hover:pl-4 hover:gap-3 group">
+            <ChevronLeft className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-0.5" />
+            <span className="text-sm font-medium transition-all duration-300 max-w-0 overflow-hidden opacity-0 group-hover:max-w-[60px] group-hover:opacity-100">Back</span>
+          </div>
           <div className="flex-1 flex items-center justify-center relative min-w-0" onClick={e => e.stopPropagation()}>
 
             {/* Image */}
