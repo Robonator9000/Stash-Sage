@@ -528,10 +528,12 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
         <CreatePostCard
           isDark={isDark}
           lang={lang}
-          username={username}
+          displayName={profile?.displayName || username}
+          currentUserId={currentUserId}
           products={products}
           avatarUrl={profile?.avatar_url}
           onSubmit={handleCreatePost}
+          onViewProfile={onViewProfile}
         />
       )}
 
