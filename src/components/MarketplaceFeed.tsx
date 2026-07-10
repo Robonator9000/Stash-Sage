@@ -252,7 +252,7 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
           { id: 'other', label: 'Other', icon: '📦', gradient: 'from-stone-400 to-neutral-500' },
         ].map(cat => (
           <button key={cat.id} onClick={() => setCategoryFilter(cat.id)}
-            className={`            shrink-0 flex flex-col items-center gap-1 w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-2xl transition-all ${
+            className={`shrink-0 flex flex-col items-center gap-1 w-[78px] h-[78px] sm:w-24 sm:h-24 rounded-2xl transition-all ${
               categoryFilter === cat.id
                 ? `bg-gradient-to-br ${cat.gradient} text-white shadow-lg scale-105`
                 : isDark ? 'bg-midnight/80 border border-edge text-mist hover:text-frost' : 'bg-white border border-gray-200 text-gray-600 hover:text-gray-900 hover:shadow-sm'

@@ -26,7 +26,7 @@ export function WhoToFollow({ isDark, currentUserId, onViewProfile }: WhoToFollo
   if (suggestions.length === 0) return null;
 
   return (
-    <div className={`rounded-2xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+    <div className={`rounded-2xl backdrop-blur-sm ${isDark ? 'bg-surface/40 border border-edge' : 'bg-white/70 border border-gray-200'}`}>
       <div className={`px-4 py-3 border-b ${isDark ? 'border-edge' : 'border-gray-200'}`}>
         <h3 className={`text-sm font-bold ${isDark ? 'text-frost' : 'text-gray-800'}`}>Who to follow</h3>
       </div>

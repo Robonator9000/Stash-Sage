@@ -86,7 +86,7 @@ export function CreatePostCard({ isDark, lang, displayName, currentUserId, produ
   const isValid = content.trim().length > 0;
 
   return (
-    <div className={`p-4 rounded-2xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+    <div className={`p-4 rounded-2xl backdrop-blur-sm ${isDark ? 'bg-surface/40 border border-edge' : 'bg-white/70 border border-gray-200'}`}>
       <div className="flex items-start gap-3">
         <button
           onClick={() => onViewProfile?.(currentUserId)}

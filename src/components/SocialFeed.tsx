@@ -498,7 +498,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
   return (
     <div className="space-y-4">
       {quotePostId && quotePost && (
-        <div className={`p-4 rounded-2xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+        <div className={`p-4 rounded-2xl ${isDark ? 'bg-surface/40 border border-edge backdrop-blur-sm' : 'bg-white/70 border border-gray-200 backdrop-blur-sm'}`}>
           <div className="flex items-center justify-between mb-3">
             <span className={`text-sm font-medium ${isDark ? 'text-frost' : 'text-gray-800'}`}>{t('sharePost', lang)}</span>
             <button onClick={() => { setQuotePostId(null); setQuoteContent(''); }} className={isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}>
@@ -579,7 +579,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       {loading && (
         <div aria-busy="true" aria-label="Loading posts" className="space-y-4">
           {[1, 2, 3].map(i => (
-            <div key={i} className={`p-4 rounded-2xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+            <div key={i} className={`p-4 rounded-2xl ${isDark ? 'bg-surface/40 border border-edge backdrop-blur-sm' : 'bg-white/70 border border-gray-200 backdrop-blur-sm'}`}>
               <div className="flex items-start gap-3">
                 <div className={`w-9 h-9 rounded-xl animate-pulse ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
                 <div className="flex-1 space-y-2">
@@ -622,7 +622,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       )}
 
       {!loading && !error && displayedPosts.length === 0 && (
-        <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+        <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/40 border border-edge backdrop-blur-sm' : 'bg-white/70 border border-gray-200 backdrop-blur-sm'}`}>
           <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
             {activeHashtag ? `No posts tagged #${activeHashtag}` : feedFilter === 'following' ? 'No posts from people you follow yet' : t('noPostsYet', lang)}
           </p>

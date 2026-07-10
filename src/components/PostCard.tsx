@@ -165,7 +165,7 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
   }
 
   return (
-    <div className={`p-4 rounded-2xl ${post.pinned ? (isDark ? 'bg-cyanx/5 border border-cyanx/20' : 'bg-cyan-50/50 border border-cyan-200') : isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+    <div className={`p-4 rounded-2xl backdrop-blur-sm ${post.pinned ? (isDark ? 'bg-cyanx/10 border border-cyanx/20' : 'bg-cyan-50/70 border border-cyan-200') : isDark ? 'bg-surface/40 border border-edge' : 'bg-white/70 border border-gray-200'}`}>
       {post.pinned && (
         <div className={`flex items-center gap-1.5 mb-2 text-xs font-medium ${isDark ? 'text-cyanx' : 'text-cyan-600'}`}>
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

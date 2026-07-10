@@ -82,7 +82,7 @@ export function CommunityPage({ onOpenChat }: { onOpenChat?: (userId: string) =>
 
   if (!user) {
     return (
-      <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+      <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/40 border border-edge backdrop-blur-sm' : 'bg-white/70 border border-gray-200 backdrop-blur-sm'}`}>
         <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>Sign in to access the community</p>
       </div>
     );
@@ -96,7 +96,7 @@ export function CommunityPage({ onOpenChat }: { onOpenChat?: (userId: string) =>
 
   if (profileUser && !resolvingProfile && !profileUserId) {
     return (
-      <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+      <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/40 border border-edge backdrop-blur-sm' : 'bg-white/70 border border-gray-200 backdrop-blur-sm'}`}>
         <p className={`text-sm font-medium ${isDark ? 'text-mist' : 'text-gray-500'}`}>User not found</p>
         <p className={`text-xs mt-1 ${isDark ? 'text-muted' : 'text-gray-400'}`}>No profile exists for @{profileUser}</p>
         <button
@@ -111,7 +111,7 @@ export function CommunityPage({ onOpenChat }: { onOpenChat?: (userId: string) =>
 
   if (profileUser && resolvingProfile) {
     return (
-      <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+      <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/40 border border-edge backdrop-blur-sm' : 'bg-white/70 border border-gray-200 backdrop-blur-sm'}`}>
         <div className="flex justify-center">
           <svg className={`w-6 h-6 animate-spin ${isDark ? 'text-muted' : 'text-gray-400'}`} viewBox="0 0 24 24" fill="none">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

@@ -147,9 +147,9 @@ export const PostDetailView = memo(function PostDetailView({ post, isDark, lang,
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 backdrop-blur-sm overflow-y-auto" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/20 backdrop-blur-md overflow-y-auto" onClick={onClose}>
       <div className="relative w-full max-w-5xl mx-auto my-0 sm:my-4 min-h-screen sm:min-h-0" onClick={e => e.stopPropagation()}>
-        <div className={`flex flex-col sm:flex-row w-full sm:rounded-2xl overflow-hidden min-h-screen sm:min-h-[90vh] ${isDark ? 'bg-card' : 'bg-white'}`}>
+        <div className={`flex flex-col sm:flex-row w-full sm:rounded-2xl overflow-hidden min-h-screen sm:min-h-[90vh] backdrop-blur-sm ${isDark ? 'bg-card/80' : 'bg-white/80'}`}>
           <div className="flex-1 max-w-full sm:max-w-[55%] flex flex-col border-r-0 sm:border-r border-edge/50 overflow-y-auto">
             <div className={`sticky top-0 z-10 flex items-center gap-3 p-3 ${isDark ? 'bg-card/95 backdrop-blur-sm' : 'bg-white/95 backdrop-blur-sm'}`}>
               <button onClick={onClose} aria-label="Close" className={`p-2 rounded-full transition-colors ${isDark ? 'hover:bg-midnight text-frost' : 'hover:bg-gray-100 text-gray-700'}`}>
