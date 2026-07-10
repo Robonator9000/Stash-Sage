@@ -241,14 +241,14 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
       {showDetailPopup && (
         <div className="fixed inset-0 z-50 bg-black/80 flex flex-col" onClick={() => setShowDetailPopup(false)}>
           {/* Top bar with Back + Close */}
-          <div className="flex items-center justify-between px-4 py-3 shrink-0" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center justify-between px-4 py-3 shrink-0 bg-gray-950/90 border-b border-white/5" onClick={e => e.stopPropagation()}>
             <button type="button" onClick={() => setShowDetailPopup(false)}
-              className="flex items-center gap-2 text-white/80 hover:text-white transition-colors">
+              className="flex items-center gap-2 text-white hover:text-white/80 transition-colors">
               <ChevronLeft className="w-5 h-5" />
               <span className="text-sm font-medium">Back</span>
             </button>
             <button type="button" onClick={() => setShowDetailPopup(false)} aria-label="Close"
-              className="p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-all">
+              className="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all">
               <X className="w-5 h-5" />
             </button>
           </div>
