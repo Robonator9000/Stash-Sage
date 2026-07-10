@@ -52,7 +52,7 @@ export function ProfilePage({ userId: propUserId, onBack }: ProfilePageProps = {
     Promise.all([
       supabase.from('profiles').select('display_name, username, avatar_url, banner_url, bio, contacts, location').eq('user_id', userId).maybeSingle(),
       supabase.from('posts').select('*', { count: 'exact' }).eq('user_id', userId).order('created_at', { ascending: false }).limit(50),
-      supabase.from('products').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(50),
+      supabase.from('products').select('*').eq('user_id', userId).order('createdat', { ascending: false }).limit(50),
       currentUserId ? supabase.from('follows').select('following_id').eq('follower_id', currentUserId).eq('following_id', userId).maybeSingle() : { data: null },
       supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('following_id', userId),
       supabase.from('follows').select('following_id', { count: 'exact', head: true }).eq('follower_id', userId),
