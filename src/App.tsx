@@ -31,6 +31,10 @@ import { MenuButton } from './components/MenuButton';
 import { LeftSidebar } from './components/LeftSidebar';
 import { BottomNav } from './components/BottomNav';
 import { MessagePopup } from './components/MessagePopup';
+import { NotificationsPage } from './components/NotificationsPage';
+import { MessagesPage } from './components/MessagesPage';
+import { BookmarksPage } from './components/BookmarksPage';
+import { ExplorePage } from './components/ExplorePage';
 const DashboardTab = lazy(() => import('./components/DashboardTab').then(m => ({ default: m.DashboardTab })));
 const HistoryTab = lazy(() => import('./components/HistoryTab').then(m => ({ default: m.HistoryTab })));
 const ProductModal = lazy(() => import('./components/ProductModal').then(m => ({ default: m.ProductModal })));
@@ -45,8 +49,8 @@ export default function App() {
   const { entries: activityEntries, addEntry: addActivityEntry, clearEntries: clearActivity } = useActivity();
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = (searchParams.get('tab') as 'stash' | 'community' | 'marketplace' | 'admin') || 'stash';
-  function setActiveTab(tab: 'stash' | 'community' | 'marketplace' | 'admin') {
+  const activeTab = (searchParams.get('tab') as 'stash' | 'community' | 'marketplace' | 'admin' | 'notifications' | 'messages' | 'bookmarks' | 'explore') || 'stash';
+  function setActiveTab(tab: 'stash' | 'community' | 'marketplace' | 'admin' | 'notifications' | 'messages' | 'bookmarks' | 'explore') {
     setSearchParams(prev => { prev.set('tab', tab); prev.delete('user'); return prev; }, { replace: true });
   }
   const [stashSection, setStashSection] = useState<'products' | 'dashboard' | 'history'>('products');
@@ -511,6 +515,8 @@ export default function App() {
             isDark={isDark}
             lang={lang}
             onSettings={() => { setIsSettingsOpen(true); }}
+            currentUserId={user?.id || ''}
+            onDashboard={() => { setStashSection('dashboard'); setActiveTab('stash'); }}
           />
         </div>
 
@@ -869,6 +875,52 @@ export default function App() {
               onViewProfile={handleViewProfile}
             />
           </div>
+          </ErrorBoundary>
+        )}
+
+        {/* ==================== NOTIFICATIONS TAB ==================== */}
+        {activeTab === 'notifications' && user && (
+          <ErrorBoundary isDark={isDark} lang={lang}>
+            <NotificationsPage
+              isDark={isDark}
+              currentUserId={user.id}
+              onViewProfile={handleViewProfile}
+            />
+          </ErrorBoundary>
+        )}
+
+        {/* ==================== MESSAGES TAB ==================== */}
+        {activeTab === 'messages' && user && (
+          <ErrorBoundary isDark={isDark} lang={lang}>
+            <MessagesPage
+              currentUserId={user.id}
+              isDark={isDark}
+              lang={lang}
+            />
+          </ErrorBoundary>
+        )}
+
+        {/* ==================== BOOKMARKS TAB ==================== */}
+        {activeTab === 'bookmarks' && user && (
+          <ErrorBoundary isDark={isDark} lang={lang}>
+            <BookmarksPage
+              isDark={isDark}
+              lang={lang}
+              currentUserId={user.id}
+              username={user.user_metadata?.username || user.email || ''}
+              onViewProfile={handleViewProfile}
+            />
+          </ErrorBoundary>
+        )}
+
+        {/* ==================== EXPLORE TAB ==================== */}
+        {activeTab === 'explore' && (
+          <ErrorBoundary isDark={isDark} lang={lang}>
+            <ExplorePage
+              isDark={isDark}
+              currentUserId={user?.id || ''}
+              onViewProfile={handleViewProfile}
+            />
           </ErrorBoundary>
         )}
       </main>
