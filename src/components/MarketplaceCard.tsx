@@ -4,6 +4,7 @@ import { t } from '../utils/translations';
 import { getContactUrl, copyToClipboard, timeAgo } from '../utils/helpers';
 import { Tag, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, MessageCircle, Star, Scale, MoreVertical, FlaskConical, Calendar, StickyNote, Pin } from 'lucide-react';
 import { ReviewSection } from './ReviewSection';
+import { ProductView } from './ProductView';
 
 const CATEGORY_GLOW: Record<string, string> = {
   flower: '16,185,129',
@@ -69,6 +70,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
   const [copied, setCopied] = useState<string | null>(null);
   const [showProductDetail, setShowProductDetail] = useState(false);
   const [showOwnerMenu, setShowOwnerMenu] = useState(false);
+  const [viewProductId, setViewProductId] = useState<string | null>(null);
   const ownerMenuRef = useRef<HTMLDivElement>(null);
 
   const glowRgb = CATEGORY_GLOW[listing.category] || CATEGORY_GLOW.other;
@@ -418,31 +420,30 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
                     </div>
                   )}
                   <div className={`p-4 ${isDark ? 'bg-midnight/50' : 'bg-gray-50'} ${linkedProduct.picture ? 'rounded-b-xl' : 'rounded-xl'}`}>
-                    <button type="button" onClick={() => setShowProductDetail(s => !s)} className="w-full text-left">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <div className={`font-bold text-base mb-1 ${isDark ? 'text-frost' : 'text-gray-900'}`}>{linkedProduct.name}</div>
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                            {linkedProduct.thc > 0 && <span className="text-sm font-bold text-orange-500">THC {linkedProduct.thc}%</span>}
-                            {linkedProduct.cbd > 0 && <span className="text-sm font-bold text-blue-500">CBD {linkedProduct.cbd}%</span>}
-                            <span className={`text-sm flex items-center gap-1 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
-                              <Scale className="w-3.5 h-3.5" />{linkedProduct.amount}g
+                    <div className="flex items-start justify-between gap-2">
+                      <button type="button" onClick={() => setViewProductId(linkedProduct.id)} className="flex-1 min-w-0 text-left hover:opacity-80 transition-opacity">
+                        <div className={`font-bold text-base mb-1 ${isDark ? 'text-frost' : 'text-gray-900'}`}>{linkedProduct.name}</div>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                          {linkedProduct.thc > 0 && <span className="text-sm font-bold text-orange-500">THC {linkedProduct.thc}%</span>}
+                          {linkedProduct.cbd > 0 && <span className="text-sm font-bold text-blue-500">CBD {linkedProduct.cbd}%</span>}
+                          <span className={`text-sm flex items-center gap-1 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+                            <Scale className="w-3.5 h-3.5" />{linkedProduct.amount}g
+                          </span>
+                          {linkedProduct.rating > 0 && (
+                            <span className="text-sm text-amber-500 flex items-center gap-1">
+                              <Star className="w-3.5 h-3.5" />{linkedProduct.rating.toFixed(1)}
                             </span>
-                            {linkedProduct.rating > 0 && (
-                              <span className="text-sm text-amber-500 flex items-center gap-1">
-                                <Star className="w-3.5 h-3.5" />{linkedProduct.rating.toFixed(1)}
-                              </span>
-                            )}
-                            {linkedProduct.brand && (
-                              <span className={`text-sm ${isDark ? 'text-muted' : 'text-gray-400'}`}>{linkedProduct.brand}</span>
-                            )}
-                          </div>
+                          )}
+                          {linkedProduct.brand && (
+                            <span className={`text-sm ${isDark ? 'text-muted' : 'text-gray-400'}`}>{linkedProduct.brand}</span>
+                          )}
                         </div>
-                        <div className={`p-1 rounded-lg shrink-0 mt-0.5 transition-all ${isDark ? 'hover:bg-surface text-muted' : 'hover:bg-gray-200 text-gray-400'}`}>
-                          {showProductDetail ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                        </div>
-                      </div>
-                    </button>
+                      </button>
+                      <button type="button" onClick={(e) => { e.stopPropagation(); setShowProductDetail(s => !s); }}
+                        className={`p-1 rounded-lg shrink-0 mt-0.5 transition-all ${isDark ? 'hover:bg-surface text-muted' : 'hover:bg-gray-200 text-gray-400'}`}>
+                        {showProductDetail ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                      </button>
+                    </div>
                     {showProductDetail && (
                       <div className={`mt-3 pt-3 space-y-3 border-t ${isDark ? 'border-edge' : 'border-gray-200'}`}>
                         {linkedProduct.strain && (
@@ -525,6 +526,10 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
             </div>
           </div>
         </div>
+      )}
+
+      {viewProductId && (
+        <ProductView productId={viewProductId} onClose={() => setViewProductId(null)} isDark={isDark} lang={lang} />
       )}
     </>
   );

@@ -624,6 +624,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                     bio: p.bio,
                     contacts: JSON.stringify(p.contacts),
                     location: p.location || null,
+                    public_products: settings.publicProducts || false,
                   }, { onConflict: 'user_id' }).then(undefined, () => {});
                   showToast({ id: 'profile-saved', title: '', body: 'Profile saved' });
                 }}
@@ -923,8 +924,22 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                     settings.sessionDefaults.rotationEnabled ? 'translate-x-[1.375rem]' : 'translate-x-0.5'
                   }`} />
                 </button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{t('publicProducts', lang)}</span>
+                    <p className={`text-[10px] mt-0.5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('publicProductsHint', lang)}</p>
+                  </div>
+                  <button onClick={() => updateSettings({ publicProducts: !settings.publicProducts })}
+                    className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${
+                      settings.publicProducts ? 'bg-gradient-to-r from-cyan-500 to-emerald-500' : isDark ? 'bg-slate-600' : 'bg-gray-300'
+                    }`}>
+                    <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform shadow ${
+                      settings.publicProducts ? 'translate-x-[1.375rem]' : 'translate-x-0.5'
+                    }`} />
+                  </button>
+                </div>
               </div>
-            </div>
           )}
 
           {activeTab === 'budget' && (

@@ -5,6 +5,7 @@ import { timeAgo } from '../utils/helpers';
 import { CommentSection } from './CommentSection';
 import { FollowButton } from './FollowButton';
 import { showToast } from './Toast';
+import { ProductView } from './ProductView';
 
 interface PostCardProps {
   post: Post;
@@ -120,6 +121,7 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
   const [editing, setEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
   const [editSubmitting, setEditSubmitting] = useState(false);
+  const [viewProductId, setViewProductId] = useState<string | null>(null);
   const isOwner = post.user_id === currentUserId;
   const liked = post.liked_by_me ?? false;
   const likesCount = post.likes_count ?? 0;
@@ -247,15 +249,20 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
             </>
           )}
 
-          {post.product_name && (
-            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium mb-3 ${
-              isDark ? 'bg-midnight text-cyanx' : 'bg-cyan-50 text-cyan-700'
-            }`}>
+          {post.product_name && post.product_id && (
+            <button type="button" onClick={() => setViewProductId(post.product_id!)}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium mb-3 cursor-pointer transition-all hover:opacity-80 ${
+                isDark ? 'bg-midnight text-cyanx' : 'bg-cyan-50 text-cyan-700'
+              }`}>
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" />
               </svg>
               {post.product_name}
-            </div>
+            </button>
+          )}
+
+          {viewProductId && (
+            <ProductView productId={viewProductId} onClose={() => setViewProductId(null)} isDark={isDark} lang={lang} />
           )}
 
           <div className="flex items-center gap-4">

@@ -65,6 +65,7 @@ export interface Settings {
   defaultFeedFilter?: 'latest' | 'following' | 'trending';
   showOnlineStatus?: boolean;
   showLocation?: boolean;
+  publicProducts?: boolean;
 }
 
 export interface ContactEntry {
