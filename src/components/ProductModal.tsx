@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, memo } from 'react';
 import { Product, Session } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { useModalAnimation } from '../hooks/useModalAnimation';
@@ -30,7 +30,7 @@ const POPULAR_BRANDS = [
   'Purple Haze',
 ];
 
-export function ProductModal({ product, onSave, onDelete, onClose, isDark = true, sessions = [] }: ProductModalProps) {
+export const ProductModal = memo(function ProductModal({ product, onSave, onDelete, onClose, isDark = true, sessions = [] }: ProductModalProps) {
   const { settings, updateSettings, addFavoriteBrand, removeFavoriteBrand, addRecentBrand } = useSettings();
   const lang = settings.language;
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -767,4 +767,4 @@ export function ProductModal({ product, onSave, onDelete, onClose, isDark = true
       </div>
     </div>
   );
-}
+});

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import type { PostComment } from '../types';
 import { supabase } from '../utils/supabase';
 import { t } from '../utils/translations';
@@ -13,6 +13,65 @@ interface CommentSectionProps {
   username: string;
   onComment?: (userId: string, postId: string) => void;
 }
+
+const CommentItem = memo(function CommentItem({ comment, depth = 0, isDark, lang, currentUserId, onReply, onDelete }: {
+  comment: PostComment; depth?: number; isDark: boolean; lang: string; currentUserId: string;
+  onReply: (id: string, username: string) => void; onDelete: (id: string) => void;
+}) {
+  const isOwner = comment.user_id === currentUserId;
+  return (
+    <div role="listitem" className={depth > 0 ? 'ml-6 mt-2' : 'mt-3'}>
+      <div className="flex items-start gap-2">
+        <div className={`w-6 h-6 rounded-lg flex items-center justify-center bg-gradient-to-br from-cyanx to-emera shrink-0`}>
+          <span className="text-white font-display font-bold text-xs">
+            {(comment.author?.username?.[0] || '?').toUpperCase()}
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className={`font-display font-bold text-xs ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+              {comment.author?.username || 'Unknown'}
+            </span>
+            <span className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+              {timeAgo(comment.created_at, lang)}
+            </span>
+          </div>
+          <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-600'}`}>
+            {comment.content}
+          </p>
+          <div className="flex items-center gap-3 mt-1">
+            {depth < 2 && (
+              <button
+                onClick={() => onReply(comment.id, comment.author?.username || 'Unknown')}
+                className={`text-xs font-medium ${isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}`}
+              >
+                {t('reply', lang)}
+              </button>
+            )}
+            {isOwner && (
+              <button
+                onClick={() => onDelete(comment.id)}
+                aria-label="Delete comment"
+                className={`text-xs ${isDark ? 'text-muted hover:text-red-400' : 'text-gray-400 hover:text-red-500'}`}
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                </svg>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+      {comment.replies && comment.replies.length > 0 && (
+        <div role="list">
+          {comment.replies.map(reply => (
+            <CommentItem key={reply.id} comment={reply} depth={depth + 1} isDark={isDark} lang={lang} currentUserId={currentUserId} onReply={onReply} onDelete={onDelete} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+});
 
 export function CommentSection({ postId, postUserId, isDark, lang, currentUserId, username, onComment }: CommentSectionProps) {
   const [comments, setComments] = useState<PostComment[]>([]);
@@ -116,62 +175,6 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
     fetchComments();
   }
 
-  function CommentItem({ comment, depth = 0 }: { comment: PostComment; depth?: number }) {
-    const isOwner = comment.user_id === currentUserId;
-    return (
-      <div role="listitem" className={depth > 0 ? 'ml-6 mt-2' : 'mt-3'}>
-        <div className="flex items-start gap-2">
-          <div className={`w-6 h-6 rounded-lg flex items-center justify-center bg-gradient-to-br from-cyanx to-emera shrink-0`}>
-            <span className="text-white font-display font-bold text-xs">
-              {(comment.author?.username?.[0] || '?').toUpperCase()}
-            </span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className={`font-display font-bold text-xs ${isDark ? 'text-frost' : 'text-gray-800'}`}>
-                {comment.author?.username || 'Unknown'}
-              </span>
-              <span className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>
-                {timeAgo(comment.created_at, lang)}
-              </span>
-            </div>
-            <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-600'}`}>
-              {comment.content}
-            </p>
-            <div className="flex items-center gap-3 mt-1">
-              {depth < 2 && (
-                <button
-                  onClick={() => setReplyingTo({ id: comment.id, username: comment.author?.username || 'Unknown' })}
-                  className={`text-xs font-medium ${isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}`}
-                >
-                  {t('reply', lang)}
-                </button>
-              )}
-              {isOwner && (
-                <button
-                  onClick={() => handleDelete(comment.id)}
-                  aria-label="Delete comment"
-                  className={`text-xs ${isDark ? 'text-muted hover:text-red-400' : 'text-gray-400 hover:text-red-500'}`}
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                  </svg>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-        {comment.replies && comment.replies.length > 0 && (
-          <div role="list">
-            {comment.replies.map(reply => (
-              <CommentItem key={reply.id} comment={reply} depth={depth + 1} />
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
-
   return (
     <div id={`comment-section-${postId}`} className={`mt-3 pt-3 border-t ${isDark ? 'border-edge' : 'border-gray-200'}`}>
       {loading && (
@@ -200,7 +203,8 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
 
       <div role="list" className="space-y-1">
         {comments.map(comment => (
-          <CommentItem key={comment.id} comment={comment} />
+          <CommentItem key={comment.id} comment={comment} isDark={isDark} lang={lang} currentUserId={currentUserId}
+            onReply={(id, username) => setReplyingTo({ id, username })} onDelete={handleDelete} />
         ))}
       </div>
 

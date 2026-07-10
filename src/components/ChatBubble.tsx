@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import type { Message } from '../types';
 import { timeAgo } from '../utils/helpers';
 import { Edit2, Trash2, Reply } from 'lucide-react';
@@ -12,7 +12,7 @@ interface ChatBubbleProps {
   onReply?: (id: string) => void;
 }
 
-export function ChatBubble({ message, isDark, isOwn, onEdit, onDelete, onReply }: ChatBubbleProps) {
+export const ChatBubble = memo(function ChatBubble({ message, isDark, isOwn, onEdit, onDelete, onReply }: ChatBubbleProps) {
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(message.content);
   const [showActions, setShowActions] = useState(false);
@@ -79,4 +79,4 @@ export function ChatBubble({ message, isDark, isOwn, onEdit, onDelete, onReply }
       </div>
     </div>
   );
-}
+});

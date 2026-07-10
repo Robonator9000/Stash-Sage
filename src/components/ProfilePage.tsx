@@ -29,7 +29,7 @@ export function ProfilePage({ userId: propUserId, onBack }: ProfilePageProps = {
   const userId = propUserId || params.userId;
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { settings } = useSettings();
+  const { settings, updateSettings } = useSettings();
   const lang = settings.language;
   const isDark = settings.theme === 'dark';
   const currentUserId = user?.id || '';
@@ -44,6 +44,7 @@ export function ProfilePage({ userId: propUserId, onBack }: ProfilePageProps = {
   const [followingCount, setFollowingCount] = useState(0);
   const [postCount, setPostCount] = useState(0);
   const [isOnline, setIsOnline] = useState(false);
+  const [productError, setProductError] = useState('');
 
   useEffect(() => {
     if (!userId) return;
@@ -60,7 +61,13 @@ export function ProfilePage({ userId: propUserId, onBack }: ProfilePageProps = {
       if (profileRes.data) setProfileData(profileRes.data);
       setPostCount(postsRes.count || 0);
       setUserPosts(postsRes.data || []);
-      setUserProducts(productsRes.data || []);
+      if (productsRes.error) {
+        setProductError(productsRes.error.message);
+        setUserProducts([]);
+      } else {
+        setProductError('');
+        setUserProducts(productsRes.data || []);
+      }
       setIsFollowing(!!followRes.data);
       setFollowerCount(followersRes.count || 0);
       setFollowingCount(followingRes.count || 0);
@@ -215,6 +222,22 @@ const isOwnProfile = currentUserId === userId;
               ))}
             </div>
           )}
+          {isOwnProfile && (
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-edge">
+              <div className="flex items-center gap-2">
+                <span className={`text-xs font-medium ${isDark ? 'text-muted' : 'text-gray-500'}`}>
+                  {settings.publicProducts ? 'Products visible to everyone' : 'Products hidden from others'}
+                </span>
+              </div>
+              <button onClick={() => {
+                updateSettings({ publicProducts: !settings.publicProducts });
+                supabase.from('profiles').update({ public_products: !settings.publicProducts }).eq('user_id', currentUserId).then(undefined, () => {});
+              }}
+                className={`w-10 h-6 rounded-full transition-colors relative shrink-0 ${settings.publicProducts ? 'bg-gradient-to-r from-cyan-500 to-emerald-500' : isDark ? 'bg-slate-600' : 'bg-gray-300'}`}>
+                <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform shadow ${settings.publicProducts ? 'translate-x-[1.125rem]' : 'translate-x-0.5'}`} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -239,17 +262,24 @@ const isOwnProfile = currentUserId === userId;
 
       {/* Products - compact grid */}
       {activeTab === 'products' && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {userProducts.length === 0 ? <p className={`col-span-full p-8 text-center text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>No products yet</p> : (
-            userProducts.map((product: Product) => (
+        <div>
+          {productError && !isOwnProfile && (
+            <p className={`mb-3 p-3 rounded-xl text-xs ${isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>
+              This user's products are not publicly visible
+            </p>
+          )}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {userProducts.length === 0 && !productError ? <p className={`col-span-full p-8 text-center text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>No products yet</p> : null}
+            {userProducts.length === 0 && productError ? <p className={`col-span-full p-8 text-center text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>Products not available</p> : null}
+            {userProducts.map((product: Product) => (
               <div key={product.id} className={`p-3 rounded-xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
                 {product.picture && <img src={product.picture} alt="" className="w-full h-20 rounded-lg object-cover mb-2" />}
                 <p className={`text-xs font-medium truncate ${isDark ? 'text-frost' : 'text-gray-800'}`}>{product.name}</p>
                 <div className={`text-[10px] ${isDark ? 'text-muted' : 'text-gray-400'}`}>{product.strain} · {product.thc}%</div>
                 <div className={`text-xs font-semibold mt-1 ${isDark ? 'text-emera' : 'text-emerald-600'}`}>${product.price}</div>
               </div>
-            ))
-          )}
+            ))}
+          </div>
         </div>
       )}
     </div>

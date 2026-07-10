@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { useChat } from '../hooks/useChat';
 import { ChatBubble } from './ChatBubble';
 import { t } from '../utils/translations';
@@ -14,7 +14,7 @@ interface ChatThreadProps {
   onBack: () => void;
 }
 
-export function ChatThread({ conversation, currentUserId, isDark, lang, onBack }: ChatThreadProps) {
+export const ChatThread = memo(function ChatThread({ conversation, currentUserId, isDark, lang, onBack }: ChatThreadProps) {
   const otherUserId = conversation.buyer_id === currentUserId ? conversation.seller_id : conversation.buyer_id;
   const { messages, loading, sending, sendMessage, bottomRef, otherUserTyping, broadcastTyping, blockedByOther, iBlockedOther, blockUser, unblockUser, editMessage, deleteMessage } = useChat(conversation.id, currentUserId, otherUserId);
   const [input, setInput] = useState('');
@@ -207,4 +207,4 @@ export function ChatThread({ conversation, currentUserId, isDark, lang, onBack }
       </div>
     </div>
   );
-}
+});

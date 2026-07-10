@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, memo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../utils/useSettings';
@@ -22,7 +22,7 @@ interface HeaderProps {
   setStashSection: (section: 'products' | 'dashboard' | 'history') => void;
 }
 
-export function Header({ searchQuery, setSearchQuery, setIsAddModalOpen, setIsSettingsOpen, setSettingsDefaultTab, setStashSection }: HeaderProps) {
+export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsAddModalOpen, setIsSettingsOpen, setSettingsDefaultTab, setStashSection }: HeaderProps) {
   const { settings, updateSettings } = useSettings();
   const { user } = useAuth();
   const { products } = useProducts();
@@ -222,4 +222,4 @@ export function Header({ searchQuery, setSearchQuery, setIsAddModalOpen, setIsSe
       </div>
     </header>
   );
-}
+});
