@@ -32,9 +32,7 @@ import { LeftSidebar } from './components/LeftSidebar';
 import { BottomNav } from './components/BottomNav';
 import { MessagePopup } from './components/MessagePopup';
 import { NotificationsPage } from './components/NotificationsPage';
-import { MessagesPage } from './components/MessagesPage';
 import { BookmarksPage } from './components/BookmarksPage';
-import { ExplorePage } from './components/ExplorePage';
 const DashboardTab = lazy(() => import('./components/DashboardTab').then(m => ({ default: m.DashboardTab })));
 const HistoryTab = lazy(() => import('./components/HistoryTab').then(m => ({ default: m.HistoryTab })));
 const ProductModal = lazy(() => import('./components/ProductModal').then(m => ({ default: m.ProductModal })));
@@ -49,8 +47,8 @@ export default function App() {
   const { entries: activityEntries, addEntry: addActivityEntry, clearEntries: clearActivity } = useActivity();
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = (searchParams.get('tab') as 'stash' | 'community' | 'marketplace' | 'admin' | 'notifications' | 'messages' | 'bookmarks' | 'explore') || 'stash';
-  function setActiveTab(tab: 'stash' | 'community' | 'marketplace' | 'admin' | 'notifications' | 'messages' | 'bookmarks' | 'explore') {
+  const activeTab = (searchParams.get('tab') as 'stash' | 'community' | 'marketplace' | 'admin' | 'notifications' | 'bookmarks' | 'history') || 'stash';
+  function setActiveTab(tab: 'stash' | 'community' | 'marketplace' | 'admin' | 'notifications' | 'bookmarks' | 'history') {
     setSearchParams(prev => { prev.set('tab', tab); prev.delete('user'); return prev; }, { replace: true });
   }
   const [stashSection, setStashSection] = useState<'products' | 'dashboard' | 'history'>('products');
@@ -527,7 +525,7 @@ export default function App() {
           <div>
             {/* Sub-navigation pills */}
             <div className="flex items-center justify-center gap-2 mb-5 max-w-md mx-auto" role="tablist">
-              {(['products', 'dashboard', 'history'] as const).map(section => (
+              {(['products', 'dashboard'] as const).map(section => (
                 <button
                   key={section}
                   role="tab"
@@ -539,7 +537,7 @@ export default function App() {
                       : isDark ? 'text-mist hover:text-frost hover:bg-midnight' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                   }`}
                 >
-                  {section === 'products' ? t('products', lang) : section === 'dashboard' ? t('dashboard', lang) : t('history', lang)}
+                  {section === 'products' ? t('products', lang) : t('dashboard', lang)}
                 </button>
               ))}
             </div>
@@ -774,32 +772,6 @@ export default function App() {
                 />
               </Suspense>
             )}
-
-            {stashSection === 'history' && (
-              <Suspense fallback={
-                <div className={`text-center py-16 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Loading history...</div>
-              }>
-                <HistoryTab
-                  filteredHistory={filteredHistory}
-                  isDark={isDark}
-                  lang={lang}
-                  settings={settings}
-                  historyFilterType={historyFilterType}
-                  historyDateFilter={historyDateFilter}
-                  expandedNotes={expandedNotes}
-                  onFilterTypeChange={setHistoryFilterType}
-                  onDateFilterChange={setHistoryDateFilter}
-                  onClearHistory={clearActivity}
-                  onToggleNote={(id: string) => {
-                    setExpandedNotes(prev => {
-                      const next = new Set(prev);
-                      if (next.has(id)) next.delete(id); else next.add(id);
-                      return next;
-                    });
-                  }}
-                />
-              </Suspense>
-            )}
           </div>
         )}
 
@@ -889,13 +861,27 @@ export default function App() {
           </ErrorBoundary>
         )}
 
-        {/* ==================== MESSAGES TAB ==================== */}
-        {activeTab === 'messages' && user && (
+        {/* ==================== HISTORY TAB ==================== */}
+        {activeTab === 'history' && (
           <ErrorBoundary isDark={isDark} lang={lang}>
-            <MessagesPage
-              currentUserId={user.id}
+            <HistoryTab
+              filteredHistory={filteredHistory}
               isDark={isDark}
               lang={lang}
+              settings={settings}
+              historyFilterType={historyFilterType}
+              historyDateFilter={historyDateFilter}
+              expandedNotes={expandedNotes}
+              onFilterTypeChange={setHistoryFilterType}
+              onDateFilterChange={setHistoryDateFilter}
+              onClearHistory={clearActivity}
+              onToggleNote={(id: string) => {
+                setExpandedNotes(prev => {
+                  const next = new Set(prev);
+                  if (next.has(id)) next.delete(id); else next.add(id);
+                  return next;
+                });
+              }}
             />
           </ErrorBoundary>
         )}
@@ -913,16 +899,6 @@ export default function App() {
           </ErrorBoundary>
         )}
 
-        {/* ==================== EXPLORE TAB ==================== */}
-        {activeTab === 'explore' && (
-          <ErrorBoundary isDark={isDark} lang={lang}>
-            <ExplorePage
-              isDark={isDark}
-              currentUserId={user?.id || ''}
-              onViewProfile={handleViewProfile}
-            />
-          </ErrorBoundary>
-        )}
       </main>
       </div>
 

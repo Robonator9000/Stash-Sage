@@ -1,7 +1,7 @@
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-type TabId = 'stash' | 'community' | 'marketplace' | 'admin' | 'notifications';
+type TabId = 'stash' | 'community' | 'marketplace' | 'admin' | 'notifications' | 'history';
 
 interface BottomNavProps {
   activeTab: string;
@@ -12,6 +12,7 @@ interface BottomNavProps {
 
 const tabs = [
   { id: 'stash' as const, label: 'Stash', icon: 'M12 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6m-8 0H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-2m-8 0V9a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v12' },
+  { id: 'history' as const, label: 'History', icon: 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z' },
   { id: 'community' as const, label: 'Community', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
   { id: 'marketplace' as const, label: 'Market', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
   { id: 'notifications' as const, label: 'Alerts', icon: 'M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0' },
@@ -38,7 +39,7 @@ export function BottomNav({ activeTab, onTabChange, isDark }: BottomNavProps) {
         <button
           key={tab.id}
           onClick={() => handleTabClick(tab.id)}
-          className={`flex flex-col items-center gap-0.5 py-1.5 px-4 rounded-xl text-xs font-medium transition-all
+          className={`flex flex-col items-center gap-0.5 py-1.5 px-2.5 rounded-xl text-xs font-medium transition-all
             ${activeTab === tab.id
               ? isDark ? 'text-cyan-400' : 'text-cyan-600'
               : isDark ? 'text-mist' : 'text-gray-500'
