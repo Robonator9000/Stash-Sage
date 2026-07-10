@@ -62,13 +62,11 @@ const PLATFORM_BRAND_ICONS: Record<string, string> = {
 
 export const MarketplaceCard = memo(function MarketplaceCard({ listing, products, isDark, lang, currentUserId, isPinned, onEdit, onDelete, onMarkSold, onViewProfile, onSave, onStartChat, onPinToggle }: MarketplaceCardProps) {
   const isOwner = listing.user_id === currentUserId;
-  const brandPath = PLATFORM_BRAND_ICONS[listing.contact_platform] || PLATFORM_BRAND_ICONS.other;
-  const brandColor = PLATFORM_COLORS[listing.contact_platform] || PLATFORM_COLORS.other;
   const allImages = listing.images?.filter(Boolean) || (listing.image_url ? [listing.image_url] : []);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showDetailPopup, setShowDetailPopup] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{ type: 'delete' | 'sold', listingId: string } | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
   const [showProductDetail, setShowProductDetail] = useState(false);
   const [showOwnerMenu, setShowOwnerMenu] = useState(false);
   const ownerMenuRef = useRef<HTMLDivElement>(null);
@@ -79,15 +77,19 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
     ? products.find(p => p.id === listing.product_id)
     : null;
 
-  const handleContactClick = useCallback(async () => {
-    const url = getContactUrl(listing.contact_platform, listing.contact_value);
+  const contacts = listing.contacts?.length
+    ? listing.contacts
+    : [{ platform: listing.contact_platform, value: listing.contact_value }];
+
+  const handleContactClick = useCallback(async (platform: string, value: string) => {
+    const url = getContactUrl(platform, value);
     if (url) {
       window.open(url, '_blank', 'noopener,noreferrer');
     }
-    await copyToClipboard(listing.contact_value);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }, [listing.contact_platform, listing.contact_value]);
+    await copyToClipboard(value);
+    setCopied(value);
+    setTimeout(() => setCopied(null), 2000);
+  }, []);
 
   useEffect(() => { setCurrentImageIndex(0); }, [listing.id]);
 
@@ -237,13 +239,22 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
 
       {/* Detail popup — Facebook-style fullscreen split */}
       {showDetailPopup && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex" onClick={() => setShowDetailPopup(false)}>
-          <div className="flex-1 flex items-center justify-center relative min-w-0" onClick={e => e.stopPropagation()}>
-            {/* Close button */}
+        <div className="fixed inset-0 z-50 bg-black/80 flex flex-col" onClick={() => setShowDetailPopup(false)}>
+          {/* Top bar with Back + Close */}
+          <div className="flex items-center justify-between px-4 py-3 shrink-0" onClick={e => e.stopPropagation()}>
+            <button type="button" onClick={() => setShowDetailPopup(false)}
+              className="flex items-center gap-2 text-white/80 hover:text-white transition-colors">
+              <ChevronLeft className="w-5 h-5" />
+              <span className="text-sm font-medium">Back</span>
+            </button>
             <button type="button" onClick={() => setShowDetailPopup(false)} aria-label="Close"
-              className="absolute top-4 left-4 z-10 p-2.5 rounded-full bg-black/40 text-white hover:bg-black/60 transition-all">
+              className="p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-all">
               <X className="w-5 h-5" />
             </button>
+          </div>
+
+          <div className="flex flex-1 min-h-0">
+          <div className="flex-1 flex items-center justify-center relative min-w-0" onClick={e => e.stopPropagation()}>
 
             {/* Image */}
             {allImages.length > 0 ? (
@@ -358,22 +369,25 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
 
               {/* Action buttons */}
               <div className="flex flex-col gap-2">
-                <button onClick={handleContactClick} aria-label={`Contact via ${listing.contact_platform}: ${listing.contact_value}`}
-                  className={`flex items-center justify-center gap-2.5 w-full px-5 py-3 rounded-xl text-sm font-semibold transition-all ${isDark ? 'bg-cyanx/20 text-cyanx hover:bg-cyanx/30' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'}`}>
-                  <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" style={{ color: brandColor }} aria-hidden="true">
-                    <path d={brandPath} />
-                  </svg>
-                  <span>
-                    {listing.contact_platform === 'email' ? listing.contact_value :
-                     listing.contact_platform === 'phone' ? listing.contact_value :
-                     `@${listing.contact_value.replace(/^@+/, '')}`}
-                  </span>
-                  {copied ? (
-                    <span className="text-xs font-bold shrink-0">Copied!</span>
-                  ) : (
-                    <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                  )}
-                </button>
+                {contacts.map((contact, i) => {
+                  const isCopied = copied === contact.value;
+                  return (
+                    <button key={i} onClick={() => handleContactClick(contact.platform, contact.value)} aria-label={`Contact via ${contact.platform}: ${contact.value}`}
+                      className={`flex items-center justify-center gap-2.5 w-full px-5 py-3 rounded-xl text-sm font-semibold transition-all ${isDark ? 'bg-cyanx/20 text-cyanx hover:bg-cyanx/30' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'}`}>
+                      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" style={{ color: PLATFORM_COLORS[contact.platform] || PLATFORM_COLORS.other }} aria-hidden="true">
+                        <path d={PLATFORM_BRAND_ICONS[contact.platform] || PLATFORM_BRAND_ICONS.other} />
+                      </svg>
+                      <span className="truncate">
+                        {contact.platform === 'email' || contact.platform === 'phone' ? contact.value : `@${contact.value.replace(/^@+/, '')}`}
+                      </span>
+                      {isCopied ? (
+                        <span className="text-xs font-bold shrink-0">Copied!</span>
+                      ) : (
+                        <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                      )}
+                    </button>
+                  );
+                })}
                 {!isOwner && currentUserId && onStartChat && (
                   <button onClick={() => { onStartChat(listing.id); setShowDetailPopup(false); }} aria-label={t('startChat', lang)}
                     className={`flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl text-sm font-semibold transition-all ${isDark ? 'bg-[#8b5cf6]/10 text-[#8b5cf6] hover:bg-[#8b5cf6]/20' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'}`}>
@@ -485,6 +499,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
                 <ReviewSection listingId={listing.id} isOwner={isOwner} currentUserId={currentUserId} isDark={isDark} lang={lang} onViewProfile={(uid) => { onViewProfile?.(uid); setShowDetailPopup(false); }} />
               </div>
             </div>
+          </div>
           </div>
         </div>
       )}

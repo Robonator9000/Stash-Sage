@@ -1,16 +1,12 @@
 import { useState, useRef } from 'react';
 import { useModalAnimation } from '../hooks/useModalAnimation';
 import { useSettings } from '../utils/useSettings';
-import type { MarketplaceListing, Product, PriceOption } from '../types';
+import type { MarketplaceListing, Product, PriceOption, ContactEntry } from '../types';
 import { CONTACT_PLATFORMS, MARKETPLACE_CATEGORIES } from '../types';
 import { uploadListingImages } from '../utils/supabase';
 import { t } from '../utils/translations';
-import { X, Phone, Mail, MessageCircle, Send, Camera, Globe, Tag, DollarSign, Plus, Trash2, Scale } from 'lucide-react';
+import { X, Camera, Tag, DollarSign, Plus, Trash2, Scale } from 'lucide-react';
 
-const PLATFORM_ICONS: Record<string, typeof Phone> = {
-  phone: Phone, email: Mail, discord: MessageCircle, telegram: Send,
-  instagram: Camera, snapchat: Camera, signal: MessageCircle, whatsapp: MessageCircle, other: Globe,
-};
 
 interface CreateListingModalProps {
   isDark: boolean;
@@ -31,8 +27,14 @@ export function CreateListingModal({ isDark, lang, products, currentUserId, init
   const [priceOptions, setPriceOptions] = useState<PriceOption[]>(initial?.price_options || []);
   const [category, setCategory] = useState(initial?.category || '');
   const defaultContact = settings.profile?.contacts?.[0];
-  const [contactPlatform, setContactPlatform] = useState(initial?.contact_platform || defaultContact?.platform || 'email');
-  const [contactValue, setContactValue] = useState(initial?.contact_value || defaultContact?.value || '');
+  const initialContacts = initial?.contacts?.length
+    ? initial.contacts
+    : initial?.contact_platform
+      ? [{ platform: initial.contact_platform, value: initial.contact_value }]
+      : defaultContact
+        ? [{ platform: defaultContact.platform, value: defaultContact.value }]
+        : [{ platform: 'email', value: '' }];
+  const [contacts, setContacts] = useState<ContactEntry[]>(initialContacts);
   const [linkedProductId, setLinkedProductId] = useState(initial?.product_id || '');
   const [existingImages, setExistingImages] = useState<string[]>(initial?.images || (initial?.image_url ? [initial.image_url] : []));
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
@@ -41,7 +43,6 @@ export function CreateListingModal({ isDark, lang, products, currentUserId, init
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const PlatformIcon = PLATFORM_ICONS[contactPlatform] || Globe;
   const linkedProduct = products.find(p => p.id === linkedProductId);
 
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -76,14 +77,16 @@ export function CreateListingModal({ isDark, lang, products, currentUserId, init
       }
       newImagePreviews.forEach(p => URL.revokeObjectURL(p));
       const finalPriceOptions = priceOptions.length > 0 ? priceOptions : undefined;
+      const validContacts = contacts.filter(c => c.platform && c.value.trim());
       await onSubmit({
         title: title.trim(),
         description: description.trim(),
         price: priceOptions.length > 0 ? priceOptions[0].price : parseFloat(price),
         price_options: finalPriceOptions,
         category: category || undefined,
-        contact_platform: contactPlatform,
-        contact_value: contactValue.trim(),
+        contact_platform: validContacts[0]?.platform || 'email',
+        contact_value: validContacts[0]?.value.trim() || '',
+        contacts: validContacts,
         product_id: linkedProductId || undefined,
         product_name: linkedProduct?.name || undefined,
         image_url: allImages[0] || undefined,
@@ -249,29 +252,46 @@ export function CreateListingModal({ isDark, lang, products, currentUserId, init
           </select>
         </div>
 
-        {/* Contact */}
+        {/* Contacts */}
         <div>
-          <label className={`block text-xs font-medium mb-1 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+          <label className={`block text-xs font-medium mb-1.5 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
             {t('contactInfo', lang)}
           </label>
-          <div className="flex gap-1.5 flex-wrap mb-1.5">
-            {CONTACT_PLATFORMS.map(pf => {
-              const Icon = PLATFORM_ICONS[pf] || Globe;
-              return (
-                <button key={pf} type="button" onClick={() => setContactPlatform(pf)} aria-pressed={contactPlatform === pf}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-medium transition-all ${contactPlatform === pf ? 'bg-gradient-to-r from-cyanx to-emera text-white' : isDark ? 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                  <Icon className="w-3 h-3" />
-                  {pf}
-                </button>
-              );
-            })}
+          <div className="space-y-2">
+            {contacts.map((contact, i) => (
+              <div key={i} className="flex gap-1.5">
+                <select value={contact.platform} onChange={e => {
+                  const next = [...contacts];
+                  next[i] = { ...next[i], platform: e.target.value };
+                  setContacts(next);
+                }}
+                  className={`px-2 py-2 rounded-lg border text-xs outline-none transition-colors shrink-0 ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}>
+                  {CONTACT_PLATFORMS.map(pf => (
+                    <option key={pf} value={pf}>{pf}</option>
+                  ))}
+                </select>
+                <input type="text" value={contact.value} onChange={e => {
+                  const next = [...contacts];
+                  next[i] = { ...next[i], value: e.target.value };
+                  setContacts(next);
+                }} placeholder={contact.platform === 'email' ? 'user@example.com' : contact.platform === 'phone' ? '+1 555 0000' : '@username'}
+                  className={`flex-1 px-3 py-2 rounded-lg border text-sm outline-none transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'}`} />
+                {contacts.length > 1 && (
+                  <button type="button" onClick={() => setContacts(prev => prev.filter((_, j) => j !== i))} aria-label="Remove contact"
+                    className={`p-2 rounded-lg transition-all shrink-0 ${isDark ? 'text-red-400 hover:bg-red-900/20' : 'text-red-500 hover:bg-red-50'}`}>
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
-          <div className="relative">
-            <PlatformIcon className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${isDark ? 'text-slate-400' : 'text-gray-400'}`} />
-            <input type="text" name="contact" value={contactValue} onChange={e => setContactValue(e.target.value)} required
-              placeholder={contactPlatform === 'email' ? 'user@example.com' : contactPlatform === 'phone' ? '+1 555 0000' : '@username'}
-              className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm outline-none transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'}`} />
-          </div>
+          {contacts.length < 5 && (
+            <button type="button" onClick={() => setContacts(prev => [...prev, { platform: 'email', value: '' }])}
+              className={`mt-1.5 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${isDark ? 'bg-slate-800 text-cyanx hover:bg-slate-700' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'}`}>
+              <Plus className="w-3 h-3" />
+              Add contact
+            </button>
+          )}
         </div>
 
         {/* Link product */}
@@ -309,7 +329,7 @@ export function CreateListingModal({ isDark, lang, products, currentUserId, init
         </div>
 
         {/* Submit */}
-        <button type="submit" disabled={submitting || !title.trim() || !contactValue.trim() || (priceOptions.length === 0 && !price.trim()) || (priceOptions.length > 0 && priceOptions.some(o => !o.amount || !o.price))}
+        <button type="submit" disabled={submitting || !title.trim() || !contacts.some(c => c.value.trim()) || (priceOptions.length === 0 && !price.trim()) || (priceOptions.length > 0 && priceOptions.some(o => !o.amount || !o.price))}
           className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-cyanx/20">
           {submitting ? '...' : initial ? t('editListing', lang) : t('createListing', lang)}
         </button>
