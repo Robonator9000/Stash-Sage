@@ -26,6 +26,7 @@ interface PostCardProps {
   onBookmark?: (postId: string) => Promise<void>;
   onUnbookmark?: (postId: string) => Promise<void>;
   onQuote?: (postId: string) => void;
+  onPostClick?: (postId: string) => void;
 }
 
 function renderContent(text: string, isDark: boolean, onHashtagClick?: (tag: string) => void) {
@@ -114,7 +115,7 @@ function QuotedPost({ post, isDark, onHashtagClick }: { post: Post; isDark: bool
   );
 }
 
-export const PostCard = memo(function PostCard({ post, isDark, lang, currentUserId, username, isFollowing, onLike, onUnlike, onDelete, onEdit, onFollow, onUnfollow, onViewProfile, onComment, onHashtagClick, onBookmark, onUnbookmark, onQuote }: PostCardProps) {
+export const PostCard = memo(function PostCard({ post, isDark, lang, currentUserId, username, isFollowing, onLike, onUnlike, onDelete, onEdit, onFollow, onUnfollow, onViewProfile, onComment, onHashtagClick, onBookmark, onUnbookmark, onQuote, onPostClick }: PostCardProps) {
   const [liking, setLiking] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -241,11 +242,11 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
             </div>
           ) : (
             <>
-              <p className={`text-sm mb-2 whitespace-pre-wrap ${isDark ? 'text-mist' : 'text-gray-600'}`}>
+              <p className={`text-sm mb-2 whitespace-pre-wrap ${isDark ? 'text-mist' : 'text-gray-600'}`} onClick={() => onPostClick?.(post.id)}>
                 {renderContent(post.content, isDark, onHashtagClick)}
               </p>
-              {postImages.length > 0 && <PostImages images={postImages} />}
-              {post.quoted_post && <QuotedPost post={post.quoted_post} isDark={isDark} onHashtagClick={onHashtagClick} />}
+              {postImages.length > 0 && <div onClick={() => onPostClick?.(post.id)}><PostImages images={postImages} /></div>}
+              {post.quoted_post && <div onClick={() => onPostClick?.(post.id)}><QuotedPost post={post.quoted_post} isDark={isDark} onHashtagClick={onHashtagClick} /></div>}
             </>
           )}
 

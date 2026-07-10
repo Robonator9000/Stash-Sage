@@ -4,6 +4,7 @@ import { supabase, uploadPostImages } from '../utils/supabase';
 import { t } from '../utils/translations';
 import { PostCard } from './PostCard';
 import { CreatePostCard } from './CreatePostCard';
+import { PostDetailView } from './PostDetailView';
 import { showToast } from './Toast';
 import { Bookmark, X } from 'lucide-react';
 import { getProfiles } from '../utils/profileCache';
@@ -36,6 +37,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
   const [activeHashtag, setActiveHashtag] = useState<string | null>(null);
   const [trendingTags, setTrendingTags] = useState<string[]>([]);
   const [quotePostId, setQuotePostId] = useState<string | null>(null);
+  const [focusedPostId, setFocusedPostId] = useState<string | null>(null);
   const pageRef = useRef(0);
   const observerRef = useRef<HTMLDivElement>(null);
 
@@ -455,6 +457,10 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
     setActiveHashtag(prev => prev === tag ? null : tag);
   }, []);
 
+  const handlePostClick = useCallback((postId: string) => {
+    setFocusedPostId(postId);
+  }, []);
+
   const showCreatePostCard = !!currentUserId;
 
   const displayedPosts = useMemo(() => {
@@ -472,6 +478,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
   }, [posts, feedFilter, currentUserId, activeHashtag]);
 
   const quotePost = quotePostId ? posts.find(p => p.id === quotePostId) : null;
+  const focusedPost = focusedPostId ? posts.find(p => p.id === focusedPostId) : null;
 
   return (
     <div className="space-y-4">
@@ -631,6 +638,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
           onBookmark={handleBookmark}
           onUnbookmark={handleUnbookmark}
           onQuote={handleQuote}
+          onPostClick={handlePostClick}
         />
       ))}
 
@@ -644,6 +652,26 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       )}
 
       <div ref={observerRef} className="h-4" />
+
+      {focusedPost && (
+        <PostDetailView
+          post={focusedPost}
+          isDark={isDark}
+          lang={lang}
+          currentUserId={currentUserId}
+          username={username}
+          onClose={() => setFocusedPostId(null)}
+          onLike={handleLike}
+          onUnlike={handleUnlike}
+          onBookmark={handleBookmark}
+          onUnbookmark={handleUnbookmark}
+          onDelete={handleDelete}
+          onEdit={handleEditPost}
+          onViewProfile={onViewProfile}
+          onHashtagClick={handleHashtagClick}
+          onComment={handleComment}
+        />
+      )}
     </div>
   );
 });
