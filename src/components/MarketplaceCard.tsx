@@ -239,22 +239,13 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
 
       {/* Detail popup — Facebook-style fullscreen split */}
       {showDetailPopup && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex flex-col" onClick={() => setShowDetailPopup(false)}>
-          {/* Top bar with Back + Close */}
-          <div className="flex items-center justify-between px-4 py-3 shrink-0 bg-gray-950/90 border-b border-white/5" onClick={e => e.stopPropagation()}>
-            <button type="button" onClick={() => setShowDetailPopup(false)}
-              className="flex items-center gap-2 text-white hover:text-white/80 transition-colors">
-              <ChevronLeft className="w-5 h-5" />
-              <span className="text-sm font-medium">Back</span>
-            </button>
+        <div className="fixed inset-0 z-50 bg-black/80 flex" onClick={() => setShowDetailPopup(false)}>
+          <div className="flex-1 flex items-center justify-center relative min-w-0" onClick={e => e.stopPropagation()}>
+            {/* Close button */}
             <button type="button" onClick={() => setShowDetailPopup(false)} aria-label="Close"
-              className="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all">
+              className="absolute top-4 left-4 z-10 p-2.5 rounded-full bg-black/40 text-white hover:bg-black/60 transition-all">
               <X className="w-5 h-5" />
             </button>
-          </div>
-
-          <div className="flex flex-1 min-h-0">
-          <div className="flex-1 flex items-center justify-center relative min-w-0" onClick={e => e.stopPropagation()}>
 
             {/* Image */}
             {allImages.length > 0 ? (
@@ -499,7 +490,6 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
                 <ReviewSection listingId={listing.id} isOwner={isOwner} currentUserId={currentUserId} isDark={isDark} lang={lang} onViewProfile={(uid) => { onViewProfile?.(uid); setShowDetailPopup(false); }} />
               </div>
             </div>
-          </div>
           </div>
         </div>
       )}
