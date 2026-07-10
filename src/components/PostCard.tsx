@@ -246,7 +246,7 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
                 {renderContent(post.content, isDark, onHashtagClick)}
               </p>
               {postImages.length > 0 && <div onClick={() => onPostClick?.(post.id)}><PostImages images={postImages} /></div>}
-              {post.quoted_post && <div onClick={() => onPostClick?.(post.id)}><QuotedPost post={post.quoted_post} isDark={isDark} onHashtagClick={onHashtagClick} /></div>}
+              {post.quoted_post && <div onClick={(e) => { e.stopPropagation(); onPostClick?.(post.quoted_post!.id); }}><QuotedPost post={post.quoted_post} isDark={isDark} onHashtagClick={onHashtagClick} /></div>}
             </>
           )}
 

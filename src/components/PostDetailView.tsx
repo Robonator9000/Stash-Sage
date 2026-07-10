@@ -21,6 +21,7 @@ interface PostDetailViewProps {
   onViewProfile?: (userId: string) => void;
   onHashtagClick?: (tag: string) => void;
   onComment?: (userId: string, postId: string) => void;
+  onPostClick?: (postId: string) => void;
 }
 
 function renderContent(text: string, isDark: boolean, onHashtagClick?: (tag: string) => void) {
@@ -91,7 +92,7 @@ function QuotedPostDetail({ post, isDark, onHashtagClick }: { post: Post; isDark
   );
 }
 
-export const PostDetailView = memo(function PostDetailView({ post, isDark, lang, currentUserId, username, onClose, onLike, onUnlike, onBookmark, onUnbookmark, onDelete, onEdit, onViewProfile, onHashtagClick, onComment }: PostDetailViewProps) {
+export const PostDetailView = memo(function PostDetailView({ post, isDark, lang, currentUserId, username, onClose, onLike, onUnlike, onBookmark, onUnbookmark, onDelete, onEdit, onViewProfile, onHashtagClick, onComment, onPostClick }: PostDetailViewProps) {
   const [currentPost, setCurrentPost] = useState(post);
   const [liking, setLiking] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -173,7 +174,11 @@ export const PostDetailView = memo(function PostDetailView({ post, isDark, lang,
               </p>
 
               {postImages.length > 0 && <PostDetailImages images={postImages} />}
-              {currentPost.quoted_post && <QuotedPostDetail post={currentPost.quoted_post} isDark={isDark} onHashtagClick={onHashtagClick} />}
+              {currentPost.quoted_post && (
+                <div onClick={() => onPostClick?.(currentPost.quoted_post!.id)} className="cursor-pointer">
+                  <QuotedPostDetail post={currentPost.quoted_post} isDark={isDark} onHashtagClick={onHashtagClick} />
+                </div>
+              )}
 
               {editing && (
                 <div className="mb-3 space-y-2">

@@ -4,8 +4,10 @@ import { useSettings } from '../utils/useSettings';
 import { useProducts } from '../utils/useProducts';
 import { SocialFeed } from './SocialFeed';
 import { ProfilePage } from './ProfilePage';
+import { TrendsWidget } from './TrendsWidget';
+import { WhoToFollow } from './WhoToFollow';
 import type { Profile } from '../types';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../utils/supabase';
 
 export function CommunityPage() {
@@ -16,8 +18,10 @@ export function CommunityPage() {
   const isDark = settings.theme === 'dark';
   const [communityProfile, setCommunityProfile] = useState<Profile | undefined>(undefined);
   const profileUser = searchParams.get('user');
+  const postParam = searchParams.get('post');
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
   const [resolvingProfile, setResolvingProfile] = useState(false);
+  const [activeHashtag, setActiveHashtag] = useState<string | null>(null);
 
   useEffect(() => {
     if (!profileUser) { setProfileUserId(null); return; }
@@ -63,6 +67,18 @@ export function CommunityPage() {
     });
   }, [user]);
 
+  const handleViewPost = useCallback((postId: string) => {
+    setSearchParams(prev => { prev.set('post', postId); return prev; }, { replace: true });
+  }, [setSearchParams]);
+
+  const handleClosePost = useCallback(() => {
+    setSearchParams(prev => { prev.delete('post'); return prev; }, { replace: true });
+  }, [setSearchParams]);
+
+  const handleHashtagClick = useCallback((tag: string) => {
+    setActiveHashtag(prev => prev === tag ? null : tag);
+  }, []);
+
   if (!user) {
     return (
       <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
@@ -106,18 +122,33 @@ export function CommunityPage() {
   }
 
   return (
-    <SocialFeed
-      isDark={isDark}
-      lang={settings.language}
-      currentUserId={user.id}
-      username={communityProfile?.username || user.email?.split('@')[0] || 'User'}
-      products={products}
-      profile={communityProfile}
-      onViewProfile={(uid) => {
-        supabase.from('profiles').select('username').eq('user_id', uid).maybeSingle().then(({ data }) => {
-          setSearchParams(prev => { prev.set('user', data?.username || uid); return prev; }, { replace: true });
-        });
-      }}
-    />
+    <div className="flex gap-4 lg:gap-6 max-w-5xl mx-auto">
+      <div className="flex-1 min-w-0 max-w-2xl">
+        <SocialFeed
+          isDark={isDark}
+          lang={settings.language}
+          currentUserId={user.id}
+          username={communityProfile?.username || user.email?.split('@')[0] || 'User'}
+          products={products}
+          profile={communityProfile}
+          viewPostId={postParam}
+          onViewPost={handleViewPost}
+          onClosePost={handleClosePost}
+          onViewProfile={(uid) => {
+            supabase.from('profiles').select('username').eq('user_id', uid).maybeSingle().then(({ data }) => {
+              setSearchParams(prev => { prev.set('user', data?.username || uid); return prev; }, { replace: true });
+            });
+          }}
+        />
+      </div>
+      <div className="hidden lg:block w-80 shrink-0 space-y-4">
+        <TrendsWidget isDark={isDark} activeHashtag={activeHashtag} onHashtagClick={handleHashtagClick} />
+        <WhoToFollow isDark={isDark} currentUserId={user.id} onViewProfile={(uid) => {
+          supabase.from('profiles').select('username').eq('user_id', uid).maybeSingle().then(({ data }) => {
+            setSearchParams(prev => { prev.set('user', data?.username || uid); return prev; }, { replace: true });
+          });
+        }} />
+      </div>
+    </div>
   );
 }

@@ -21,12 +21,17 @@ interface SocialFeedProps {
   products: Product[];
   profile?: Profile;
   onViewProfile?: (userId: string) => void;
+  viewPostId?: string | null;
+  onViewPost?: (postId: string) => void;
+  onClosePost?: () => void;
+  activeHashtag?: string | null;
+  onHashtagClick?: (tag: string) => void;
 }
 
 const PAGE_SIZE = 10;
 let socialFeedChannelCounter = 0;
 
-export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId, username, products, profile, onViewProfile }: SocialFeedProps) {
+export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId, username, products, profile, onViewProfile, viewPostId, onViewPost, onClosePost, activeHashtag: externalHashtag, onHashtagClick: externalHashtagClick }: SocialFeedProps) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -34,10 +39,10 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
   const [error, setError] = useState<string | null>(null);
   const [feedFilter, setFeedFilter] = useState<'latest' | 'following' | 'trending' | 'bookmarked'>('latest');
   const [submitting, setSubmitting] = useState(false);
-  const [activeHashtag, setActiveHashtag] = useState<string | null>(null);
+  const [activeHashtagInternal, setActiveHashtagInternal] = useState<string | null>(null);
+  const activeHashtag = externalHashtag ?? activeHashtagInternal;
   const [trendingTags, setTrendingTags] = useState<string[]>([]);
   const [quotePostId, setQuotePostId] = useState<string | null>(null);
-  const [focusedPostId, setFocusedPostId] = useState<string | null>(null);
   const pageRef = useRef(0);
   const observerRef = useRef<HTMLDivElement>(null);
 
@@ -156,7 +161,14 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
     const enriched = await enrichPosts(data);
 
     if (sort === 'trending') {
-      return enriched.sort((a, b) => ((b.likes_count ?? 0) * 3 + (b.comments_count ?? 0) * 2) - ((a.likes_count ?? 0) * 3 + (a.comments_count ?? 0) * 2));
+      return enriched.sort((a, b) => {
+        const now = Date.now();
+        const aHours = (now - new Date(a.created_at).getTime()) / 3600000;
+        const bHours = (now - new Date(b.created_at).getTime()) / 3600000;
+        const aScore = ((a.likes_count ?? 0) * 3 + (a.comments_count ?? 0) * 2) / (1 + aHours / 24);
+        const bScore = ((b.likes_count ?? 0) * 3 + (b.comments_count ?? 0) * 2) / (1 + bHours / 24);
+        return bScore - aScore;
+      });
     }
 
     return enriched;
@@ -454,12 +466,13 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
   }, [quotePostId, submitting, currentUserId, lang, enrichPosts]);
 
   const handleHashtagClick = useCallback((tag: string) => {
-    setActiveHashtag(prev => prev === tag ? null : tag);
-  }, []);
+    if (externalHashtagClick) { externalHashtagClick(tag); return; }
+    setActiveHashtagInternal(prev => prev === tag ? null : tag);
+  }, [externalHashtagClick]);
 
   const handlePostClick = useCallback((postId: string) => {
-    setFocusedPostId(postId);
-  }, []);
+    onViewPost?.(postId);
+  }, [onViewPost]);
 
   const showCreatePostCard = !!currentUserId;
 
@@ -478,7 +491,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
   }, [posts, feedFilter, currentUserId, activeHashtag]);
 
   const quotePost = quotePostId ? posts.find(p => p.id === quotePostId) : null;
-  const focusedPost = focusedPostId ? posts.find(p => p.id === focusedPostId) : null;
+  const focusedPost = viewPostId ? posts.find(p => p.id === viewPostId) : null;
 
   return (
     <div className="space-y-4">
@@ -591,13 +604,13 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       {(trendingTags.length > 0 || activeHashtag) && (
         <div className={`flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none ${isDark ? 'text-mist' : 'text-gray-600'}`}>
           {activeHashtag && (
-            <button onClick={() => setActiveHashtag(null)}
+            <button onClick={() => handleHashtagClick(activeHashtag)}
               className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-cyanx/20 text-cyanx whitespace-nowrap">
               <X className="w-3 h-3" /> #{activeHashtag}
             </button>
           )}
           {trendingTags.map(tag => (
-            <button key={tag} onClick={() => setActiveHashtag(tag)}
+            <button key={tag} onClick={(e) => { e.stopPropagation(); handleHashtagClick(tag); }}
               className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
                 activeHashtag === tag
                   ? 'bg-cyanx/20 text-cyanx'
@@ -660,7 +673,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
           lang={lang}
           currentUserId={currentUserId}
           username={username}
-          onClose={() => setFocusedPostId(null)}
+          onClose={() => onClosePost?.()}
           onLike={handleLike}
           onUnlike={handleUnlike}
           onBookmark={handleBookmark}
@@ -670,6 +683,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
           onViewProfile={onViewProfile}
           onHashtagClick={handleHashtagClick}
           onComment={handleComment}
+          onPostClick={handlePostClick}
         />
       )}
     </div>
