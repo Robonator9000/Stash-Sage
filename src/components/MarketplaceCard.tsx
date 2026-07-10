@@ -240,12 +240,12 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
       {/* Detail popup — Facebook-style fullscreen split */}
       {showDetailPopup && (
         <div className="fixed inset-0 z-50 bg-black/80 flex" onClick={() => setShowDetailPopup(false)}>
+          {/* Close button — top-left of full overlay */}
+          <button type="button" onClick={e => { e.stopPropagation(); setShowDetailPopup(false); }} aria-label="Close"
+            className="absolute top-4 left-4 z-20 p-2.5 rounded-full bg-black/40 text-white hover:bg-black/60 transition-all">
+            <X className="w-5 h-5" />
+          </button>
           <div className="flex-1 flex items-center justify-center relative min-w-0" onClick={e => e.stopPropagation()}>
-            {/* Close button */}
-            <button type="button" onClick={() => setShowDetailPopup(false)} aria-label="Close"
-              className="absolute top-4 left-4 z-10 p-2.5 rounded-full bg-black/40 text-white hover:bg-black/60 transition-all">
-              <X className="w-5 h-5" />
-            </button>
 
             {/* Image */}
             {allImages.length > 0 ? (
