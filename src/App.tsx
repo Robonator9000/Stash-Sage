@@ -28,6 +28,8 @@ import { supabase } from './utils/supabase';
 
 import { AdminDashboard } from './components/AdminDashboard';
 import { MenuButton } from './components/MenuButton';
+import { LeftSidebar } from './components/LeftSidebar';
+import { BottomNav } from './components/BottomNav';
 import { MessagePopup } from './components/MessagePopup';
 const DashboardTab = lazy(() => import('./components/DashboardTab').then(m => ({ default: m.DashboardTab })));
 const HistoryTab = lazy(() => import('./components/HistoryTab').then(m => ({ default: m.HistoryTab })));
@@ -499,41 +501,22 @@ export default function App() {
       />
 
 
-      {/* Tabs + Content */}
-      <div className="max-w-7xl mx-auto px-4 py-4 flex-1">
-        {/* Main tab bar */}
-        <div className="flex items-center justify-center mb-4">
-          <div className="flex items-center gap-4" role="tablist">
-            {[
-              { id: 'stash', label: t('stash', lang), icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-              { id: 'community', label: t('community', lang), icon: 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z' },
-              { id: 'marketplace', label: t('marketplace', lang), icon: 'M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z' },
-              ...(isAdmin ? [{ id: 'admin', label: 'Admin', icon: 'M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z' }] : []),
-            ].flat().map(tab => (
-              <button
-                key={tab.id}
-                role="tab"
-                aria-selected={activeTab === tab.id}
-                aria-current={activeTab === tab.id ? 'page' : undefined}
-                onClick={() => setActiveTab(tab.id as 'stash' | 'community' | 'marketplace' | 'admin')}
-                className={`flex-1 max-w-[200px] flex items-center justify-center gap-2.5 px-5 py-3.5 text-sm font-medium relative whitespace-nowrap overflow-hidden
-                  ${activeTab === tab.id
-                    ? isDark ? 'text-cyan-400' : 'text-cyan-600'
-                    : isDark ? 'text-mist hover:text-frost' : 'text-gray-600 hover:text-gray-900'}`}
-              >
-                <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d={tab.icon} />
-                </svg>
-                {tab.label}
-                {activeTab === tab.id && (
-                  <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-cyanx to-emera rounded-full" />
-                )}
-              </button>
-            ))}
-          </div>
+      {/* Main layout with left sidebar */}
+      <div className="flex max-w-7xl mx-auto px-4 py-4 flex-1 gap-4 lg:gap-6 w-full pb-16 lg:pb-0">
+        {/* Left Nav - desktop only */}
+        <div className="hidden lg:block">
+          <LeftSidebar
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            isDark={isDark}
+            lang={lang}
+            onSettings={() => { setIsSettingsOpen(true); }}
+          />
         </div>
 
-        {/* ==================== STASH TAB ==================== */}
+        {/* Main content */}
+        <main className="flex-1 min-w-0">
+          {/* ==================== STASH TAB ==================== */}
         {activeTab === 'stash' && (
           <div>
             {/* Sub-navigation pills */}
@@ -888,7 +871,16 @@ export default function App() {
           </div>
           </ErrorBoundary>
         )}
+      </main>
       </div>
+
+      {/* Bottom Nav - mobile only */}
+      <BottomNav
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        isDark={isDark}
+        lang={lang}
+      />
 
       {/* Pin Lock */}
       {showPinModal && (

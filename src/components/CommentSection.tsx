@@ -14,11 +14,24 @@ interface CommentSectionProps {
   onComment?: (userId: string, postId: string) => void;
 }
 
-const CommentItem = memo(function CommentItem({ comment, depth = 0, isDark, lang, currentUserId, onReply, onDelete }: {
+const CommentItem = memo(function CommentItem({ comment, depth = 0, isDark, lang, currentUserId, onReply, onDelete, onLike, onUnlike }: {
   comment: PostComment; depth?: number; isDark: boolean; lang: string; currentUserId: string;
   onReply: (id: string, username: string) => void; onDelete: (id: string) => void;
+  onLike: (id: string) => Promise<void>; onUnlike: (id: string) => Promise<void>;
 }) {
   const isOwner = comment.user_id === currentUserId;
+  const liked = comment.liked_by_me ?? false;
+  const likesCount = comment.likes_count ?? 0;
+  const [liking, setLiking] = useState(false);
+
+  async function handleToggleLike() {
+    if (liking) return;
+    setLiking(true);
+    try {
+      if (liked) { await onUnlike(comment.id); } else { await onLike(comment.id); }
+    } finally { setLiking(false); }
+  }
+
   return (
     <div role="listitem" className={depth > 0 ? 'ml-6 mt-2' : 'mt-3'}>
       <div className="flex items-start gap-2">
@@ -40,6 +53,20 @@ const CommentItem = memo(function CommentItem({ comment, depth = 0, isDark, lang
             {comment.content}
           </p>
           <div className="flex items-center gap-3 mt-1">
+            <button
+              onClick={handleToggleLike}
+              disabled={liking}
+              className={`flex items-center gap-1 text-xs font-medium transition-all ${
+                liked
+                  ? 'text-orange-500'
+                  : isDark ? 'text-muted hover:text-orange-400' : 'text-gray-400 hover:text-orange-500'
+              }`}
+            >
+              <svg className="w-3.5 h-3.5" fill={liked ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={liked ? 0 : 1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z" />
+              </svg>
+              {likesCount > 0 && <span>{likesCount}</span>}
+            </button>
             {depth < 2 && (
               <button
                 onClick={() => onReply(comment.id, comment.author?.username || 'Unknown')}
@@ -65,7 +92,8 @@ const CommentItem = memo(function CommentItem({ comment, depth = 0, isDark, lang
       {comment.replies && comment.replies.length > 0 && (
         <div role="list">
           {comment.replies.map(reply => (
-            <CommentItem key={reply.id} comment={reply} depth={depth + 1} isDark={isDark} lang={lang} currentUserId={currentUserId} onReply={onReply} onDelete={onDelete} />
+            <CommentItem key={reply.id} comment={reply} depth={depth + 1} isDark={isDark} lang={lang} currentUserId={currentUserId}
+              onReply={onReply} onDelete={onDelete} onLike={onLike} onUnlike={onUnlike} />
           ))}
         </div>
       )}
@@ -100,6 +128,7 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
 
   const fetchComments = useCallback(async () => {
     setLoading(true);
+
     const { data, error: fetchError } = await supabase
       .from('post_comments')
       .select('*')
@@ -119,12 +148,22 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
     }
 
     const userIds = [...new Set(data.map(c => c.user_id))];
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('user_id, display_name, avatar_url')
-      .in('user_id', userIds);
+    const commentIds = data.map(c => c.id);
 
-    const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
+    const [profilesResult, likesResult, myLikesResult] = await Promise.all([
+      supabase.from('profiles').select('user_id, display_name, avatar_url').in('user_id', userIds),
+      supabase.from('comment_likes').select('comment_id').in('comment_id', commentIds),
+      currentUserId ? supabase.from('comment_likes').select('comment_id').eq('user_id', currentUserId).in('comment_id', commentIds) : { data: [] },
+    ]);
+
+    const profileMap = new Map((profilesResult.data || []).map(p => [p.user_id, p]));
+
+    const likesCountMap = new Map<string, number>();
+    for (const like of (likesResult.data || [])) {
+      likesCountMap.set(like.comment_id, (likesCountMap.get(like.comment_id) || 0) + 1);
+    }
+
+    const myLikesSet = new Set((myLikesResult.data || []).map(l => l.comment_id));
 
     const enriched = data.map(c => ({
       ...c,
@@ -132,11 +171,13 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
         username: profileMap.get(c.user_id)?.display_name || 'Unknown',
         avatar_url: profileMap.get(c.user_id)?.avatar_url,
       },
+      likes_count: likesCountMap.get(c.id) || 0,
+      liked_by_me: myLikesSet.has(c.id),
     }));
 
     setComments(buildThread(enriched));
     setLoading(false);
-  }, [postId, buildThread]);
+  }, [postId, buildThread, currentUserId]);
 
   useEffect(() => {
     fetchComments();
@@ -175,6 +216,24 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
     fetchComments();
   }
 
+  async function handleLikeComment(commentId: string) {
+    await supabase.from('comment_likes').insert({ user_id: currentUserId, comment_id: commentId }).then(undefined, () => {});
+    setComments(prev => {
+      const updateLikes = (cmts: PostComment[]): PostComment[] =>
+        cmts.map(c => c.id === commentId ? { ...c, likes_count: (c.likes_count ?? 0) + 1, liked_by_me: true } : { ...c, replies: c.replies ? updateLikes(c.replies) : c.replies });
+      return updateLikes(prev);
+    });
+  }
+
+  async function handleUnlikeComment(commentId: string) {
+    await supabase.from('comment_likes').delete().eq('user_id', currentUserId).eq('comment_id', commentId).then(undefined, () => {});
+    setComments(prev => {
+      const updateLikes = (cmts: PostComment[]): PostComment[] =>
+        cmts.map(c => c.id === commentId ? { ...c, likes_count: Math.max(0, (c.likes_count ?? 1) - 1), liked_by_me: false } : { ...c, replies: c.replies ? updateLikes(c.replies) : c.replies });
+      return updateLikes(prev);
+    });
+  }
+
   return (
     <div id={`comment-section-${postId}`} className={`mt-3 pt-3 border-t ${isDark ? 'border-edge' : 'border-gray-200'}`}>
       {loading && (
@@ -204,7 +263,8 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
       <div role="list" className="space-y-1">
         {comments.map(comment => (
           <CommentItem key={comment.id} comment={comment} isDark={isDark} lang={lang} currentUserId={currentUserId}
-            onReply={(id, username) => setReplyingTo({ id, username })} onDelete={handleDelete} />
+            onReply={(id, username) => setReplyingTo({ id, username })} onDelete={handleDelete}
+            onLike={handleLikeComment} onUnlike={handleUnlikeComment} />
         ))}
       </div>
 

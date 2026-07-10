@@ -143,6 +143,8 @@ export interface PostComment {
     avatar_url?: string;
   };
   replies?: PostComment[];
+  likes_count?: number;
+  liked_by_me?: boolean;
 }
 
 export type NotificationType = 'like' | 'comment' | 'follow' | 'new_listing' | 'listing_sold' | 'mention';

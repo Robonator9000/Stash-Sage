@@ -6,6 +6,7 @@ import { SocialFeed } from './SocialFeed';
 import { ProfilePage } from './ProfilePage';
 import { TrendsWidget } from './TrendsWidget';
 import { WhoToFollow } from './WhoToFollow';
+import { SearchWidget } from './SearchWidget';
 import type { Profile } from '../types';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../utils/supabase';
@@ -142,6 +143,11 @@ export function CommunityPage() {
         />
       </div>
       <div className="hidden lg:block w-80 shrink-0 space-y-4">
+        <SearchWidget isDark={isDark} onViewProfile={(uid) => {
+          supabase.from('profiles').select('username').eq('user_id', uid).maybeSingle().then(({ data }) => {
+            setSearchParams(prev => { prev.set('user', data?.username || uid); return prev; }, { replace: true });
+          });
+        }} onViewPost={handleViewPost} />
         <TrendsWidget isDark={isDark} activeHashtag={activeHashtag} onHashtagClick={handleHashtagClick} />
         <WhoToFollow isDark={isDark} currentUserId={user.id} onViewProfile={(uid) => {
           supabase.from('profiles').select('username').eq('user_id', uid).maybeSingle().then(({ data }) => {

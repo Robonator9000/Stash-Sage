@@ -1,0 +1,80 @@
+import { useAuth } from '../contexts/AuthContext';
+
+interface LeftSidebarProps {
+  activeTab: 'stash' | 'community' | 'marketplace' | 'admin';
+  onTabChange: (tab: 'stash' | 'community' | 'marketplace' | 'admin') => void;
+  isDark: boolean;
+  lang: string;
+  onSettings: () => void;
+}
+
+const tabsConfig = [
+  { id: 'stash' as const, labelKey: 'stash' as const, icon: 'M12 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6m-8 0H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-2m-8 0V9a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v12' },
+  { id: 'community' as const, labelKey: 'community' as const, icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
+  { id: 'marketplace' as const, labelKey: 'marketplace' as const, icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+] as const;
+
+function getTranslation(labelKey: string, lang: string) {
+  const map: Record<string, Record<string, string>> = {
+    stash: { en: 'Stash', es: 'Alijo', fr: 'Stock', de: 'Vorrat', pt: 'Estoque' },
+    community: { en: 'Community', es: 'Comunidad', fr: 'Communauté', de: 'Community', pt: 'Comunidade' },
+    marketplace: { en: 'Marketplace', es: 'Mercado', fr: 'Marché', de: 'Marktplatz', pt: 'Marketplace' },
+  };
+  return map[labelKey]?.[lang] || map[labelKey]?.en || labelKey;
+}
+
+export function LeftSidebar({ activeTab, onTabChange, isDark, lang, onSettings }: LeftSidebarProps) {
+  const { isAdmin } = useAuth();
+
+  return (
+    <nav className="w-14 xl:w-56 shrink-0 sticky top-20 self-start">
+      <div className="flex flex-col gap-1">
+        {tabsConfig.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => onTabChange(tab.id)}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
+              ${activeTab === tab.id
+                ? isDark ? 'bg-cyan-500/10 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
+                : isDark ? 'text-mist hover:bg-midnight hover:text-frost' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+          >
+            <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d={tab.icon} />
+            </svg>
+            <span className="hidden xl:inline">{getTranslation(tab.labelKey, lang)}</span>
+          </button>
+        ))}
+        {isAdmin && (
+          <button
+            onClick={() => onTabChange('admin')}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
+              ${activeTab === 'admin'
+                ? isDark ? 'bg-cyan-500/10 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
+                : isDark ? 'text-mist hover:bg-midnight hover:text-frost' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+          >
+            <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+            <span className="hidden xl:inline">Admin</span>
+          </button>
+        )}
+      </div>
+
+      <div className="mt-auto pt-4 border-t border-gray-200/20">
+        <button
+          onClick={onSettings}
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all w-full
+            ${isDark ? 'text-mist hover:bg-midnight hover:text-frost' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
+        >
+          <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span className="hidden xl:inline">Settings</span>
+        </button>
+      </div>
+    </nav>
+  );
+}
