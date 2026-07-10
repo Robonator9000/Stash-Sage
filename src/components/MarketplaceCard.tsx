@@ -242,7 +242,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
         <div className="fixed inset-0 z-50 bg-black/80 flex" onClick={() => setShowDetailPopup(false)}>
           {/* Back button — top-left of full overlay */}
           <div onClick={e => { e.stopPropagation(); setShowDetailPopup(false); }}
-            className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-2 rounded-xl bg-black/40 text-white/90 cursor-pointer
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 flex items-center gap-2 px-3 py-2 rounded-xl bg-black/40 text-white/90 cursor-pointer
                        transition-all duration-300 hover:bg-black/60 hover:text-white hover:pl-4 hover:gap-3 group">
             <ChevronLeft className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-0.5" />
             <span className="text-sm font-medium transition-all duration-300 max-w-0 overflow-hidden opacity-0 group-hover:max-w-[60px] group-hover:opacity-100">Back</span>
