@@ -29,6 +29,10 @@ export function MessagePopup({ currentUserId, isDark, lang, initialTargetUserId,
     if (existing) setActiveConversation(existing);
   }, [initialTargetUserId, conversations, currentUserId]);
 
+  useEffect(() => {
+    setOpen(!!initialTargetUserId);
+  }, [initialTargetUserId]);
+
   if (!open) {
     return (
       <button
