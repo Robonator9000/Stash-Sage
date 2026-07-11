@@ -41,6 +41,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
   const lang = settings.language;
 
   const [showSearchPreview, setShowSearchPreview] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   const q = searchQuery.trim().toLowerCase();
 
@@ -82,7 +83,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
           <span className="bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent font-display font-extrabold text-lg tracking-tight">STASH</span>
         </button>
 
-        <div className="relative flex-1 max-w-xl mx-auto">
+        <div className="relative flex-1 max-w-xl mx-auto hidden sm:block">
           <div className="relative">
             <svg className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-muted' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -169,6 +170,15 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+<button
+            onClick={() => setMobileSearchOpen(s => !s)}
+            aria-label="Search"
+            className="sm:hidden p-2 rounded-xl transition-all text-gray-600 dark:text-mist hover:text-gray-900 dark:hover:text-frost hover:bg-white dark:hover:bg-surface"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
           <button
             data-coach="add-btn"
             onClick={() => setIsAddModalOpen(true)}
@@ -177,7 +187,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
-            {t('addProduct', lang)}
+            <span className="hidden sm:inline">{t('addProduct', lang)}</span>
           </button>
           {user && <NotificationBell isDark={isDark} lang={lang} onViewProfile={handleViewProfile} />}
           <button
@@ -206,7 +216,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
           </button>
           <button
             onClick={() => updateSettings({ theme: isDark ? 'light' : 'dark', themeAuto: false })}
-            className={`p-2 rounded-xl transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}
+            className={`hidden sm:flex p-2 rounded-xl transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}
           >
             {isDark ? (
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -220,6 +230,34 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
           </button>
         </div>
       </div>
+      {mobileSearchOpen && (
+        <div className="sm:hidden px-4 pb-2">
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setShowSearchPreview(true); }}
+              autoFocus
+              placeholder={t('searchPlaceholder', lang)}
+              className={`w-full pl-10 pr-4 py-2 rounded-xl text-sm border transition-all outline-none
+                ${isDark
+                  ? 'bg-midnight/80 border border-edge text-white placeholder-muted focus:border-cyan-500'
+                  : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-cyan-400'}`}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => { setSearchQuery(''); setShowSearchPreview(false); }}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}`}
+              >
+                &times;
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 });

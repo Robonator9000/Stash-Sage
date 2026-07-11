@@ -241,7 +241,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
 
       {/* Detail popup — Facebook-style fullscreen split */}
       {showDetailPopup && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex" onClick={() => setShowDetailPopup(false)}>
+        <div className="fixed inset-0 z-50 bg-black/80 flex flex-col sm:flex-row" onClick={() => setShowDetailPopup(false)}>
           {/* Back button — top-left of full overlay */}
           <div onClick={e => { e.stopPropagation(); setShowDetailPopup(false); }}
             className="absolute left-8 top-1/2 -translate-y-1/2 z-20 flex items-center gap-2 px-4 py-3 rounded-xl bg-black/40 text-white/90 cursor-pointer
@@ -249,7 +249,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
             <ChevronLeft className="w-6 h-6 transition-transform duration-300 group-hover:-translate-x-0.5" />
             <span className="text-base font-medium transition-all duration-300 max-w-0 overflow-hidden opacity-0 group-hover:max-w-[60px] group-hover:opacity-100">Back</span>
           </div>
-          <div className="flex-1 flex items-center justify-center relative min-w-0" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center justify-center relative min-w-0 h-[35vh] sm:h-auto sm:flex-1" onClick={e => e.stopPropagation()}>
 
             {/* Image */}
             {allImages.length > 0 ? (
@@ -287,7 +287,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
           </div>
 
           {/* Right info panel */}
-          <div className={`w-[420px] shrink-0 overflow-y-auto border-l ${isDark ? 'bg-gray-950 border-gray-800' : 'bg-white border-gray-200'}`}
+          <div className={`w-full sm:w-[420px] max-h-[65vh] sm:max-h-full shrink-0 overflow-y-auto border-t sm:border-t-0 sm:border-l ${isDark ? 'bg-gray-950 border-gray-800' : 'bg-white border-gray-200'}`}
             onClick={e => e.stopPropagation()}>
 
             <div className="p-6 space-y-5">
