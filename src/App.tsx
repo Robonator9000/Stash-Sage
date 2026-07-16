@@ -47,8 +47,8 @@ export default function App() {
   const { entries: activityEntries, addEntry: addActivityEntry, clearEntries: clearActivity } = useActivity();
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = (searchParams.get('tab') as 'stash' | 'community' | 'marketplace' | 'admin' | 'notifications' | 'bookmarks' | 'history') || 'stash';
-  function setActiveTab(tab: 'stash' | 'community' | 'marketplace' | 'admin' | 'notifications' | 'bookmarks' | 'history') {
+  const activeTab = (searchParams.get('tab') as 'stash' | 'community' | 'marketplace' | 'admin' | 'notifications' | 'bookmarks' | 'history' | 'messages' | 'explore') || 'stash';
+  function setActiveTab(tab: string) {
     setSearchParams(prev => { prev.set('tab', tab); prev.delete('user'); return prev; }, { replace: true });
   }
   const [stashSection, setStashSection] = useState<'products' | 'dashboard'>('products');
@@ -507,15 +507,12 @@ export default function App() {
       <div className="flex max-w-7xl mx-auto px-4 py-4 flex-1 gap-4 lg:gap-6 w-full pb-16 lg:pb-0">
         {/* Left Nav - desktop only */}
         <div className="hidden lg:block">
-          <LeftSidebar
+<LeftSidebar
             activeTab={activeTab}
             onTabChange={setActiveTab}
             isDark={isDark}
-            lang={lang}
             onSettings={() => { setIsSettingsOpen(true); }}
             currentUserId={user?.id || ''}
-            username={settings.profile?.username || user?.email?.split('@')[0] || ''}
-            viewingUser={searchParams.get('user')}
             onDashboard={() => { setStashSection('dashboard'); setActiveTab('stash'); }}
           />
         </div>
@@ -885,10 +882,7 @@ export default function App() {
 
       {/* Bottom Nav - mobile only */}
       <BottomNav
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
         isDark={isDark}
-        lang={lang}
       />
 
       {/* Pin Lock */}
