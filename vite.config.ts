@@ -36,7 +36,7 @@ export default defineConfig({
       manifest: {
         name: 'Stash Tracker',
         short_name: 'Stash',
-        description: 'Track cannabis products, consumption sessions, and your stash.',
+        description: 'Track cannabis products, consumption sessions, and your personal stash.',
         theme_color: '#020617',
         background_color: '#020617',
         display: 'standalone',
@@ -58,9 +58,45 @@ export default defineConfig({
             purpose: 'maskable',
           },
         ],
-      },
-      devOptions: {
-        enabled: false,
+        shortcuts: [
+          {
+            name: 'Add Product',
+            short_name: 'Add',
+            description: 'Add a new product to your stash',
+            url: '/?action=add',
+            icons: [{ src: '/icon.svg', sizes: '192x192' }],
+          },
+          {
+            name: 'Community',
+            short_name: 'Feed',
+            description: 'View community feed',
+            url: '/?tab=community',
+            icons: [{ src: '/icon.svg', sizes: '192x192' }],
+          },
+          {
+            name: 'Marketplace',
+            short_name: 'Market',
+            description: 'Browse marketplace listings',
+            url: '/?tab=marketplace',
+            icons: [{ src: '/icon.svg', sizes: '192x192' }],
+          },
+        ],
+        screenshots: [
+          {
+            src: '/screenshot-wide.png',
+            sizes: '1280x720',
+            type: 'image/png',
+            form_factor: 'wide',
+            label: 'Stash Tracker - Main Feed',
+          },
+          {
+            src: '/screenshot-narrow.png',
+            sizes: '750x1334',
+            type: 'image/png',
+            form_factor: 'narrow',
+            label: 'Stash Tracker - Mobile View',
+          },
+        ],
       },
     }),
   ],

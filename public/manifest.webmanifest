@@ -1,0 +1,54 @@
+{
+  "name": "Stash Tracker",
+  "short_name": "Stash",
+  "description": "Track cannabis products, consumption sessions, and your personal stash.",
+  "theme_color": "#020617",
+  "background_color": "#020617",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "start_url": "/",
+  "categories": ["health", "lifestyle", "productivity"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Add Product",
+      "short_name": "Add",
+      "description": "Add a new product to your stash",
+      "url": "/?action=add",
+      "icons": [{ "src": "/icon.svg", "sizes": "512x512" }]
+    },
+    {
+      "name": "Community",
+      "short_name": "Feed",
+      "description": "View community posts and discussions",
+      "url": "/?tab=community",
+      "icons": [{ "src": "/icon.svg", "sizes": "512x512" }]
+    },
+    {
+      "name": "Marketplace",
+      "short_name": "Market",
+      "description": "Browse marketplace listings",
+      "url": "/?tab=marketplace",
+      "icons": [{ "src": "/icon.svg", "sizes": "512x512" }]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "screenshots": [],
+  "lang": "en",
+  "dir": "ltr"
+}
