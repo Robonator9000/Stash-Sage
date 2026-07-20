@@ -1,32 +1,99 @@
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import {
+  Stack,
+  NavLink,
+  Text,
+  ScrollArea,
+  ActionIcon,
+  Tooltip,
+  Collapse,
+  Box,
+} from '@mantine/core';
+import {
+  IconHome,
+  IconUsers,
+  IconShoppingCart,
+  IconHistory,
+  IconBell,
+  IconBookmark,
+  IconUser,
+  IconLayoutDashboard,
+  IconSettings,
+  IconChevronLeft,
+  IconChevronRight,
+  IconChevronDown,
+  IconChevronUp,
+} from '@tabler/icons-react';
 
-const primaryTabs = [
-  { id: 'stash' as const, label: 'Stash', icon: 'M12 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6m-8 0H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-2m-8 0V9a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v12' },
-  { id: 'community' as const, label: 'Community', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
-  { id: 'marketplace' as const, label: 'Market', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-] as const;
+type TabId =
+  | 'stash'
+  | 'community'
+  | 'marketplace'
+  | 'history'
+  | 'notifications'
+  | 'bookmarks'
+  | 'profile'
+  | 'dashboard'
+  | 'settings';
 
-const secondaryTabs = [
-  { id: 'history' as const, label: 'History', icon: 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z' },
-  { id: 'notifications' as const, label: 'Notifications', icon: 'M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0' },
-  { id: 'bookmarks' as const, label: 'Bookmarks', icon: 'M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z' },
-  { id: 'profile' as const, label: 'Profile', icon: 'M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z' },
-  { id: 'dashboard' as const, label: 'Dashboard', icon: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z' },
-] as const;
+interface NavItem {
+  id: TabId;
+  label: string;
+  icon: React.ReactNode;
+  section: 'primary' | 'secondary' | 'utility';
+  badge?: number;
+  requiresAuth?: boolean;
+}
 
-export function LeftSidebar({ activeTab, onTabChange, isDark, onSettings, currentUserId, onDashboard }: {
+interface LeftSidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   isDark: boolean;
   onSettings: () => void;
   currentUserId: string;
   onDashboard: () => void;
-}) {
+}
+
+const allTabs: TabId[] = [
+  'stash', 'community', 'marketplace',
+  'history', 'notifications', 'bookmarks',
+  'profile', 'dashboard', 'settings',
+];
+
+export function LeftSidebar({
+  activeTab,
+  onTabChange,
+  isDark,
+  onSettings,
+  currentUserId,
+  onDashboard,
+}: LeftSidebarProps) {
   const { isAdmin } = useAuth();
   const navigate = useNavigate();
+  const [collapsed, setCollapsed] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    primary: true,
+    secondary: true,
+    utility: true,
+  });
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+  const navRef = useRef<HTMLDivElement>(null);
 
-  function handleTabClick(tab: string) {
+  const navItems: NavItem[] = [
+    { id: 'stash', label: 'Stash', icon: <IconHome size={20} />, section: 'primary' },
+    { id: 'community', label: 'Community', icon: <IconUsers size={20} />, section: 'primary' },
+    { id: 'marketplace', label: 'Market', icon: <IconShoppingCart size={20} />, section: 'primary' },
+    { id: 'history', label: 'History', icon: <IconHistory size={20} />, section: 'secondary', requiresAuth: true },
+    { id: 'notifications', label: 'Notifications', icon: <IconBell size={20} />, section: 'secondary', requiresAuth: true },
+    { id: 'bookmarks', label: 'Bookmarks', icon: <IconBookmark size={20} />, section: 'secondary', requiresAuth: true },
+    { id: 'profile', label: 'Profile', icon: <IconUser size={20} />, section: 'utility', requiresAuth: true },
+    { id: 'dashboard', label: 'Dashboard', icon: <IconLayoutDashboard size={20} />, section: 'utility' },
+    { id: 'settings', label: 'Settings', icon: <IconSettings size={20} />, section: 'utility' },
+  ];
+
+  const handleTabClick = useCallback((tab: TabId) => {
     if (tab === 'profile') {
       navigate('/?tab=community&user=' + encodeURIComponent(currentUserId));
       return;
@@ -35,85 +102,199 @@ export function LeftSidebar({ activeTab, onTabChange, isDark, onSettings, curren
       onDashboard();
       return;
     }
+    if (tab === 'settings') {
+      onSettings();
+      return;
+    }
     onTabChange(tab);
-  }
+  }, [currentUserId, navigate, onDashboard, onSettings, onTabChange]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    const validTabs = allTabs;
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setFocusedIndex(prev => (prev + 1) % validTabs.length);
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setFocusedIndex(prev => (prev - 1 + validTabs.length) % validTabs.length);
+        break;
+      case 'Home':
+        e.preventDefault();
+        setFocusedIndex(0);
+        break;
+      case 'End':
+        e.preventDefault();
+        setFocusedIndex(validTabs.length - 1);
+        break;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        const focusedTab = validTabs[focusedIndex];
+        if (focusedTab) handleTabClick(focusedTab);
+        break;
+      case 'Escape':
+        if (collapsed) {
+          e.preventDefault();
+          setCollapsed(false);
+        }
+        break;
+    }
+  }, [collapsed, focusedIndex, handleTabClick]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) setCollapsed(true);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const idx = allTabs.indexOf(activeTab as TabId);
+    if (idx !== -1) setFocusedIndex(idx);
+  }, [activeTab]);
+
+  const toggleSection = useCallback((section: string) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  }, []);
+
+  const sectionLabel: Record<string, string> = {
+    primary: 'Main Navigation',
+    secondary: 'Activity',
+    utility: 'Utilities',
+  };
+
+  const renderNavItem = (item: NavItem) => {
+    if (item.requiresAuth && !currentUserId && !isAdmin) return null;
+    const isActive = activeTab === item.id;
+    const isDisabled = item.requiresAuth && !currentUserId;
+
+    return (
+      <Tooltip
+        key={item.id}
+        label={item.label}
+        position="right"
+        disabled={!collapsed}
+        openDelay={300}
+      >
+        <NavLink
+          id={`nav-${item.id}`}
+          label={!collapsed ? item.label : undefined}
+          leftSection={item.icon}
+          active={isActive}
+          disabled={isDisabled}
+          onClick={() => handleTabClick(item.id)}
+          variant="light"
+          color={isDark ? 'cyan' : 'cyan'}
+          styles={{
+            root: {
+              borderRadius: 'var(--mantine-radius-md)',
+              marginBottom: 2,
+            },
+            label: {
+              fontSize: 'var(--mantine-font-size-sm)',
+              fontWeight: 500,
+            },
+          }}
+          role="menuitem"
+          aria-current={isActive ? 'page' : undefined}
+          tabIndex={0}
+        />
+      </Tooltip>
+    );
+  };
+
+  const sectionOrder = ['primary', 'secondary', 'utility'];
 
   return (
-    <nav className="w-14 xl:w-56 shrink-0 sticky top-20 self-start max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-none">
-      <div className="flex flex-col gap-0.5">
-        {primaryTabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => handleTabClick(tab.id)}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
-              ${activeTab === tab.id
-                ? isDark ? 'bg-cyan-500/10 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
-                : isDark ? 'text-slate-400 hover:bg-slate-800 hover:text-white' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
-              }`}
-          >
-            <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d={tab.icon} />
-            </svg>
-            <span className="hidden xl:inline">{tab.label}</span>
-          </button>
-        ))}
-        <div className="pt-2 border-t border-gray-200/20 dark:border-slate-700/50" />
-        {secondaryTabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => handleTabClick(tab.id)}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
-              ${activeTab === tab.id
-                ? isDark ? 'bg-cyan-500/10 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
-                : isDark ? 'text-slate-400 hover:bg-slate-800 hover:text-white' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
-              }`}
-          >
-            <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d={tab.icon} />
-            </svg>
-            <span className="hidden xl:inline">{tab.label}</span>
-          </button>
-        ))}
-        {isAdmin && (
-          <button
-            onClick={() => handleTabClick('admin')}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
-              ${activeTab === 'admin'
-                ? isDark ? 'bg-cyan-500/10 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
-                : isDark ? 'text-slate-400 hover:bg-slate-800 hover:text-white' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
-              }`}
-          >
-            <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-            </svg>
-            <span className="hidden xl:inline">Admin</span>
-          </button>
+    <Box
+      ref={navRef}
+      role="navigation"
+      aria-label="Main navigation"
+      onKeyDown={handleKeyDown}
+      style={{
+        width: collapsed ? 60 : 220,
+        transition: 'width 0.2s ease',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+      }}
+    >
+      <Stack
+        justify="space-between"
+        align="center"
+        px={collapsed ? 'xs' : 'sm'}
+        py="sm"
+        style={{ borderBottom: '1px solid var(--mantine-color-gray-3)' }}
+      >
+        {!collapsed && (
+          <Text size="sm" fw={700} c={isDark ? 'gray.0' : 'gray.9'}>
+            Navigation
+          </Text>
         )}
-        <button
-          onClick={onDashboard}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
-            ${isDark ? 'text-slate-400 hover:bg-slate-800 hover:text-white' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'}`}
+        <ActionIcon
+          variant="subtle"
+          onClick={() => setCollapsed(!collapsed)}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-          </svg>
-          <span className="hidden xl:inline">Dashboard</span>
-        </button>
-      </div>
+          {collapsed ? <IconChevronRight size={18} /> : <IconChevronLeft size={18} />}
+        </ActionIcon>
+      </Stack>
 
-      <div className="mt-3 pt-3 border-t border-gray-200/20">
-        <button
-          onClick={onSettings}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all w-full
-            ${isDark ? 'text-slate-400 hover:bg-slate-800 hover:text-white' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'}`}
-        >
-          <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <span className="hidden xl:inline">Settings</span>
-        </button>
-      </div>
-    </nav>
+      <ScrollArea style={{ flex: 1 }} offsetScrollbars>
+        <Box py="xs">
+          {sectionOrder.map(section => {
+            const items = navItems.filter(i => i.section === section);
+            if (items.length === 0) return null;
+
+            const visibleItems = items.filter(
+              i => !(i.requiresAuth && !currentUserId && !isAdmin)
+            );
+            if (visibleItems.length === 0) return null;
+
+            return (
+              <Box key={section} mb="xs">
+                {!collapsed && (
+                  <NavLink
+                    label={sectionLabel[section]}
+                    onClick={() => toggleSection(section)}
+                    rightSection={
+                      expandedSections[section] ? (
+                        <IconChevronUp size={14} />
+                      ) : (
+                        <IconChevronDown size={14} />
+                      )
+                    }
+                    variant="subtle"
+                    styles={{
+                      root: { marginBottom: 4 },
+                      label: {
+                        fontSize: 'var(--mantine-font-size-xs)',
+                        fontWeight: 600,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        color: isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-6)',
+                      },
+                    }}
+                    aria-expanded={expandedSections[section]}
+                    aria-label={`${sectionLabel[section]} section`}
+                  />
+                )}
+                {collapsed ? (
+                  <Box px={4}>{items.map(renderNavItem)}</Box>
+                ) : (
+                  <Collapse in={expandedSections[section]}>
+                    <Box px={4}>{items.map(renderNavItem)}</Box>
+                  </Collapse>
+                )}
+              </Box>
+            );
+          })}
+        </Box>
+      </ScrollArea>
+    </Box>
   );
 }

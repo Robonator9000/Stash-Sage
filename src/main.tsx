@@ -2,10 +2,25 @@ import { StrictMode, lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { registerSW } from 'virtual:pwa-register';
+import { MantineProvider, createTheme } from '@mantine/core';
+import '@mantine/core/styles.css';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthProvider } from './contexts/AuthContext';
 import './index.css';
+
+const theme = createTheme({
+  primaryColor: 'cyan',
+  colors: {
+    emerald: [
+      '#ecfdf5', '#d1fae5', '#a7f3d0', '#6ee7b7', '#34d399',
+      '#10b981', '#059669', '#047857', '#065f46', '#064e3b',
+    ],
+  },
+  defaultRadius: 'md',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+  headings: { fontFamily: '"Segoe UI", Roboto, Helvetica, Arial, sans-serif' },
+});
 
 const MenuPage = lazy(() => import('./components/MenuPage').then(m => ({ default: m.MenuPage })));
 const ProfilePage = lazy(() => import('./components/ProfilePage').then(m => ({ default: m.ProfilePage })));
@@ -28,12 +43,14 @@ createRoot(document.getElementById('root')!).render(
     <ErrorBoundary>
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/menu" element={<Suspense fallback={LoadingFallback}><MenuPage /></Suspense>} />
-            <Route path="/profile/:userId" element={<Suspense fallback={LoadingFallback}><ProfilePage /></Suspense>} />
-            <Route path="/redirect-profile" element={<div />} />
-            <Route path="*" element={<App />} />
-          </Routes>
+          <MantineProvider theme={theme} defaultColorScheme="dark">
+            <Routes>
+              <Route path="/menu" element={<Suspense fallback={LoadingFallback}><MenuPage /></Suspense>} />
+              <Route path="/profile/:userId" element={<Suspense fallback={LoadingFallback}><ProfilePage /></Suspense>} />
+              <Route path="/redirect-profile" element={<div />} />
+              <Route path="*" element={<App />} />
+            </Routes>
+          </MantineProvider>
         </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>
