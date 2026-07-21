@@ -245,7 +245,8 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
         controlsOffset="xs"
         withControls
         controlSize={24}
-        emblaOptions={{ align: 'start', slidesToScroll: 3, loop: true }}
+        slidesToScroll={3}
+        loop
       >
         {[
           { id: 'all', label: 'All', icon: '📋' },
