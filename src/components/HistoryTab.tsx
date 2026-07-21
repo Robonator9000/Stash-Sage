@@ -173,10 +173,10 @@ export const HistoryTab = memo(function HistoryTab({
                     <Text size="sm" fw={500}>{entry.productName}</Text>
                   </Table.Td>
                   <Table.Td ta="right">
-                    <Text size="sm">{entry.amount != null ? `${formatPrecision(entry.amount, settings.decimalPrecision)}g` : '—'}</Text>
+                    <Text size="sm">{entry.amount != null ? `${formatPrecision(entry.amount, settings.decimalPrecision)}g` : '\u2014'}</Text>
                   </Table.Td>
                   <Table.Td ta="right">
-                    <Text size="sm">{entry.price != null ? formatCurrency(entry.price, settings.currency) : '—'}</Text>
+                    <Text size="sm">{entry.price != null ? formatCurrency(entry.price, settings.currency) : '\u2014'}</Text>
                   </Table.Td>
                   <Table.Td>
                     {entry.notes ? (
@@ -189,7 +189,7 @@ export const HistoryTab = memo(function HistoryTab({
                         {entry.notes}
                       </Text>
                     ) : (
-                      <Text size="xs" c="dimmed">—</Text>
+                      <Text size="xs" c="dimmed">\u2014</Text>
                     )}
                   </Table.Td>
                   <Table.Td ta="right">

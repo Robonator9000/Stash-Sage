@@ -253,7 +253,6 @@ export function LeftSidebar({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
             size="xs"
-
           />
         </Box>
       )}

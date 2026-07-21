@@ -5,7 +5,7 @@ import { getContactUrl, copyToClipboard, timeAgo } from '../utils/helpers';
 import { Tag, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, MessageCircle, Star, Scale, MoreVertical, FlaskConical, Calendar, StickyNote, Pin } from 'lucide-react';
 import { ReviewSection } from './ReviewSection';
 import { ProductView } from './ProductView';
-import { Card, Image, Badge, Group, Text, ActionIcon, Button, Box } from '@mantine/core';
+import { Card, Image, Badge, Group, Text, ActionIcon, Button } from '@mantine/core';
 
 const CATEGORY_GLOW: Record<string, string> = {
   flower: '16,185,129',
@@ -120,124 +120,125 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
 
   return (
     <>
-      <Card
-        radius="md"
-        withBorder
-        padding={0}
-        style={{
-          boxShadow: `0 0 35px -4px rgba(${glowRgb},0.35)`,
-          overflow: 'hidden',
-        }}
-        onClick={() => setShowDetailPopup(true)}
-      >
-        <Card.Section style={{ position: 'relative' }}>
-          <Box style={{ position: 'relative', overflow: 'hidden' }}>
-            {allImages.length > 0 ? (
-              <Image
-                src={allImages[currentImageIndex]}
-                alt={listing.title}
-                height={200}
-                fallbackSrc="https://placehold.co/400x300?text=No+Image"
-                style={{ transition: 'transform 0.3s' }}
-              />
-            ) : (
-              <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)' }}>
-                <Text size="sm" c="dimmed">No image</Text>
-              </div>
-            )}
-          </Box>
+      <Card p={0} radius="lg" shadow="sm"
+        className={`relative aspect-square overflow-hidden transition-all duration-300 ${isDark ? 'bg-surface/60' : 'bg-white'} cursor-zoom-in group hover:-translate-y-0.5`}
+        style={{ boxShadow: `0 0 35px -4px rgba(${glowRgb},0.35)` }}
+        onClick={() => setShowDetailPopup(true)} role="article">
 
-          {/* Badges overlay */}
-          <Group gap={4} style={{ position: 'absolute', top: 8, left: 8 }}>
-            {listing.status === 'sold' && (
-              <Badge color="red" variant="filled" size="sm">
-                {t('statusSold', lang)}
-              </Badge>
-            )}
-            {listing.category && (
-              <Badge
-                size="sm"
-                style={{ backgroundColor: `rgba(${glowRgb},0.88)`, color: '#fff' }}
-                leftSection={<Tag size={10} />}
-              >
-                {listing.category}
-              </Badge>
-            )}
-          </Group>
+        <div className="absolute inset-0">
+          {allImages.length > 0 ? (
+            <Image src={allImages[currentImageIndex]} alt={listing.title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          ) : (
+            <div className={`w-full h-full flex items-center justify-center ${isDark ? 'bg-surface' : 'bg-gray-100'}`}>
+              <Text size="sm" c="dimmed">No image</Text>
+            </div>
+          )}
+        </div>
 
-          {/* Image nav dots */}
-          {allImages.length > 1 && (
-            <Group gap={4} justify="center" style={{ position: 'absolute', bottom: 6, left: 0, right: 0 }}>
+        {allImages.length > 1 && (
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
+            <ActionIcon variant="transparent" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i => (i - 1 + allImages.length) % allImages.length); }} aria-label="Previous image"
+              className="absolute left-2 top-1/2 -translate-y-1/2" style={{ background: 'rgba(0,0,0,0.4)', color: 'white' }}>
+              <ChevronLeft className="w-4 h-4" />
+            </ActionIcon>
+            <ActionIcon variant="transparent" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i => (i + 1) % allImages.length); }} aria-label="Next image"
+              className="absolute right-2 top-1/2 -translate-y-1/2" style={{ background: 'rgba(0,0,0,0.4)', color: 'white' }}>
+              <ChevronRight className="w-4 h-4" />
+            </ActionIcon>
+            <div className="absolute bottom-[86px] left-1/2 -translate-x-1/2 flex gap-1">
               {allImages.map((_, i) => (
                 <button key={i} type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i); }} aria-label={`Image ${i + 1}`}
-                  style={{
-                    width: i === currentImageIndex ? 10 : 6, height: 6, borderRadius: '50%',
-                    background: i === currentImageIndex ? '#fff' : 'rgba(255,255,255,0.5)',
-                    border: 'none', cursor: 'pointer', transition: 'all 0.15s',
-                  }} />
+                  className={`w-1.5 h-1.5 rounded-full transition-all ${i === currentImageIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/80'}`} />
               ))}
-            </Group>
+            </div>
+          </div>
+        )}
+
+        {listing.status === 'sold' && (
+          <Badge className="absolute top-2 left-2 z-10" color="red" variant="filled" size="sm">
+            {t('statusSold', lang)}
+          </Badge>
+        )}
+
+        <div className="absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
+
+        {listing.category && (
+          <Badge className="absolute top-2 right-2 z-10" size="sm"
+            style={{ backgroundColor: `rgba(${glowRgb},0.88)`, color: 'white' }}>
+            {listing.category}
+          </Badge>
+        )}
+
+        <div className="absolute top-2 right-2 flex items-center gap-1 z-10" onClick={e => e.stopPropagation()}>
+          {currentUserId && currentUserId !== listing.user_id && (
+            <ActionIcon onClick={() => onSave?.(listing.id)} aria-label={listing.saved_by_me ? t('unsaveListing', lang) : t('saveListing', lang)}
+              variant="transparent" className={listing.saved_by_me ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/30' : ''}
+              style={listing.saved_by_me ? {} : { background: 'rgba(0,0,0,0.2)', color: 'white' }}>
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill={listing.saved_by_me ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
+                <path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z" />
+              </svg>
+            </ActionIcon>
           )}
-
-          {/* Top-right controls */}
-          <Group gap={4} style={{ position: 'absolute', top: 8, right: 8 }} onClick={e => e.stopPropagation()}>
-            {currentUserId && currentUserId !== listing.user_id && (
-              <ActionIcon
-                variant={listing.saved_by_me ? 'filled' : 'subtle'}
-                color={listing.saved_by_me ? 'orange' : 'gray'}
-                size="sm"
-                onClick={() => onSave?.(listing.id)}
-                aria-label={listing.saved_by_me ? t('unsaveListing', lang) : t('saveListing', lang)}
-                style={{ background: listing.saved_by_me ? undefined : 'rgba(0,0,0,0.3)', color: listing.saved_by_me ? undefined : '#fff' }}
-              >
-                <svg width={14} height={14} viewBox="0 0 24 24" fill={listing.saved_by_me ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
-                  <path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z" />
-                </svg>
+          {isOwner && listing.status === 'active' && onPinToggle && (
+            <ActionIcon onClick={() => onPinToggle(listing.id)} aria-label={isPinned ? 'Unpin listing' : 'Pin listing to top'}
+              variant="transparent" className={isPinned ? 'bg-cyanx/30 text-cyanx' : ''}
+              style={isPinned ? {} : { background: 'rgba(0,0,0,0.2)', color: 'white' }}>
+              <Pin className="w-3.5 h-3.5" fill={isPinned ? 'currentColor' : 'none'} />
+            </ActionIcon>
+          )}
+          {isOwner && listing.status === 'active' && (
+            <div ref={ownerMenuRef} className="relative">
+              <ActionIcon onClick={() => setShowOwnerMenu(s => !s)} aria-label="Listing options"
+                variant="transparent" style={{ background: 'rgba(0,0,0,0.2)', color: 'white' }}>
+                <MoreVertical className="w-3.5 h-3.5" />
               </ActionIcon>
-            )}
-            {isOwner && listing.status === 'active' && onPinToggle && (
-              <ActionIcon variant="filled" color={isPinned ? 'cyan' : 'gray'} size="sm" onClick={() => onPinToggle(listing.id)} aria-label={isPinned ? 'Unpin listing' : 'Pin listing to top'}>
-                <Pin size={14} fill={isPinned ? 'currentColor' : 'none'} />
-              </ActionIcon>
-            )}
-            {isOwner && listing.status === 'active' && (
-              <div ref={ownerMenuRef} style={{ position: 'relative' }}>
-                <ActionIcon variant="filled" color="gray" size="sm" onClick={() => setShowOwnerMenu(s => !s)} aria-label="Listing options">
-                  <MoreVertical size={14} />
-                </ActionIcon>
-                {showOwnerMenu && (
-                  <div style={{ position: 'absolute', right: 0, top: '100%', marginTop: 4, width: 176, borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', overflow: 'hidden', zIndex: 30, background: isDark ? 'var(--mantine-color-dark-8)' : '#fff', border: `1px solid ${isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)'}` }}>
-                    <Button variant="subtle" fullWidth size="sm" onClick={() => { onEdit?.(listing); setShowOwnerMenu(false); }}>{t('editProduct', lang)}</Button>
-                    <Button variant="subtle" color="green" fullWidth size="sm" onClick={() => { setConfirmAction({ type: 'sold', listingId: listing.id }); setShowOwnerMenu(false); }}>{t('markAsSold', lang)}</Button>
-                    <Button variant="subtle" color="red" fullWidth size="sm" onClick={() => { setConfirmAction({ type: 'delete', listingId: listing.id }); setShowOwnerMenu(false); }}>{t('delete', lang)}</Button>
-                  </div>
-                )}
-              </div>
-            )}
-          </Group>
-        </Card.Section>
+              {showOwnerMenu && (
+                <div className={`absolute right-0 top-full mt-1 w-44 rounded-xl shadow-xl border overflow-hidden z-30 ${isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
+                  <Button variant="subtle" fullWidth onClick={() => { onEdit?.(listing); setShowOwnerMenu(false); }}
+                    className={isDark ? 'text-frost hover:bg-surface' : 'text-gray-700 hover:bg-gray-50'}
+                    styles={{ root: { justifyContent: 'flex-start', padding: '10px 16px', height: 'auto', fontSize: '14px' } }}>
+                    {t('editProduct', lang)}
+                  </Button>
+                  <Button variant="subtle" fullWidth onClick={() => { setConfirmAction({ type: 'sold', listingId: listing.id }); setShowOwnerMenu(false); }}
+                    className={isDark ? 'text-emera hover:bg-surface' : 'text-emerald-600 hover:bg-gray-50'}
+                    styles={{ root: { justifyContent: 'flex-start', padding: '10px 16px', height: 'auto', fontSize: '14px' } }}>
+                    {t('markAsSold', lang)}
+                  </Button>
+                  <div className={`h-px ${isDark ? 'bg-edge' : 'bg-gray-200'}`} />
+                  <Button variant="subtle" fullWidth onClick={() => { setConfirmAction({ type: 'delete', listingId: listing.id }); setShowOwnerMenu(false); }}
+                    className={isDark ? 'text-red-400 hover:bg-surface' : 'text-red-500 hover:bg-gray-50'}
+                    styles={{ root: { justifyContent: 'flex-start', padding: '10px 16px', height: 'auto', fontSize: '14px' } }}>
+                    {t('delete', lang)}
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
-        {/* Info */}
-        <Box p="sm">
-          <Text size="xs" c="dimmed">{timeAgo(listing.created_at, lang)}</Text>
-          <Text fw={700} size="sm" lineClamp={1} style={{ lineHeight: 1.3 }}>{listing.title}</Text>
-          <Group gap={4} mt={2}>
+        <div className="absolute inset-x-0 bottom-0 p-3 flex flex-col gap-1.5 pointer-events-none">
+          <Text size="xs" c="white" opacity={0.7}>{timeAgo(listing.created_at, lang)}</Text>
+          <Text c="white" fw={700} size="sm" lineClamp={1}>{listing.title}</Text>
+          <Group gap={8} align="center">
             {listing.price_options && listing.price_options.length > 0 ? (
               <>
-                <Text fw={700} size="md">From ${Math.min(...listing.price_options.map(o => o.price)).toFixed(2)}</Text>
-                <Text size="xs" c="dimmed">{listing.price_options.length} opt.</Text>
+                <Text c="white" fw={700} size="lg">
+                  From ${Math.min(...listing.price_options.map(o => o.price)).toFixed(2)}
+                </Text>
+                <Text c="white" opacity={0.5} size="xs">{listing.price_options.length} opt.</Text>
               </>
             ) : (
-              <Text fw={700} size="md">${listing.price.toFixed(2)}</Text>
+              <Text c="white" fw={700} size="lg">${listing.price.toFixed(2)}</Text>
             )}
             {listing.avg_seller_rating != null && listing.seller_review_count != null && listing.seller_review_count > 0 && (
-              <Group gap={2} ml="auto">
-                <Star size={12} fill="var(--mantine-color-yellow-4)" color="var(--mantine-color-yellow-4)" />
-                <Text size="xs" fw={600} c="yellow">{listing.avg_seller_rating.toFixed(1)}</Text>
-              </Group>
+              <span className="ml-auto flex items-center gap-1 text-[11px] text-amber-400 font-semibold">
+                <Star className="w-3 h-3 fill-amber-400" />
+                {listing.avg_seller_rating.toFixed(1)}
+              </span>
             )}
           </Group>
-        </Box>
+        </div>
       </Card>
 
       {/* Detail popup — Facebook-style fullscreen split */}

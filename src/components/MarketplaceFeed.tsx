@@ -249,17 +249,17 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
         loop
       >
         {[
-          { id: 'all', label: 'All', icon: '📋' },
-          { id: 'flower', label: 'Flower', icon: '🌿' },
-          { id: 'concentrate', label: 'Concentrate', icon: '💎' },
-          { id: 'edible', label: 'Edible', icon: '🍪' },
-          { id: 'cartridge', label: 'Cartridge', icon: '🖊️' },
-          { id: 'pre-roll', label: 'Pre-Roll', icon: '🚬' },
-          { id: 'tincture', label: 'Tincture', icon: '💧' },
-          { id: 'topical', label: 'Topical', icon: '🧴' },
-          { id: 'seeds', label: 'Seeds', icon: '🌱' },
-          { id: 'accessories', label: 'Access.', icon: '🔧' },
-          { id: 'other', label: 'Other', icon: '📦' },
+          { id: 'all', label: 'All', icon: '\uD83D\uDCCB' },
+          { id: 'flower', label: 'Flower', icon: '\uD83C\uDF3F' },
+          { id: 'concentrate', label: 'Concentrate', icon: '\uD83D\uDC8E' },
+          { id: 'edible', label: 'Edible', icon: '\uD83C\uDF6A' },
+          { id: 'cartridge', label: 'Cartridge', icon: '\uD83D\uDD8A\uFE0F' },
+          { id: 'pre-roll', label: 'Pre-Roll', icon: '\uD83D\uDEAC' },
+          { id: 'tincture', label: 'Tincture', icon: '\uD83D\uDCA7' },
+          { id: 'topical', label: 'Topical', icon: '\uD83E\uDDF4' },
+          { id: 'seeds', label: 'Seeds', icon: '\uD83C\uDF31' },
+          { id: 'accessories', label: 'Access.', icon: '\uD83D\uDD27' },
+          { id: 'other', label: 'Other', icon: '\uD83D\uDCE6' },
         ].map(cat => (
           <Carousel.Slide key={cat.id}>
             <Paper

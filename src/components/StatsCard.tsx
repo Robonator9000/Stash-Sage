@@ -43,7 +43,7 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
     const pricePerGram = totalAmount > 0 ? roundToHundredth(totalValue / totalAmount) : 0;
 
     let consumptionRate = 0;
-    let projectedRunOut = '—';
+    let projectedRunOut = '\u2014';
     if (sessions.length > 0) {
       const sortedSessions = [...sessions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       const firstSessionDate = new Date(sortedSessions[0].date);
@@ -64,7 +64,7 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
       const d = new Date(p.lastConsumed);
       return !latest || d.getTime() > latest.getTime() ? d : latest;
     }, null);
-    if (!lastConsumedDate) return '—';
+    if (!lastConsumedDate) return '\u2014';
     const diffMs = Date.now() - lastConsumedDate.getTime();
     const diffMins = Math.floor(diffMs / 60000);
     if (diffMins < 60) return t('minutesAgo', settings.language).replace('{n}', diffMins.toString());
@@ -87,7 +87,7 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
     { key: 'pricePerGram' as const, visible: stats.pricePerGram && computed.totalAmount > 0, icon: IconCurrencyDollar, label: t('pricePerGram', settings.language), value: settings.currency + formatPrecision(computed.pricePerGram, dp), suffix: '/g', color: 'green' },
     { key: 'lastConsumed' as const, visible: stats.lastConsumed, icon: IconClock, label: t('lastConsumed', settings.language), value: lastConsumedStr, suffix: '', color: 'gray' },
     { key: 'consumptionRate' as const, visible: stats.consumptionRate && computed.consumptionRate > 0, icon: IconTrendingDown, label: t('consumptionRate', settings.language), value: formatPrecision(computed.consumptionRate, dp), suffix: t('perDay', settings.language), color: 'red' },
-    { key: 'projectedRunOut' as const, visible: stats.projectedRunOut && computed.projectedRunOut !== '—', icon: IconCalendarDue, label: t('projectedRunOut', settings.language), value: computed.projectedRunOut, suffix: t('days', settings.language), color: 'violet' },
+    { key: 'projectedRunOut' as const, visible: stats.projectedRunOut && computed.projectedRunOut !== '\u2014', icon: IconCalendarDue, label: t('projectedRunOut', settings.language), value: computed.projectedRunOut, suffix: t('days', settings.language), color: 'violet' },
   ], [computed, stats, dp, lastConsumedStr, settings.language, settings.currency]);
 
   const visibleStats = statItems.filter(s => s.visible);
