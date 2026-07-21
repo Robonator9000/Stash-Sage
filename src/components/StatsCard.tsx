@@ -6,14 +6,14 @@ import { Product, Session } from '../types';
 import { SimpleGrid, Paper, Text, Group } from '@mantine/core';
 import {
   IconPackage,
- IconScale,
- IconFlame,
- IconStar,
- IconPercentage,
- IconCurrencyDollar,
- IconClock,
- IconTrendingDown,
- IconCalendarDue,
+  IconScale,
+  IconFlame,
+  IconStar,
+  IconPercentage,
+  IconCurrencyDollar,
+  IconClock,
+  IconTrendingDown,
+  IconCalendarDue,
 } from '@tabler/icons-react';
 
 interface StatsCardProps {
@@ -78,16 +78,16 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
 
   const dp = settings.decimalPrecision;
   const statItems = useMemo(() => [
-    { key: 'totalProducts' as const, visible: stats.totalProducts, icon: IconPackage, label: t('totalProducts', settings.language), value: computed.totalProducts.toString(), suffix: '' },
-    { key: 'totalAmount' as const, visible: stats.totalAmount, icon: IconScale, label: t('totalAmount', settings.language), value: formatPrecision(computed.totalAmount, dp), suffix: 'g' },
-    { key: 'totalSessions' as const, visible: stats.totalSessions, icon: IconFlame, label: t('totalSessions', settings.language), value: computed.totalSessions.toString(), suffix: '' },
-    { key: 'averageRating' as const, visible: stats.averageRating, icon: IconStar, label: t('averageRating', settings.language), value: formatPrecision(computed.averageRating, dp), suffix: '/5' },
-    { key: 'averageTHC' as const, visible: stats.averageTHC, icon: IconPercentage, label: t('averageTHC', settings.language), value: formatPrecision(computed.averageTHC, dp), suffix: '%' },
-    { key: 'totalValue' as const, visible: stats.totalValue, icon: IconCurrencyDollar, label: t('totalValue', settings.language), value: settings.currency + formatPrecision(computed.totalValue, dp), suffix: '' },
-    { key: 'pricePerGram' as const, visible: stats.pricePerGram && computed.totalAmount > 0, icon: IconCurrencyDollar, label: t('pricePerGram', settings.language), value: settings.currency + formatPrecision(computed.pricePerGram, dp), suffix: '/g' },
-    { key: 'lastConsumed' as const, visible: stats.lastConsumed, icon: IconClock, label: t('lastConsumed', settings.language), value: lastConsumedStr, suffix: '' },
-    { key: 'consumptionRate' as const, visible: stats.consumptionRate && computed.consumptionRate > 0, icon: IconTrendingDown, label: t('consumptionRate', settings.language), value: formatPrecision(computed.consumptionRate, dp), suffix: t('perDay', settings.language) },
-    { key: 'projectedRunOut' as const, visible: stats.projectedRunOut && computed.projectedRunOut !== '—', icon: IconCalendarDue, label: t('projectedRunOut', settings.language), value: computed.projectedRunOut, suffix: t('days', settings.language) },
+    { key: 'totalProducts' as const, visible: stats.totalProducts, icon: IconPackage, label: t('totalProducts', settings.language), value: computed.totalProducts.toString(), suffix: '', color: 'blue' },
+    { key: 'totalAmount' as const, visible: stats.totalAmount, icon: IconScale, label: t('totalAmount', settings.language), value: formatPrecision(computed.totalAmount, dp), suffix: 'g', color: 'cyan' },
+    { key: 'totalSessions' as const, visible: stats.totalSessions, icon: IconFlame, label: t('totalSessions', settings.language), value: computed.totalSessions.toString(), suffix: '', color: 'orange' },
+    { key: 'averageRating' as const, visible: stats.averageRating, icon: IconStar, label: t('averageRating', settings.language), value: formatPrecision(computed.averageRating, dp), suffix: '/5', color: 'yellow' },
+    { key: 'averageTHC' as const, visible: stats.averageTHC, icon: IconPercentage, label: t('averageTHC', settings.language), value: formatPrecision(computed.averageTHC, dp), suffix: '%', color: 'grape' },
+    { key: 'totalValue' as const, visible: stats.totalValue, icon: IconCurrencyDollar, label: t('totalValue', settings.language), value: settings.currency + formatPrecision(computed.totalValue, dp), suffix: '', color: 'teal' },
+    { key: 'pricePerGram' as const, visible: stats.pricePerGram && computed.totalAmount > 0, icon: IconCurrencyDollar, label: t('pricePerGram', settings.language), value: settings.currency + formatPrecision(computed.pricePerGram, dp), suffix: '/g', color: 'green' },
+    { key: 'lastConsumed' as const, visible: stats.lastConsumed, icon: IconClock, label: t('lastConsumed', settings.language), value: lastConsumedStr, suffix: '', color: 'gray' },
+    { key: 'consumptionRate' as const, visible: stats.consumptionRate && computed.consumptionRate > 0, icon: IconTrendingDown, label: t('consumptionRate', settings.language), value: formatPrecision(computed.consumptionRate, dp), suffix: t('perDay', settings.language), color: 'red' },
+    { key: 'projectedRunOut' as const, visible: stats.projectedRunOut && computed.projectedRunOut !== '—', icon: IconCalendarDue, label: t('projectedRunOut', settings.language), value: computed.projectedRunOut, suffix: t('days', settings.language), color: 'violet' },
   ], [computed, stats, dp, lastConsumedStr, settings.language, settings.currency]);
 
   const visibleStats = statItems.filter(s => s.visible);
@@ -126,13 +126,25 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
               radius="md"
               onContextMenu={(e) => handleContextMenu(stat.key, e)}
               title={t('rightClickToHide', settings.language)}
-              style={{ cursor: 'context-menu', transition: 'transform 0.15s' }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)'; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
+              style={{
+                cursor: 'context-menu',
+                transition: 'transform 0.15s, box-shadow 0.15s',
+                borderTop: `3px solid var(--mantine-color-${stat.color}-${isDark ? 6 : 5})`,
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.transform = 'scale(1.02)';
+                el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.transform = 'scale(1)';
+                el.style.boxShadow = 'none';
+              }}
             >
               <Group justify="space-between" mb={4}>
                 <Text size="xs" c="dimmed">{stat.label}</Text>
-                <Icon size={18} stroke={1.5} />
+                <Icon size={18} stroke={1.5} style={{ color: `var(--mantine-color-${stat.color}-${isDark ? 6 : 5})` }} />
               </Group>
               <Text fw={700} size="lg" style={{ lineHeight: 1.2 }}>
                 {stat.value}{stat.suffix}

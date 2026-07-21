@@ -239,13 +239,13 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
 
       {/* Category carousel */}
       <Carousel
-        slideSize={90}
+        slideSize={{ base: 80, xs: 90 }}
         slideGap="xs"
         height={100}
         controlsOffset="xs"
         withControls
-        controlSize={28}
-        emblaOptions={{ align: 'start', slidesToScroll: 3 }}
+        controlSize={24}
+        emblaOptions={{ align: 'start', slidesToScroll: 3, loop: true }}
       >
         {[
           { id: 'all', label: 'All', icon: '📋' },
@@ -266,15 +266,24 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
               style={{
                 height: 90, display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center', gap: 2,
-                cursor: 'pointer',
+                cursor: 'pointer', userSelect: 'none',
                 background: categoryFilter === cat.id
                   ? 'linear-gradient(135deg, var(--mantine-color-cyan-6), var(--mantine-color-blue-6))'
                   : isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
                 color: categoryFilter === cat.id ? '#fff' : undefined,
                 border: categoryFilter === cat.id ? 'none' : `1px solid ${isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)'}`,
+                transition: 'transform 0.15s, box-shadow 0.15s',
               }}
               radius="md"
               withBorder={categoryFilter !== 'all'}
+              onMouseEnter={(e) => {
+                if (categoryFilter !== cat.id) {
+                  (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
+              }}
             >
               <Text size="xl">{cat.icon}</Text>
               <Text size="xs" fw={600}>{cat.label}</Text>

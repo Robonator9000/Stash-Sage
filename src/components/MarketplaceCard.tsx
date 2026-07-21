@@ -124,91 +124,98 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
         radius="md"
         withBorder
         padding={0}
-        style={{ boxShadow: `0 0 35px -4px rgba(${glowRgb},0.35)` }}
+        style={{
+          boxShadow: `0 0 35px -4px rgba(${glowRgb},0.35)`,
+          overflow: 'hidden',
+        }}
         onClick={() => setShowDetailPopup(true)}
       >
-        <Card.Section>
-          {allImages.length > 0 ? (
-            <Image
-              src={allImages[currentImageIndex]}
-              alt={listing.title}
-              height={200}
-              fallbackSrc="https://placehold.co/400x300?text=No+Image"
-            />
-          ) : (
-            <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)' }}>
-              <Text size="sm" c="dimmed">No image</Text>
-            </div>
-          )}
-        </Card.Section>
+        <Card.Section style={{ position: 'relative' }}>
+          <Box style={{ position: 'relative', overflow: 'hidden' }}>
+            {allImages.length > 0 ? (
+              <Image
+                src={allImages[currentImageIndex]}
+                alt={listing.title}
+                height={200}
+                fallbackSrc="https://placehold.co/400x300?text=No+Image"
+                style={{ transition: 'transform 0.3s' }}
+              />
+            ) : (
+              <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)' }}>
+                <Text size="sm" c="dimmed">No image</Text>
+              </div>
+            )}
+          </Box>
 
-        {/* Image nav */}
-        {allImages.length > 1 && (
-          <Group gap={4} justify="center" mt={-28} mb={4} style={{ position: 'relative', zIndex: 2 }}>
-            {allImages.map((_, i) => (
-              <button key={i} type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i); }} aria-label={`Image ${i + 1}`}
-                style={{
-                  width: i === currentImageIndex ? 10 : 6, height: 6, borderRadius: '50%',
-                  background: i === currentImageIndex ? 'var(--mantine-color-cyan-5)' : 'var(--mantine-color-gray-4)',
-                  border: 'none', cursor: 'pointer', transition: 'all 0.15s',
-                }} />
-            ))}
+          {/* Badges overlay */}
+          <Group gap={4} style={{ position: 'absolute', top: 8, left: 8 }}>
+            {listing.status === 'sold' && (
+              <Badge color="red" variant="filled" size="sm">
+                {t('statusSold', lang)}
+              </Badge>
+            )}
+            {listing.category && (
+              <Badge
+                size="sm"
+                style={{ backgroundColor: `rgba(${glowRgb},0.88)`, color: '#fff' }}
+                leftSection={<Tag size={10} />}
+              >
+                {listing.category}
+              </Badge>
+            )}
           </Group>
-        )}
 
-        {/* Sold badge */}
-        {listing.status === 'sold' && (
-          <Badge color="red" variant="filled" size="sm" style={{ position: 'absolute', top: 8, left: 8 }}>
-            {t('statusSold', lang)}
-          </Badge>
-        )}
-
-        {/* Category badge */}
-        {listing.category && (
-          <Badge
-            style={{ position: 'absolute', top: 8, left: listing.status === 'sold' ? 70 : 8, backgroundColor: `rgba(${glowRgb},0.88)`, color: '#fff' }}
-            size="sm"
-            leftSection={<Tag size={10} />}
-          >
-            {listing.category}
-          </Badge>
-        )}
-
-        {/* Top-right controls */}
-        <Group gap={4} style={{ position: 'absolute', top: 8, right: 8 }} onClick={e => e.stopPropagation()}>
-          {currentUserId && currentUserId !== listing.user_id && (
-            <ActionIcon
-              variant={listing.saved_by_me ? 'filled' : 'subtle'}
-              color={listing.saved_by_me ? 'orange' : 'gray'}
-              size="sm"
-              onClick={() => onSave?.(listing.id)}
-              aria-label={listing.saved_by_me ? t('unsaveListing', lang) : t('saveListing', lang)}
-            >
-              <svg width={14} height={14} viewBox="0 0 24 24" fill={listing.saved_by_me ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
-                <path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z" />
-              </svg>
-            </ActionIcon>
+          {/* Image nav dots */}
+          {allImages.length > 1 && (
+            <Group gap={4} justify="center" style={{ position: 'absolute', bottom: 6, left: 0, right: 0 }}>
+              {allImages.map((_, i) => (
+                <button key={i} type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i); }} aria-label={`Image ${i + 1}`}
+                  style={{
+                    width: i === currentImageIndex ? 10 : 6, height: 6, borderRadius: '50%',
+                    background: i === currentImageIndex ? '#fff' : 'rgba(255,255,255,0.5)',
+                    border: 'none', cursor: 'pointer', transition: 'all 0.15s',
+                  }} />
+              ))}
+            </Group>
           )}
-          {isOwner && listing.status === 'active' && onPinToggle && (
-            <ActionIcon variant={isPinned ? 'filled' : 'subtle'} color={isPinned ? 'cyan' : 'gray'} size="sm" onClick={() => onPinToggle(listing.id)} aria-label={isPinned ? 'Unpin listing' : 'Pin listing to top'}>
-              <Pin size={14} fill={isPinned ? 'currentColor' : 'none'} />
-            </ActionIcon>
-          )}
-          {isOwner && listing.status === 'active' && (
-            <div ref={ownerMenuRef} style={{ position: 'relative' }}>
-              <ActionIcon variant="subtle" color="gray" size="sm" onClick={() => setShowOwnerMenu(s => !s)} aria-label="Listing options">
-                <MoreVertical size={14} />
+
+          {/* Top-right controls */}
+          <Group gap={4} style={{ position: 'absolute', top: 8, right: 8 }} onClick={e => e.stopPropagation()}>
+            {currentUserId && currentUserId !== listing.user_id && (
+              <ActionIcon
+                variant={listing.saved_by_me ? 'filled' : 'subtle'}
+                color={listing.saved_by_me ? 'orange' : 'gray'}
+                size="sm"
+                onClick={() => onSave?.(listing.id)}
+                aria-label={listing.saved_by_me ? t('unsaveListing', lang) : t('saveListing', lang)}
+                style={{ background: listing.saved_by_me ? undefined : 'rgba(0,0,0,0.3)', color: listing.saved_by_me ? undefined : '#fff' }}
+              >
+                <svg width={14} height={14} viewBox="0 0 24 24" fill={listing.saved_by_me ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
+                  <path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z" />
+                </svg>
               </ActionIcon>
-              {showOwnerMenu && (
-                <div style={{ position: 'absolute', right: 0, top: '100%', marginTop: 4, width: 176, borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', overflow: 'hidden', zIndex: 30, background: isDark ? 'var(--mantine-color-dark-8)' : '#fff', border: `1px solid ${isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)'}` }}>
-                  <Button variant="subtle" fullWidth size="sm" onClick={() => { onEdit?.(listing); setShowOwnerMenu(false); }}>{t('editProduct', lang)}</Button>
-                  <Button variant="subtle" color="green" fullWidth size="sm" onClick={() => { setConfirmAction({ type: 'sold', listingId: listing.id }); setShowOwnerMenu(false); }}>{t('markAsSold', lang)}</Button>
-                  <Button variant="subtle" color="red" fullWidth size="sm" onClick={() => { setConfirmAction({ type: 'delete', listingId: listing.id }); setShowOwnerMenu(false); }}>{t('delete', lang)}</Button>
-                </div>
-              )}
-            </div>
-          )}
-        </Group>
+            )}
+            {isOwner && listing.status === 'active' && onPinToggle && (
+              <ActionIcon variant="filled" color={isPinned ? 'cyan' : 'gray'} size="sm" onClick={() => onPinToggle(listing.id)} aria-label={isPinned ? 'Unpin listing' : 'Pin listing to top'}>
+                <Pin size={14} fill={isPinned ? 'currentColor' : 'none'} />
+              </ActionIcon>
+            )}
+            {isOwner && listing.status === 'active' && (
+              <div ref={ownerMenuRef} style={{ position: 'relative' }}>
+                <ActionIcon variant="filled" color="gray" size="sm" onClick={() => setShowOwnerMenu(s => !s)} aria-label="Listing options">
+                  <MoreVertical size={14} />
+                </ActionIcon>
+                {showOwnerMenu && (
+                  <div style={{ position: 'absolute', right: 0, top: '100%', marginTop: 4, width: 176, borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', overflow: 'hidden', zIndex: 30, background: isDark ? 'var(--mantine-color-dark-8)' : '#fff', border: `1px solid ${isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)'}` }}>
+                    <Button variant="subtle" fullWidth size="sm" onClick={() => { onEdit?.(listing); setShowOwnerMenu(false); }}>{t('editProduct', lang)}</Button>
+                    <Button variant="subtle" color="green" fullWidth size="sm" onClick={() => { setConfirmAction({ type: 'sold', listingId: listing.id }); setShowOwnerMenu(false); }}>{t('markAsSold', lang)}</Button>
+                    <Button variant="subtle" color="red" fullWidth size="sm" onClick={() => { setConfirmAction({ type: 'delete', listingId: listing.id }); setShowOwnerMenu(false); }}>{t('delete', lang)}</Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </Group>
+        </Card.Section>
 
         {/* Info */}
         <Box p="sm">

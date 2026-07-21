@@ -248,11 +248,12 @@ export function LeftSidebar({
       {!collapsed && (
         <Box px="sm" pt="sm">
           <TextInput
-            placeholder="Search..."
+            placeholder="Search navigation..."
             leftSection={<IconSearch size={16} />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
             size="xs"
+
           />
         </Box>
       )}
@@ -274,7 +275,7 @@ export function LeftSidebar({
               <Box key={section} mb="xs">
                 {!collapsed && (
                   <NavLink
-                    label={sectionLabel[section]}
+                    label={`${sectionLabel[section]} (${visibleItems.length})`}
                     onClick={() => toggleSection(section)}
                     rightSection={
                       expandedSections[section] ? (
