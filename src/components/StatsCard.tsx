@@ -3,7 +3,18 @@ import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { roundToHundredth, formatPrecision } from '../utils/helpers';
 import { Product, Session } from '../types';
-import { Package, Scale, Flame, Star, Percent, DollarSign, Clock, TrendingDown, CalendarDays } from 'lucide-react';
+import { SimpleGrid, Paper, Text, Group } from '@mantine/core';
+import {
+  IconPackage,
+ IconScale,
+ IconFlame,
+ IconStar,
+ IconPercentage,
+ IconCurrencyDollar,
+ IconClock,
+ IconTrendingDown,
+ IconCalendarDue,
+} from '@tabler/icons-react';
 
 interface StatsCardProps {
   products: Product[];
@@ -67,16 +78,16 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
 
   const dp = settings.decimalPrecision;
   const statItems = useMemo(() => [
-    { key: 'totalProducts' as const, visible: stats.totalProducts, icon: Package, label: t('totalProducts', settings.language), value: computed.totalProducts.toString(), suffix: '' },
-    { key: 'totalAmount' as const, visible: stats.totalAmount, icon: Scale, label: t('totalAmount', settings.language), value: formatPrecision(computed.totalAmount, dp), suffix: 'g' },
-    { key: 'totalSessions' as const, visible: stats.totalSessions, icon: Flame, label: t('totalSessions', settings.language), value: computed.totalSessions.toString(), suffix: '' },
-    { key: 'averageRating' as const, visible: stats.averageRating, icon: Star, label: t('averageRating', settings.language), value: formatPrecision(computed.averageRating, dp), suffix: '/5' },
-    { key: 'averageTHC' as const, visible: stats.averageTHC, icon: Percent, label: t('averageTHC', settings.language), value: formatPrecision(computed.averageTHC, dp), suffix: '%' },
-    { key: 'totalValue' as const, visible: stats.totalValue, icon: DollarSign, label: t('totalValue', settings.language), value: settings.currency + formatPrecision(computed.totalValue, dp), suffix: '' },
-    { key: 'pricePerGram' as const, visible: stats.pricePerGram && computed.totalAmount > 0, icon: DollarSign, label: t('pricePerGram', settings.language), value: settings.currency + formatPrecision(computed.pricePerGram, dp), suffix: '/g' },
-    { key: 'lastConsumed' as const, visible: stats.lastConsumed, icon: Clock, label: t('lastConsumed', settings.language), value: lastConsumedStr, suffix: '' },
-    { key: 'consumptionRate' as const, visible: stats.consumptionRate && computed.consumptionRate > 0, icon: TrendingDown, label: t('consumptionRate', settings.language), value: formatPrecision(computed.consumptionRate, dp), suffix: t('perDay', settings.language) },
-    { key: 'projectedRunOut' as const, visible: stats.projectedRunOut && computed.projectedRunOut !== '—', icon: CalendarDays, label: t('projectedRunOut', settings.language), value: computed.projectedRunOut, suffix: t('days', settings.language) },
+    { key: 'totalProducts' as const, visible: stats.totalProducts, icon: IconPackage, label: t('totalProducts', settings.language), value: computed.totalProducts.toString(), suffix: '' },
+    { key: 'totalAmount' as const, visible: stats.totalAmount, icon: IconScale, label: t('totalAmount', settings.language), value: formatPrecision(computed.totalAmount, dp), suffix: 'g' },
+    { key: 'totalSessions' as const, visible: stats.totalSessions, icon: IconFlame, label: t('totalSessions', settings.language), value: computed.totalSessions.toString(), suffix: '' },
+    { key: 'averageRating' as const, visible: stats.averageRating, icon: IconStar, label: t('averageRating', settings.language), value: formatPrecision(computed.averageRating, dp), suffix: '/5' },
+    { key: 'averageTHC' as const, visible: stats.averageTHC, icon: IconPercentage, label: t('averageTHC', settings.language), value: formatPrecision(computed.averageTHC, dp), suffix: '%' },
+    { key: 'totalValue' as const, visible: stats.totalValue, icon: IconCurrencyDollar, label: t('totalValue', settings.language), value: settings.currency + formatPrecision(computed.totalValue, dp), suffix: '' },
+    { key: 'pricePerGram' as const, visible: stats.pricePerGram && computed.totalAmount > 0, icon: IconCurrencyDollar, label: t('pricePerGram', settings.language), value: settings.currency + formatPrecision(computed.pricePerGram, dp), suffix: '/g' },
+    { key: 'lastConsumed' as const, visible: stats.lastConsumed, icon: IconClock, label: t('lastConsumed', settings.language), value: lastConsumedStr, suffix: '' },
+    { key: 'consumptionRate' as const, visible: stats.consumptionRate && computed.consumptionRate > 0, icon: IconTrendingDown, label: t('consumptionRate', settings.language), value: formatPrecision(computed.consumptionRate, dp), suffix: t('perDay', settings.language) },
+    { key: 'projectedRunOut' as const, visible: stats.projectedRunOut && computed.projectedRunOut !== '—', icon: IconCalendarDue, label: t('projectedRunOut', settings.language), value: computed.projectedRunOut, suffix: t('days', settings.language) },
   ], [computed, stats, dp, lastConsumedStr, settings.language, settings.currency]);
 
   const visibleStats = statItems.filter(s => s.visible);
@@ -91,49 +102,45 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
   };
 
   return (
-    <div className={`relative rounded-2xl transition-all ${
-      isDark
-        ? 'bg-midnight/80 border border-edge'
-        : 'bg-white border border-gray-200'
-    }`}>
+    <div style={{ position: 'relative' }}>
       {hiddenHint && (
-        <div className={`absolute -top-8 left-1/2 -translate-x-1/2 z-10 px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap ${
-          isDark ? 'bg-slate-800 text-cyan-400 border border-slate-700' : 'bg-white text-cyan-600 border border-gray-200'
-        }`}>
+        <Text size="xs" style={{
+          position: 'absolute', top: -32, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 10, padding: '4px 12px', borderRadius: 8,
+          background: isDark ? '#1e293b' : '#fff',
+          color: isDark ? '#22d3ee' : '#0891b2',
+          border: `1px solid ${isDark ? '#334155' : '#e5e7eb'}`,
+          whiteSpace: 'nowrap',
+        }}>
           {t('statHiddenHint', settings.language)}
-        </div>
+        </Text>
       )}
-      <div className="flex flex-wrap gap-2 p-3">
+      <SimpleGrid cols={{ base: 2, xs: 3, sm: 4, md: 5 }} spacing="sm">
         {visibleStats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <div
+            <Paper
               key={stat.key}
+              withBorder
+              p="md"
+              radius="md"
               onContextMenu={(e) => handleContextMenu(stat.key, e)}
               title={t('rightClickToHide', settings.language)}
-              className={`flex-1 min-w-[100px] p-3 rounded-xl text-center transition-all hover:scale-[1.02] cursor-context-menu ${
-                isDark
-                  ? 'bg-surface/40 hover:bg-surface/80 border border-transparent hover:border-edge'
-                  : 'bg-gray-50 hover:bg-gray-100 border border-transparent hover:border-gray-200'
-              }`}
+              style={{ cursor: 'context-menu', transition: 'transform 0.15s' }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
             >
-              <div className={`w-8 h-8 rounded-lg mx-auto mb-2 flex items-center justify-center ${
-                isDark ? 'bg-cyanx/10' : 'bg-cyan-50'
-              }`}>
-                <Icon className={`w-4 h-4 ${isDark ? 'text-cyanx' : 'text-cyan-600'}`} />
-              </div>
-              <div className={`text-lg font-bold tracking-tight ${
-                isDark ? 'text-frost' : 'text-gray-900'
-              }`}>
+              <Group justify="space-between" mb={4}>
+                <Text size="xs" c="dimmed">{stat.label}</Text>
+                <Icon size={18} stroke={1.5} />
+              </Group>
+              <Text fw={700} size="lg" style={{ lineHeight: 1.2 }}>
                 {stat.value}{stat.suffix}
-              </div>
-              <div className={`text-[11px] mt-0.5 ${isDark ? 'text-mist' : 'text-gray-500'}`}>
-                {stat.label}
-              </div>
-            </div>
+              </Text>
+            </Paper>
           );
         })}
-      </div>
+      </SimpleGrid>
     </div>
   );
 });

@@ -7,6 +7,8 @@ import { CreateListingModal } from './CreateListingModal';
 import { showToast } from './Toast';
 import { Plus, ArrowUpDown } from 'lucide-react';
 import { getProfiles } from '../utils/profileCache';
+import { Carousel } from '@mantine/carousel';
+import { Paper, Text } from '@mantine/core';
 
 interface MarketplaceFeedProps {
   isDark: boolean;
@@ -235,37 +237,52 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
         )}
       </div>
 
-      {/* Category tiles */}
-      <div className="overflow-x-auto pb-2 scrollbar-none">
-        <div className="flex gap-3 w-max">
+      {/* Category carousel */}
+      <Carousel
+        slideSize={90}
+        slideGap="xs"
+        height={100}
+        controlsOffset="xs"
+        withControls
+        controlSize={28}
+        emblaOptions={{ align: 'start', slidesToScroll: 3 }}
+      >
         {[
-          { id: 'all', label: 'All', icon: '📋', gradient: 'from-cyan-500 to-blue-500' },
-          { id: 'flower', label: 'Flower', icon: '🌿', gradient: 'from-emerald-500 to-green-600' },
-          { id: 'concentrate', label: 'Concentrate', icon: '💎', gradient: 'from-amber-400 to-orange-500' },
-          { id: 'edible', label: 'Edible', icon: '🍪', gradient: 'from-pink-400 to-rose-500' },
-          { id: 'cartridge', label: 'Cartridge', icon: '🖊️', gradient: 'from-purple-500 to-violet-600' },
-          { id: 'pre-roll', label: 'Pre-Roll', icon: '🚬', gradient: 'from-orange-400 to-red-500' },
-          { id: 'tincture', label: 'Tincture', icon: '💧', gradient: 'from-sky-400 to-cyan-500' },
-          { id: 'topical', label: 'Topical', icon: '🧴', gradient: 'from-lime-400 to-green-500' },
-          { id: 'seeds', label: 'Seeds', icon: '🌱', gradient: 'from-teal-400 to-emerald-500' },
-          { id: 'accessories', label: 'Access.', icon: '🔧', gradient: 'from-gray-400 to-slate-500' },
-          { id: 'other', label: 'Other', icon: '📦', gradient: 'from-stone-400 to-neutral-500' },
+          { id: 'all', label: 'All', icon: '📋' },
+          { id: 'flower', label: 'Flower', icon: '🌿' },
+          { id: 'concentrate', label: 'Concentrate', icon: '💎' },
+          { id: 'edible', label: 'Edible', icon: '🍪' },
+          { id: 'cartridge', label: 'Cartridge', icon: '🖊️' },
+          { id: 'pre-roll', label: 'Pre-Roll', icon: '🚬' },
+          { id: 'tincture', label: 'Tincture', icon: '💧' },
+          { id: 'topical', label: 'Topical', icon: '🧴' },
+          { id: 'seeds', label: 'Seeds', icon: '🌱' },
+          { id: 'accessories', label: 'Access.', icon: '🔧' },
+          { id: 'other', label: 'Other', icon: '📦' },
         ].map(cat => (
-          <button key={cat.id} onClick={() => setCategoryFilter(cat.id)}
-            className={`shrink-0 flex flex-col items-center gap-1 w-[78px] h-[78px] sm:w-24 sm:h-24 rounded-2xl transition-all ${
-              categoryFilter === cat.id
-                ? `bg-gradient-to-br ${cat.gradient} text-white shadow-lg scale-105`
-                : isDark ? 'bg-midnight/80 border border-edge text-mist hover:text-frost' : 'bg-white border border-gray-200 text-gray-600 hover:text-gray-900 hover:shadow-sm'
-            }`}>
-            <span className="text-xl sm:text-2xl mt-2 sm:mt-3">{cat.icon}</span>
-            <span className="text-[9px] sm:text-[10px] font-semibold leading-tight text-center">{cat.label}</span>
-            <span className={`text-[8px] sm:text-[9px] leading-none ${categoryFilter === cat.id ? 'text-white/80' : isDark ? 'text-muted' : 'text-gray-400'}`}>
-              {categoryCounts[cat.id] || 0}
-            </span>
-          </button>
+          <Carousel.Slide key={cat.id}>
+            <Paper
+              onClick={() => setCategoryFilter(cat.id)}
+              style={{
+                height: 90, display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: 2,
+                cursor: 'pointer',
+                background: categoryFilter === cat.id
+                  ? 'linear-gradient(135deg, var(--mantine-color-cyan-6), var(--mantine-color-blue-6))'
+                  : isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
+                color: categoryFilter === cat.id ? '#fff' : undefined,
+                border: categoryFilter === cat.id ? 'none' : `1px solid ${isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)'}`,
+              }}
+              radius="md"
+              withBorder={categoryFilter !== 'all'}
+            >
+              <Text size="xl">{cat.icon}</Text>
+              <Text size="xs" fw={600}>{cat.label}</Text>
+              <Text size="xs" c={categoryFilter === cat.id ? 'white' : 'dimmed'}>{categoryCounts[cat.id] || 0}</Text>
+            </Paper>
+          </Carousel.Slide>
         ))}
-      </div>
-      </div>
+      </Carousel>
 
       {/* Compact sort */}
       <div className={`flex items-center gap-1 p-1 rounded-xl w-fit ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>

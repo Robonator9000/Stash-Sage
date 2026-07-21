@@ -10,6 +10,10 @@ import {
   Tooltip,
   Collapse,
   Box,
+  TextInput,
+  Avatar,
+  UnstyledButton,
+  Group,
 } from '@mantine/core';
 import {
   IconHome,
@@ -25,6 +29,7 @@ import {
   IconChevronRight,
   IconChevronDown,
   IconChevronUp,
+  IconSearch,
 } from '@tabler/icons-react';
 
 type TabId =
@@ -70,7 +75,7 @@ export function LeftSidebar({
   currentUserId,
   onDashboard,
 }: LeftSidebarProps) {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -79,6 +84,7 @@ export function LeftSidebar({
     utility: true,
   });
   const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [searchQuery, setSearchQuery] = useState('');
   const navRef = useRef<HTMLDivElement>(null);
 
   const navItems: NavItem[] = [
@@ -216,7 +222,7 @@ export function LeftSidebar({
       aria-label="Main navigation"
       onKeyDown={handleKeyDown}
       style={{
-        width: collapsed ? 60 : 220,
+        width: collapsed ? 60 : 240,
         transition: 'width 0.2s ease',
         display: 'flex',
         flexDirection: 'column',
@@ -230,11 +236,6 @@ export function LeftSidebar({
         py="sm"
         style={{ borderBottom: '1px solid var(--mantine-color-gray-3)' }}
       >
-        {!collapsed && (
-          <Text size="sm" fw={700} c={isDark ? 'gray.0' : 'gray.9'}>
-            Navigation
-          </Text>
-        )}
         <ActionIcon
           variant="subtle"
           onClick={() => setCollapsed(!collapsed)}
@@ -244,10 +245,24 @@ export function LeftSidebar({
         </ActionIcon>
       </Stack>
 
+      {!collapsed && (
+        <Box px="sm" pt="sm">
+          <TextInput
+            placeholder="Search..."
+            leftSection={<IconSearch size={16} />}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.currentTarget.value)}
+            size="xs"
+          />
+        </Box>
+      )}
+
       <ScrollArea style={{ flex: 1 }} offsetScrollbars>
         <Box py="xs">
           {sectionOrder.map(section => {
-            const items = navItems.filter(i => i.section === section);
+            const items = navItems.filter(i => i.section === section &&
+              (!searchQuery || i.label.toLowerCase().includes(searchQuery.toLowerCase()))
+            );
             if (items.length === 0) return null;
 
             const visibleItems = items.filter(
@@ -295,6 +310,38 @@ export function LeftSidebar({
           })}
         </Box>
       </ScrollArea>
+
+      {!collapsed && user && (
+        <Box
+          px="sm"
+          py="sm"
+          style={{
+            borderTop: '1px solid var(--mantine-color-gray-3)',
+          }}
+        >
+          <UnstyledButton
+            onClick={() => navigate('/?tab=community&user=' + encodeURIComponent(currentUserId))}
+            style={{ width: '100%', borderRadius: 'var(--mantine-radius-md)' }}
+          >
+            <Group gap="sm" wrap="nowrap">
+              <Avatar
+                src={user.user_metadata?.avatar_url}
+                alt={user.user_metadata?.username || 'User'}
+                size={32}
+                radius="xl"
+              />
+              <Box style={{ flex: 1, overflow: 'hidden' }}>
+                <Text size="sm" fw={500} truncate>
+                  {user.user_metadata?.username || user.email?.split('@')[0] || 'User'}
+                </Text>
+                <Text size="xs" c="dimmed" truncate>
+                  {user.email || ''}
+                </Text>
+              </Box>
+            </Group>
+          </UnstyledButton>
+        </Box>
+      )}
     </Box>
   );
 }

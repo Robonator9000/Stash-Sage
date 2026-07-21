@@ -5,6 +5,7 @@ import { getContactUrl, copyToClipboard, timeAgo } from '../utils/helpers';
 import { Tag, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, MessageCircle, Star, Scale, MoreVertical, FlaskConical, Calendar, StickyNote, Pin } from 'lucide-react';
 import { ReviewSection } from './ReviewSection';
 import { ProductView } from './ProductView';
+import { Card, Image, Badge, Group, Text, ActionIcon, Button, Box } from '@mantine/core';
 
 const CATEGORY_GLOW: Record<string, string> = {
   flower: '16,185,129',
@@ -119,125 +120,118 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
 
   return (
     <>
-      <div className={`relative aspect-square overflow-hidden rounded-2xl transition-all duration-300 ${isDark ? 'bg-surface/60' : 'bg-white'} cursor-zoom-in group hover:-translate-y-0.5`}
+      <Card
+        radius="md"
+        withBorder
+        padding={0}
         style={{ boxShadow: `0 0 35px -4px rgba(${glowRgb},0.35)` }}
-        onClick={() => setShowDetailPopup(true)} role="article">
-
-        {/* Full-bleed image */}
-        <div className="absolute inset-0">
+        onClick={() => setShowDetailPopup(true)}
+      >
+        <Card.Section>
           {allImages.length > 0 ? (
-            <img src={allImages[currentImageIndex]} alt={listing.title} loading="lazy"
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            <Image
+              src={allImages[currentImageIndex]}
+              alt={listing.title}
+              height={200}
+              fallbackSrc="https://placehold.co/400x300?text=No+Image"
+            />
           ) : (
-            <div className={`w-full h-full flex items-center justify-center ${isDark ? 'bg-surface' : 'bg-gray-100'}`}>
-              <span className={`text-sm ${isDark ? 'text-muted' : 'text-gray-400'}`}>No image</span>
+            <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)' }}>
+              <Text size="sm" c="dimmed">No image</Text>
             </div>
           )}
-        </div>
+        </Card.Section>
 
         {/* Image nav */}
         {allImages.length > 1 && (
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i => (i - 1 + allImages.length) % allImages.length); }} aria-label="Previous image"
-              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/40 text-white hover:bg-black/60 transition-all">
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i => (i + 1) % allImages.length); }} aria-label="Next image"
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/40 text-white hover:bg-black/60 transition-all">
-              <ChevronRight className="w-4 h-4" />
-            </button>
-            <div className="absolute bottom-[86px] left-1/2 -translate-x-1/2 flex gap-1">
-              {allImages.map((_, i) => (
-                <button key={i} type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i); }} aria-label={`Image ${i + 1}`}
-                  className={`w-1.5 h-1.5 rounded-full transition-all ${i === currentImageIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/80'}`} />
-              ))}
-            </div>
-          </div>
+          <Group gap={4} justify="center" mt={-28} mb={4} style={{ position: 'relative', zIndex: 2 }}>
+            {allImages.map((_, i) => (
+              <button key={i} type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i); }} aria-label={`Image ${i + 1}`}
+                style={{
+                  width: i === currentImageIndex ? 10 : 6, height: 6, borderRadius: '50%',
+                  background: i === currentImageIndex ? 'var(--mantine-color-cyan-5)' : 'var(--mantine-color-gray-4)',
+                  border: 'none', cursor: 'pointer', transition: 'all 0.15s',
+                }} />
+            ))}
+          </Group>
         )}
 
         {/* Sold badge */}
         {listing.status === 'sold' && (
-          <span className="absolute top-2 left-2 px-2 py-0.5 rounded-lg text-xs font-bold tracking-wider uppercase bg-red-500/80 text-white backdrop-blur-sm">
+          <Badge color="red" variant="filled" size="sm" style={{ position: 'absolute', top: 8, left: 8 }}>
             {t('statusSold', lang)}
-          </span>
+          </Badge>
         )}
 
-        {/* Gradient overlay */}
-        <div className="absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
-
-        {/* Top-left category badge */}
+        {/* Category badge */}
         {listing.category && (
-          <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold text-white z-10"
-            style={{ backgroundColor: `rgba(${glowRgb},0.88)` }}>
-            <Tag className="w-3 h-3" />
+          <Badge
+            style={{ position: 'absolute', top: 8, left: listing.status === 'sold' ? 70 : 8, backgroundColor: `rgba(${glowRgb},0.88)`, color: '#fff' }}
+            size="sm"
+            leftSection={<Tag size={10} />}
+          >
             {listing.category}
-          </span>
+          </Badge>
         )}
 
         {/* Top-right controls */}
-        <div className="absolute top-2 right-2 flex items-center gap-1 z-10" onClick={e => e.stopPropagation()}>
+        <Group gap={4} style={{ position: 'absolute', top: 8, right: 8 }} onClick={e => e.stopPropagation()}>
           {currentUserId && currentUserId !== listing.user_id && (
-            <button onClick={() => onSave?.(listing.id)} aria-label={listing.saved_by_me ? t('unsaveListing', lang) : t('saveListing', lang)}
-              className={`min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg transition-all backdrop-blur-sm ${listing.saved_by_me ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/30' : 'bg-black/20 text-white hover:bg-black/40'}`}>
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill={listing.saved_by_me ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
+            <ActionIcon
+              variant={listing.saved_by_me ? 'filled' : 'subtle'}
+              color={listing.saved_by_me ? 'orange' : 'gray'}
+              size="sm"
+              onClick={() => onSave?.(listing.id)}
+              aria-label={listing.saved_by_me ? t('unsaveListing', lang) : t('saveListing', lang)}
+            >
+              <svg width={14} height={14} viewBox="0 0 24 24" fill={listing.saved_by_me ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
                 <path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z" />
               </svg>
-            </button>
+            </ActionIcon>
           )}
           {isOwner && listing.status === 'active' && onPinToggle && (
-            <button onClick={() => onPinToggle(listing.id)} aria-label={isPinned ? 'Unpin listing' : 'Pin listing to top'}
-              className={`min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg transition-all backdrop-blur-sm ${isPinned ? 'bg-cyanx/30 text-cyanx' : 'bg-black/20 text-white hover:bg-black/40'}`}>
-              <Pin className="w-3.5 h-3.5" fill={isPinned ? 'currentColor' : 'none'} />
-            </button>
+            <ActionIcon variant={isPinned ? 'filled' : 'subtle'} color={isPinned ? 'cyan' : 'gray'} size="sm" onClick={() => onPinToggle(listing.id)} aria-label={isPinned ? 'Unpin listing' : 'Pin listing to top'}>
+              <Pin size={14} fill={isPinned ? 'currentColor' : 'none'} />
+            </ActionIcon>
           )}
           {isOwner && listing.status === 'active' && (
-            <div ref={ownerMenuRef} className="relative">
-              <button onClick={() => setShowOwnerMenu(s => !s)} aria-label="Listing options"
-                className="min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg bg-black/20 text-white hover:bg-black/40 transition-all backdrop-blur-sm">
-                <MoreVertical className="w-3.5 h-3.5" />
-              </button>
+            <div ref={ownerMenuRef} style={{ position: 'relative' }}>
+              <ActionIcon variant="subtle" color="gray" size="sm" onClick={() => setShowOwnerMenu(s => !s)} aria-label="Listing options">
+                <MoreVertical size={14} />
+              </ActionIcon>
               {showOwnerMenu && (
-                <div className={`absolute right-0 top-full mt-1 w-44 rounded-xl shadow-xl border overflow-hidden z-30 ${isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
-                  <button onClick={() => { onEdit?.(listing); setShowOwnerMenu(false); }} className={`w-full px-4 py-2.5 text-sm text-left transition-all flex items-center gap-2.5 ${isDark ? 'text-frost hover:bg-surface' : 'text-gray-700 hover:bg-gray-50'}`}>
-                    {t('editProduct', lang)}
-                  </button>
-                  <button onClick={() => { setConfirmAction({ type: 'sold', listingId: listing.id }); setShowOwnerMenu(false); }} className={`w-full px-4 py-2.5 text-sm text-left transition-all flex items-center gap-2.5 ${isDark ? 'text-emera hover:bg-surface' : 'text-emerald-600 hover:bg-gray-50'}`}>
-                    {t('markAsSold', lang)}
-                  </button>
-                  <div className={`h-px ${isDark ? 'bg-edge' : 'bg-gray-200'}`} />
-                  <button onClick={() => { setConfirmAction({ type: 'delete', listingId: listing.id }); setShowOwnerMenu(false); }} className={`w-full px-4 py-2.5 text-sm text-left transition-all flex items-center gap-2.5 ${isDark ? 'text-red-400 hover:bg-surface' : 'text-red-500 hover:bg-gray-50'}`}>
-                    {t('delete', lang)}
-                  </button>
+                <div style={{ position: 'absolute', right: 0, top: '100%', marginTop: 4, width: 176, borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', overflow: 'hidden', zIndex: 30, background: isDark ? 'var(--mantine-color-dark-8)' : '#fff', border: `1px solid ${isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)'}` }}>
+                  <Button variant="subtle" fullWidth size="sm" onClick={() => { onEdit?.(listing); setShowOwnerMenu(false); }}>{t('editProduct', lang)}</Button>
+                  <Button variant="subtle" color="green" fullWidth size="sm" onClick={() => { setConfirmAction({ type: 'sold', listingId: listing.id }); setShowOwnerMenu(false); }}>{t('markAsSold', lang)}</Button>
+                  <Button variant="subtle" color="red" fullWidth size="sm" onClick={() => { setConfirmAction({ type: 'delete', listingId: listing.id }); setShowOwnerMenu(false); }}>{t('delete', lang)}</Button>
                 </div>
               )}
             </div>
           )}
-        </div>
+        </Group>
 
-        {/* Info bar */}
-        <div className="absolute inset-x-0 bottom-0 p-3 flex flex-col gap-1.5 pointer-events-none">
-          <span className="text-[11px] text-white/70 shrink-0">{timeAgo(listing.created_at, lang)}</span>
-          <h3 className="text-white font-bold text-sm leading-tight line-clamp-1">{listing.title}</h3>
-          <div className="flex items-center gap-2">
+        {/* Info */}
+        <Box p="sm">
+          <Text size="xs" c="dimmed">{timeAgo(listing.created_at, lang)}</Text>
+          <Text fw={700} size="sm" lineClamp={1} style={{ lineHeight: 1.3 }}>{listing.title}</Text>
+          <Group gap={4} mt={2}>
             {listing.price_options && listing.price_options.length > 0 ? (
               <>
-                <span className="text-white font-bold text-base">
-                  From ${Math.min(...listing.price_options.map(o => o.price)).toFixed(2)}
-                </span>
-                <span className="text-white/50 text-xs">{listing.price_options.length} opt.</span>
+                <Text fw={700} size="md">From ${Math.min(...listing.price_options.map(o => o.price)).toFixed(2)}</Text>
+                <Text size="xs" c="dimmed">{listing.price_options.length} opt.</Text>
               </>
             ) : (
-              <span className="text-white font-bold text-base">${listing.price.toFixed(2)}</span>
+              <Text fw={700} size="md">${listing.price.toFixed(2)}</Text>
             )}
             {listing.avg_seller_rating != null && listing.seller_review_count != null && listing.seller_review_count > 0 && (
-              <span className="ml-auto flex items-center gap-1 text-[11px] text-amber-400 font-semibold">
-                <Star className="w-3 h-3 fill-amber-400" />
-                {listing.avg_seller_rating.toFixed(1)}
-              </span>
+              <Group gap={2} ml="auto">
+                <Star size={12} fill="var(--mantine-color-yellow-4)" color="var(--mantine-color-yellow-4)" />
+                <Text size="xs" fw={600} c="yellow">{listing.avg_seller_rating.toFixed(1)}</Text>
+              </Group>
             )}
-          </div>
-        </div>
-      </div>
+          </Group>
+        </Box>
+      </Card>
 
       {/* Detail popup — Facebook-style fullscreen split */}
       {showDetailPopup && (

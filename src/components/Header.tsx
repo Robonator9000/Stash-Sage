@@ -8,6 +8,8 @@ import { searchProducts, timeAgo } from '../utils/helpers';
 import { t } from '../utils/translations';
 import { LogoIcon } from './LogoIcon';
 import { NotificationBell } from './NotificationBell';
+import { ActionIcon, Button, Group, Avatar } from '@mantine/core';
+import { IconSun, IconMoon, IconSearch, IconPlus, IconUser } from '@tabler/icons-react';
 
 interface UserRow { user_id: string; display_name: string; username?: string; avatar_url: string | null; }
 interface PostRow { id: string; content: string; created_at: string; user_id: string; }
@@ -169,66 +171,49 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
           )}
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-<button
-            onClick={() => setMobileSearchOpen(s => !s)}
-            aria-label="Search"
-            className="sm:hidden p-2 rounded-xl transition-all text-gray-600 dark:text-mist hover:text-gray-900 dark:hover:text-frost hover:bg-white dark:hover:bg-surface"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </button>
-          <button
-            data-coach="add-btn"
+        <Group gap="xs" style={{ flexShrink: 0 }}>
+          <ActionIcon variant="subtle" className="sm:hidden" onClick={() => setMobileSearchOpen(s => !s)} aria-label="Search">
+            <IconSearch size={18} />
+          </ActionIcon>
+
+          <Button
+            leftSection={<IconPlus size={16} />}
+            size="sm"
+            variant="gradient"
+            gradient={{ from: 'cyan', to: 'emerald' }}
             onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all shadow-lg shadow-cyanx/20"
+            visibleFrom="sm"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-            <span className="hidden sm:inline">{t('addProduct', lang)}</span>
-          </button>
+            {t('addProduct', lang)}
+          </Button>
+
           {user && <NotificationBell isDark={isDark} lang={lang} onViewProfile={handleViewProfile} />}
-          <button
+
+          <ActionIcon
+            variant="subtle"
+            size="md"
             onClick={() => { setSettingsDefaultTab('profile'); setIsSettingsOpen(true); }}
-            className={`p-1.5 rounded-xl transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}
+            aria-label="Profile"
           >
             {user ? (
-              settings.profile?.avatar_url ? (
-                <div className="w-7 h-7 rounded-lg overflow-hidden">
-                  <img src={settings.profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                </div>
-              ) : (
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyanx to-emera flex items-center justify-center">
-                  <span className="text-white font-display font-bold text-xs">
-                    {settings.profile?.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || '?'}
-                  </span>
-                </div>
-              )
+              <Avatar src={settings.profile?.avatar_url} alt="" size={24} radius="sm">
+                {settings.profile?.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || '?'}
+              </Avatar>
             ) : (
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyanx to-emera flex items-center justify-center">
-                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                </svg>
-              </div>
+              <IconUser size={18} />
             )}
-          </button>
-          <button
+          </ActionIcon>
+
+          <ActionIcon
+            variant="subtle"
+            size="md"
             onClick={() => updateSettings({ theme: isDark ? 'light' : 'dark', themeAuto: false })}
-            className={`hidden sm:flex p-2 rounded-xl transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}
+            aria-label="Toggle color scheme"
+            visibleFrom="sm"
           >
-            {isDark ? (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
-              </svg>
-            )}
-          </button>
-        </div>
+            {isDark ? <IconSun size={18} /> : <IconMoon size={18} />}
+          </ActionIcon>
+        </Group>
       </div>
       {mobileSearchOpen && (
         <div className="sm:hidden px-4 pb-2">
