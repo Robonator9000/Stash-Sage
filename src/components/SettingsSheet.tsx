@@ -7,9 +7,10 @@ import { createExportData, downloadExport, downloadCsvExport, copyExportToClipbo
 // jspdf loaded dynamically on PDF export only
 import { useAuth } from '../contexts/AuthContext';
 import { supabase, uploadProfileImage, deleteProfileImage } from '../utils/supabase';
-import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, Users, Scale, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, Camera, Mail, MessageCircle, MapPin, Bell, Rss } from 'lucide-react';
+import { X, Globe, Palette, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, Camera, Mail, MessageCircle, MapPin, Bell, Rss } from 'lucide-react';
 import { ResetPasswordModal } from './ResetPasswordModal';
 import { showToast } from './Toast';
+import { TextInput, NumberInput, Switch, Select, SegmentedControl, Button, Textarea, Text } from '@mantine/core';
 
 interface SettingsSheetProps {
   products: Product[];
@@ -55,8 +56,6 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const [showPinSetup, setShowPinSetup] = useState(false);
   const [showPinDisable, setShowPinDisable] = useState(false);
   const [pinError, setPinError] = useState('');
-  const [isPinProcessing, setIsPinProcessing] = useState(false);
-  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [profileUsername, setProfileUsername] = useState(settings.profile?.username || user?.email?.split('@')[0] || '');
   const [profileDisplayName, setProfileDisplayName] = useState(settings.profile?.displayName || '');
@@ -92,10 +91,6 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
 
   const handleThemeChange = (theme: 'dark' | 'light') => {
     updateSettings({ theme });
-  };
-
-  const handleCurrencyChange = (sym: string) => {
-    updateSettings({ currency: sym });
   };
 
   const handleExport = () => {
@@ -235,14 +230,6 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   ];
 
   const sectionLabel = `flex items-center gap-2 text-sm font-medium mb-3 ${isDark ? 'text-slate-300' : 'text-gray-700'}`;
-  const actionButton = (active: boolean) =>
-    `py-3 px-4 rounded-xl text-sm font-semibold transition-all border-2 flex items-center justify-center gap-2 ${
-      active
-        ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
-        : isDark
-          ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
-          : 'bg-gray-200 border-gray-200 text-gray-700 hover:border-gray-400'
-    }`;
 
   const lang = settings.language;
   const handleClose = () => {
@@ -323,27 +310,21 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                   )}
 
                   <form onSubmit={handleAuth} className="flex flex-col gap-4">
-                    <input type="email" placeholder="Email" value={authEmail}
-                      onChange={e => { setAuthEmail(e.target.value); setAuthLocalError(null); }}
+                    <TextInput type="email" label="Email" placeholder="Email" value={authEmail}
+                      onChange={e => { setAuthEmail(e.currentTarget.value); setAuthLocalError(null); }}
                       required autoFocus
-                      className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none ${
-                        isDark ? 'bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-                      }`} />
-                    <input type="password" placeholder="Password" value={authPassword}
-                      onChange={e => { setAuthPassword(e.target.value); setAuthLocalError(null); }}
+                    />
+                    <TextInput type="password" label="Password" placeholder="Password" value={authPassword}
+                      onChange={e => { setAuthPassword(e.currentTarget.value); setAuthLocalError(null); }}
                       required minLength={6}
-                      className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none ${
-                        isDark ? 'bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-                      }`} />
+                    />
                     {authMode === 'signup' && (
                       <>
-                        <input type="text" placeholder="Username" value={authUsername}
-                          onChange={e => { setAuthUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '')); setAuthLocalError(null); }}
+                        <TextInput label="Username" placeholder="Username" value={authUsername}
+                          onChange={e => { setAuthUsername(e.currentTarget.value.replace(/[^a-zA-Z0-9_]/g, '')); setAuthLocalError(null); }}
                           required minLength={2} maxLength={20}
-                          className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none ${
-                            isDark ? 'bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-                          }`} />
-                        <p className={`text-[10px] -mt-2 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>Your unique @username — cannot be changed later</p>
+                          description="Your unique @username — cannot be changed later"
+                        />
                       </>
                     )}
                     {authMode === 'signin' && (
@@ -352,11 +333,9 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                         Forgot password?
                       </button>
                     )}
-                    <button type="submit" disabled={authSubmitting}
-                      className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600 transition-all disabled:opacity-50"
-                    >
+                    <Button type="submit" disabled={authSubmitting} className="w-full bg-gradient-to-r from-cyan-500 to-emerald-500" loading={authSubmitting}>
                       {authSubmitting ? 'Please wait...' : authMode === 'signin' ? 'Sign In' : 'Create Account'}
-                    </button>
+                    </Button>
                   </form>
 
                   <button onClick={() => { setAuthMode(authMode === 'signin' ? 'signup' : 'signin'); setAuthLocalError(null); setAuthUsername(''); }}
@@ -401,23 +380,26 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
 
               <div>
                 <label className={sectionLabel}><User className="w-4 h-4" />{t('displayName', lang)}</label>
-                <div className="flex items-center gap-2 mb-1">
-                  <input type="text" value={profileDisplayName}
-                    onChange={e => setProfileDisplayName(e.target.value)} maxLength={24} placeholder="Your display name"
-                    className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none ${
-                      isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-                    }`} />
-                </div>
+                <TextInput
+                  value={profileDisplayName}
+                  onChange={e => setProfileDisplayName(e.currentTarget.value)}
+                  maxLength={24}
+                  placeholder="Your display name"
+                  size="md"
+                />
               </div>
 
               <div>
                 <label className={sectionLabel}><User className="w-4 h-4" />{t('bio', lang)}</label>
-                <textarea value={profileBio}
-                  onChange={e => setProfileBio(e.target.value)} maxLength={160} rows={3} placeholder="Tell the community about yourself..."
-                  className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none resize-none ${
-                    isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-                  }`} />
-                <p className={`text-[10px] mt-1 text-right ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{profileBio.length}/160</p>
+                <Textarea
+                  value={profileBio}
+                  onChange={e => setProfileBio(e.currentTarget.value)}
+                  maxLength={160}
+                  rows={3}
+                  placeholder="Tell the community about yourself..."
+                  size="md"
+                />
+                <Text size="xs" c="dimmed" ta="right" mt={4}>{profileBio.length}/160</Text>
               </div>
 
               <div>
@@ -499,11 +481,13 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
 
               <div>
                 <label className={sectionLabel}><MapPin className="w-4 h-4" />{t('location', lang)}</label>
-                <input type="text" value={profileLocation}
-                  onChange={e => setProfileLocation(e.target.value)} maxLength={60} placeholder={t('locationPlaceholder', lang)}
-                  className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none ${
-                    isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-                  }`} />
+                <TextInput
+                  value={profileLocation}
+                  onChange={e => setProfileLocation(e.currentTarget.value)}
+                  maxLength={60}
+                  placeholder={t('locationPlaceholder', lang)}
+                  size="md"
+                />
               </div>
 
               <div>
@@ -511,22 +495,21 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                 <div className="space-y-2 mb-2">
                   {profileContacts.map((contact, idx) => (
                     <div key={idx} className="flex items-center gap-2">
-                      <select value={contact.platform} onChange={e => {
+                      <Select value={contact.platform} onChange={v => {
+                        if (!v) return;
                         const next = [...profileContacts];
-                        next[idx] = { ...next[idx], platform: e.target.value };
+                        next[idx] = { ...next[idx], platform: v };
                         setProfileContacts(next);
-                      }} className={`flex-1 min-w-[100px] px-3 py-2.5 rounded-lg text-xs font-medium outline-none appearance-none cursor-pointer ${isDark ? 'bg-slate-800 text-white border border-slate-700' : 'bg-gray-100 text-gray-800 border border-gray-200'}`}>
-                        {CONTACT_PLATFORMS.map(pf => <option key={pf} value={pf}>{pf}</option>)}
-                      </select>
-                      <input type="text" value={contact.value} onChange={e => {
+                      }} data={CONTACT_PLATFORMS} size="xs" style={{ flex: 1, minWidth: 100 }} />
+                      <TextInput value={contact.value} onChange={e => {
                         const next = [...profileContacts];
-                        next[idx] = { ...next[idx], value: e.target.value };
+                        next[idx] = { ...next[idx], value: e.currentTarget.value };
                         setProfileContacts(next);
                       }} placeholder={contact.platform === 'email' ? 'user@example.com' : contact.platform === 'phone' ? '+1 555 0000' : '@username'}
-                        className={`flex-1 px-3 py-2.5 rounded-lg text-xs font-medium outline-none ${isDark ? 'bg-slate-800 text-white border border-slate-700 focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 text-gray-800 border border-gray-200 focus:border-cyan-400 placeholder-gray-400'}`} />
-                      <button onClick={() => setProfileContacts(profileContacts.filter((_, i) => i !== idx))} className={`p-2 rounded-lg text-xs font-medium transition-all ${isDark ? 'text-red-400 hover:bg-red-500/10' : 'text-red-500 hover:bg-red-50'}`}>
+                        size="xs" style={{ flex: 1 }} />
+                      <Button variant="subtle" color="red" size="compact-xs" onClick={() => setProfileContacts(profileContacts.filter((_, i) => i !== idx))}>
                         <X className="w-3.5 h-3.5" />
-                      </button>
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -538,37 +521,23 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
 
               {/* Visibility toggles */}
               <div className={`p-3 rounded-xl border-2 space-y-3 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{t('showOnlineStatus', lang)}</span>
-                    <p className={`text-[10px] mt-0.5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('showOnlineStatusHint', lang)}</p>
-                  </div>
-                  <button onClick={() => updateSettings({ showOnlineStatus: !settings.showOnlineStatus })}
-                    className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${
-                      settings.showOnlineStatus !== false ? 'bg-gradient-to-r from-cyan-500 to-emerald-500' : isDark ? 'bg-slate-600' : 'bg-gray-300'
-                    }`}>
-                    <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform shadow ${
-                      settings.showOnlineStatus !== false ? 'translate-x-[1.375rem]' : 'translate-x-0.5'
-                    }`} />
-                  </button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{t('showLocation', lang)}</span>
-                    <p className={`text-[10px] mt-0.5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('showLocationHint', lang)}</p>
-                  </div>
-                  <button onClick={() => updateSettings({ showLocation: settings.showLocation === false ? true : false })}
-                    className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${
-                      settings.showLocation !== false ? 'bg-gradient-to-r from-cyan-500 to-emerald-500' : isDark ? 'bg-slate-600' : 'bg-gray-300'
-                    }`}>
-                    <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform shadow ${
-                      settings.showLocation !== false ? 'translate-x-[1.375rem]' : 'translate-x-0.5'
-                    }`} />
-                  </button>
-                </div>
+                <Switch
+                  checked={settings.showOnlineStatus !== false}
+                  onChange={e => updateSettings({ showOnlineStatus: e.currentTarget.checked })}
+                  label={t('showOnlineStatus', lang)}
+                  description={t('showOnlineStatusHint', lang)}
+                  size="md"
+                />
+                <Switch
+                  checked={settings.showLocation !== false}
+                  onChange={e => updateSettings({ showLocation: e.currentTarget.checked })}
+                  label={t('showLocation', lang)}
+                  description={t('showLocationHint', lang)}
+                  size="md"
+                />
               </div>
 
-              <button
+              <Button
                 onClick={async () => {
                   if (!profileUsername.trim() || !user) return;
                   let avatarUrl = settings.profile?.avatar_url;
@@ -616,10 +585,10 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                   showToast({ id: 'profile-saved', title: '', body: 'Profile saved' });
                 }}
                 disabled={!profileUsername.trim()}
-                className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-cyan-500 to-emerald-500"
               >
                 {t('save', lang)} {t('profileSetup', lang)}
-              </button>
+              </Button>
 
               <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={e => {
                 const file = e.target.files?.[0];
@@ -651,22 +620,19 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               {passwordChangeSuccess && (
                 <div className={`px-3 py-2 rounded-lg text-sm ${isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>Password updated successfully!</div>
               )}
-              <input type="password" placeholder="New password" value={newPassword}
-                onChange={e => { setNewPassword(e.target.value); setPasswordChangeError(null); setPasswordChangeSuccess(false); }}
+<TextInput type="password" placeholder="New password" value={newPassword}
+                onChange={e => { setNewPassword(e.currentTarget.value); setPasswordChangeError(null); setPasswordChangeSuccess(false); }}
                 minLength={6}
-                className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none ${
-                  isDark ? 'bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-                }`} />
-              <input type="password" placeholder="Confirm new password" value={confirmNewPassword}
-                onChange={e => { setConfirmNewPassword(e.target.value); setPasswordChangeError(null); setPasswordChangeSuccess(false); }}
+              />
+              <TextInput type="password" placeholder="Confirm new password" value={confirmNewPassword}
+                onChange={e => { setConfirmNewPassword(e.currentTarget.value); setPasswordChangeError(null); setPasswordChangeSuccess(false); }}
                 minLength={6}
-                className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none ${
-                  isDark ? 'bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-                }`} />
-              <button onClick={handlePasswordChange} disabled={passwordChangeSubmitting || !newPassword || !confirmNewPassword}
-                className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600 transition-all disabled:opacity-50">
+              />
+              <Button onClick={handlePasswordChange} disabled={passwordChangeSubmitting || !newPassword || !confirmNewPassword}
+                className="w-full bg-gradient-to-r from-cyan-500 to-emerald-500"
+                loading={passwordChangeSubmitting}>
                 {passwordChangeSubmitting ? 'Updating...' : 'Update Password'}
-              </button>
+              </Button>
 
               <hr className={`my-6 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`} />
               <h4 className={`text-sm font-semibold ${isDark ? 'text-slate-300' : 'text-gray-700'} flex items-center gap-2`}>
@@ -678,15 +644,14 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               {emailChangeSuccess && (
                 <div className={`px-3 py-2 rounded-lg text-sm ${isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>Verification sent! Check your new email.</div>
               )}
-              <input type="email" placeholder="New email address" value={newEmail}
-                onChange={e => { setNewEmail(e.target.value); setEmailChangeError(null); setEmailChangeSuccess(false); }}
-                className={`w-full px-4 py-2.5 rounded-xl text-sm outline-none ${
-                  isDark ? 'bg-slate-800 border border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-                }`} />
-              <button onClick={handleEmailChange} disabled={emailChangeSubmitting || !newEmail}
-                className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600 transition-all disabled:opacity-50">
+              <TextInput type="email" placeholder="New email address" value={newEmail}
+                onChange={e => { setNewEmail(e.currentTarget.value); setEmailChangeError(null); setEmailChangeSuccess(false); }}
+              />
+              <Button onClick={handleEmailChange} disabled={emailChangeSubmitting || !newEmail}
+                className="w-full bg-gradient-to-r from-cyan-500 to-emerald-500"
+                loading={emailChangeSubmitting}>
                 {emailChangeSubmitting ? 'Sending...' : 'Update Email'}
-              </button>
+              </Button>
             </>
             )}
             </>
@@ -697,101 +662,60 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               {/* Language */}
               <div className="mb-4">
                 <label className={sectionLabel}><Globe className="w-4 h-4" />{t('language', lang)}</label>
-                <div className="relative">
-                  <button
-                    aria-label={t('language', lang)}
-                    onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
-                    className={`w-full px-4 py-3 rounded-xl border-2 transition-colors text-left flex items-center justify-between ${
-                      isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'
-                    } outline-none`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <span className="text-lg">{LANGUAGES.find(l => l.code === settings.language)?.flag}</span>
-                      {LANGUAGE_NAMES[settings.language]?.[settings.language] || settings.language}
-                    </span>
-                    <ChevronDown className={`w-4 h-4 transition-transform ${showLanguageDropdown ? 'rotate-180' : ''}`} />
-                  </button>
-                  {showLanguageDropdown && (
-                    <div className={`absolute top-full left-0 right-0 mt-2 rounded-xl border-2 shadow-xl z-10 overflow-hidden ${
-                      isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'
-                    }`}>
-                      {LANGUAGES.map((l) => (
-                        <button
-                          key={l.code}
-                          onClick={() => { updateSettings({ language: l.code as typeof settings.language }); setShowLanguageDropdown(false); }}
-                          className={`w-full px-4 py-3 text-left flex items-center justify-between transition-colors ${
-                            settings.language === l.code
-                              ? isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
-                              : isDark ? 'hover:bg-slate-700 text-white' : 'hover:bg-gray-100 text-gray-900'
-                          }`}
-                        >
-                          <span className="flex items-center gap-2">
-                            <span className="text-lg">{l.flag}</span>
-                            {LANGUAGE_NAMES[settings.language]?.[l.code] || l.code}
-                          </span>
-                          {settings.language === l.code && <Check className="w-4 h-4" />}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <Select
+                  value={settings.language}
+                  onChange={(v) => v && updateSettings({ language: v as typeof settings.language })}
+                  data={LANGUAGES.map(l => ({ value: l.code, label: `${l.flag}  ${LANGUAGE_NAMES[settings.language]?.[l.code] || l.code}` }))}
+                  size="md"
+                  checkIconPosition="right"
+                />
               </div>
 
               {/* Theme */}
               <div className="mb-4">
                 <label className={sectionLabel}><Palette className="w-4 h-4" />{t('theme', lang)}</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => handleThemeChange('dark')} className={actionButton(settings.theme === 'dark')}>{t('dark', lang)}</button>
-                  <button onClick={() => handleThemeChange('light')} className={actionButton(settings.theme === 'light')}>{t('light', lang)}</button>
-                </div>
+                <SegmentedControl
+                  value={settings.theme}
+                  onChange={(v) => handleThemeChange(v as 'dark' | 'light')}
+                  data={[{ value: 'dark', label: t('dark', lang) }, { value: 'light', label: t('light', lang) }]}
+                  size="md"
+                  fullWidth
+                />
               </div>
 
               {/* Decimal Precision */}
               <div className="mb-4">
                 <label className={sectionLabel}><Hash className="w-4 h-4" />{t('decimalPrecision', lang)}</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {[0, 1, 2, 3].map(p => (
-                    <button key={p} onClick={() => updateSettings({ decimalPrecision: p })}
-                      className={`py-3 rounded-xl text-sm font-bold transition-all border-2 ${
-                        settings.decimalPrecision === p
-                          ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
-                          : isDark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
-                                  : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
-                      }`}>{p}</button>
-                  ))}
-                </div>
+                <SegmentedControl
+                  value={String(settings.decimalPrecision)}
+                  onChange={(v) => updateSettings({ decimalPrecision: parseInt(v, 10) })}
+                  data={['0', '1', '2', '3']}
+                  size="md"
+                  fullWidth
+                />
               </div>
 
               {/* Show Timer Ms */}
-              <div className={`flex items-center justify-between p-3 rounded-xl border-2 mb-4 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
-                <div>
-                  <span className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{t('showTimerMs', lang)}</span>
-                  <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('showTimerMsHint', lang)}</p>
-                </div>
-                <button onClick={() => updateSettings({ showTimerMs: !settings.showTimerMs })}
-                  className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${
-                    settings.showTimerMs ? 'bg-gradient-to-r from-cyan-500 to-emerald-500' : isDark ? 'bg-slate-600' : 'bg-gray-300'
-                  }`}>
-                  <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform shadow ${
-                    settings.showTimerMs ? 'translate-x-[1.375rem]' : 'translate-x-0.5'
-                  }`} />
-                </button>
+              <div className={`p-3 rounded-xl border-2 mb-4 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
+                <Switch
+                  checked={settings.showTimerMs}
+                  onChange={e => updateSettings({ showTimerMs: e.currentTarget.checked })}
+                  label={t('showTimerMs', lang)}
+                  description={t('showTimerMsHint', lang)}
+                  size="md"
+                />
               </div>
 
               {/* Currency */}
               <div className="mb-4">
                 <label className={sectionLabel}><DollarSign className="w-4 h-4" />{t('currency', lang)}</label>
-                <div className="grid grid-cols-5 gap-2">
-                  {['$', '\u20ac', '\u00a3', '\u00a5', '\u20bf'].map((sym) => (
-                    <button key={sym} onClick={() => handleCurrencyChange(sym)}
-                      className={`py-3 rounded-xl text-lg font-bold transition-all border-2 ${
-                        settings.currency === sym
-                          ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
-                          : isDark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
-                                  : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
-                      }`}>{sym}</button>
-                  ))}
-                </div>
+                <SegmentedControl
+                  value={settings.currency}
+                  onChange={(sym) => updateSettings({ currency: sym })}
+                  data={['$', '\u20ac', '\u00a3', '\u00a5', '\u20bf']}
+                  size="md"
+                  fullWidth
+                />
               </div>
 
               <hr className={`my-4 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`} />
@@ -799,50 +723,34 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               {/* Notifications Section */}
               <div className="mb-4">
                 <label className={sectionLabel}><Bell className="w-4 h-4" />{t('notifications', lang)}</label>
-                <div className={`flex items-center justify-between p-3 rounded-xl border-2 mb-2 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
-                  <div>
-                    <span className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{t('notificationsEnabled', lang)}</span>
-                    <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('notificationsEnabledHint', lang)}</p>
-                  </div>
-                  <button onClick={() => updateSettings({ notificationsEnabled: settings.notificationsEnabled !== false ? false : true })}
-                    className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${
-                      settings.notificationsEnabled !== false ? 'bg-gradient-to-r from-cyan-500 to-emerald-500' : isDark ? 'bg-slate-600' : 'bg-gray-300'
-                    }`}>
-                    <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform shadow ${
-                      settings.notificationsEnabled !== false ? 'translate-x-[1.375rem]' : 'translate-x-0.5'
-                    }`} />
-                  </button>
-                </div>
-                <div className={`flex items-center justify-between p-3 rounded-xl border-2 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
-                  <div>
-                    <span className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{t('notificationsSound', lang)}</span>
-                    <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('notificationsSoundHint', lang)}</p>
-                  </div>
-                  <button onClick={() => updateSettings({ notificationsSound: settings.notificationsSound === false ? true : false })}
-                    className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${
-                      settings.notificationsSound !== false ? 'bg-gradient-to-r from-cyan-500 to-emerald-500' : isDark ? 'bg-slate-600' : 'bg-gray-300'
-                    }`}>
-                    <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform shadow ${
-                      settings.notificationsSound !== false ? 'translate-x-[1.375rem]' : 'translate-x-0.5'
-                    }`} />
-                  </button>
+                <div className={`p-3 rounded-xl border-2 space-y-3 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
+                  <Switch
+                    checked={settings.notificationsEnabled !== false}
+                    onChange={(e) => updateSettings({ notificationsEnabled: e.currentTarget.checked })}
+                    label={t('notificationsEnabled', lang)}
+                    description={t('notificationsEnabledHint', lang)}
+                    size="md"
+                  />
+                  <Switch
+                    checked={settings.notificationsSound !== false}
+                    onChange={(e) => updateSettings({ notificationsSound: e.currentTarget.checked })}
+                    label={t('notificationsSound', lang)}
+                    description={t('notificationsSoundHint', lang)}
+                    size="md"
+                  />
                 </div>
               </div>
 
               {/* Feed Preferences */}
               <div>
                 <label className={sectionLabel}><Rss className="w-4 h-4" />{t('defaultFeedFilter', lang)}</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['latest', 'following', 'trending'] as const).map(f => (
-                    <button key={f} onClick={() => updateSettings({ defaultFeedFilter: f })}
-                      className={`py-3 rounded-xl text-xs font-medium transition-all border-2 capitalize ${
-                        (settings.defaultFeedFilter || 'latest') === f
-                          ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
-                          : isDark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
-                                  : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
-                      }`}>{f}</button>
-                  ))}
-                </div>
+                <SegmentedControl
+                  value={settings.defaultFeedFilter || 'latest'}
+                  onChange={(f) => updateSettings({ defaultFeedFilter: f as typeof settings.defaultFeedFilter })}
+                  data={(['latest', 'following', 'trending'] as const).map(f => ({ value: f, label: f }))}
+                  size="md"
+                  fullWidth
+                />
               </div>
             </>
           )}
@@ -850,83 +758,51 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
           {activeTab === 'session' && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3 mb-4">
-                <div>
-                  <label className={`block text-xs mb-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                    <Scale className="w-3 h-3 inline mr-1" />{t('defaultAmount', lang)}
-                  </label>
-                  <input type="number" value={settings.sessionDefaults.defaultAmount}
-                    onChange={(e) => updateSettings({ sessionDefaults: { ...settings.sessionDefaults, defaultAmount: Math.max(0, parseFloat(e.target.value) || 0) } })}
-                    min="0" step="0.1"
-                    className={`w-full px-3 py-2 rounded-xl border-2 text-sm font-medium outline-none ${
-                      isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
-                             : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-                    }`} />
-                </div>
-                <div>
-                  <label className={`block text-xs mb-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                    <Users className="w-3 h-3 inline mr-1" />{t('defaultPeople', lang)}
-                  </label>
-                  <input type="number" value={settings.sessionDefaults.defaultPeople}
-                    onChange={(e) => updateSettings({ sessionDefaults: { ...settings.sessionDefaults, defaultPeople: Math.max(1, parseInt(e.target.value) || 1) } })}
-                    min="1" step="1"
-                    className={`w-full px-3 py-2 rounded-xl border-2 text-sm font-medium outline-none ${
-                      isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
-                             : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-                    }`} />
-                </div>
+                <NumberInput
+                  label={t('defaultAmount', lang)}
+                  value={settings.sessionDefaults.defaultAmount}
+                  onChange={(v) => updateSettings({ sessionDefaults: { ...settings.sessionDefaults, defaultAmount: Math.max(0, typeof v === 'number' ? v : parseFloat(v) || 0) } })}
+                  min={0} step={0.1} decimalScale={2} size="md"
+                />
+                <NumberInput
+                  label={t('defaultPeople', lang)}
+                  value={settings.sessionDefaults.defaultPeople}
+                  onChange={(v) => updateSettings({ sessionDefaults: { ...settings.sessionDefaults, defaultPeople: Math.max(1, typeof v === 'number' ? v : parseInt(v) || 1) } })}
+                  min={1} step={1} size="md"
+                />
               </div>
               <div className="grid grid-cols-2 gap-3 mb-4">
-                <div>
-                  <label className={`block text-xs mb-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                    <Clock className="w-3 h-3 inline mr-1" />{t('defaultHitTimer', lang)}
-                  </label>
-                  <input type="number" value={settings.sessionDefaults.defaultHitTimer}
-                    onChange={(e) => updateSettings({ sessionDefaults: { ...settings.sessionDefaults, defaultHitTimer: Math.max(1, parseInt(e.target.value) || 1) } })}
-                    min="1" step="1"
-                    className={`w-full px-3 py-2 rounded-xl border-2 text-sm font-medium outline-none ${
-                      isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
-                             : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-                    }`} />
-                </div>
-                <div>
-                  <label className={`block text-xs mb-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                    <Scale className="w-3 h-3 inline mr-1" />{t('defaultGramsPerBowl', lang)}
-                  </label>
-                  <input type="number" value={settings.sessionDefaults.defaultGramsPerBowl}
-                    onChange={(e) => updateSettings({ sessionDefaults: { ...settings.sessionDefaults, defaultGramsPerBowl: Math.max(0.01, parseFloat(e.target.value) || 0.01) } })}
-                    min="0.01" step="0.05"
-                    className={`w-full px-3 py-2 rounded-xl border-2 text-sm font-medium outline-none ${
-                      isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
-                             : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-                    }`} />
-                </div>
+                <NumberInput
+                  label={t('defaultHitTimer', lang)}
+                  value={settings.sessionDefaults.defaultHitTimer}
+                  onChange={(v) => updateSettings({ sessionDefaults: { ...settings.sessionDefaults, defaultHitTimer: Math.max(1, typeof v === 'number' ? v : parseInt(v) || 1) } })}
+                  min={1} step={1} size="md"
+                />
+                <NumberInput
+                  label={t('defaultGramsPerBowl', lang)}
+                  value={settings.sessionDefaults.defaultGramsPerBowl}
+                  onChange={(v) => updateSettings({ sessionDefaults: { ...settings.sessionDefaults, defaultGramsPerBowl: Math.max(0.01, typeof v === 'number' ? v : parseFloat(v) || 0.01) } })}
+                  min={0.01} step={0.05} decimalScale={2} size="md"
+                />
               </div>
-              <div className={`flex items-center justify-between p-3 rounded-xl border-2 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
-                <span className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{t('rotationEnabled', lang)}</span>
-                <button onClick={() => updateSettings({ sessionDefaults: { ...settings.sessionDefaults, rotationEnabled: !settings.sessionDefaults.rotationEnabled } })}
-                  className={`w-12 h-7 rounded-full transition-colors relative ${
-                    settings.sessionDefaults.rotationEnabled ? 'bg-gradient-to-r from-cyan-500 to-emerald-500' : isDark ? 'bg-slate-600' : 'bg-gray-300'
-                  }`}>
-                  <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform shadow ${
-                    settings.sessionDefaults.rotationEnabled ? 'translate-x-[1.375rem]' : 'translate-x-0.5'
-                  }`} />
-                </button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{t('publicProducts', lang)}</span>
-                    <p className={`text-[10px] mt-0.5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('publicProductsHint', lang)}</p>
-                  </div>
-                  <button onClick={() => updateSettings({ publicProducts: !settings.publicProducts })}
-                    className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${
-                      settings.publicProducts ? 'bg-gradient-to-r from-cyan-500 to-emerald-500' : isDark ? 'bg-slate-600' : 'bg-gray-300'
-                    }`}>
-                    <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform shadow ${
-                      settings.publicProducts ? 'translate-x-[1.375rem]' : 'translate-x-0.5'
-                    }`} />
-                  </button>
-                </div>
+              <div className={`p-3 rounded-xl border-2 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
+                <Switch
+                  checked={settings.sessionDefaults.rotationEnabled}
+                  onChange={(e) => updateSettings({ sessionDefaults: { ...settings.sessionDefaults, rotationEnabled: e.currentTarget.checked } })}
+                  label={t('rotationEnabled', lang)}
+                  size="md"
+                />
               </div>
+              <div className={`p-3 rounded-xl border-2 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
+                <Switch
+                  checked={settings.publicProducts}
+                  onChange={(e) => updateSettings({ publicProducts: e.currentTarget.checked })}
+                  label={t('publicProducts', lang)}
+                  description={t('publicProductsHint', lang)}
+                  size="md"
+                />
+              </div>
+            </div>
           )}
 
           {activeTab === 'budget' && (
@@ -934,39 +810,31 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               {/* Budget Limit */}
               <div className="mb-4">
                 <label className={sectionLabel}><DollarSign className="w-4 h-4" />{t('budgetLimit', lang)}</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <input type="number" value={settings.budgetLimit}
-                    onChange={(e) => updateSettings({ budgetLimit: Math.max(0, parseFloat(e.target.value) || 0) })}
-                    min="0" step="10" placeholder="0 = disabled"
-                    className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none ${
-                      isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
-                             : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-                    }`} />
-                  <div className={`flex rounded-xl border-2 overflow-hidden ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
-                    {(['weekly', 'monthly', 'yearly'] as const).map(period => (
-                      <button key={period} onClick={() => updateSettings({ budgetPeriod: period })}
-                        className={`flex-1 py-3 text-xs font-medium transition-colors ${
-                          settings.budgetPeriod === period
-                            ? isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
-                            : isDark ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
-                        }`}>{period}</button>
-                    ))}
-                  </div>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                  <NumberInput
+                    value={settings.budgetLimit}
+                    onChange={(v) => updateSettings({ budgetLimit: Math.max(0, typeof v === 'number' ? v : parseFloat(v) || 0) })}
+                    min={0} step={10} placeholder="0 = disabled" size="md" style={{ flex: 1 }}
+                  />
+                  <SegmentedControl
+                    value={settings.budgetPeriod}
+                    onChange={(v) => updateSettings({ budgetPeriod: v as 'weekly' | 'monthly' | 'yearly' })}
+                    data={['weekly', 'monthly', 'yearly']}
+                    size="md"
+                  />
                 </div>
-                <p className={`text-xs mt-2 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('budgetLimitHint', lang)}</p>
+                <Text size="xs" c="dimmed" mt="xs">{t('budgetLimitHint', lang)}</Text>
               </div>
 
               {/* Low Stock Threshold */}
               <div className="mb-4">
                 <label className={sectionLabel}><AlertTriangle className="w-4 h-4" />{t('lowStockThreshold', lang)}</label>
-                <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('lowStockThresholdHint', lang)}</p>
-                <input type="number" value={settings.lowStockThreshold}
-                  onChange={(e) => updateSettings({ lowStockThreshold: Math.max(0, parseFloat(e.target.value) || 0) })}
-                  min="0" step="0.5"
-                  className={`w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none ${
-                    isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
-                           : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-                  }`} />
+                <Text size="xs" c="dimmed" mb="xs">{t('lowStockThresholdHint', lang)}</Text>
+                <NumberInput
+                  value={settings.lowStockThreshold}
+                  onChange={(v) => updateSettings({ lowStockThreshold: Math.max(0, typeof v === 'number' ? v : parseFloat(v) || 0) })}
+                  min={0} step={0.5} size="md"
+                />
               </div>
 
               <hr className={`my-4 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`} />
@@ -996,26 +864,26 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                 <label className={sectionLabel}><Database className="w-4 h-4" />{t('dataBackup', lang)}</label>
                 <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('dataBackupHint', lang)}</p>
                 <div className="grid grid-cols-4 gap-2 mb-3">
-                  <button onClick={handleExport} className={actionButton(false)}>
-                    <Download className="w-4 h-4" /><span className="text-[10px] leading-tight">{t('exportData', lang)}</span>
-                  </button>
-                  <button onClick={handleExportCsv} className={actionButton(false)}>
-                    <FileSpreadsheet className="w-4 h-4" /><span className="text-[10px] leading-tight">{t('exportCsv', lang)}</span>
-                  </button>
-                  <button onClick={handleExportPdf} className={actionButton(false)}>
-                    <FileText className="w-4 h-4" /><span className="text-[10px] leading-tight">PDF</span>
-                  </button>
-                  <button onClick={handleCopyToClipboard} className={actionButton(false)}>
-                    <Clipboard className="w-4 h-4" /><span className="text-[10px] leading-tight">{t('copyToClipboard', lang)}</span>
-                  </button>
+                  <Button variant="light" onClick={handleExport} className="flex-col h-auto py-2 gap-1">
+                    <Download className="w-4 h-4" /><Text size="10" className="leading-tight">{t('exportData', lang)}</Text>
+                  </Button>
+                  <Button variant="light" onClick={handleExportCsv} className="flex-col h-auto py-2 gap-1">
+                    <FileSpreadsheet className="w-4 h-4" /><Text size="10" className="leading-tight">{t('exportCsv', lang)}</Text>
+                  </Button>
+                  <Button variant="light" onClick={handleExportPdf} className="flex-col h-auto py-2 gap-1">
+                    <FileText className="w-4 h-4" /><Text size="10" className="leading-tight">PDF</Text>
+                  </Button>
+                  <Button variant="light" onClick={handleCopyToClipboard} className="flex-col h-auto py-2 gap-1">
+                    <Clipboard className="w-4 h-4" /><Text size="10" className="leading-tight">{t('copyToClipboard', lang)}</Text>
+                  </Button>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <button onClick={handleImportClick} className={actionButton(false)}>
+                  <Button variant="light" onClick={handleImportClick}>
                     <Upload className="w-4 h-4" />{t('importData', lang)}
-                  </button>
-                  <button onClick={handleMergeImportClick} className={actionButton(false)}>
+                  </Button>
+                  <Button variant="light" onClick={handleMergeImportClick}>
                     <Merge className="w-4 h-4" />{t('importMerge', lang)}
-                  </button>
+                  </Button>
                 </div>
                 <p className={`text-xs mt-2 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('importMergeHint', lang)}</p>
                 <input ref={fileInputRef} type="file" accept=".json,application/json" onChange={(e) => handleImportFile(e, false)} className="hidden" />
@@ -1036,39 +904,27 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               {!settings.pinEnabled ? (
                 <>
                   {!showPinSetup ? (
-                    <button onClick={() => { setShowPinSetup(true); setPinSetupValue(''); setPinError(''); }}
-                      className={`w-full py-3 px-4 rounded-xl text-sm font-semibold transition-all border-2 ${
-                        isDark ? 'bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30'
-                               : 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100'
-                      }`}>{t('enablePin', lang)}</button>
+                    <Button color="red" variant="light" fullWidth onClick={() => { setShowPinSetup(true); setPinSetupValue(''); setPinError(''); }}>
+                      {t('enablePin', lang)}
+                    </Button>
                   ) : (
                     <div className="space-y-3">
-                      <input type="password" inputMode="numeric" maxLength={6} value={pinSetupValue}
-                        onChange={(e) => { setPinSetupValue(e.target.value.replace(/\D/g, '').slice(0, 6)); setPinError(''); }}
+                      <TextInput type="password" inputMode="numeric" maxLength={6} value={pinSetupValue}
+                        onChange={(e) => { setPinSetupValue(e.currentTarget.value.replace(/\D/g, '').slice(0, 6)); setPinError(''); }}
                         placeholder={t('enterPin', lang)}
-                        className={`w-full px-4 py-3 rounded-xl border-2 text-center text-lg tracking-widest font-mono outline-none ${
-                          isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500'
-                                 : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-                        }`} />
-                      {pinError && <p className={`text-xs font-medium ${isDark ? 'text-red-400' : 'text-red-600'}`}>{pinError}</p>}
+                        className="text-center text-lg tracking-widest font-mono"
+                        size="md"
+                      />
+                      {pinError && <Text size="xs" c="red" fw={500}>{pinError}</Text>}
                       <div className="flex gap-2">
-                        <button onClick={() => { setShowPinSetup(false); setPinSetupValue(''); setPinError(''); }}
-                          className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${
-                            isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                          }`}>{t('cancel', lang)}</button>
-                        <button onClick={async () => {
+                        <Button variant="default" flex={1} onClick={() => { setShowPinSetup(false); setPinSetupValue(''); setPinError(''); }}>
+                          {t('cancel', lang)}
+                        </Button>
+                        <Button flex={1} className="bg-gradient-to-r from-cyan-500 to-emerald-500" disabled={pinSetupValue.length < 4} onClick={async () => {
                           if (pinSetupValue.length < 4) { setPinError(t('pinLengthError', lang)); return; }
-                          if (isPinProcessing) return;
-                          setIsPinProcessing(true);
                           try { const hash = await hashPin(pinSetupValue); updateSettings({ pinEnabled: true, pinHash: hash }); setShowPinSetup(false); setPinSetupValue(''); }
                           catch { setPinError(t('importError', lang)); }
-                          finally { setIsPinProcessing(false); }
-                        }}
-                          className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                            pinSetupValue.length >= 4 && !isPinProcessing
-                              ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white'
-                              : isDark ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                          }`}>{t('save', lang)}</button>
+                        }}>{t('save', lang)}</Button>
                       </div>
                     </div>
                   )}
@@ -1076,38 +932,26 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               ) : (
                 <>
                   {!showPinDisable ? (
-                    <button onClick={() => { setShowPinDisable(true); setPinDisableValue(''); setPinError(''); }}
-                      className={`w-full py-3 px-4 rounded-xl text-sm font-semibold transition-all border-2 ${
-                        isDark ? 'bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30'
-                               : 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100'
-                      }`}>{t('disablePin', lang)}</button>
+                    <Button color="red" variant="light" fullWidth onClick={() => { setShowPinDisable(true); setPinDisableValue(''); setPinError(''); }}>
+                      {t('disablePin', lang)}
+                    </Button>
                   ) : (
                     <div className="space-y-3">
-                      <input type="password" inputMode="numeric" maxLength={6} value={pinDisableValue}
-                        onChange={(e) => { setPinDisableValue(e.target.value.replace(/\D/g, '').slice(0, 6)); setPinError(''); }}
+                      <TextInput type="password" inputMode="numeric" maxLength={6} value={pinDisableValue}
+                        onChange={(e) => { setPinDisableValue(e.currentTarget.value.replace(/\D/g, '').slice(0, 6)); setPinError(''); }}
                         placeholder={t('enterCurrentPin', lang)}
-                        className={`w-full px-4 py-3 rounded-xl border-2 text-center text-lg tracking-widest font-mono outline-none ${
-                          isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500'
-                                 : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-                        }`} />
-                      {pinError && <p className={`text-xs font-medium ${isDark ? 'text-red-400' : 'text-red-600'}`}>{pinError}</p>}
+                        className="text-center text-lg tracking-widest font-mono"
+                        size="md"
+                      />
+                      {pinError && <Text size="xs" c="red" fw={500}>{pinError}</Text>}
                       <div className="flex gap-2">
-                        <button onClick={() => { setShowPinDisable(false); setPinDisableValue(''); setPinError(''); }}
-                          className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${
-                            isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                          }`}>{t('cancel', lang)}</button>
-                        <button onClick={async () => {
-                          if (isPinProcessing) return;
-                          setIsPinProcessing(true);
+                        <Button variant="default" flex={1} onClick={() => { setShowPinDisable(false); setPinDisableValue(''); setPinError(''); }}>
+                          {t('cancel', lang)}
+                        </Button>
+                        <Button flex={1} className="bg-gradient-to-r from-red-500 to-rose-500" disabled={pinDisableValue.length < 4} onClick={async () => {
                           try { const hash = await hashPin(pinDisableValue); if (hash !== settings.pinHash) { setPinError(t('pinMismatch', lang)); return; } updateSettings({ pinEnabled: false, pinHash: '' }); setShowPinDisable(false); setPinDisableValue(''); }
                           catch { setPinError(t('importError', lang)); }
-                          finally { setIsPinProcessing(false); }
-                        }}
-                          className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                            pinDisableValue.length >= 4 && !isPinProcessing
-                              ? 'bg-gradient-to-r from-red-500 to-rose-500 text-white'
-                              : isDark ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                          }`}>{t('disablePin', lang)}</button>
+                        }}>{t('disablePin', lang)}</Button>
                       </div>
                     </div>
                   )}
