@@ -8,7 +8,7 @@ import { showToast } from './Toast';
 import { Plus, ArrowUpDown } from 'lucide-react';
 import { getProfiles } from '../utils/profileCache';
 import { Carousel } from '@mantine/carousel';
-import { Paper, Text } from '@mantine/core';
+import { Paper, Text, SimpleGrid } from '@mantine/core';
 
 interface MarketplaceFeedProps {
   isDark: boolean;
@@ -239,14 +239,14 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
 
       {/* Category carousel */}
       <Carousel
-        slideSize={{ base: 80, xs: 90 }}
-        slideGap="xs"
-        height={100}
-        controlsOffset="xs"
+        slideSize={{ base: '33.333%', sm: '20%', md: '16.666%' }}
+        slideGap="md"
+        height={110}
         withControls
-        controlSize={24}
-        slidesToScroll={3}
+        controlsOffset="xs"
+        slidesToScroll={2}
         loop
+        align="start"
       >
         {[
           { id: 'all', label: 'All', icon: '\uD83D\uDCCB' },
@@ -260,38 +260,39 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
           { id: 'seeds', label: 'Seeds', icon: '\uD83C\uDF31' },
           { id: 'accessories', label: 'Access.', icon: '\uD83D\uDD27' },
           { id: 'other', label: 'Other', icon: '\uD83D\uDCE6' },
-        ].map(cat => (
-          <Carousel.Slide key={cat.id}>
-            <Paper
-              onClick={() => setCategoryFilter(cat.id)}
-              style={{
-                height: 90, display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center', gap: 2,
-                cursor: 'pointer', userSelect: 'none',
-                background: categoryFilter === cat.id
-                  ? 'linear-gradient(135deg, var(--mantine-color-cyan-6), var(--mantine-color-blue-6))'
-                  : isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
-                color: categoryFilter === cat.id ? '#fff' : undefined,
-                border: categoryFilter === cat.id ? 'none' : `1px solid ${isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)'}`,
-                transition: 'transform 0.15s, box-shadow 0.15s',
-              }}
-              radius="md"
-              withBorder={categoryFilter !== 'all'}
-              onMouseEnter={(e) => {
-                if (categoryFilter !== cat.id) {
-                  (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
-              }}
-            >
-              <Text size="xl">{cat.icon}</Text>
-              <Text size="xs" fw={600}>{cat.label}</Text>
-              <Text size="xs" c={categoryFilter === cat.id ? 'white' : 'dimmed'}>{categoryCounts[cat.id] || 0}</Text>
-            </Paper>
-          </Carousel.Slide>
-        ))}
+        ].map(cat => {
+          const active = categoryFilter === cat.id;
+          return (
+            <Carousel.Slide key={cat.id}>
+              <Paper
+                onClick={() => setCategoryFilter(cat.id)}
+                style={{
+                  height: 110, display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center', gap: 4,
+                  cursor: 'pointer', userSelect: 'none',
+                  background: active
+                    ? 'linear-gradient(135deg, var(--mantine-color-cyan-6), var(--mantine-color-blue-6))'
+                    : isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
+                  color: active ? '#fff' : undefined,
+                  border: active ? 'none' : `1px solid ${isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)'}`,
+                  transition: 'transform 0.15s, box-shadow 0.15s',
+                }}
+                radius="md"
+                withBorder={!active}
+                onMouseEnter={(e) => {
+                  if (!active) (e.currentTarget as HTMLElement).style.transform = 'scale(1.04)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
+                }}
+              >
+                <Text size="xl">{cat.icon}</Text>
+                <Text size="xs" fw={600}>{cat.label}</Text>
+                <Text size="xs" c={active ? 'white' : 'dimmed'}>{categoryCounts[cat.id] || 0} <span style={{ fontWeight: 600 }}>items</span></Text>
+              </Paper>
+            </Carousel.Slide>
+          );
+        })}
       </Carousel>
 
       {/* Compact sort */}
@@ -342,14 +343,18 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
         </div>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+      <SimpleGrid
+        cols={{ base: 2, xs: 3, sm: 3, md: 4, lg: 5, xl: 6 }}
+        spacing="md"
+        verticalSpacing="md"
+      >
         {sorted.map(listing => (
           <MarketplaceCard key={listing.id} listing={listing} products={products} isDark={isDark} lang={lang} currentUserId={currentUserId}
             isPinned={pinnedIds.has(listing.id)} onPinToggle={handlePinToggle}
             onEdit={handleEditListing} onDelete={handleDelete} onMarkSold={handleMarkSold} onViewProfile={onViewProfile}
             onSave={handleToggleSave} onStartChat={handleStartChat} />
         ))}
-      </div>
+      </SimpleGrid>
 
       {showCreateModal && (
         <CreateListingModal isDark={isDark} lang={lang} products={products} currentUserId={currentUserId} onSubmit={handleCreate} onClose={handleCloseCreate} />

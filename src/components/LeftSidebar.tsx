@@ -14,6 +14,7 @@ import {
   Avatar,
   UnstyledButton,
   Group,
+  Badge,
 } from '@mantine/core';
 import {
   IconHome,
@@ -31,6 +32,7 @@ import {
   IconChevronUp,
   IconSearch,
 } from '@tabler/icons-react';
+import { getProfile } from '../utils/profileCache';
 
 type TabId =
   | 'stash'
@@ -57,6 +59,7 @@ interface LeftSidebarProps {
   onTabChange: (tab: string) => void;
   isDark: boolean;
   onSettings: () => void;
+  onOpenProfileSettings?: () => void;
   currentUserId: string;
   onDashboard: () => void;
 }
@@ -72,6 +75,7 @@ export function LeftSidebar({
   onTabChange,
   isDark,
   onSettings,
+  onOpenProfileSettings,
   currentUserId,
   onDashboard,
 }: LeftSidebarProps) {
@@ -87,6 +91,19 @@ export function LeftSidebar({
   const [searchQuery, setSearchQuery] = useState('');
   const navRef = useRef<HTMLDivElement>(null);
 
+  const [currentProfile, setCurrentProfile] = useState<{ username: string; display_name: string; avatar_url?: string } | null>(null);
+
+  useEffect(() => {
+    if (!currentUserId) return;
+    getProfile(currentUserId).then(p => {
+      if (p) setCurrentProfile(p);
+    }).catch(() => {});
+  }, [currentUserId]);
+
+  const profileUsername = currentProfile?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'User';
+  const profileDisplayName = currentProfile?.display_name || profileUsername;
+  const profileAvatar = currentProfile?.avatar_url || user?.user_metadata?.avatar_url;
+
   const navItems: NavItem[] = [
     { id: 'stash', label: 'Stash', icon: <IconHome size={20} />, section: 'primary' },
     { id: 'community', label: 'Community', icon: <IconUsers size={20} />, section: 'primary' },
@@ -99,9 +116,13 @@ export function LeftSidebar({
     { id: 'settings', label: 'Settings', icon: <IconSettings size={20} />, section: 'utility' },
   ];
 
+  const openCommunityProfile = useCallback((username: string) => {
+    navigate('/?tab=community&user=' + encodeURIComponent(username));
+  }, [navigate]);
+
   const handleTabClick = useCallback((tab: TabId) => {
     if (tab === 'profile') {
-      navigate('/?tab=community&user=' + encodeURIComponent(currentUserId));
+      openCommunityProfile(profileUsername);
       return;
     }
     if (tab === 'dashboard') {
@@ -113,7 +134,7 @@ export function LeftSidebar({
       return;
     }
     onTabChange(tab);
-  }, [currentUserId, navigate, onDashboard, onSettings, onTabChange]);
+  }, [profileUsername, openCommunityProfile, onDashboard, onSettings, onTabChange]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     const validTabs = allTabs;
@@ -194,7 +215,12 @@ export function LeftSidebar({
           disabled={isDisabled}
           onClick={() => handleTabClick(item.id)}
           variant="light"
-          color={isDark ? 'cyan' : 'cyan'}
+          color="cyan"
+          rightSection={!collapsed && item.badge ? (
+            <Badge size="xs" variant="filled" color="cyan" radius="xl">
+              {item.badge}
+            </Badge>
+          ) : undefined}
           styles={{
             root: {
               borderRadius: 'var(--mantine-radius-md)',
@@ -253,6 +279,7 @@ export function LeftSidebar({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
             size="xs"
+            radius="md"
           />
         </Box>
       )}
@@ -319,27 +346,35 @@ export function LeftSidebar({
             borderTop: '1px solid var(--mantine-color-gray-3)',
           }}
         >
-          <UnstyledButton
-            onClick={() => navigate('/?tab=community&user=' + encodeURIComponent(currentUserId))}
-            style={{ width: '100%', borderRadius: 'var(--mantine-radius-md)' }}
-          >
-            <Group gap="sm" wrap="nowrap">
-              <Avatar
-                src={user.user_metadata?.avatar_url}
-                alt={user.user_metadata?.username || 'User'}
-                size={32}
-                radius="xl"
-              />
-              <Box style={{ flex: 1, overflow: 'hidden' }}>
-                <Text size="sm" fw={500} truncate>
-                  {user.user_metadata?.username || user.email?.split('@')[0] || 'User'}
+          <Group gap="sm" wrap="nowrap">
+            <Tooltip label="Edit profile" position="right" openDelay={300}>
+              <UnstyledButton onClick={() => onOpenProfileSettings?.()}>
+                <Avatar
+                  src={profileAvatar}
+                  alt={profileUsername}
+                  size={36}
+                  radius="xl"
+                  color="cyan"
+                >
+                  {profileUsername?.[0]?.toUpperCase()}
+                </Avatar>
+              </UnstyledButton>
+            </Tooltip>
+            <Box style={{ flex: 1, overflow: 'hidden' }}>
+              <UnstyledButton
+                onClick={() => openCommunityProfile(profileUsername)}
+                style={{ width: '100%', borderRadius: 'var(--mantine-radius-md)' }}
+                aria-label={`View @${profileUsername} profile`}
+              >
+                <Text size="sm" fw={600} truncate>
+                  {profileDisplayName}
                 </Text>
-                <Text size="xs" c="dimmed" truncate>
-                  {user.email || ''}
+                <Text size="xs" c="cyan" truncate>
+                  @{profileUsername}
                 </Text>
-              </Box>
-            </Group>
-          </UnstyledButton>
+              </UnstyledButton>
+            </Box>
+          </Group>
         </Box>
       )}
     </Box>

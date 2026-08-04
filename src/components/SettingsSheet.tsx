@@ -10,7 +10,6 @@ import { supabase, uploadProfileImage, deleteProfileImage } from '../utils/supab
 import { X, Globe, Palette, ChevronDown, Check, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, Users, Scale, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, Camera, Mail, MessageCircle, MapPin, Bell, Rss } from 'lucide-react';
 import { ResetPasswordModal } from './ResetPasswordModal';
 import { showToast } from './Toast';
-import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface SettingsSheetProps {
   products: Product[];
@@ -59,7 +58,6 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const [isPinProcessing, setIsPinProcessing] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [visible, setVisible] = useState(false);
   const [profileUsername, setProfileUsername] = useState(settings.profile?.username || user?.email?.split('@')[0] || '');
   const [profileDisplayName, setProfileDisplayName] = useState(settings.profile?.displayName || '');
   const [profileBio, setProfileBio] = useState(settings.profile?.bio || '');
@@ -68,7 +66,6 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const [profileContacts, setProfileContacts] = useState<{ platform: string; value: string }[]>(settings.profile?.contacts || []);
   const [profileLocation, setProfileLocation] = useState(settings.profile?.location || '');
   const [showResetPassword, setShowResetPassword] = useState(false);
-  const focusTrapRef = useFocusTrap(true);
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [passwordChangeSubmitting, setPasswordChangeSubmitting] = useState(false);
@@ -78,10 +75,6 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const [emailChangeSubmitting, setEmailChangeSubmitting] = useState(false);
   const [emailChangeError, setEmailChangeError] = useState<string | null>(null);
   const [emailChangeSuccess, setEmailChangeSuccess] = useState(false);
-
-  useEffect(() => {
-    requestAnimationFrame(() => setVisible(true));
-  }, []);
 
   useEffect(() => {
     if (!feedback) return;
@@ -253,38 +246,32 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
 
   const lang = settings.language;
   const handleClose = () => {
-    setVisible(false);
-    setTimeout(onClose, 200);
+    onClose();
   };
 
   return (
-    <div ref={focusTrapRef} className="fixed inset-0 z-50 flex justify-end" onClick={handleClose}>
-      <div
-        className={`absolute inset-0 transition-all duration-200 ${
-          visible ? 'bg-black/10 backdrop-blur-[2px]' : 'bg-black/0'
-        }`}
-      />
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className={`relative w-full max-w-md h-full flex flex-col shadow-2xl transition-all duration-200 border-l ${
-          isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
-        } ${visible ? 'translate-x-0' : 'translate-x-full'}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label={t('settings', lang)}
-      >
-        {/* Header */}
-        <div className={`flex items-center justify-between p-5 border-b shrink-0 ${isDark ? 'border-slate-800' : 'border-gray-200'}`}>
-          <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+    <div className="max-w-4xl mx-auto w-full">
+      {/* Page header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
             {t('settings', lang)}
           </h2>
-          <button onClick={handleClose} className={`p-2 rounded-xl transition-all ${isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'}`}>
-            <X className="w-5 h-5" />
-          </button>
+          <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+            Manage your account, preferences and data
+          </p>
         </div>
+        <button onClick={handleClose}
+          className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border-2 ${
+            isDark ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-gray-200 text-gray-700 hover:bg-gray-100'
+          }`}>
+          Done
+        </button>
+      </div>
 
-        {/* Tabs */}
-        <div className={`flex flex-wrap border-b shrink-0 ${isDark ? 'border-slate-800' : 'border-gray-200'}`}>
+      <div className="flex flex-col sm:flex-row gap-6">
+        {/* Vertical nav */}
+        <nav className="sm:w-56 shrink-0 flex sm:flex-col gap-1 overflow-x-auto sm:sticky sm:top-0 sm:self-start">
           {([
             { id: 'profile', icon: User, label: t('profileSetup', lang) },
             { id: 'preferences', icon: Palette, label: t('preferences', lang) },
@@ -292,29 +279,29 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
             { id: 'budget', icon: BarChart3, label: t('budgetAndStats', lang) },
             { id: 'data', icon: Database, label: t('dataBackup', lang) },
             { id: 'security', icon: Lock, label: t('pinLock', lang) },
-          ] as const).map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`flex-1 min-w-[33.33%] py-2.5 text-xs font-medium transition-colors relative ${
-                activeTab === tab.id
-                  ? isDark ? 'text-cyan-400' : 'text-cyan-600'
-                  : isDark ? 'text-slate-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'
-              }`}
-            >
-              <span className="flex flex-col items-center gap-0.5">
-                <tab.icon className="w-4 h-4" />
+          ] as const).map(tab => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                aria-current={isActive ? 'page' : undefined}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all border-2 text-left whitespace-nowrap ${
+                  isActive
+                    ? isDark ? 'bg-cyan-500/15 border-cyan-500/50 text-cyan-400' : 'bg-cyan-50 border-cyan-200 text-cyan-600'
+                    : isDark ? 'border-transparent text-slate-400 hover:bg-slate-800 hover:text-white'
+                             : 'border-transparent text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+                }`}
+              >
+                <tab.icon className="w-4 h-4 shrink-0" />
                 <span className="leading-tight">{tab.label}</span>
-              </span>
-              {activeTab === tab.id && (
-                <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-full" />
-              )}
-            </button>
-          ))}
-        </div>
+              </button>
+            );
+          })}
+        </nav>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-5 space-y-6">
+        <div className="flex-1 min-w-0 space-y-6">
           {activeTab === 'profile' && (
             <>
               {!user ? (

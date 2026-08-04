@@ -25,6 +25,7 @@ import { CommunityPage } from './components/CommunityPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useAuth } from './contexts/AuthContext';
 import { supabase } from './utils/supabase';
+import { Box } from '@mantine/core';
 
 import { AdminDashboard } from './components/AdminDashboard';
 import { MenuButton } from './components/MenuButton';
@@ -505,20 +506,37 @@ export default function App() {
 
       {/* Main layout with left sidebar */}
       <div className="flex max-w-7xl mx-auto px-4 py-4 flex-1 gap-4 lg:gap-6 w-full pb-16 lg:pb-0">
-        {/* Left Nav - desktop only */}
-        <div className="hidden lg:block">
-<LeftSidebar
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            isDark={isDark}
-            onSettings={() => { setIsSettingsOpen(true); }}
-            currentUserId={user?.id || ''}
-            onDashboard={() => { setStashSection('dashboard'); setActiveTab('stash'); }}
-          />
+        {/* Left Nav - desktop only, pinned to left wall, sticky on scroll */}
+        <div className="hidden lg:block lg:sticky lg:top-0 lg:self-start lg:h-screen shrink-0">
+          <Box style={{ height: '100vh' }}>
+            <LeftSidebar
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              isDark={isDark}
+              onSettings={() => { setIsSettingsOpen(true); }}
+              onOpenProfileSettings={() => { setSettingsDefaultTab('profile'); setIsSettingsOpen(true); }}
+              currentUserId={user?.id || ''}
+              onDashboard={() => { setStashSection('dashboard'); setActiveTab('stash'); }}
+            />
+          </Box>
         </div>
 
         {/* Main content */}
         <main className="flex-1 min-w-0">
+          {/* ==================== SETTINGS PAGE ==================== */}
+        {isSettingsOpen && (
+          <ErrorBoundary isDark={isDark} lang={lang}>
+            <SettingsSheet
+              products={products}
+              onImport={handleImport}
+              onMergeImport={handleMergeImport}
+              onClose={() => setIsSettingsOpen(false)}
+              isDark={isDark}
+              defaultTab={settingsDefaultTab}
+            />
+          </ErrorBoundary>
+        )}
+
           {/* ==================== STASH TAB ==================== */}
         {activeTab === 'stash' && (
           <div>
