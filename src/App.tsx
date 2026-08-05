@@ -25,7 +25,7 @@ import { CommunityPage } from './components/CommunityPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useAuth } from './contexts/AuthContext';
 import { supabase } from './utils/supabase';
-import { Box } from '@mantine/core';
+import { Box, Button, Group, Select, SegmentedControl, Text, Pagination } from '@mantine/core';
 
 import { AdminDashboard } from './components/AdminDashboard';
 import { MenuButton } from './components/MenuButton';
@@ -33,7 +33,6 @@ import { LeftSidebar } from './components/LeftSidebar';
 import { BottomNav } from './components/BottomNav';
 import { MessagePopup } from './components/MessagePopup';
 import { NotificationsPage } from './components/NotificationsPage';
-import { BookmarksPage } from './components/BookmarksPage';
 const DashboardTab = lazy(() => import('./components/DashboardTab').then(m => ({ default: m.DashboardTab })));
 const HistoryTab = lazy(() => import('./components/HistoryTab').then(m => ({ default: m.HistoryTab })));
 const ProductModal = lazy(() => import('./components/ProductModal').then(m => ({ default: m.ProductModal })));
@@ -48,23 +47,10 @@ export default function App() {
   const { entries: activityEntries, addEntry: addActivityEntry, clearEntries: clearActivity } = useActivity();
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = (searchParams.get('tab') as 'stash' | 'community' | 'marketplace' | 'admin' | 'notifications' | 'bookmarks' | 'history' | 'messages' | 'explore') || 'stash';
+  const activeTab = (searchParams.get('tab') as 'stash' | 'dashboard' | 'community' | 'marketplace' | 'admin' | 'notifications' | 'history' | 'settings' | 'messages' | 'explore') || 'stash';
   function setActiveTab(tab: string) {
-    setSearchParams(prev => { prev.set('tab', tab); if (tab !== 'stash') prev.delete('section'); prev.delete('user'); return prev; }, { replace: true });
+    setSearchParams(prev => { prev.set('tab', tab); prev.delete('user'); return prev; }, { replace: true });
   }
-  const openDashboard = useCallback(() => {
-    setStashSection('dashboard');
-    setSearchParams(prev => { prev.set('tab', 'stash'); prev.set('section', 'dashboard'); prev.delete('user'); return prev; }, { replace: true });
-  }, [setSearchParams]);
-  const [stashSection, setStashSection] = useState<'products' | 'dashboard'>('products');
-
-  useEffect(() => {
-    const section = searchParams.get('section');
-    if (activeTab === 'stash' && section === 'dashboard') setStashSection('dashboard');
-    else if (activeTab === 'stash' && stashSection === 'dashboard' && !section) {
-      setSearchParams(prev => { prev.delete('section'); return prev; }, { replace: true });
-    }
-  }, [activeTab, searchParams, stashSection, setSearchParams]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedQuery = useDebounce(searchQuery, 200);
@@ -81,7 +67,6 @@ export default function App() {
   const [sessionProduct, setSessionProduct] = useState<Product | null>(null);
   const [sessionAmount, setSessionAmount] = useState(0);
   const [sessionPeople, setSessionPeople] = useState(2);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settingsDefaultTab, setSettingsDefaultTab] = useState<'profile' | 'preferences' | 'session' | 'budget' | 'data' | 'security'>('preferences');
   const [showChat, setShowChat] = useState(false);
   const [chatTargetUserId, setChatTargetUserId] = useState<string | null>(null);
@@ -502,8 +487,8 @@ export default function App() {
           isDark={isDark}
           onComplete={() => updateSettings({ coachMarksDone: true })}
           onSkip={() => updateSettings({ coachMarksDone: true })}
-          onOpenSettings={() => setIsSettingsOpen(true)}
-          onCloseSettings={() => setIsSettingsOpen(false)}
+          onOpenSettings={() => setActiveTab('settings')}
+          onCloseSettings={() => setActiveTab('stash')}
         />
       )}
 
@@ -511,25 +496,20 @@ export default function App() {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         setIsAddModalOpen={setIsAddModalOpen}
-        setIsSettingsOpen={setIsSettingsOpen}
-        setSettingsDefaultTab={setSettingsDefaultTab}
-        setStashSection={setStashSection}
       />
 
 
       {/* Main layout with left sidebar */}
       <div className="flex flex-1 w-full">
-        {/* Left Nav - desktop only, pinned to left wall, sticky on scroll */}
-        <div className="hidden lg:block lg:sticky lg:top-0 lg:self-start lg:h-screen shrink-0">
-          <Box style={{ height: '100vh' }}>
+        {/* Left Nav - desktop only, pinned to left wall, fixed on scroll */}
+        <div className="hidden lg:block lg:sticky lg:top-[56px] lg:self-start lg:h-[calc(100vh-56px)] shrink-0">
+          <Box style={{ height: '100%' }}>
             <LeftSidebar
               activeTab={activeTab}
               onTabChange={setActiveTab}
               isDark={isDark}
-              onSettings={() => { setIsSettingsOpen(true); }}
-              onOpenProfileSettings={() => { setSettingsDefaultTab('profile'); setIsSettingsOpen(true); }}
+              onOpenProfileSettings={() => { setSettingsDefaultTab('profile'); setActiveTab('settings'); }}
               currentUserId={user?.id || ''}
-              onDashboard={openDashboard}
             />
           </Box>
         </div>
@@ -537,183 +517,153 @@ export default function App() {
         {/* Main content */}
         <div className="flex-1 min-w-0">
         <main className="max-w-7xl mx-auto px-4 py-4 w-full pb-16 lg:pb-0">
-          {/* ==================== SETTINGS PAGE ==================== */}
-        {isSettingsOpen && (
+          {/* ==================== SETTINGS PAGE (unique page) ==================== */}
+        {activeTab === 'settings' && (
           <ErrorBoundary isDark={isDark} lang={lang}>
             <SettingsSheet
               products={products}
               onImport={handleImport}
               onMergeImport={handleMergeImport}
-              onClose={() => setIsSettingsOpen(false)}
+              onClose={() => setActiveTab('stash')}
               isDark={isDark}
               defaultTab={settingsDefaultTab}
             />
           </ErrorBoundary>
         )}
 
+          {/* ==================== DASHBOARD TAB (unique page) ==================== */}
+        {activeTab === 'dashboard' && (
+          <Suspense fallback={
+            <div className={`text-center py-16 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Loading dashboard...</div>
+          }>
+            <ErrorBoundary isDark={isDark} lang={lang}>
+              <DashboardTab
+                products={products}
+                sessions={sessions}
+                isDark={isDark}
+                lang={lang}
+                settings={settings}
+                typeDistribution={typeDistribution}
+                consumptionByMonth={consumptionByMonth}
+                topStrains={topStrains}
+                spendingByType={spendingByType}
+                totalValue={totalValue}
+              />
+            </ErrorBoundary>
+          </Suspense>
+        )}
+
           {/* ==================== STASH TAB ==================== */}
         {activeTab === 'stash' && (
-          <div>
-            {stashSection === 'dashboard' ? (
-              <Suspense fallback={
-                <div className={`text-center py-16 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Loading dashboard...</div>
-              }>
-                <DashboardTab
-                  products={products}
-                  sessions={sessions}
-                  isDark={isDark}
-                  lang={lang}
-                  settings={settings}
-                  typeDistribution={typeDistribution}
-                  consumptionByMonth={consumptionByMonth}
-                  topStrains={topStrains}
-                  spendingByType={spendingByType}
-                  totalValue={totalValue}
-                />
-              </Suspense>
-            ) : (
+            <div>
             <div>
             <div className="mb-5" data-coach="stats">
               <StatsCard products={products} sessions={sessions} isDark={isDark} />
             </div>
-
             {/* Controls bar */}
-            <div className={`flex flex-wrap items-center justify-center gap-3 mb-4`}>
-              {/* Select mode toggle */}
-              <button
+            <Group justify="center" gap="sm" wrap="wrap" mb="md">
+              <Button
+                size="compact-sm"
+                variant={isSelectMode ? 'gradient' : 'subtle'}
+                gradient={{ from: 'cyan', to: 'teal', deg: 135 }}
                 onClick={() => { setSelectMode(!isSelectMode); if (isSelectMode) setSelectedIds(new Set()); }}
-                className={`p-1.5 rounded-lg text-xs font-medium transition-all ${
-                  isSelectMode
-                    ? 'bg-gradient-to-r from-cyanx to-emera text-white'
-                    : isDark ? 'text-mist hover:text-frost hover:bg-midnight' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                }`}
               >
                 {isSelectMode ? 'Done' : 'Select'}
-              </button>
+              </Button>
 
               {isSelectMode && selectedIds.size > 0 && (
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs font-medium ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+                <Group gap="xs">
+                  <Text size="xs" c={isDark ? 'gray.4' : 'gray.6'}>
                     {t('itemsSelected', lang).replace('{count}', String(selectedIds.size))}
-                  </span>
-                  <button
+                  </Text>
+                  <Button
+                    size="compact-xs"
+                    variant={isDark ? 'subtle' : 'default'}
                     onClick={handleSelectAll}
-                    className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${
-                      isDark ? 'bg-midnight text-mist hover:bg-surface hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
                   >
                     {selectedIds.size === paginatedProducts.length ? 'Deselect all' : 'Select all'}
-                  </button>
-                  <button
-                    onClick={handleBulkSession}
+                  </Button>
+                  <Button
+                    size="compact-xs"
+                    variant="light"
+                    color="cyan"
                     disabled={selectedIds.size !== 1}
-                    className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${
-                      selectedIds.size === 1
-                        ? isDark ? 'bg-cyanx/12 text-cyanx hover:bg-cyanx/20' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'
-                        : isDark ? 'bg-midnight text-mist/40' : 'bg-gray-100 text-gray-400'
-                    }`}
                     title={
                       selectedIds.size === 0 ? 'Select a product' :
                       selectedIds.size > 1 ? 'Select only 1 product for a session' :
                       'Start a session'
                     }
+                    onClick={handleBulkSession}
                   >
                     {selectedIds.size > 1 ? 'Session (1 only)' : 'Session'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    size="compact-xs"
+                    variant="light"
+                    color="amber"
                     onClick={() => {
                       selectedIds.forEach(id => toggleFavorite(id));
                       setSelectedIds(new Set());
                       setSelectMode(false);
                     }}
-                    className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${
-                      isDark ? 'bg-amberx/12 text-amberx hover:bg-amberx/20' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'
-                    }`}
                   >
                     Favorite
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    size="compact-xs"
+                    variant="light"
+                    color="red"
                     onClick={handleBulkDelete}
-                    className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${
-                      isDark ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20' : 'bg-red-50 text-red-600 hover:bg-red-100'
-                    }`}
                   >
                     Delete ({selectedIds.size})
-                  </button>
-                </div>
+                  </Button>
+                </Group>
               )}
 
-              {/* Sort */}
-              <div className="flex items-center gap-2">
-                <span className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'text-muted' : 'text-gray-400'}`}>Sort</span>
-                <select
+              <Group gap="xs">
+                <Text size="xs" tt="uppercase" fw={500} c={isDark ? 'gray.5' : 'gray.4'}>Sort</Text>
+                <Select
+                  size="xs"
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className={`text-sm rounded-lg px-2 py-1 border-0 outline-none transition-colors
-                    ${isDark ? 'bg-midnight text-mist border-border' : 'bg-gray-50 text-gray-700 border-gray-200'}`}
-                >
-                  {sortOptions.map(o => (
-                    <option key={o.value} value={o.value}>{t(o.labelKey, lang)}</option>
-                  ))}
-                </select>
-              </div>
+                  onChange={(v) => setSortBy((v || 'recent') as SortOption)}
+                  data={sortOptions.map(o => ({ value: o.value, label: t(o.labelKey, lang) }))}
+                  w={160}
+                  comboboxProps={{ withinPortal: false }}
+                />
+              </Group>
 
-              {/* Filter */}
-              <div className="flex items-center gap-2">
-                <span className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'text-muted' : 'text-gray-400'}`}>Filter</span>
-                <select
+              <Group gap="xs">
+                <Text size="xs" tt="uppercase" fw={500} c={isDark ? 'gray.5' : 'gray.4'}>Filter</Text>
+                <Select
+                  size="xs"
                   value={filterBy}
-                  onChange={(e) => setFilterBy(e.target.value)}
-                  className={`text-sm rounded-lg px-2 py-1 border-0 outline-none transition-colors
-                    ${isDark ? 'bg-midnight text-mist border-border' : 'bg-gray-50 text-gray-700 border-gray-200'}`}
-                >
-                  {filterOptions.map(o => (
-                    <option key={o.value} value={o.value}>{t(o.labelKey, lang)}</option>
-                  ))}
-                </select>
-              </div>
+                  onChange={(v) => setFilterBy((v || 'all') as FilterType)}
+                  data={filterOptions.map(o => ({ value: o.value, label: t(o.labelKey, lang) }))}
+                  w={140}
+                  comboboxProps={{ withinPortal: false }}
+                />
+              </Group>
 
-              {/* Layout */}
-              <div className="flex items-center gap-1">
-                {(['grid', 'list', 'compact'] as const).map(l => (
-                  <button
-                    key={l}
-                    onClick={() => setLayout(l)}
-                    className={`p-1.5 rounded-lg transition-all ${layout === l
-                      ? (isDark ? 'bg-gradient-to-r from-cyanx to-emera text-white' : 'bg-gray-800 text-white')
-                      : isDark ? 'text-mist hover:text-frost hover:bg-midnight' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
-                    title={l}
-                  >
-                    {l === 'grid' ? (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-                      </svg>
-                    ) : l === 'list' ? (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                      </svg>
-                    ) : (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 13a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" />
-                      </svg>
-                    )}
-                  </button>
-                ))}
-              </div>
+              <SegmentedControl
+                size="xs"
+                value={layout}
+                onChange={(v) => setLayout(v as 'grid' | 'list' | 'compact')}
+                data={['grid', 'list', 'compact']}
+                color="cyan"
+              />
 
-              {/* Per page */}
-              <div className="flex items-center gap-2">
-                <span className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'text-muted' : 'text-gray-400'}`}>{t('perPage', lang)}</span>
-                <select
-                  value={productsPerPage}
-                  onChange={(e) => { setProductsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                  className={`text-sm rounded-lg px-1.5 py-1 border-0 outline-none transition-colors
-                    ${isDark ? 'bg-midnight text-mist border-border' : 'bg-gray-50 text-gray-700 border-gray-200'}`}
-                >
-                  {[10, 20, 50, 100].map(n => <option key={n} value={n}>{n}</option>)}
-                </select>
-              </div>
-            </div>
+              <Group gap="xs">
+                <Text size="xs" tt="uppercase" fw={500} c={isDark ? 'gray.5' : 'gray.4'}>{t('perPage', lang)}</Text>
+                <Select
+                  size="xs"
+                  value={String(productsPerPage)}
+                  onChange={(v) => { setProductsPerPage(Number(v)); setCurrentPage(1); }}
+                  data={[10, 20, 50, 100].map(n => String(n))}
+                  w={80}
+                  comboboxProps={{ withinPortal: false }}
+                />
+              </Group>
+            </Group>
 
             {/* Product grid */}
             <ProductGrid
@@ -734,54 +684,18 @@ export default function App() {
 
             {/* Pagination */}
             {filteredProducts.length > productsPerPage && (
-              <div className="flex items-center justify-center gap-2 pb-6 mt-6">
-                <button
-                  onClick={() => setCurrentPage(Math.max(1, safePage - 1))}
-                  disabled={safePage <= 1}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                    isDark
-                      ? 'bg-midnight text-mist hover:bg-surface hover:text-frost disabled:opacity-30'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-30'
-                  }`}
-                >
-                  &larr;
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter(p => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
-                  .map((p, idx, arr) => (
-                    <span key={p} className="flex items-center gap-1">
-                      {idx > 0 && arr[idx - 1] !== p - 1 && (
-                        <span className={`px-1 ${isDark ? 'text-mist' : 'text-gray-400'}`}>...</span>
-                      )}
-                      <button
-                        onClick={() => setCurrentPage(p)}
-                        className={`w-8 h-8 rounded-lg text-sm font-medium transition-all ${
-                          p === safePage
-                            ? 'bg-gradient-to-r from-cyanx to-emera text-white'
-                            : isDark
-                              ? 'bg-midnight text-mist hover:bg-surface hover:text-frost'
-                              : 'bg-white text-gray-600 hover:bg-gray-100'
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    </span>
-                  ))}
-                <button
-                  onClick={() => setCurrentPage(Math.min(totalPages, safePage + 1))}
-                  disabled={safePage >= totalPages}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                    isDark
-                      ? 'bg-midnight text-mist hover:bg-surface hover:text-frost disabled:opacity-30'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-30'
-                  }`}
-                >
-                  &rarr;
-                </button>
-              </div>
+              <Group justify="center" pb="lg" mt="lg">
+                <Pagination
+                  value={safePage}
+                  onChange={setCurrentPage}
+                  total={totalPages}
+                  siblings={1}
+                  color="cyan"
+                  radius="md"
+                />
+              </Group>
             )}
             </div>
-            )}
           </div>
         )}
 
@@ -896,20 +810,7 @@ export default function App() {
           </ErrorBoundary>
         )}
 
-        {/* ==================== BOOKMARKS TAB ==================== */}
-        {activeTab === 'bookmarks' && user && (
-          <ErrorBoundary isDark={isDark} lang={lang}>
-            <BookmarksPage
-              isDark={isDark}
-              lang={lang}
-              currentUserId={user.id}
-              username={user.user_metadata?.username || user.email || ''}
-              onViewProfile={handleViewProfile}
-            />
-          </ErrorBoundary>
-        )}
-
-      </main>
+        </main>
         </div>
       </div>
 

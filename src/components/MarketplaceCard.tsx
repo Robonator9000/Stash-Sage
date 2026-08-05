@@ -75,28 +75,18 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
   const [viewProductId, setViewProductId] = useState<string | null>(null);
   const { showContextMenu } = useContextMenu();
 
-  const handleOwnerContextMenu = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!isOwner) return;
-    showContextMenu([
-      { key: 'edit', icon: <IconEdit size={16} />, title: t('editProduct', lang), onClick: () => onEdit?.(listing) },
-      { key: 'sold', icon: <IconChecks size={16} />, title: t('markAsSold', lang), color: 'green', onClick: () => setConfirmAction({ type: 'sold', listingId: listing.id }) },
-      { key: 'pin', icon: <IconPinned size={16} />, title: isPinned ? 'Unpin from top' : 'Pin to top', onClick: () => onPinToggle?.(listing.id) },
-      { key: 'divider' },
-      { key: 'delete', icon: <IconTrash size={16} />, title: t('delete', lang), color: 'red', onClick: () => setConfirmAction({ type: 'delete', listingId: listing.id }) },
-    ]);
-  };
+  const ownerMenu = showContextMenu([
+    { key: 'edit', icon: <IconEdit size={16} />, title: t('editProduct', lang), onClick: () => onEdit?.(listing) },
+    { key: 'sold', icon: <IconChecks size={16} />, title: t('markAsSold', lang), color: 'green', onClick: () => setConfirmAction({ type: 'sold', listingId: listing.id }) },
+    ...(listing.status === 'active' && onPinToggle ? [{ key: 'pin', icon: <IconPinned size={16} />, title: isPinned ? 'Unpin from top' : 'Pin to top', onClick: () => onPinToggle(listing.id) }] : []),
+    { key: 'divider' },
+    { key: 'delete', icon: <IconTrash size={16} />, title: t('delete', lang), color: 'red', onClick: () => setConfirmAction({ type: 'delete', listingId: listing.id }) },
+  ]);
 
-  const handleViewerContextMenu = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (isOwner) return;
-    showContextMenu([
-      { key: 'save', icon: <IconBookmark size={16} />, title: listing.saved_by_me ? t('unsaveListing', lang) : t('saveListing', lang), onClick: () => onSave?.(listing.id) },
-      ...(onStartChat ? [{ key: 'chat', icon: <IconMessageCircle size={16} />, title: t('startChat', lang), onClick: () => onStartChat(listing.id) }] : []),
-    ]);
-  };
+  const viewerMenu = showContextMenu([
+    { key: 'save', icon: <IconBookmark size={16} />, title: listing.saved_by_me ? t('unsaveListing', lang) : t('saveListing', lang), onClick: () => onSave?.(listing.id) },
+    ...(onStartChat ? [{ key: 'chat', icon: <IconMessageCircle size={16} />, title: t('startChat', lang), onClick: () => onStartChat(listing.id) }] : []),
+  ]);
 
   const glowRgb = CATEGORY_GLOW[listing.category] || CATEGORY_GLOW.other;
 
@@ -137,7 +127,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
         className={`relative transition-all duration-300 ${isDark ? 'bg-surface/60' : 'bg-white'} cursor-zoom-in group hover:-translate-y-0.5`}
         style={{ boxShadow: `0 0 25px -6px rgba(${glowRgb},0.3)` }}
         onClick={() => setShowDetailPopup(true)} role="article"
-        onContextMenu={isOwner ? handleOwnerContextMenu : handleViewerContextMenu}>
+        onContextMenu={isOwner ? ownerMenu : viewerMenu}>
 
         <Card.Section>
           <div className="relative h-44 overflow-hidden">

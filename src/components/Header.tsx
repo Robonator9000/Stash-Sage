@@ -8,8 +8,8 @@ import { searchProducts, timeAgo } from '../utils/helpers';
 import { t } from '../utils/translations';
 import { LogoIcon } from './LogoIcon';
 import { NotificationBell } from './NotificationBell';
-import { ActionIcon, Button, Group, Avatar } from '@mantine/core';
-import { IconSun, IconMoon, IconSearch, IconPlus, IconUser } from '@tabler/icons-react';
+import { ActionIcon, Button, Group } from '@mantine/core';
+import { IconSun, IconMoon, IconSearch, IconPlus } from '@tabler/icons-react';
 
 interface UserRow { user_id: string; display_name: string; username?: string; avatar_url: string | null; }
 interface PostRow { id: string; content: string; created_at: string; user_id: string; }
@@ -19,12 +19,9 @@ interface HeaderProps {
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   setIsAddModalOpen: (v: boolean) => void;
-  setIsSettingsOpen: (v: boolean) => void;
-  setSettingsDefaultTab: (tab: 'profile' | 'preferences' | 'session' | 'budget' | 'data' | 'security') => void;
-  setStashSection: (section: 'products' | 'dashboard') => void;
 }
 
-export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsAddModalOpen, setIsSettingsOpen, setSettingsDefaultTab, setStashSection }: HeaderProps) {
+export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsAddModalOpen }: HeaderProps) {
   const { settings, updateSettings } = useSettings();
   const { user } = useAuth();
   const { products } = useProducts();
@@ -78,7 +75,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
     <header className={`sticky top-0 z-[60] ${isDark ? 'bg-[#0b1120]/80' : 'bg-[#e2e8f0]/80'} backdrop-blur-xl`}>
       <div className="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
         <button
-          onClick={() => { setActiveTab('stash'); setStashSection('products'); }}
+          onClick={() => setActiveTab('stash')}
           className="flex items-center gap-1.5 shrink-0"
         >
           <LogoIcon className="w-7 h-7" />
@@ -188,21 +185,6 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
           </Button>
 
           {user && <NotificationBell isDark={isDark} lang={lang} onViewProfile={handleViewProfile} />}
-
-          <ActionIcon
-            variant="subtle"
-            size="md"
-            onClick={() => { setSettingsDefaultTab('profile'); setIsSettingsOpen(true); }}
-            aria-label="Profile"
-          >
-            {user ? (
-              <Avatar src={settings.profile?.avatar_url} alt="" size={24} radius="sm">
-                {settings.profile?.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || '?'}
-              </Avatar>
-            ) : (
-              <IconUser size={18} />
-            )}
-          </ActionIcon>
 
           <ActionIcon
             variant="subtle"

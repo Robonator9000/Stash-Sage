@@ -22,8 +22,6 @@ import {
   IconShoppingCart,
   IconHistory,
   IconBell,
-  IconBookmark,
-  IconUser,
   IconLayoutDashboard,
   IconSettings,
   IconChevronLeft,
@@ -40,8 +38,6 @@ type TabId =
   | 'marketplace'
   | 'history'
   | 'notifications'
-  | 'bookmarks'
-  | 'profile'
   | 'dashboard'
   | 'settings';
 
@@ -58,26 +54,22 @@ interface LeftSidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   isDark: boolean;
-  onSettings: () => void;
   onOpenProfileSettings?: () => void;
   currentUserId: string;
-  onDashboard: () => void;
 }
 
 const allTabs: TabId[] = [
   'stash', 'community', 'marketplace',
-  'history', 'notifications', 'bookmarks',
-  'profile', 'dashboard', 'settings',
+  'history', 'notifications',
+  'dashboard', 'settings',
 ];
 
 export function LeftSidebar({
   activeTab,
   onTabChange,
   isDark,
-  onSettings,
   onOpenProfileSettings,
   currentUserId,
-  onDashboard,
 }: LeftSidebarProps) {
   const { isAdmin, user } = useAuth();
   const navigate = useNavigate();
@@ -110,8 +102,6 @@ export function LeftSidebar({
     { id: 'marketplace', label: 'Market', icon: <IconShoppingCart size={20} />, section: 'primary' },
     { id: 'history', label: 'History', icon: <IconHistory size={20} />, section: 'secondary', requiresAuth: true },
     { id: 'notifications', label: 'Notifications', icon: <IconBell size={20} />, section: 'secondary', requiresAuth: true },
-    { id: 'bookmarks', label: 'Bookmarks', icon: <IconBookmark size={20} />, section: 'secondary', requiresAuth: true },
-    { id: 'profile', label: 'Profile', icon: <IconUser size={20} />, section: 'utility', requiresAuth: true },
     { id: 'dashboard', label: 'Dashboard', icon: <IconLayoutDashboard size={20} />, section: 'utility' },
     { id: 'settings', label: 'Settings', icon: <IconSettings size={20} />, section: 'utility' },
   ];
@@ -121,20 +111,8 @@ export function LeftSidebar({
   }, [navigate]);
 
   const handleTabClick = useCallback((tab: TabId) => {
-    if (tab === 'profile') {
-      openCommunityProfile(profileUsername);
-      return;
-    }
-    if (tab === 'dashboard') {
-      onDashboard();
-      return;
-    }
-    if (tab === 'settings') {
-      onSettings();
-      return;
-    }
     onTabChange(tab);
-  }, [profileUsername, openCommunityProfile, onDashboard, onSettings, onTabChange]);
+  }, [onTabChange]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     const validTabs = allTabs;

@@ -3,13 +3,13 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { MobileSheet } from './MobileSheet';
 import { 
-  Home, Users, Store, Bell, Bookmark, 
+  Home, Users, Store, Bell, 
   Settings, Clock, Grid, MoreHorizontal, 
   Search, User, MessageSquare
 } from 'lucide-react';
 
 type PrimaryTabId = 'stash' | 'community' | 'marketplace' | 'notifications' | 'profile';
-type SecondaryTabId = 'history' | 'bookmarks' | 'messages' | 'explore' | 'dashboard' | 'admin';
+type SecondaryTabId = 'history' | 'messages' | 'explore' | 'dashboard' | 'admin';
 
 const primaryTabs: { id: PrimaryTabId; label: string; icon: React.ReactNode }[] = [
   { id: 'stash', label: 'Stash', icon: <Home className="w-6 h-6" /> },
@@ -21,7 +21,6 @@ const primaryTabs: { id: PrimaryTabId; label: string; icon: React.ReactNode }[] 
 
 const secondaryTabs: { id: SecondaryTabId; label: string; icon: React.ReactNode; requiresAuth?: boolean }[] = [
   { id: 'history', label: 'History', icon: <Clock className="w-6 h-6" />, requiresAuth: true },
-  { id: 'bookmarks', label: 'Bookmarks', icon: <Bookmark className="w-6 h-6" />, requiresAuth: true },
   { id: 'messages', label: 'Messages', icon: <MessageSquare className="w-6 h-6" />, requiresAuth: true },
   { id: 'explore', label: 'Explore', icon: <Search className="w-6 h-6" /> },
   { id: 'dashboard', label: 'Dashboard', icon: <Grid className="w-6 h-6" />, requiresAuth: true },
@@ -45,7 +44,7 @@ export function BottomNav({ isDark }: BottomNavProps) {
       return;
     }
     if (tabId === 'dashboard') {
-      navigate('/?tab=stash&section=dashboard');
+      navigate('/?tab=dashboard');
       return;
     }
     if (tabId === 'admin') {
@@ -54,10 +53,6 @@ export function BottomNav({ isDark }: BottomNavProps) {
     }
     if (tabId === 'history') {
       navigate('/?tab=history');
-      return;
-    }
-    if (tabId === 'bookmarks') {
-      navigate('/?tab=bookmarks');
       return;
     }
     if (tabId === 'messages') {
