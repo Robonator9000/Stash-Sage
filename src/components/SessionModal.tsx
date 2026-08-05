@@ -4,7 +4,8 @@ import { useSettings } from '../utils/useSettings';
 import { useModalAnimation } from '../hooks/useModalAnimation';
 import { t } from '../utils/translations';
 import { playSessionBeep } from '../utils/sounds';
-import { X, Users, Clock, Play, Pause, RotateCcw, Calculator, ArrowRight } from 'lucide-react';
+import { Modal, Group, Stack, Text, Textarea, Button, NumberInput, ActionIcon, Paper, Divider, Box } from '@mantine/core';
+import { IconUsers, IconClock, IconPlayerPlay, IconPlayerPause, IconRefresh, IconCalculator, IconArrowRight } from '@tabler/icons-react';
 import { formatPrecision } from '../utils/helpers';
 
 interface SessionModalProps {
@@ -60,11 +61,9 @@ export function SessionModal({
     setCurrentPerson((p) => (p + 1) % people);
   }, [currentPerson, people]);
 
-  // Calculate bowls per person automatically
   const gramsPerPerson = people > 0 ? amountUsed / people : 0;
   const bowlsPerPerson = gramsPerPerson / gramsPerBowl;
 
-  // Timer logic — use refs to avoid recreating interval on every tick
   const handleHitRef = useRef(handleHit);
   handleHitRef.current = handleHit;
   const customTimerDurationRef = useRef(customTimerDuration);
@@ -128,392 +127,187 @@ export function SessionModal({
     setIsTimerRunning(false);
   };
 
+  const dimColor = isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-6)';
+  const subtleBg = isDark ? 'var(--mantine-color-slate-8)' : 'var(--mantine-color-gray-1)';
+
   return (
-      <div className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-200 ${
-      isVisible ? 'bg-black/10 backdrop-blur-[2px]' : 'bg-black/0'
-    }`}
-    onClick={handleClose}
-    role="dialog"
-    aria-modal="true"
-    aria-label={`Session - ${product.name}`}>
-      <div className={`w-full max-w-md rounded-2xl border-2 overflow-hidden shadow-2xl flex flex-col max-h-[90vh] transition-all duration-200 ${
-        isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
-      } ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
-      onClick={(e) => e.stopPropagation()}>
-        {/* Header - Fixed */}
-        <div className={`flex items-center justify-between p-5 border-b flex-shrink-0 ${
-          isDark ? 'border-slate-800' : 'border-gray-200'
-        }`}>
-          <div>
-            <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              {t('session', settings.language)}
-            </h2>
-            <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-              {product.name}
-            </p>
-          </div>
-          <button
-            onClick={handleClose}
-            aria-label="Close"
-            className={`p-2 rounded-xl transition-colors ${
-              isDark 
-                ? 'hover:bg-slate-800 text-slate-400 hover:text-white' 
-                : 'hover:bg-gray-100 text-gray-400 hover:text-gray-900'
-            }`}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <Modal
+      opened={isVisible}
+      onClose={handleClose}
+      size="md"
+      centered
+      radius="lg"
+      closeOnEscape={false}
+      aria-label={`Session - ${product.name}`}
+      styles={{ content: { display: 'flex', flexDirection: 'column', maxHeight: '90vh' }, body: { padding: 0, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 } }}
+    >
+      <Box p="lg" style={{ display: 'flex', flex: 1, flexDirection: 'column', minHeight: 0 }}>
+        <Group justify="space-between" mb="md" align="flex-start">
+          <Box>
+            <Text fw={700} size="xl">{t('session', settings.language)}</Text>
+            <Text size="sm" c="dimmed">{product.name}</Text>
+          </Box>
+        </Group>
 
-        {/* Content - Scrollable */}
-        <div 
-          className="p-5 space-y-5 overflow-y-auto flex-1"
-          style={{ scrollbarGutter: 'stable' }}
-        >
-          {/* People & Stats */}
-          <div className={`p-3 rounded-xl space-y-3 ${
-            isDark ? 'bg-slate-800' : 'bg-gray-100'
-          }`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Users className={`w-5 h-5 ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`} />
-                <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {people} {people === 1 ? t('person', settings.language) : t('people', settings.language)}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                  {t('hits', settings.language)}:
-                </span>
-                <span className={`font-bold w-8 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {hitsCount}
-                </span>
-              </div>
-            </div>
+        <Stack gap="lg" style={{ overflowY: 'auto', flex: 1, paddingRight: 4, minHeight: 0 }}>
+          <Paper withBorder bg="transparent" p="sm">
+            <Stack gap="sm">
+              <Group justify="space-between">
+                <Group gap="sm">
+                  <IconUsers size={20} style={{ color: isDark ? 'var(--mantine-color-cyan-3)' : 'var(--mantine-color-cyan-6)' }} />
+                  <Text fw={500}>{people} {people === 1 ? t('person', settings.language) : t('people', settings.language)}</Text>
+                </Group>
+                <Group gap="xs">
+                  <Text size="sm" c="dimmed">{t('hits', settings.language)}:</Text>
+                  <Text fw={700} w={32} ta="center">{hitsCount}</Text>
+                </Group>
+              </Group>
 
-            {rotationEnabled && (
-              <>
-                {/* Person Indicators */}
-                <div className="flex gap-1.5">
-                  {Array.from({ length: people }, (_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setCurrentPerson(i)}
-                      className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                        i === currentPerson
-                          ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white shadow-lg scale-105'
-                          : isDark
-                            ? 'bg-slate-700 text-slate-400 hover:bg-slate-600'
-                            : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
-                      }`}
-                    >
-                      P{i + 1}
-                    </button>
-                  ))}
-                </div>
+              {rotationEnabled && (
+                <>
+                  <Group gap={6}>
+                    {Array.from({ length: people }, (_, i) => (
+                      <Button
+                        key={i}
+                        size="xs"
+                        flex={1}
+                        variant={i === currentPerson ? 'filled' : 'default'}
+                        color="cyan"
+                        onClick={() => setCurrentPerson(i)}
+                        styles={{ root: i === currentPerson ? { boxShadow: '0 4px 12px rgba(0,0,0,0.25)', transform: 'scale(1.05)' } : { background: subtleBg } }}
+                      >
+                        P{i + 1}
+                      </Button>
+                    ))}
+                  </Group>
 
-                {/* Per-Person Hit Counts */}
-                <div className="flex gap-1.5">
-                  {personHits.map((hits, i) => (
-                    <div
-                      key={i}
-                      className={`flex-1 text-center text-xs py-1 rounded-md ${
-                        i === currentPerson
-                          ? isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-100 text-cyan-700'
-                          : isDark ? 'text-slate-500' : 'text-gray-400'
-                      }`}
-                    >
-                      {hits}
-                    </div>
-                  ))}
-                </div>
+                  <Group gap={6}>
+                    {personHits.map((hits, i) => (
+                      <Text
+                        key={i}
+                        flex={1} size="xs" ta="center" p={4}
+                        fw={i === currentPerson ? 700 : 500}
+                        c={i === currentPerson ? (isDark ? 'cyan' : 'cyan') : 'dimmed'}
+                        style={i === currentPerson ? { background: isDark ? 'rgba(34,211,238,0.15)' : 'rgba(34,211,238,0.1)', borderRadius: 6 } : undefined}
+                      >
+                        {hits}
+                      </Text>
+                    ))}
+                  </Group>
 
-                {/* Next Hit Button */}
-                <button
-                  onClick={handleHit}
-                  className={`w-full py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all ${
-                    isDark
-                      ? 'bg-cyan-600 text-white hover:bg-cyan-500'
-                      : 'bg-cyan-500 text-white hover:bg-cyan-400'
-                  }`}
-                >
-                  <ArrowRight className="w-4 h-4" />
-                  {t('nextHit', settings.language)} — P{(currentPerson % people) + 1}
-                </button>
-              </>
-            )}
+                  <Button color="cyan" onClick={handleHit} leftSection={<IconArrowRight size={16} />}>
+                    {t('nextHit', settings.language)} — P{(currentPerson % people) + 1}
+                  </Button>
+                </>
+              )}
 
-            {!rotationEnabled && (
-              <div className="flex items-center justify-center gap-2">
-                <button
-                  onClick={() => setHitsCount(Math.max(0, hitsCount - 1))}
-                  aria-label={t('decrementHits', settings.language)}
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold ${
-                    isDark ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  -
-                </button>
-                <button
-                  onClick={() => setHitsCount(hitsCount + 1)}
-                  aria-label={t('incrementHits', settings.language)}
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold ${
-                    isDark ? 'bg-cyan-600 text-white hover:bg-cyan-500' : 'bg-cyan-500 text-white hover:bg-cyan-400'
-                  }`}
-                >
-                  +
-                </button>
-              </div>
-            )}
-          </div>
+              {!rotationEnabled && (
+                <Group justify="center" gap="sm">
+                  <ActionIcon size="md" radius="md" variant={isDark ? 'default' : 'light'} onClick={() => setHitsCount(Math.max(0, hitsCount - 1))} aria-label={t('decrementHits', settings.language)}>−</ActionIcon>
+                  <ActionIcon size="md" radius="md" color="cyan" variant="filled" onClick={() => setHitsCount(hitsCount + 1)} aria-label={t('incrementHits', settings.language)}>+</ActionIcon>
+                </Group>
+              )}
+            </Stack>
+          </Paper>
 
-          {/* Bowl Calculator - Collapsible */}
-          <div className={`rounded-xl border-2 overflow-hidden ${
-            isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'
-          }`}>
-            <button
-              onClick={() => setShowCalculator(!showCalculator)}
-              className={`w-full flex items-center justify-between p-3 transition-colors ${
-                isDark ? 'hover:bg-slate-800' : 'hover:bg-gray-100'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Calculator className={`w-5 h-5 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
-                <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {t('bowlCalculator', settings.language)}
-                </span>
-              </div>
-              <span className={`text-lg font-bold ${isDark ? 'text-green-400' : 'text-green-600'}`}>
-                {bowlsPerPerson.toFixed(1)} {t('bowlsPerPerson', settings.language)}
-              </span>
-            </button>
+          <Paper withBorder bg="transparent" p={0}>
+            <Group justify="space-between" p="md" onClick={() => setShowCalculator(!showCalculator)} style={{ cursor: 'pointer' }}>
+              <Group gap="sm">
+                <IconCalculator size={20} style={{ color: isDark ? 'var(--mantine-color-green-8)' : 'var(--mantine-color-green-6)' }} />
+                <Text fw={500}>{t('bowlCalculator', settings.language)}</Text>
+              </Group>
+              <Text fw={700} c="green">{bowlsPerPerson.toFixed(1)} {t('bowlsPerPerson', settings.language)}</Text>
+            </Group>
 
             {showCalculator && (
-              <div className={`p-4 border-t space-y-3 ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
-                {/* Grams per bowl setting */}
-                <div className="flex items-center justify-between">
-                  <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                    {t('gramsPerBowl', settings.language)}
-                  </span>
-                  <input
-                    type="number"
-                    min="0.01"
-                    max="5"
-                    step="0.05"
+              <Box p="md" pt="sm">
+                <Divider mb="sm" />
+                <Group justify="space-between">
+                  <Text size="sm" c="dimmed">{t('gramsPerBowl', settings.language)}</Text>
+                  <NumberInput
+                    w={80}
+                    min={0.01} max={5} step={0.05} decimalScale={2}
                     value={gramsPerBowl}
-                    onChange={(e) => setGramsPerBowl(Math.max(0.01, parseFloat(e.target.value) || 0.01))}
-                    className={`w-20 px-2 py-1.5 rounded-lg border-2 text-sm font-medium text-center outline-none ${
-                      isDark
-                        ? 'bg-slate-900 border-slate-700 text-white focus:border-cyan-500'
-                        : 'bg-white border-gray-200 text-gray-900 focus:border-cyan-500'
-                    }`}
+                    onChange={(v) => setGramsPerBowl(Math.max(0.01, typeof v === 'number' ? v : parseFloat(v) || 0.01))}
+                    size="xs"
+                    styles={{ input: { textAlign: 'center', fontWeight: 500 } }}
                   />
-                </div>
+                </Group>
 
-                {/* Calculation breakdown */}
-                <div className={`p-3 rounded-lg space-y-2 ${
-                  isDark ? 'bg-slate-900' : 'bg-white'
-                }`}>
-                  <div className="flex justify-between text-sm">
-                    <span className={isDark ? 'text-slate-400' : 'text-gray-500'}>
-                      {t('totalAmount', settings.language)}:
-                    </span>
-                    <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {formatPrecision(amountUsed, settings.decimalPrecision)}g
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className={isDark ? 'text-slate-400' : 'text-gray-500'}>
-                      {t('people', settings.language)}:
-                    </span>
-                    <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {people}
-                    </span>
-                  </div>
-                  <div className={`border-t pt-2 ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
-                    <div className="flex justify-between text-sm">
-                      <span className={isDark ? 'text-slate-400' : 'text-gray-500'}>
-                        {t('gramsPerPerson', settings.language)}:
-                      </span>
-                      <span className={`font-bold ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`}>
-                        {formatPrecision(gramsPerPerson, settings.decimalPrecision)}g
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className={isDark ? 'text-slate-400' : 'text-gray-500'}>
-                      {t('totalBowls', settings.language)}:
-                    </span>
-                    <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {(amountUsed / gramsPerBowl).toFixed(1)}
-                    </span>
-                  </div>
-                  <div className={`border-t pt-2 ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
-                    <div className="flex justify-between">
-                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {t('bowlsPerPerson', settings.language)}:
-                      </span>
-                      <span className={`text-xl font-bold ${isDark ? 'text-green-400' : 'text-green-600'}`}>
-                        {bowlsPerPerson.toFixed(1)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                <Paper bg={subtleBg} p="sm" mt="sm">
+                  <Stack gap={6}>
+                    <Group justify="space-between"><Text size="sm" c="dimmed">{t('totalAmount', settings.language)}:</Text><Text size="sm" fw={700}>{formatPrecision(amountUsed, settings.decimalPrecision)}g</Text></Group>
+                    <Group justify="space-between"><Text size="sm" c="dimmed">{t('people', settings.language)}:</Text><Text size="sm" fw={700}>{people}</Text></Group>
+                    <Divider />
+                    <Group justify="space-between"><Text size="sm" c="dimmed">{t('gramsPerPerson', settings.language)}:</Text><Text size="sm" fw={700} c="cyan">{formatPrecision(gramsPerPerson, settings.decimalPrecision)}g</Text></Group>
+                    <Group justify="space-between"><Text size="sm" c="dimmed">{t('totalBowls', settings.language)}:</Text><Text size="sm" fw={700}>{(amountUsed / gramsPerBowl).toFixed(1)}</Text></Group>
+                    <Divider />
+                    <Group justify="space-between"><Text size="sm" fw={500}>{t('bowlsPerPerson', settings.language)}:</Text><Text size="xl" fw={700} c="green">{bowlsPerPerson.toFixed(1)}</Text></Group>
+                  </Stack>
+                </Paper>
+              </Box>
             )}
-          </div>
+          </Paper>
 
-          {/* Timer */}
-          <div className={`p-4 rounded-xl border-2 ${
-            isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'
-          }`}>
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Clock className={`w-5 h-5 ${isDark ? 'text-amber-400' : 'text-amber-600'}`} />
-                <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {t('hitTimer', settings.language)}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
+          <Paper withBorder bg="transparent" p="md">
+            <Group justify="space-between" mb="sm">
+              <Group gap="sm">
+                <IconClock size={20} style={{ color: isDark ? 'var(--mantine-color-yellow-3)' : 'var(--mantine-color-yellow-6)' }} />
+                <Text fw={500}>{t('hitTimer', settings.language)}</Text>
+              </Group>
+              <Group gap="xs">
                 {!isTimerRunning && (
-                  <div className="flex items-center gap-1 mr-2">
-                    <button
-                      onClick={() => {
-                        const next = Math.max(1, customTimerDuration - 5);
-                        setCustomTimerDuration(next);
-                      }}
-                      className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold ${
-                        isDark ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
-                    >
-                      -
-                    </button>
-                    <input
-                      type="number"
-                      min="1"
-                      max="999"
+                  <Group gap={4} mr="sm">
+                    <ActionIcon size="sm" variant={isDark ? 'default' : 'light'} onClick={() => { const next = Math.max(1, customTimerDuration - 5); setCustomTimerDuration(next); }}>−</ActionIcon>
+                    <NumberInput
+                      w={56}
+                      min={1} max={999}
                       value={customTimerDuration}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value) || 1;
-                        setCustomTimerDuration(val);
-                      }}
-                      className={`w-12 text-center text-xs font-bold rounded border-2 outline-none ${
-                        isDark
-                          ? 'bg-slate-700 border-slate-600 text-white'
-                          : 'bg-gray-200 border-gray-300 text-gray-900'
-                      }`}
+                      onChange={(v) => { const val = typeof v === 'number' ? v : parseInt(v, 10) || 1; setCustomTimerDuration(val); }}
+                      size="xs"
+                      styles={{ input: { textAlign: 'center', fontWeight: 700 } }}
                     />
-                    <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>s</span>
-                    <button
-                      onClick={() => {
-                        const next = customTimerDuration + 5;
-                        setCustomTimerDuration(next);
-                      }}
-                      className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold ${
-                        isDark ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
-                    >
-                      +
-                    </button>
-                  </div>
+                    <Text size="xs" c="dimmed">s</Text>
+                    <ActionIcon size="sm" variant={isDark ? 'default' : 'light'} onClick={() => { const next = customTimerDuration + 5; setCustomTimerDuration(next); }}>+</ActionIcon>
+                  </Group>
                 )}
-                <div className={`text-2xl font-mono font-bold ${
-                  timerSeconds <= 3 ? 'text-red-400' : isDark ? 'text-white' : 'text-gray-900'
-                }`}>
+                <Text fw={700} size="xl" ff="monospace" c={timerSeconds <= 3 ? 'red' : undefined}>
                   {Math.floor(timerSeconds / 60)}:{(timerSeconds % 60).toString().padStart(2, '0')}
-                  {settings.showTimerMs && <span className="text-sm opacity-60">.{Math.floor(timerMs / 100).toString().padStart(1, '0')}</span>}
-                </div>
-              </div>
-            </div>
+                  {settings.showTimerMs && <Text component="span" size="sm" opacity={0.6}>.{Math.floor(timerMs / 100).toString().padStart(1, '0')}</Text>}
+                </Text>
+              </Group>
+            </Group>
 
-            <div className="flex gap-2">
+            <Group gap="sm">
               {!isTimerRunning ? (
-                <button
-                  onClick={startTimer}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-medium transition-colors ${
-                    isDark 
-                      ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30' 
-                      : 'bg-green-50 text-green-600 hover:bg-green-100'
-                  }`}
-                >
-                  <Play className="w-4 h-4" />
-                  {t('start', settings.language)}
-                </button>
+                <Button flex={1} variant="light" color="green" onClick={startTimer} leftSection={<IconPlayerPlay size={16} />}>{t('start', settings.language)}</Button>
               ) : (
-                <button
-                  onClick={pauseTimer}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-medium transition-colors ${
-                    isDark 
-                      ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' 
-                      : 'bg-amber-50 text-amber-600 hover:bg-amber-100'
-                  }`}
-                >
-                  <Pause className="w-4 h-4" />
-                  {t('pause', settings.language)}
-                </button>
+                <Button flex={1} variant="light" color="yellow" onClick={pauseTimer} leftSection={<IconPlayerPause size={16} />}>{t('pause', settings.language)}</Button>
               )}
-              <button
-                onClick={resetTimer}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  isDark 
-                    ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' 
-                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                }`}
-              >
-                <RotateCcw className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+              <ActionIcon size="lg" radius="md" variant={isDark ? 'default' : 'light'} onClick={resetTimer}>
+                <IconRefresh size={16} />
+              </ActionIcon>
+            </Group>
+          </Paper>
 
-          {/* Notes */}
-          <div>
-            <label className={`block text-sm font-medium mb-2 ${
-              isDark ? 'text-slate-300' : 'text-gray-700'
-            }`}>
-              {t('sessionNotes', settings.language)}
-            </label>
-            <textarea
+          <Box>
+            <Text fw={500} size="sm" mb="xs">{t('sessionNotes', settings.language)}</Text>
+            <Textarea
               value={sessionNotes}
-              onChange={(e) => setSessionNotes(e.target.value)}
+              onChange={(e) => setSessionNotes(e.currentTarget.value)}
               placeholder={t('sessionNotesPlaceholder', settings.language)}
-              rows={2}
-              className={`w-full px-4 py-3 rounded-xl border-2 transition-colors resize-none ${
-                isDark 
-                  ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-500 focus:border-cyan-500' 
-                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-cyan-500'
-              }`}
+              minRows={2}
             />
-          </div>
-        </div>
+          </Box>
+        </Stack>
 
-        {/* Footer - Fixed */}
-        <div className={`flex items-center gap-3 p-5 border-t flex-shrink-0 ${
-          isDark ? 'border-slate-800' : 'border-gray-200'
-        }`}>
-          <button
-            onClick={handleClose}
-            aria-label={t('cancel', settings.language)}
-            className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
-              isDark 
-                ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' 
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            {t('cancel', settings.language)}
-          </button>
-          <button
-            onClick={handleFinishSession}
-            aria-label={t('finishSession', settings.language)}
-            className={`flex-1 py-3 rounded-xl font-bold transition-all ${
-              isDark 
-                ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white hover:from-cyan-400 hover:to-emerald-400' 
-                : 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white hover:from-cyan-400 hover:to-emerald-400'
-            }`}
-          >
-            {t('finishSession', settings.language)}
-          </button>
-        </div>
-      </div>
-    </div>
+        <Divider my="lg" />
+
+        <Group gap="sm">
+          <Button flex={1} size="md" variant="default" onClick={handleClose} aria-label={t('cancel', settings.language)} styles={{ root: { color: dimColor } }}>{t('cancel', settings.language)}</Button>
+          <Button flex={1} size="md" color="cyan" onClick={handleFinishSession} aria-label={t('finishSession', settings.language)}>{t('finishSession', settings.language)}</Button>
+        </Group>
+      </Box>
+    </Modal>
   );
 }

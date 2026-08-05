@@ -6,6 +6,19 @@ import { CommentSection } from './CommentSection';
 import { FollowButton } from './FollowButton';
 import { showToast } from './Toast';
 import { ProductView } from './ProductView';
+import { Paper, Text, Group, Avatar, UnstyledButton, Box, ActionIcon, Image, Textarea, Button, Modal } from '@mantine/core';
+import {
+  IconPin,
+  IconHeart,
+  IconMessageCircle,
+  IconBookmark,
+  IconRepeat,
+  IconEdit,
+  IconTrash,
+  IconChevronLeft,
+  IconChevronRight,
+  IconBuildingStore,
+} from '@tabler/icons-react';
 
 interface PostCardProps {
   post: Post;
@@ -35,7 +48,8 @@ function renderContent(text: string, isDark: boolean, onHashtagClick?: (tag: str
     if (/^#\w+$/.test(part)) {
       return (
         <button key={i} onClick={(e) => { e.preventDefault(); e.stopPropagation(); onHashtagClick?.(part.slice(1).toLowerCase()); }}
-          className={`inline font-medium ${isDark ? 'text-cyan-400 hover:text-cyan-300' : 'text-cyan-600 hover:text-cyan-700'} hover:underline`}>
+          className="hover:underline"
+          style={{ display: 'inline', fontWeight: 500, color: isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)' }}>
           {part}
         </button>
       );
@@ -51,67 +65,59 @@ function PostImages({ images }: { images: string[] }) {
 
   if (count === 1) {
     return (
-      <div className="mt-2 mb-1 rounded-xl overflow-hidden">
-        <img src={images[0]} alt="" loading="lazy" className="w-full max-h-80 object-cover" />
-      </div>
+      <Image src={images[0]} alt="" mt="sm" mb={4} radius="md" fit="cover" w="100%" style={{ maxHeight: 320 }} />
     );
   }
 
   return (
-    <div className="mt-2 mb-1 relative rounded-xl overflow-hidden">
-      <img src={images[currentIdx]} alt="" loading="lazy" className="w-full max-h-80 object-cover" />
+    <Box pos="relative" mt="sm" mb={4} style={{ overflow: 'hidden' }}>
+      <Image src={images[currentIdx]} alt="" radius="md" fit="cover" w="100%" style={{ maxHeight: 320 }} />
       {count > 1 && (
         <>
-          <button
+          <ActionIcon
+            variant="transparent"
             onClick={(e) => { e.stopPropagation(); setCurrentIdx(prev => prev === 0 ? count - 1 : prev - 1); }}
             aria-label="Previous image"
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+            style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.5)', color: 'white' }}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <button
+            <IconChevronLeft size={16} />
+          </ActionIcon>
+          <ActionIcon
+            variant="transparent"
             onClick={(e) => { e.stopPropagation(); setCurrentIdx(prev => (prev + 1) % count); }}
             aria-label="Next image"
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+            style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.5)', color: 'white' }}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+            <IconChevronRight size={16} />
+          </ActionIcon>
+          <div style={{ position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 6 }}>
             {images.map((_, i) => (
-              <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === currentIdx ? 'bg-white' : 'bg-white/40'}`} />
+              <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: i === currentIdx ? 'white' : 'rgba(255,255,255,0.4)' }} />
             ))}
           </div>
         </>
       )}
-    </div>
+    </Box>
   );
 }
 
 function QuotedPost({ post, isDark, onHashtagClick }: { post: Post; isDark: boolean; onHashtagClick?: (tag: string) => void }) {
+  const avatarGradient = 'linear-gradient(135deg, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))';
   return (
-    <div className={`mt-2 p-3 rounded-xl border ${isDark ? 'bg-midnight/50 border-edge' : 'bg-gray-50 border-gray-200'}`}>
-      <div className="flex items-center gap-2 mb-1">
-        <div className={`w-5 h-5 rounded-md flex items-center justify-center ${post.author?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
-          {post.author?.avatar_url ? (
-            <img src={post.author.avatar_url} alt="" className="w-full h-full object-cover rounded-md" />
-          ) : (
-            <span className="text-white text-[8px] font-bold">{(post.author?.display_name?.[0] || post.author?.username?.[0] || '?').toUpperCase()}</span>
-          )}
-        </div>
-        <span className={`text-xs font-display font-bold ${isDark ? 'text-frost' : 'text-gray-800'}`}>
-          {post.author?.display_name || post.author?.username || 'Unknown'}
-        </span>
-        <span className={`text-[10px] ${isDark ? 'text-muted' : 'text-gray-400'}`}>@{post.author?.username || 'user'}</span>
-        <span className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>{timeAgo(post.created_at, 'en')}</span>
-      </div>
-      <p className={`text-xs whitespace-pre-wrap ${isDark ? 'text-mist' : 'text-gray-600'}`}>
+    <Paper p="sm" mt="sm" radius="md" withBorder
+      style={{ background: isDark ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-1)' }}>
+      <Group gap="xs" mb={4} align="center" wrap="nowrap">
+        <Avatar size={20} radius="md" src={post.author?.avatar_url} style={{ backgroundImage: avatarGradient }}>
+          {(post.author?.display_name?.[0] || post.author?.username?.[0] || '?').toUpperCase()}
+        </Avatar>
+        <Text size="xs" fw={700}>{post.author?.display_name || post.author?.username || 'Unknown'}</Text>
+        <Text size="xs" c="dimmed">@{post.author?.username || 'user'}</Text>
+        <Text size="xs" c="dimmed" style={{ marginLeft: 'auto' }}>{timeAgo(post.created_at, 'en')}</Text>
+      </Group>
+      <Text size="xs" style={{ whiteSpace: 'pre-wrap', color: isDark ? 'var(--mantine-color-gray-2)' : 'var(--mantine-color-gray-7)' }}>
         {renderContent(post.content, isDark, onHashtagClick)}
-      </p>
-    </div>
+      </Text>
+    </Paper>
   );
 }
 
@@ -164,40 +170,42 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
     }
   }
 
+  const avatarGradient = 'linear-gradient(135deg, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))';
+  const mutedColor = isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-6)';
+
   return (
-    <div className={`p-4 rounded-2xl backdrop-blur-sm ${post.pinned ? (isDark ? 'bg-cyanx/10 border border-cyanx/20' : 'bg-cyan-50/70 border border-cyan-200') : isDark ? 'bg-surface/40 border border-edge' : 'bg-white/70 border border-gray-200'}`}>
+    <Paper
+      p="md"
+      radius="md"
+      withBorder
+      style={{
+        background: post.pinned
+          ? (isDark ? 'rgba(6,182,212,0.1)' : 'rgba(6,182,212,0.06)')
+          : (isDark ? 'var(--mantine-color-dark-6)' : 'rgba(255,255,255,0.7)'),
+        borderColor: post.pinned ? 'var(--mantine-color-cyan-7)' : undefined,
+        backdropFilter: 'blur(4px)',
+      }}
+    >
       {post.pinned && (
-        <div className={`flex items-center gap-1.5 mb-2 text-xs font-medium ${isDark ? 'text-cyanx' : 'text-cyan-600'}`}>
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
-          </svg>
-          {t('pinnedPost', lang)}
-        </div>
+        <Group gap={6} mb="xs" align="center" style={{ color: isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)' }}>
+          <IconPin size={14} />
+          <Text size="xs" fw={500}>{t('pinnedPost', lang)}</Text>
+        </Group>
       )}
-      <div className="flex items-start gap-3">
-        <button
-          onClick={() => onViewProfile?.(post.user_id)}
-          aria-label={`View ${post.author?.username || 'user'}'s profile`}
-          className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${post.author?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}
-        >
-          {post.author?.avatar_url ? (
-            <img src={post.author.avatar_url} alt="" loading="lazy" className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-white font-display font-bold text-sm">
-              {(post.author?.display_name?.[0] || post.author?.username?.[0] || '?').toUpperCase()}
-            </span>
-          )}
-        </button>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 mb-1">
-              <button
-                onClick={() => onViewProfile?.(post.user_id)}
-                aria-label={`View ${post.author?.display_name || 'user'}'s profile`}
-                className={`font-display font-bold text-sm hover:underline ${isDark ? 'text-frost' : 'text-gray-800'}`}
-              >
+      <Group align="flex-start" gap="sm" wrap="nowrap">
+        <UnstyledButton onClick={() => onViewProfile?.(post.user_id)} aria-label={`View ${post.author?.username || 'user'}'s profile`}>
+          <Avatar size={36} radius="md" src={post.author?.avatar_url} style={{ backgroundImage: avatarGradient, flexShrink: 0 }}>
+            {(post.author?.display_name?.[0] || post.author?.username?.[0] || '?').toUpperCase()}
+          </Avatar>
+        </UnstyledButton>
+        <Box style={{ flex: 1, minWidth: 0 }}>
+          <Group gap="xs" mb={1} align="center" wrap="wrap">
+            <UnstyledButton onClick={() => onViewProfile?.(post.user_id)} aria-label={`View ${post.author?.display_name || 'user'}'s profile`}>
+              <Text fw={700} size="sm" className="hover:underline" style={{ color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)' }}>
                 {post.author?.display_name || post.author?.username || 'Unknown'}
-              </button>
-              <span className={`text-[10px] ${isDark ? 'text-muted' : 'text-gray-400'}`}>@{post.author?.username || 'user'}</span>
+              </Text>
+            </UnstyledButton>
+            <Text size="xs" style={{ color: mutedColor }}>@{post.author?.username || 'user'}</Text>
             {onFollow && onUnfollow && (
               <FollowButton
                 userId={post.user_id}
@@ -208,193 +216,124 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
                 onUnfollow={onUnfollow}
               />
             )}
-            <span className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+            <Text size="xs" style={{ color: mutedColor }}>
               {timeAgo(post.created_at, lang)}
-            </span>
-          </div>
+            </Text>
+          </Group>
 
           {editing ? (
-            <div className="mb-2 space-y-2">
-              <textarea
+            <Box mb="sm">
+              <Textarea
                 value={editContent}
                 onChange={e => setEditContent(e.target.value.slice(0, 500))}
                 autoFocus
-                className={`w-full text-sm px-3 py-2 rounded-xl outline-none resize-none transition-colors ${
-                  isDark ? 'bg-midnight text-frost border border-edge focus:border-cyanx/50' : 'bg-gray-50 text-gray-800 border border-gray-200 focus:border-cyan-500'
-                }`}
-                rows={3}
+                minRows={3}
+                maxLength={500}
               />
-              <div className="flex gap-2">
-                <button
+              <Group gap="sm" mt="xs">
+                <Button
+                  variant="gradient"
+                  gradient={{ from: 'cyan', to: 'emerald' }}
+                  size="xs"
                   onClick={handleEdit}
+                  loading={editSubmitting}
                   disabled={!editContent.trim() || editSubmitting}
-                  className="px-3 py-1 rounded-lg text-xs font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark disabled:opacity-50"
                 >
                   {editSubmitting ? 'Saving...' : 'Save'}
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="default"
+                  size="xs"
                   onClick={() => { setEditing(false); setEditContent(post.content); }}
-                  className={`px-3 py-1 rounded-lg text-xs font-medium ${isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                 >
                   Cancel
-                </button>
-              </div>
-            </div>
+                </Button>
+              </Group>
+            </Box>
           ) : (
             <>
-              <p className={`text-sm mb-2 whitespace-pre-wrap ${isDark ? 'text-mist' : 'text-gray-600'}`} onClick={() => onPostClick?.(post.id)}>
+              <Text size="sm" mb="xs" style={{ whiteSpace: 'pre-wrap', color: isDark ? 'var(--mantine-color-gray-2)' : 'var(--mantine-color-gray-7)' }} onClick={() => onPostClick?.(post.id)}>
                 {renderContent(post.content, isDark, onHashtagClick)}
-              </p>
-              {postImages.length > 0 && <div onClick={() => onPostClick?.(post.id)}><PostImages images={postImages} /></div>}
-              {post.quoted_post && <div onClick={(e) => { e.stopPropagation(); onPostClick?.(post.quoted_post!.id); }}><QuotedPost post={post.quoted_post} isDark={isDark} onHashtagClick={onHashtagClick} /></div>}
+              </Text>
+              {postImages.length > 0 && <Box onClick={() => onPostClick?.(post.id)}><PostImages images={postImages} /></Box>}
+              {post.quoted_post && <Box onClick={(e) => { e.stopPropagation(); onPostClick?.(post.quoted_post!.id); }}><QuotedPost post={post.quoted_post} isDark={isDark} onHashtagClick={onHashtagClick} /></Box>}
             </>
           )}
 
           {post.product_name && post.product_id && (
-            <button type="button" onClick={() => setViewProductId(post.product_id!)}
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium mb-3 cursor-pointer transition-all hover:opacity-80 ${
-                isDark ? 'bg-midnight text-cyanx' : 'bg-cyan-50 text-cyan-700'
-              }`}>
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" />
-              </svg>
+            <UnstyledButton onClick={() => setViewProductId(post.product_id!)} mb="sm"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px',
+                borderRadius: 'var(--mantine-radius-md)', fontSize: 12, fontWeight: 500, cursor: 'pointer',
+                background: isDark ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-cyan-1)',
+                color: isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)',
+              }}>
+              <IconBuildingStore size={14} />
               {post.product_name}
-            </button>
+            </UnstyledButton>
           )}
 
           {viewProductId && (
             <ProductView productId={viewProductId} onClose={() => setViewProductId(null)} isDark={isDark} lang={lang} />
           )}
 
-          <div className="flex items-center gap-4">
-            <button
+          <Group gap="sm">
+            <UnstyledButton
               onClick={handleToggleLike}
               disabled={liking}
               aria-label={liked ? 'Unlike post' : 'Like post'}
-              className={`flex items-center gap-1.5 text-sm font-medium transition-all ${
-                liked
-                  ? 'text-orange-500'
-                  : isDark ? 'text-muted hover:text-orange-400' : 'text-gray-400 hover:text-orange-500'
-              }`}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 500, color: liked ? 'var(--mantine-color-orange-6)' : mutedColor }}
             >
-              {liked ? (
-                <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M13.5 4.938a7 7 0 11-9.006 1.737c.202-.257.59-.262.797-.01.564.68 1.2 1.3 1.938 1.814.76.528 1.6.912 2.471 1.14.238.063.487-.008.634-.202a.5.5 0 00.063-.504c-.423-.977-1.093-1.85-1.852-2.574-.34-.326-.7-.632-1.077-.915a7.04 7.04 0 015.032.516z" clipRule="evenodd" />
-                  <path d="M13.5 4.938A7 7 0 004.494 6.675c.203-.257.59-.262.797-.01.564.68 1.2 1.3 1.938 1.814.76.528 1.6.912 2.471 1.14.238.063.487-.008.634-.202a.5.5 0 00.063-.504c-.423-.977-1.093-1.85-1.852-2.574-.34-.326-.7-.632-1.077-.915z" opacity={0.3} />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 0012 18z" />
-                </svg>
-              )}
+              <IconHeart size={20} fill={liked ? 'currentColor' : 'none'} />
               {likesCount > 0 && <span>{likesCount}</span>}
-            </button>
+            </UnstyledButton>
 
-            <button
+            <UnstyledButton
               onClick={() => setShowComments(!showComments)}
               aria-label="Toggle comments"
               aria-expanded={showComments}
               aria-controls={`comment-section-${post.id}`}
-              className={`flex items-center gap-1.5 text-sm font-medium transition-all ${
-                showComments
-                  ? isDark ? 'text-cyanx' : 'text-cyan-600'
-                  : isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'
-              }`}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 500, color: showComments ? (isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)') : mutedColor }}
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" />
-              </svg>
+              <IconMessageCircle size={18} />
               {(post.comments_count ?? 0) > 0 && <span>{post.comments_count}</span>}
-            </button>
+            </UnstyledButton>
 
             {onBookmark && (
-              <button
+              <UnstyledButton
                 onClick={handleToggleBookmark}
                 aria-label={bookmarked ? t('bookmarked', lang) : t('bookmark', lang)}
-                className={`transition-all ${
-                  bookmarked
-                    ? 'text-cyanx'
-                    : isDark ? 'text-muted hover:text-cyan-400' : 'text-gray-400 hover:text-cyan-600'
-                }`}
+                style={{ color: bookmarked ? (isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)') : mutedColor }}
               >
-                {bookmarked ? (
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M5.25 3A2.25 2.25 0 003 5.25v14.25l9-5.25-9-5.25z" />
-                  </svg>
-                ) : (
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
-                  </svg>
-                )}
-              </button>
+                <IconBookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
+              </UnstyledButton>
             )}
 
             {onQuote && !isOwner && (
-              <button
+              <UnstyledButton
                 onClick={() => onQuote(post.id)}
                 aria-label={t('sharePost', lang)}
-                className={`transition-all ${isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}`}
+                style={{ color: mutedColor }}
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
-                </svg>
-              </button>
+                <IconRepeat size={18} />
+              </UnstyledButton>
             )}
 
             {isOwner && (
-              <>
+              <Group gap={6} ml="auto">
                 {onEdit && (
-                  <button
-                    onClick={() => { setEditing(true); setEditContent(post.content); }}
-                    aria-label="Edit post"
-                    className={`ml-auto text-xs font-medium ${isDark ? 'text-muted hover:text-cyan-400' : 'text-gray-400 hover:text-cyan-600'}`}
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                    </svg>
-                  </button>
+                  <ActionIcon variant="subtle" onClick={() => { setEditing(true); setEditContent(post.content); }} aria-label="Edit post">
+                    <IconEdit size={16} />
+                  </ActionIcon>
                 )}
                 {onDelete && (
-                  <button
-                    onClick={() => setShowConfirm(true)}
-                    aria-label="Delete post"
-                    className={`text-xs font-medium ${isDark ? 'text-muted hover:text-red-400' : 'text-gray-400 hover:text-red-500'}`}
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                    </svg>
-                  </button>
+                  <ActionIcon variant="subtle" color="red" onClick={() => setShowConfirm(true)} aria-label="Delete post">
+                    <IconTrash size={16} />
+                  </ActionIcon>
                 )}
-                {showConfirm && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 backdrop-blur-[2px]" onClick={() => setShowConfirm(false)}>
-                    <div className={`p-6 rounded-2xl max-w-xs w-full mx-4 ${isDark ? 'bg-card border border-edge' : 'bg-white border border-gray-200'}`}
-                      onClick={e => e.stopPropagation()}>
-                      <p className={`text-sm font-medium mb-4 ${isDark ? 'text-frost' : 'text-gray-800'}`}>
-                        {t('confirmDeletePost', lang)}
-                      </p>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={async () => { await onDelete?.(post.id); setShowConfirm(false); }}
-                          className="flex-1 px-4 py-2 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-all"
-                        >
-                          {t('delete', lang)}
-                        </button>
-                        <button
-                          onClick={() => setShowConfirm(false)}
-                          className={`flex-1 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                            isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                          }`}
-                        >
-                          {t('cancel', lang)}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </>
+              </Group>
             )}
-          </div>
+          </Group>
 
           {showComments && (
             <CommentSection
@@ -407,8 +346,15 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
               onComment={onComment}
             />
           )}
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Group>
+
+      <Modal opened={showConfirm} onClose={() => setShowConfirm(false)} title={t('confirmDeletePost', lang)} centered size="xs">
+        <Group justify="flex-end" gap="sm">
+          <Button color="red" onClick={async () => { await onDelete?.(post.id); setShowConfirm(false); }}>{t('delete', lang)}</Button>
+          <Button variant="default" onClick={() => setShowConfirm(false)}>{t('cancel', lang)}</Button>
+        </Group>
+      </Modal>
+    </Paper>
   );
 });

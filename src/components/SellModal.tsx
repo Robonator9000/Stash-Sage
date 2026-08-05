@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Product } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { useModalAnimation } from '../hooks/useModalAnimation';
 import { roundToHundredth, formatPrecision } from '../utils/helpers';
-import { X, DollarSign, Package, TrendingUp, TrendingDown, Plus } from 'lucide-react';
+import { Modal, Group, Stack, Text, NumberInput, Button, Paper, Divider, ActionIcon, Box } from '@mantine/core';
+import { IconCurrencyDollar, IconPackage, IconTrendingUp, IconTrendingDown, IconPlus } from '@tabler/icons-react';
 import { t } from '../utils/translations';
 
 interface SellModalProps {
@@ -28,6 +29,8 @@ const PORTION_SIZES = [
   { label: '453.6g (1 lb)', grams: 453.592 },
 ];
 
+const QUICK_AMOUNTS = [0.5, 1, 2, 3.5, 7];
+
 export function SellModal({ product, onSell, onClose, isDark = true }: SellModalProps) {
   const { settings } = useSettings();
   const { isVisible, handleClose } = useModalAnimation(onClose);
@@ -46,6 +49,11 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
   const totalSaleValue = numberOfPortions * portionPrice;
   const profit = totalSaleValue - product.price;
 
+  const quickSellTotal = (parseFloat(quickSellGrams) || 0) * (parseInt(quickSellPortions) || 0);
+  const canQuickSell = (parseFloat(quickSellGrams) || 0) > 0 && (parseInt(quickSellPortions) || 0) > 0 && quickSellTotal <= product.amount;
+
+  const baseGrams = useMemo(() => product.amount, [product.amount]);
+
   const handleSell = () => {
     const grams = parseFloat(quickSellGrams);
     const portions = parseInt(quickSellPortions) || 0;
@@ -55,137 +63,154 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
     }
   };
 
-  const quickSellTotal = (parseFloat(quickSellGrams) || 0) * (parseInt(quickSellPortions) || 0);
-  const canQuickSell = (parseFloat(quickSellGrams) || 0) > 0 && (parseInt(quickSellPortions) || 0) > 0 && quickSellTotal <= product.amount;
+  const dimColor = isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-slate-7)';
 
   return (
-    <div
-      className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-200 ${isVisible ? 'bg-black/10 backdrop-blur-[2px]' : 'bg-black/0'}`}
-      onClick={handleClose}
-      role="dialog"
-      aria-modal="true"
+    <Modal
+      opened={isVisible}
+      onClose={handleClose}
+      size="sm"
+      centered
+      radius="lg"
+      closeOnEscape={false}
       aria-label={`${t('sell', lang)} ${product.name}`}
+      styles={{ content: { display: 'flex', flexDirection: 'column' }, body: { padding: 0 } }}
     >
-      <div
-        className={`w-full max-w-sm rounded-2xl border-2 shadow-2xl transition-all duration-200 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'} ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className={`flex items-center justify-between p-5 border-b ${isDark ? 'border-slate-800' : 'border-gray-200'}`}>
-          <div>
-            <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{t('sell', lang)} {product.name}</h2>
-            <div className={`flex items-center gap-3 text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-              <span>{t('amount', lang)}: {formatPrecision(product.amount, settings.decimalPrecision)}g</span>
-              {product.price > 0 && <span>{t('paid', lang)}: {settings.currency}{formatPrecision(product.price, 2)}</span>}
-            </div>
-          </div>
-          <button onClick={handleClose} aria-label={t('cancel', lang)} className={`p-2 rounded-xl transition-all ${isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'}`}>
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+      <Box p="lg" style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
+        <Group justify="space-between" mb="md" align="flex-start" wrap="nowrap">
+          <Box>
+            <Text fw={700} size="lg">{t('sell', lang)} {product.name}</Text>
+            <Group gap="md" mt={4}>
+              <Text size="sm" c="dimmed">{t('amount', lang)}: {formatPrecision(product.amount, settings.decimalPrecision)}g</Text>
+              {product.price > 0 && <Text size="sm" c="dimmed">{t('paid', lang)}: {settings.currency}{formatPrecision(product.price, 2)}</Text>}
+            </Group>
+          </Box>
+        </Group>
 
-        {/* Body */}
-        <div className="p-5 space-y-5">
-          {/* Divide into portions */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Package className={`w-4 h-4 ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`} />
-              <label className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{t('divideIntoPortions', lang)}</label>
-            </div>
-            <div className="flex flex-wrap gap-2 mb-3">
+        <Stack gap="lg">
+          <Box>
+            <Group gap="sm" mb="sm">
+              <IconPackage size={16} style={{ color: isDark ? 'var(--mantine-color-cyan-3)' : 'var(--mantine-color-cyan-6)' }} />
+              <Text fw={500} size="sm">{t('divideIntoPortions', lang)}</Text>
+            </Group>
+            <Group gap="xs" mb="sm">
               {PORTION_SIZES.map((p) => {
-                const disabled = p.grams > product.amount;
+                const disabled = p.grams > baseGrams;
+                const selected = selectedPortion === p.grams;
                 return (
-                  <button key={p.grams} onClick={() => { if (!disabled) { setSelectedPortion(p.grams); setCustomPortion(''); setShowCustom(false); } }} disabled={disabled}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${disabled ? isDark ? 'text-slate-600 cursor-not-allowed' : 'text-gray-300 cursor-not-allowed' : selectedPortion === p.grams ? isDark ? 'bg-cyan-500/20 text-cyan-400 border-2 border-cyan-500/30' : 'bg-cyan-50 text-cyan-600 border-2 border-cyan-500/30' : isDark ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                  >{p.label}</button>
+                  <Button
+                    key={p.grams}
+                    size="xs"
+                    variant={selected ? 'filled' : 'default'}
+                    color="cyan"
+                    disabled={disabled}
+                    onClick={() => { if (!disabled) { setSelectedPortion(p.grams); setCustomPortion(''); setShowCustom(false); } }}
+                    styles={{
+                      root: !selected && isDark ? { background: 'var(--mantine-color-slate-8)', color: 'var(--mantine-color-slate-4)' } : undefined,
+                    }}
+                  >{p.label}</Button>
                 );
               })}
-              <button onClick={() => { setShowCustom(!showCustom); setSelectedPortion(null); setCustomPortion(''); }}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 ${showCustom ? isDark ? 'bg-cyan-500/20 text-cyan-400 border-2 border-cyan-500/30' : 'bg-cyan-50 text-cyan-600 border-2 border-cyan-500/30' : isDark ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-              ><Plus className="w-3.5 h-3.5" /><span>{t('custom', lang)}</span></button>
-            </div>
+              <Button
+                size="xs"
+                variant={showCustom ? 'filled' : 'default'}
+                color="cyan"
+                leftSection={<IconPlus size={14} />}
+                onClick={() => { setShowCustom(!showCustom); setSelectedPortion(null); setCustomPortion(''); }}
+              >
+                {t('custom', lang)}
+              </Button>
+            </Group>
             {showCustom && (
-              <div className="flex items-center gap-2 mb-1">
-                <input type="number" value={customPortion} onChange={(e) => { setCustomPortion(e.target.value); setSelectedPortion(null); }} placeholder={t('grams', lang)} min="0" step="0.1" autoFocus
-                  className={`flex-1 px-3 py-2 rounded-xl border-2 outline-none text-sm ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'}`} />
-              </div>
+              <Group gap="sm" mb={4}>
+                <NumberInput
+                  flex={1}
+                  value={customPortion === '' ? '' : parseFloat(customPortion)}
+                  onChange={(v) => { setCustomPortion(v === '' ? '' : String(typeof v === 'number' ? v : parseFloat(v) || 0)); setSelectedPortion(null); }}
+                  placeholder={t('grams', lang)}
+                  min={0} step={0.1}
+                  hideControls
+                  size="xs"
+                />
+              </Group>
             )}
-          </div>
+          </Box>
 
-          {/* Price per portion (only if portions selected) */}
           {portionGrams > 0 && (
-            <div className={`p-4 rounded-xl border-2 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
-              <div className="flex items-center gap-2 mb-3">
-                <DollarSign className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                <label className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{t('pricePerPortion', lang)}</label>
-              </div>
-              <input type="number" value={pricePerPortion} onChange={(e) => setPricePerPortion(e.target.value)} placeholder={`${settings.currency}0.00`} min="0" step="0.01"
-                className={`w-full px-3 py-2 rounded-xl border-2 outline-none text-sm mb-3 ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'}`} />
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-sm"><span className={isDark ? 'text-slate-400' : 'text-gray-500'}>{t('portions', lang)}:</span><span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{numberOfPortions}</span></div>
-                <div className="flex justify-between text-sm"><span className={isDark ? 'text-slate-400' : 'text-gray-500'}>{t('perPortion', lang)}:</span><span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{formatPrecision(portionGrams, settings.decimalPrecision)}g</span></div>
-                <div className="flex justify-between text-sm"><span className={isDark ? 'text-slate-400' : 'text-gray-500'}>{t('saleValue', lang)}:</span><span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{settings.currency}{formatPrecision(totalSaleValue, 2)}</span></div>
+            <Paper withBorder bg="transparent" p="md">
+              <Group gap="sm" mb="sm">
+                <IconCurrencyDollar size={16} style={{ color: isDark ? 'var(--mantine-color-green-8)' : 'var(--mantine-color-green-6)' }} />
+                <Text fw={500} size="sm">{t('pricePerPortion', lang)}</Text>
+              </Group>
+              <NumberInput
+                value={pricePerPortion === '' ? '' : parseFloat(pricePerPortion)}
+                onChange={(v) => setPricePerPortion(v === '' ? '' : String(typeof v === 'number' ? v : parseFloat(v) || 0))}
+                placeholder={`${settings.currency}0.00`}
+                min={0} step={0.01}
+                size="sm"
+                mb="md"
+              />
+              <Stack gap={6}>
+                <Group justify="space-between"><Text size="sm" c="dimmed">{t('portions', lang)}:</Text><Text size="sm" fw={500}>{numberOfPortions}</Text></Group>
+                <Group justify="space-between"><Text size="sm" c="dimmed">{t('perPortion', lang)}:</Text><Text size="sm" fw={500}>{formatPrecision(portionGrams, settings.decimalPrecision)}g</Text></Group>
+                <Group justify="space-between"><Text size="sm" c="dimmed">{t('saleValue', lang)}:</Text><Text size="sm" fw={500}>{settings.currency}{formatPrecision(totalSaleValue, 2)}</Text></Group>
                 {product.price > 0 && (
-                  <div className={`flex justify-between text-sm pt-1.5 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
-                    <span className={isDark ? 'text-slate-400' : 'text-gray-500'}>{profit >= 0 ? t('profit', lang) : t('loss', lang)}:</span>
-                    <span className={`font-bold flex items-center gap-1 ${profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {profit >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
-                      {profit >= 0 ? '+' : ''}{settings.currency}{formatPrecision(profit, 2)}
-                    </span>
-                  </div>
+                  <Group justify="space-between" pt={6}>
+                    <Text size="sm" c="dimmed">{profit >= 0 ? t('profit', lang) : t('loss', lang)}:</Text>
+                    <Group gap={4}>
+                      {profit >= 0 ? <IconTrendingUp size={14} style={{ color: 'var(--mantine-color-green-6)' }} /> : <IconTrendingDown size={14} style={{ color: 'var(--mantine-color-red-6)' }} />}
+                      <Text size="sm" fw={700} c={profit >= 0 ? 'green' : 'red'}>{profit >= 0 ? '+' : ''}{settings.currency}{formatPrecision(profit, 2)}</Text>
+                    </Group>
+                  </Group>
                 )}
-              </div>
-            </div>
+              </Stack>
+            </Paper>
           )}
 
-          {/* Quick Sell */}
-          <div>
-            <label className={`block text-sm font-medium mb-3 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{t('quickSell', lang)}</label>
-            <div className="mb-3">
-              <span className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('gramsPerPortion', lang)}</span>
-              <div className="flex items-center gap-2 mt-1">
-                <button onClick={() => { const cur = parseFloat(quickSellGrams) || 0; const next = Math.max(0, Math.round((cur - 0.5) * 10) / 10); setQuickSellGrams(next > 0 ? String(next) : ''); }}
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm transition-colors ${isDark ? 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>−</button>
-                <input type="number" value={quickSellGrams} onChange={(e) => setQuickSellGrams(e.target.value)} placeholder="0" min="0" step="0.1"
-                  className={`flex-1 px-3 py-2 rounded-xl border-2 outline-none text-sm text-center font-medium ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'}`} />
-                <button onClick={() => { const cur = parseFloat(quickSellGrams) || 0; setQuickSellGrams(String(Math.round((cur + 0.5) * 10) / 10)); }}
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm transition-colors ${isDark ? 'bg-emera text-white hover:bg-emera-dark' : 'bg-emerald-500 text-white hover:bg-emerald-600'}`}>+</button>
-              </div>
-              <div className="flex gap-1.5 mt-2">
-                {[0.5, 1, 2, 3.5, 7].map((amt) => (
-                  <button key={amt} onClick={() => setQuickSellGrams(String(amt))}
-                    className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${isDark ? 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>+{amt}g</button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <span className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('numberOfPortions', lang)}</span>
-              <input type="number" value={quickSellPortions} onChange={(e) => setQuickSellPortions(e.target.value)} placeholder="0" min="0" step="1"
-                className={`w-full px-3 py-2 rounded-xl border-2 outline-none text-sm mt-1 ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'}`} />
-            </div>
-            <div className={`p-3 rounded-xl mt-3 ${isDark ? 'bg-slate-800/50' : 'bg-gray-100'}`}>
-              <div className="flex justify-between items-center">
-                <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{t('totalToSell', lang)}:</span>
-                <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{formatPrecision(quickSellTotal, settings.decimalPrecision)}g</span>
-              </div>
-              <div className="flex justify-between items-center mt-1">
-                <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{t('remainingAfter', lang)}:</span>
-                <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{formatPrecision(Math.max(0, roundToHundredth(product.amount - quickSellTotal)), settings.decimalPrecision)}g</span>
-              </div>
-            </div>
-          </div>
-        </div>
+          <Box>
+            <Text fw={500} size="sm" mb="xs">{t('quickSell', lang)}</Text>
+            <Text size="xs" c="dimmed">{t('gramsPerPortion', lang)}</Text>
+            <Group gap="sm" mt={4}>
+              <ActionIcon size="lg" radius="md" variant={isDark ? 'default' : 'light'} onClick={() => { const cur = parseFloat(quickSellGrams) || 0; const next = Math.max(0, Math.round((cur - 0.5) * 10) / 10); setQuickSellGrams(next > 0 ? String(next) : ''); }}>−</ActionIcon>
+              <NumberInput
+                flex={1}
+                value={quickSellGrams === '' ? '' : parseFloat(quickSellGrams)}
+                onChange={(v) => setQuickSellGrams(v === '' ? '' : String(typeof v === 'number' ? v : parseFloat(v) || 0))}
+                placeholder="0" min={0} step={0.1}
+                styles={{ input: { textAlign: 'center', fontWeight: 500 } }}
+              />
+              <ActionIcon size="lg" radius="default" color="green" variant="filled" onClick={() => { const cur = parseFloat(quickSellGrams) || 0; setQuickSellGrams(String(Math.round((cur + 0.5) * 10) / 10)); }}>+</ActionIcon>
+            </Group>
+            <Group gap="xs" mt="sm" grow>
+              {QUICK_AMOUNTS.map((amt) => (
+                <Button key={amt} size="xs" variant="default" styles={{ root: { background: isDark ? 'var(--mantine-color-slate-8)' : 'var(--mantine-color-gray-1)' } }} onClick={() => setQuickSellGrams(String(amt))}>+{amt}g</Button>
+              ))}
+            </Group>
 
-        {/* Footer */}
-        <div className={`flex items-center gap-3 p-5 border-t ${isDark ? 'border-slate-800' : 'border-gray-200'}`}>
-          <button onClick={handleClose} className={`flex-1 py-3 rounded-xl font-medium transition-colors ${isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>{t('cancel', lang)}</button>
-          <button onClick={handleSell} disabled={!canQuickSell} aria-label={t('sell', lang)}
-            className={`flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${canQuickSell ? isDark ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-400 hover:to-orange-400' : 'bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-500 hover:to-orange-500' : 'bg-slate-700 cursor-not-allowed'}`}>
-            <DollarSign className="w-4 h-4" />{t('sell', lang)}
-          </button>
-        </div>
-      </div>
-    </div>
+            <Text size="xs" c="dimmed" mt="md">{t('numberOfPortions', lang)}</Text>
+            <NumberInput
+              value={quickSellPortions === '' ? '' : parseInt(quickSellPortions, 10)}
+              onChange={(v) => setQuickSellPortions(v === '' ? '' : String(typeof v === 'number' ? v : parseInt(v, 10) || 0))}
+              placeholder="0" min={0} step={1}
+              size="sm" mt={4}
+            />
+
+            <Paper withBorder radius="md" bg="var(--mantine-color-slate-8)" mt="md" p="sm">
+              <Group justify="space-between"><Text size="sm" c="dimmed">{t('totalToSell', lang)}:</Text><Text size="sm" fw={700}>{formatPrecision(quickSellTotal, settings.decimalPrecision)}g</Text></Group>
+              <Group justify="space-between" mt={4}><Text size="sm" c="dimmed">{t('remainingAfter', lang)}:</Text><Text size="sm" fw={700}>{formatPrecision(Math.max(0, roundToHundredth(product.amount - quickSellTotal)), settings.decimalPrecision)}g</Text></Group>
+            </Paper>
+          </Box>
+        </Stack>
+
+        <Divider my="lg" />
+
+        <Group gap="sm">
+          <Button flex={1} size="md" variant="default" onClick={handleClose} styles={{ root: { color: dimColor } }}>{t('cancel', lang)}</Button>
+          <Button flex={1} size="md" color="orange" leftSection={<IconCurrencyDollar size={16} />} disabled={!canQuickSell} onClick={handleSell} aria-label={t('sell', lang)}>
+            {t('sell', lang)}
+          </Button>
+        </Group>
+      </Box>
+    </Modal>
   );
 }

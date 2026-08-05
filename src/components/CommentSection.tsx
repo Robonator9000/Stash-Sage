@@ -3,6 +3,8 @@ import type { PostComment } from '../types';
 import { supabase } from '../utils/supabase';
 import { t } from '../utils/translations';
 import { timeAgo } from '../utils/helpers';
+import { Box, Text, Group, Avatar, UnstyledButton, ActionIcon, TextInput, Skeleton, Stack, Loader } from '@mantine/core';
+import { IconHeart, IconTrash, IconSend, IconX } from '@tabler/icons-react';
 
 interface CommentSectionProps {
   postId: string;
@@ -13,6 +15,8 @@ interface CommentSectionProps {
   username: string;
   onComment?: (userId: string, postId: string) => void;
 }
+
+const avatarGradient = 'linear-gradient(135deg, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))';
 
 const CommentItem = memo(function CommentItem({ comment, depth = 0, isDark, lang, currentUserId, onReply, onDelete, onLike, onUnlike }: {
   comment: PostComment; depth?: number; isDark: boolean; lang: string; currentUserId: string;
@@ -33,62 +37,48 @@ const CommentItem = memo(function CommentItem({ comment, depth = 0, isDark, lang
   }
 
   return (
-    <div role="listitem" className={depth > 0 ? 'ml-6 mt-2' : 'mt-3'}>
-      <div className="flex items-start gap-2">
-        <div className={`w-6 h-6 rounded-lg flex items-center justify-center bg-gradient-to-br from-cyanx to-emera shrink-0`}>
-          <span className="text-white font-display font-bold text-xs">
-            {(comment.author?.username?.[0] || '?').toUpperCase()}
-          </span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className={`font-display font-bold text-xs ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+    <div role="listitem" style={{ marginLeft: depth > 0 ? 24 : 0, marginTop: depth > 0 ? 8 : 12 }}>
+      <Group align="flex-start" gap="sm" wrap="nowrap">
+        <Avatar size={24} radius="md" color="cyan" style={{ backgroundImage: avatarGradient, flexShrink: 0 }}>
+          {(comment.author?.username?.[0] || '?').toUpperCase()}
+        </Avatar>
+        <Box style={{ flex: 1, minWidth: 0 }}>
+          <Group gap="xs" align="center">
+            <Text fw={700} size="xs" style={{ color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)' }}>
               {comment.author?.username || 'Unknown'}
-            </span>
-            <span className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+            </Text>
+            <Text size="xs" c="dimmed">
               {timeAgo(comment.created_at, lang)}
-            </span>
-          </div>
-          <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-600'}`}>
+            </Text>
+          </Group>
+          <Text size="sm" style={{ color: isDark ? 'var(--mantine-color-gray-2)' : 'var(--mantine-color-gray-7)' }}>
             {comment.content}
-          </p>
-          <div className="flex items-center gap-3 mt-1">
-            <button
+          </Text>
+          <Group gap="sm" mt={4}>
+            <UnstyledButton
               onClick={handleToggleLike}
               disabled={liking}
-              className={`flex items-center gap-1 text-xs font-medium transition-all ${
-                liked
-                  ? 'text-orange-500'
-                  : isDark ? 'text-muted hover:text-orange-400' : 'text-gray-400 hover:text-orange-500'
-              }`}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 500, color: liked ? 'var(--mantine-color-orange-6)' : (isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-6)') }}
             >
-              <svg className="w-3.5 h-3.5" fill={liked ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={liked ? 0 : 1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z" />
-              </svg>
+              <IconHeart size={14} fill={liked ? 'currentColor' : 'none'} />
               {likesCount > 0 && <span>{likesCount}</span>}
-            </button>
+            </UnstyledButton>
             {depth < 2 && (
-              <button
+              <UnstyledButton
                 onClick={() => onReply(comment.id, comment.author?.username || 'Unknown')}
-                className={`text-xs font-medium ${isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}`}
+                style={{ fontSize: 12, fontWeight: 500, color: isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-6)' }}
               >
                 {t('reply', lang)}
-              </button>
+              </UnstyledButton>
             )}
             {isOwner && (
-              <button
-                onClick={() => onDelete(comment.id)}
-                aria-label="Delete comment"
-                className={`text-xs ${isDark ? 'text-muted hover:text-red-400' : 'text-gray-400 hover:text-red-500'}`}
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                </svg>
-              </button>
+              <ActionIcon variant="subtle" color="red" size="sm" onClick={() => onDelete(comment.id)} aria-label="Delete comment">
+                <IconTrash size={14} />
+              </ActionIcon>
             )}
-          </div>
-        </div>
-      </div>
+          </Group>
+        </Box>
+      </Group>
       {comment.replies && comment.replies.length > 0 && (
         <div role="list">
           {comment.replies.map(reply => (
@@ -235,32 +225,32 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
   }
 
   return (
-    <div id={`comment-section-${postId}`} className={`mt-3 pt-3 border-t ${isDark ? 'border-edge' : 'border-gray-200'}`}>
+    <Box id={`comment-section-${postId}`} mt="sm" pt="xs" style={{ borderTop: `1px solid ${isDark ? 'var(--mantine-color-gray-8)' : 'var(--mantine-color-gray-2)'}` }}>
       {loading && (
-        <div className="space-y-2 pl-1">
+        <Stack gap="sm">
           {[1, 2].map(i => (
-            <div key={i} className="flex items-start gap-2">
-              <div className={`w-6 h-6 rounded-lg animate-pulse ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
-              <div className="flex-1 space-y-1">
-                <div className={`h-2.5 w-16 rounded animate-pulse ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
-                <div className={`h-2.5 w-3/4 rounded animate-pulse ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
-              </div>
-            </div>
+            <Group align="flex-start" gap="sm" wrap="nowrap" key={i}>
+              <Skeleton width={24} height={24} radius="md" />
+              <Box style={{ flex: 1 }}>
+                <Skeleton height={10} width={64} radius="md" mb={4} />
+                <Skeleton height={10} width="75%" radius="md" />
+              </Box>
+            </Group>
           ))}
-        </div>
+        </Stack>
       )}
 
       {error && (
-        <p className={`text-xs ${isDark ? 'text-red-400' : 'text-red-500'}`}>{error}</p>
+        <Text size="xs" c="red">{error}</Text>
       )}
 
       {!loading && !error && comments.length === 0 && (
-        <p className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'} text-center py-2`}>
+        <Text size="xs" c="dimmed" ta="center" py="sm">
           {t('writeComment', lang)}
-        </p>
+        </Text>
       )}
 
-      <div role="list" className="space-y-1">
+      <div role="list">
         {comments.map(comment => (
           <CommentItem key={comment.id} comment={comment} isDark={isDark} lang={lang} currentUserId={currentUserId}
             onReply={(id, username) => setReplyingTo({ id, username })} onDelete={handleDelete}
@@ -269,56 +259,40 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
       </div>
 
       {replyingTo && (
-        <div className={`flex items-center gap-2 mt-2 px-2 py-1 rounded-lg text-xs ${isDark ? 'bg-midnight text-mist' : 'bg-gray-50 text-gray-500'}`}>
-          <span>{t('replyTo', lang)} <span className="font-medium">{replyingTo.username}</span></span>
-          <button onClick={() => setReplyingTo(null)} className="ml-auto hover:opacity-70">
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+        <Group gap="sm" mt="xs" px="sm" py={4} style={{ borderRadius: 'var(--mantine-radius-md)', background: isDark ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-1)' }}>
+          <Text size="xs" style={{ color: isDark ? 'var(--mantine-color-gray-2)' : 'var(--mantine-color-gray-6)' }}>
+            {t('replyTo', lang)} <span style={{ fontWeight: 600 }}>{replyingTo.username}</span>
+          </Text>
+          <UnstyledButton onClick={() => setReplyingTo(null)} style={{ marginLeft: 'auto' }} aria-label="Cancel reply">
+            <IconX size={12} />
+          </UnstyledButton>
+        </Group>
       )}
 
-      <div className="flex items-center gap-2 mt-3">
-        <div className={`w-6 h-6 rounded-lg flex items-center justify-center bg-gradient-to-br from-cyanx to-emera shrink-0`}>
-          <span className="text-white font-display font-bold text-xs">
-            {(username[0] || '?').toUpperCase()}
-          </span>
-        </div>
-        <div className="flex-1 flex gap-2">
-          <input
-            id="comment-input"
-            name="comment"
-            value={newComment}
-            onChange={e => setNewComment(e.target.value.slice(0, 500))}
-            placeholder={replyingTo ? `${t('replyTo', lang)} ${replyingTo.username}...` : t('writeComment', lang)}
-            className={`flex-1 text-sm px-3 py-1.5 rounded-xl outline-none transition-colors ${
-              isDark ? 'bg-midnight text-frost placeholder-muted border border-edge focus:border-cyanx/50' : 'bg-gray-50 text-gray-800 placeholder-gray-400 border border-gray-200 focus:border-cyan-500'
-            }`}
-          />
-          <button
-            onClick={handleSubmit}
-            disabled={!newComment.trim() || submitting}
-            aria-label="Submit comment"
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-              newComment.trim() && !submitting
-                ? 'text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark'
-                : isDark ? 'bg-midnight text-muted cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            {submitting ? (
-              <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-            ) : (
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V6m0 0l-7 7m7-7l7 7" />
-              </svg>
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
+      <Group gap="sm" mt="sm" wrap="nowrap">
+        <Avatar size={24} radius="md" color="cyan" style={{ backgroundImage: avatarGradient, flexShrink: 0 }}>
+          {(username[0] || '?').toUpperCase()}
+        </Avatar>
+        <TextInput
+          id="comment-input"
+          name="comment"
+          value={newComment}
+          onChange={e => setNewComment(e.target.value.slice(0, 500))}
+          placeholder={replyingTo ? `${t('replyTo', lang)} ${replyingTo.username}...` : t('writeComment', lang)}
+          style={{ flex: 1 }}
+          radius="md"
+        />
+        <ActionIcon
+          variant="gradient"
+          gradient={{ from: 'cyan', to: 'emerald' }}
+          onClick={handleSubmit}
+          disabled={!newComment.trim() || submitting}
+          aria-label="Submit comment"
+          size="lg"
+        >
+          {submitting ? <Loader size={16} /> : <IconSend size={16} />}
+        </ActionIcon>
+      </Group>
+    </Box>
   );
 }

@@ -4,7 +4,8 @@ import { useSettings } from '../utils/useSettings';
 import { useModalAnimation } from '../hooks/useModalAnimation';
 import { generateId, roundToHundredth } from '../utils/helpers';
 import { gramsToOz } from '../utils/convert';
-import { X, Star, Camera, Heart, Plus, ChevronDown, History } from 'lucide-react';
+import { Modal, Group, Stack, Text, TextInput, NumberInput, Textarea, Button, ActionIcon, Paper, Divider, Box, SimpleGrid, ScrollArea, Image } from '@mantine/core';
+import { IconX, IconStar, IconCamera, IconHeart, IconPlus, IconChevronDown, IconHistory } from '@tabler/icons-react';
 import { t } from '../utils/translations';
 import { showToast } from './Toast';
 
@@ -29,6 +30,27 @@ const POPULAR_BRANDS = [
   'Sour Diesel',
   'Purple Haze',
 ];
+
+const TYPE_COLORS: Record<string, string> = {
+  indica: 'grape',
+  sativa: 'amber',
+  hybrid: 'green',
+};
+
+const HEX_TO_COLOR: Record<string, string> = {
+  '#a855f7': 'grape',
+  '#f59e0b': 'amber',
+  '#10b981': 'green',
+  '#ef4444': 'red',
+  '#3b82f6': 'blue',
+  '#ec4899': 'pink',
+  '#14b8a6': 'teal',
+  '#f97316': 'orange',
+  '#6366f1': 'indigo',
+  '#84cc16': 'lime',
+};
+
+const STRAIN_COLORS = ['#a855f7', '#f59e0b', '#10b981', '#ef4444', '#3b82f6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16'];
 
 export const ProductModal = memo(function ProductModal({ product, onSave, onDelete, onClose, isDark = true, sessions = [] }: ProductModalProps) {
   const { settings, updateSettings, addFavoriteBrand, removeFavoriteBrand, addRecentBrand } = useSettings();
@@ -159,612 +181,415 @@ export const ProductModal = memo(function ProductModal({ product, onSave, onDele
     handleClose();
   };
 
-  const getStrainColor = (strainType: string) => {
-    if (isDark) {
-      switch (strainType.toLowerCase()) {
-        case 'indica':
-          return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
-        case 'sativa':
-          return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-        case 'hybrid':
-          return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
-        default:
-          return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
-      }
-    } else {
-      switch (strainType.toLowerCase()) {
-        case 'indica':
-          return 'bg-purple-100 text-purple-700 border-purple-300';
-        case 'sativa':
-          return 'bg-amber-100 text-amber-700 border-amber-300';
-        case 'hybrid':
-          return 'bg-emerald-100 text-emerald-700 border-emerald-300';
-        default:
-          return 'bg-slate-100 text-slate-700 border-slate-300';
-      }
-    }
-  };
-
-  const filteredBrands = [...new Set([...favoriteBrands, ...recentBrands, ...POPULAR_BRANDS])].filter(
-    (b) => b.toLowerCase().includes(brandSearchQuery.toLowerCase())
+  const filteredBrands = useMemo(
+    () => [...new Set([...favoriteBrands, ...recentBrands, ...POPULAR_BRANDS])].filter(
+      (b) => b.toLowerCase().includes(brandSearchQuery.toLowerCase())
+    ),
+    [favoriteBrands, recentBrands, brandSearchQuery]
   );
 
-  return (
-    <div 
-      className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-200 ${
-        isVisible ? 'bg-black/10 backdrop-blur-[2px]' : 'bg-black/0'
-      }`}
-      onClick={handleClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label={product ? `${t('editProduct', lang)} ${product.name}` : t('addProduct', lang)}
-    >
-      <div 
-        className={`w-full max-w-md rounded-2xl border-2 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col transition-all duration-200 ${
-          isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
-        } ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className={`flex items-center justify-between p-5 border-b flex-shrink-0 ${
-          isDark ? 'border-slate-800' : 'border-gray-200'
-        }`}>
-          <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            {product ? t('editProduct', lang) : t('addProduct', lang)}
-          </h2>
-          <button
-            onClick={handleClose}
-            aria-label={t('close', lang)}
-            className={`p-2 rounded-xl transition-all ${
-              isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'
-            }`}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+  const sortedHistory = useMemo(() => {
+    if (!product || productSessions.length === 0) return [];
+    return [...productSessions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [productSessions, product]);
 
-        {/* Content */}
-        <div className="p-5 space-y-4 overflow-y-auto flex-1">
-          {/* Pictures */}
-          <div>
-            <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-              {t('photos', lang)}
-            </label>
-            <div className="grid grid-cols-3 gap-2">
+  const selectedTypeColor = type.trim().toLowerCase() in TYPE_COLORS
+    ? TYPE_COLORS[type.trim().toLowerCase()]
+    : HEX_TO_COLOR[strainColor] || 'slate';
+
+  const inputBg = isDark ? 'var(--mantine-color-slate-8)' : 'var(--mantine-color-gray-0)';
+  const dimColor = isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-6)';
+
+  return (
+    <Modal
+      opened={isVisible}
+      onClose={handleClose}
+      size="md"
+      centered
+      radius="lg"
+      closeOnEscape={false}
+      aria-label={product ? `${t('editProduct', lang)} ${product.name}` : t('addProduct', lang)}
+      styles={{ content: { display: 'flex', flexDirection: 'column', maxHeight: '90vh' }, body: { padding: 0, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 } }}
+    >
+      <Box p="lg" pb="sm">
+        <Text fw={700} size="xl">{product ? t('editProduct', lang) : t('addProduct', lang)}</Text>
+      </Box>
+
+      <Box style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+        <Stack p="lg" pt="xs" gap="md">
+          <Box>
+            <Text fw={500} size="sm" mb="xs">{t('photos', lang)}</Text>
+            <SimpleGrid cols={3} spacing="sm">
               {pictures.map((pic, idx) => (
-                <div key={idx} className="relative group">
-                  <div className={`w-full aspect-square rounded-xl overflow-hidden border-2 ${
-                    isDark ? 'border-slate-700' : 'border-gray-200'
-                  }`}>
-                    <img src={pic} alt={product?.name || ''} className="w-full h-full object-cover" />
-                  </div>
-                  <button
+                <Box key={idx} style={{ position: 'relative' }}>
+                  <Box
+                    style={{
+                      width: '100%',
+                      aspectRatio: '1',
+                      borderRadius: 8,
+                      overflow: 'hidden',
+                      border: `1px solid var(--mantine-color-default-border)`,
+                    }}
+                  >
+                    <Image src={pic} alt={product?.name || ''} fit="cover" w="100%" h="100%" />
+                  </Box>
+                  <ActionIcon
+                    size="sm" radius="xl" color="red" variant="filled"
                     onClick={() => setPictures((prev) => prev.filter((_, i) => i !== idx))}
                     aria-label={t('removePhoto', lang)}
-                    className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center transition-colors md:opacity-0 md:group-hover:opacity-100 ${
-                      isDark ? 'bg-red-500 text-white hover:bg-red-400' : 'bg-red-600 text-white hover:bg-red-500'
-                    }`}
+                    style={{ position: 'absolute', top: -8, right: -8, opacity: 0.9 }}
                   >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
+                    <IconX size={12} />
+                  </ActionIcon>
+                </Box>
               ))}
-              <button
+              <Button
+                variant="default"
+                style={{ width: '100%', aspectRatio: '1', height: 'auto', borderStyle: 'dashed', flexDirection: 'column', gap: 4, color: dimColor }}
                 onClick={() => fileInputRef.current?.click()}
-                className={`w-full aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors gap-1 ${
-                  isDark
-                    ? 'border-slate-700 hover:border-slate-600 bg-slate-800/50'
-                    : 'border-gray-300 hover:border-gray-400 bg-gray-50'
-                }`}
               >
-                <Camera className={`w-5 h-5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`} />
-                <span className={`text-[10px] leading-tight ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('addPhoto', lang)}</span>
-              </button>
-            </div>
+                <IconCamera size={20} />
+                <Text style={{ fontSize: 10, lineHeight: 1.2 }}>{t('addPhoto', lang)}</Text>
+              </Button>
+            </SimpleGrid>
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
               multiple
               onChange={handlePictureUpload}
-              className="hidden"
+              style={{ display: 'none' }}
             />
-          </div>
+          </Box>
 
-          {/* Strain Name */}
-          <div>
-            <label htmlFor="strain-name" className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-              {t('strainName', lang)} *
-            </label>
-            <input
-              id="strain-name"
-              name="strain-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t('strainNamePlaceholder', lang)}
-              className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
-                isDark 
-                  ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' 
-                  : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-              } outline-none`}
-            />
-          </div>
+          <TextInput
+            id="strain-name"
+            name="strain-name"
+            label={`${t('strainName', lang)} *`}
+            value={name}
+            onChange={(e) => setName(e.currentTarget.value)}
+            placeholder={t('strainNamePlaceholder', lang)}
+          />
 
-          {/* Brand Dropdown */}
-          <div ref={brandDropdownRef}>
-            <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-              {t('brandDispensary', lang)}
-            </label>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setIsBrandDropdownOpen(!isBrandDropdownOpen)}
-                className={`w-full px-4 py-3 rounded-xl border-2 transition-colors text-left flex items-center justify-between ${
-                  isDark 
-                    ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' 
-                    : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-                } outline-none`}
-              >
-                <span className={brand ? '' : isDark ? 'text-slate-500' : 'text-gray-400'}>
-                  {brand || t('selectBrand', lang)}
-                </span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${isBrandDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
+          <Box ref={brandDropdownRef}>
+            <Text fw={500} size="sm" mb={6}>{t('brandDispensary', lang)}</Text>
+            <Button
+              variant="default" fullWidth
+              onClick={() => setIsBrandDropdownOpen(!isBrandDropdownOpen)}
+              styles={{ root: { justifyContent: 'space-between' } }}
+            >
+              <Text fw={500} c={brand ? undefined : 'dimmed'}>{brand || t('selectBrand', lang)}</Text>
+              <IconChevronDown size={16} style={{ transform: isBrandDropdownOpen ? 'rotate(180deg)' : undefined, transition: 'transform 0.2s' }} />
+            </Button>
 
-              {isBrandDropdownOpen && (
-                <div className={`absolute top-full left-0 right-0 mt-2 rounded-xl border-2 shadow-xl z-10 max-h-60 overflow-y-auto ${
-                  isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'
-                }`}>
-                  {/* Search Input */}
-                  <div className={`p-2 border-b ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
-                    <label htmlFor="brand-search" className="sr-only">Search brands</label>
-                    <input
-                      id="brand-search"
-                      name="brand-search"
-                      type="text"
-                      value={brandSearchQuery}
-                      onChange={(e) => setBrandSearchQuery(e.target.value)}
-                      placeholder={t('searchBrands', lang)}
-                      className={`w-full px-3 py-2 rounded-lg text-sm ${
-                        isDark 
-                          ? 'bg-slate-700 text-white placeholder-slate-400' 
-                          : 'bg-gray-100 text-gray-900 placeholder-gray-500'
-                      } outline-none`}
-                    />
-                  </div>
-
-                  {/* Brand List */}
-                  {filteredBrands.map((b) => (
-                    <button
-                      key={b}
-                      onClick={() => handleBrandSelect(b)}
-                      className={`w-full px-4 py-2 text-left text-sm flex items-center justify-between transition-colors ${
-                        brand === b
-                          ? isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
-                          : isDark ? 'hover:bg-slate-700 text-white' : 'hover:bg-gray-100 text-gray-900'
-                      }`}
-                    >
-                      <span>{b}</span>
-                      <div className="flex items-center gap-2">
-                        {favoriteBrands.includes(b) && (
-                          <Heart className="w-3 h-3 text-amber-400 fill-amber-400" />
-                        )}
-                        <button
-                          onClick={(e) => handleToggleFavoriteBrand(e, b)}
-                          className={`p-1 rounded transition-colors ${
-                            isDark ? 'hover:bg-slate-600' : 'hover:bg-gray-200'
-                          }`}
+            {isBrandDropdownOpen && (
+              <Paper withBorder shadow="xl" mt={6} style={{ zIndex: 10 }}>
+                <TextInput
+                  id="brand-search"
+                  name="brand-search"
+                  value={brandSearchQuery}
+                  onChange={(e) => setBrandSearchQuery(e.currentTarget.value)}
+                  placeholder={t('searchBrands', lang)}
+                  size="xs"
+                  mb="xs"
+                />
+                <ScrollArea.Autosize mah={240}>
+                  <Stack gap={0}>
+                    {filteredBrands.map((b) => {
+                      const isSelected = brand === b;
+                      return (
+                        <Button
+                          key={b}
+                          variant="subtle" fullWidth h="auto" p="xs" px="sm"
+                          onClick={() => handleBrandSelect(b)}
+                          styles={{ root: { justifyContent: 'space-between', fontWeight: 500, background: isSelected ? 'var(--mantine-color-cyan-light)' : undefined } }}
                         >
-                          <Heart className={`w-3 h-3 ${
-                            favoriteBrands.includes(b) 
-                              ? 'text-amber-400 fill-amber-400' 
-                              : isDark ? 'text-slate-500' : 'text-gray-400'
-                          }`} />
-                        </button>
-                      </div>
-                    </button>
-                  ))}
+                          <Text size="sm">{b}</Text>
+                          <Group gap={4}>
+                            {favoriteBrands.includes(b) && (
+                              <IconHeart size={14} style={{ color: 'var(--mantine-color-yellow-4)', fill: 'var(--mantine-color-yellow-4)' }} />
+                            )}
+                            <ActionIcon size="sm" variant="subtle" color={favoriteBrands.includes(b) ? 'yellow' : 'gray'} onClick={(e) => handleToggleFavoriteBrand(e, b)}>
+                              <IconHeart size={14} style={favoriteBrands.includes(b) ? { fill: 'currentColor' } : undefined} />
+                            </ActionIcon>
+                          </Group>
+                        </Button>
+                      );
+                    })}
 
-                  {/* Add New Brand */}
-                  {brandSearchQuery && !filteredBrands.some(b => b.toLowerCase() === brandSearchQuery.toLowerCase()) && (
-                    <button
-                      onClick={() => handleBrandSelect(brandSearchQuery)}
-                      className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 transition-colors ${
-                        isDark ? 'hover:bg-slate-700 text-cyan-400' : 'hover:bg-gray-100 text-cyan-600'
-                      }`}
-                    >
-                      <Plus className="w-4 h-4" />
-                      {t('addBrand', lang).replace('{query}', brandSearchQuery)}
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
+                    {brandSearchQuery && !filteredBrands.some(b => b.toLowerCase() === brandSearchQuery.toLowerCase()) && (
+                      <Button
+                        variant="subtle" fullWidth h="auto" p="xs" px="sm" color="cyan"
+                        onClick={() => handleBrandSelect(brandSearchQuery)}
+                        styles={{ root: { justifyContent: 'flex-start', fontWeight: 500 } }}
+                      >
+                        <IconPlus size={16} />
+                        <Text size="sm">{t('addBrand', lang).replace('{query}', brandSearchQuery)}</Text>
+                      </Button>
+                    )}
+                  </Stack>
+                </ScrollArea.Autosize>
+              </Paper>
+            )}
+          </Box>
 
-          {/* Type */}
-          <div>
-            <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-              {t('strainType', lang)}
-            </label>
-            <div className="grid grid-cols-4 gap-2 mb-2">
-              {(['indica', 'sativa', 'hybrid'] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => { setType(t); setShowCustomType(false); }}
-                  className={`py-2 px-3 rounded-xl text-sm font-medium transition-all border-2 capitalize ${
-                    type === t && !showCustomType
-                      ? getStrainColor(t) + ' border-current'
-                      : isDark 
-                        ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
-                        : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300'
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
-              <button
+          <Box>
+            <Text fw={500} size="sm" mb="xs">{t('strainType', lang)}</Text>
+            <Group gap="xs" mb="sm">
+              {(['indica', 'sativa', 'hybrid'] as const).map((st) => {
+                const isSelected = type === st && !showCustomType;
+                return (
+                  <Button
+                    key={st}
+                    variant={isSelected ? 'filled' : 'default'}
+                    color={TYPE_COLORS[st]}
+                    size="sm"
+                    style={{ flex: 1 }}
+                    onClick={() => { setType(st); setShowCustomType(false); }}
+                    styles={{
+                      root: {
+                        textTransform: 'capitalize',
+                        ...(isSelected && isDark ? { boxShadow: `inset 0 0 0 2px var(--mantine-color-${TYPE_COLORS[st]}-6)` } : {}),
+                      },
+                    }}
+                  >
+                    {st}
+                  </Button>
+                );
+              })}
+              <Button
+                variant={showCustomType ? 'filled' : 'default'}
+                color={showCustomType ? selectedTypeColor : 'cyan'}
+                size="sm"
+                style={{ flex: 1 }}
+                leftSection={<IconPlus size={14} />}
                 onClick={() => { setShowCustomType(!showCustomType); if (!showCustomType) setType(''); }}
-                className={`py-2 px-3 rounded-xl text-sm font-medium transition-all border-2 flex items-center justify-center gap-1 ${
-                  showCustomType
-                    ? isDark
-                      ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
-                      : 'bg-cyan-50 text-cyan-600 border-cyan-500/30'
-                    : isDark 
-                      ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
-                      : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300'
-                }`}
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span>{t('custom', lang)}</span>
-              </button>
-            </div>
+                {t('custom', lang)}
+              </Button>
+            </Group>
             {showCustomType && (
               <>
-                <label htmlFor="custom-type" className="sr-only">Custom strain type</label>
-                <input
+                <TextInput
                   id="custom-type"
                   name="custom-type"
-                  type="text"
                   value={type}
-                  onChange={(e) => setType(e.target.value)}
+                  onChange={(e) => setType(e.currentTarget.value)}
                   placeholder={t('customStrainPlaceholder', lang)}
                   autoFocus
-                  className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
-                    isDark 
-                      ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' 
-                      : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-                  } outline-none`}
                 />
                 {type && !['indica', 'sativa', 'hybrid'].includes(type.toLowerCase()) && (
-                  <div className="mt-2">
-                    <label className={`block text-xs font-medium mb-1.5 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                      Highlight Color
-                    </label>
-                    <div className="flex gap-2 flex-wrap">
-                      {['#a855f7', '#f59e0b', '#10b981', '#ef4444', '#3b82f6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16'].map(c => (
-                        <button
+                  <Box mt="xs">
+                    <Text fw={500} size="xs" mb={6} c="dimmed">Highlight Color</Text>
+                    <Group gap={6}>
+                      {STRAIN_COLORS.map(c => (
+                        <ActionIcon
                           key={c}
-                          type="button"
+                          size="md"
+                          variant="filled"
                           onClick={() => setStrainColor(c)}
-                          className={`w-7 h-7 rounded-full transition-all ${strainColor === c ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent scale-110' : ''}`}
-                          style={{ backgroundColor: c }}
                           aria-label={c}
+                          style={{
+                            backgroundColor: c,
+                            ...(strainColor === c ? { outline: '2px solid var(--mantine-color-body)', outlineOffset: 2, transform: 'scale(1.1)' } : {}),
+                          }}
                         />
                       ))}
-                    </div>
-                  </div>
+                    </Group>
+                  </Box>
                 )}
               </>
             )}
-          </div>
+          </Box>
 
-          {/* THC & CBD */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label htmlFor="thc" className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                {t('thcPercent', lang)}
-              </label>
-              <input
-                id="thc"
-                name="thc"
-                type="number"
-                step="0.1"
-                min="0"
-                max="100"
-                value={thc}
-                onChange={(e) => setThc(parseFloat(e.target.value) || 0)}
-                placeholder="0.0"
-                className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
-                  isDark 
-                    ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' 
-                    : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-                } outline-none`}
-              />
-            </div>
-            <div>
-              <label htmlFor="cbd" className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                {t('cbdPercent', lang)}
-              </label>
-              <input
-                id="cbd"
-                name="cbd"
-                type="number"
-                step="0.1"
-                min="0"
-                max="100"
-                value={cbd}
-                onChange={(e) => setCbd(parseFloat(e.target.value) || 0)}
-                placeholder="0.0"
-                className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
-                  isDark 
-                    ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' 
-                    : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-                } outline-none`}
-              />
-            </div>
-          </div>
+          <SimpleGrid cols={2} spacing="sm">
+            <NumberInput
+              id="thc" name="thc"
+              label={t('thcPercent', lang)}
+              value={thc}
+              onChange={(v) => setThc(typeof v === 'number' ? v : parseFloat(v) || 0)}
+              min={0} max={100} step={0.1} decimalScale={1}
+              placeholder="0.0"
+            />
+            <NumberInput
+              id="cbd" name="cbd"
+              label={t('cbdPercent', lang)}
+              value={cbd}
+              onChange={(v) => setCbd(typeof v === 'number' ? v : parseFloat(v) || 0)}
+              min={0} max={100} step={0.1} decimalScale={1}
+              placeholder="0.0"
+            />
+          </SimpleGrid>
 
-          {/* Amount & Price */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label htmlFor="amount" className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                {t('amountGrams', lang)}{' '}
-                <button
-                  type="button"
-                  onClick={() => setShowOz(!showOz)}
-                  className={`text-xs px-1.5 py-0.5 rounded font-medium transition-colors ${
-                    isDark ? 'text-slate-400 hover:text-cyan-400' : 'text-gray-500 hover:text-cyan-600'
-                  }`}
-                >
+          <SimpleGrid cols={2} spacing="sm">
+            <Box>
+              <Group gap={6} mb={4} align="center">
+                <Text fw={500} size="sm">{t('amountGrams', lang)}</Text>
+                <Button variant="subtle" size="xs" p={2} style={{ height: 'auto', color: dimColor }} onClick={() => setShowOz(!showOz)}>
                   {showOz ? 'g' : 'oz'}
-                </button>
-              </label>
-              <input
-                id="amount"
-                name="amount"
-                type="number"
-                step="0.01"
-                min="0"
+                </Button>
+              </Group>
+              <NumberInput
+                id="amount" name="amount"
                 value={showOz ? roundToHundredth(gramsToOz(amount)) : amount}
-                onChange={(e) => setAmount(showOz ? (parseFloat(e.target.value) || 0) * 28.3495 : (parseFloat(e.target.value) || 0))}
+                onChange={(v) => setAmount(showOz ? ((typeof v === 'number' ? v : parseFloat(v) || 0) * 28.3495) : (typeof v === 'number' ? v : parseFloat(v) || 0))}
+                min={0} step={0.01} decimalScale={2}
                 placeholder={t('amountPlaceholder', lang)}
-                className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
-                  isDark 
-                    ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' 
-                    : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-                } outline-none`}
               />
-            </div>
-            <div>
-              <label htmlFor="price" className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                {t('priceLabel', lang)} ({settings.currency})
-              </label>
-              <input
-                id="price"
-                name="price"
-                type="number"
-                step="0.01"
-                min="0"
-                value={price}
-                onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
-                placeholder="0.00"
-                className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
-                  isDark 
-                    ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' 
-                    : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-                } outline-none`}
-              />
-            </div>
-          </div>
+            </Box>
+            <NumberInput
+              id="price" name="price"
+              label={`${t('priceLabel', lang)} (${settings.currency})`}
+              value={price}
+              onChange={(v) => setPrice(typeof v === 'number' ? v : parseFloat(v) || 0)}
+              min={0} step={0.01} decimalScale={2}
+              placeholder="0.00"
+            />
+          </SimpleGrid>
 
-          {/* Purchase Date */}
-          <div>
-            <label htmlFor="purchase-date" className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-              Purchase Date
-            </label>
+          <Box>
+            <Text fw={500} size="sm" mb="xs">Purchase Date</Text>
             <input
               id="purchase-date"
               name="purchase-date"
               type="date"
               value={purchasedAt}
               onChange={(e) => setPurchasedAt(e.target.value)}
-              className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
-                isDark
-                  ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500'
-                  : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'
-              } outline-none`}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                borderRadius: 8,
+                border: '1px solid var(--mantine-color-default-border)',
+                background: inputBg,
+                color: 'var(--mantine-color-text)',
+                outline: 'none',
+              }}
             />
-          </div>
+          </Box>
 
-          {/* Rating */}
-          <div>
-              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                {t('rating', lang)}
-              </label>
-            <div className="flex items-center gap-1">
+          <Box>
+            <Text fw={500} size="sm" mb="xs">{t('rating', lang)}</Text>
+            <Group gap={4}>
               {[1, 2, 3, 4, 5].map((star) => {
                 const fillPercent = (hoveredStar || rating) >= star ? 100 : (hoveredStar || rating) >= star - 0.5 ? 50 : 0;
                 return (
-                  <div key={star} className="relative flex">
-                    <button
+                  <Box key={star} style={{ position: 'relative' }}>
+                    <ActionIcon
+                      variant="transparent"
+                      style={{ position: 'absolute', left: 0, top: 0, width: '50%', height: '100%', zIndex: 2, opacity: 0 }}
                       onClick={() => setRating(star - 0.5)}
                       onMouseEnter={() => setHoveredStar(star - 0.5)}
                       onMouseLeave={() => setHoveredStar(0)}
                       aria-label={`${star - 0.5} ${t('stars', lang)}`}
-                      className="absolute left-0 top-0 w-1/2 h-full z-10 cursor-pointer"
                     />
-                    <button
+                    <ActionIcon
+                      variant="transparent"
+                      style={{ position: 'absolute', right: 0, top: 0, width: '50%', height: '100%', zIndex: 2, opacity: 0 }}
                       onClick={() => setRating(star)}
                       onMouseEnter={() => setHoveredStar(star)}
                       onMouseLeave={() => setHoveredStar(0)}
                       aria-label={`${star} ${t('stars', lang)}`}
-                      className="absolute right-0 top-0 w-1/2 h-full z-10 cursor-pointer"
                     />
-                    <div className="relative w-7 h-7 pointer-events-none">
-                      <Star className={`w-7 h-7 absolute inset-0 ${isDark ? 'text-slate-600' : 'text-gray-300'}`} />
-                      <div className={`absolute inset-0 overflow-hidden transition-all`} style={{ width: `${fillPercent}%` }}>
-                        <Star className="w-7 h-7 text-amber-400 fill-amber-400" />
-                      </div>
-                    </div>
-                  </div>
+                    <Box style={{ position: 'relative', width: 28, height: 28, pointerEvents: 'none' }}>
+                      <IconStar size={28} style={{ position: 'absolute', inset: 0, color: isDark ? 'var(--mantine-color-slate-6)' : 'var(--mantine-color-gray-3)' }} />
+                      <Box style={{ position: 'absolute', inset: 0, overflow: 'hidden', transition: 'width 0.15s', width: `${fillPercent}%` }}>
+                        <IconStar size={28} style={{ color: 'var(--mantine-color-yellow-4)', fill: 'var(--mantine-color-yellow-4)' }} />
+                      </Box>
+                    </Box>
+                  </Box>
                 );
               })}
               {(hoveredStar || rating) > 0 && (
-                <span className={`ml-2 text-sm font-medium ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                  {(hoveredStar || rating)}/5
-                </span>
+                <Text size="sm" fw={500} c="dimmed" ml="xs">{(hoveredStar || rating)}/5</Text>
               )}
-            </div>
-          </div>
+            </Group>
+          </Box>
 
-          {/* Tags & Effects */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label htmlFor="tags" className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                {t('tags', lang)}
-              </label>
-              <input
-                id="tags"
-                name="tags"
-                type="text"
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-                placeholder={t('tagsPlaceholder', lang)}
-                className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
-                  isDark 
-                    ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' 
-                    : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-                } outline-none`}
-              />
-            </div>
-            <div>
-              <label htmlFor="effects" className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                {t('effects', lang)}
-              </label>
-              <input
-                id="effects"
-                name="effects"
-                type="text"
-                value={effects}
-                onChange={(e) => setEffects(e.target.value)}
-                placeholder={t('effectsPlaceholder', lang)}
-                className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${
-                  isDark 
-                    ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' 
-                    : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-                } outline-none`}
-              />
-            </div>
-          </div>
-
-          {/* Notes */}
-          <div>
-              <label htmlFor="notes" className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                {t('notesLabel', lang)}
-              </label>
-              <textarea
-                id="notes"
-                name="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder={t('notesPlaceholder', lang)}
-              rows={3}
-              className={`w-full px-4 py-3 rounded-xl border-2 transition-colors resize-none ${
-                isDark 
-                  ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' 
-                  : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-              } outline-none`}
+          <SimpleGrid cols={2} spacing="sm">
+            <TextInput
+              id="tags" name="tags"
+              label={t('tags', lang)}
+              value={tags}
+              onChange={(e) => setTags(e.currentTarget.value)}
+              placeholder={t('tagsPlaceholder', lang)}
             />
-          </div>
+            <TextInput
+              id="effects" name="effects"
+              label={t('effects', lang)}
+              value={effects}
+              onChange={(e) => setEffects(e.currentTarget.value)}
+              placeholder={t('effectsPlaceholder', lang)}
+            />
+          </SimpleGrid>
 
-          {/* Session History */}
+          <Textarea
+            id="notes" name="notes"
+            label={t('notesLabel', lang)}
+            value={notes}
+            onChange={(e) => setNotes(e.currentTarget.value)}
+            placeholder={t('notesPlaceholder', lang)}
+            minRows={3}
+          />
+
           {product && productSessions.length > 0 && (
-            <div>
-              <button
+            <Box>
+              <Button
+                variant="subtle" fullWidth h="auto" p="xs"
                 onClick={() => setShowHistory(!showHistory)}
-                className={`flex items-center gap-2 w-full p-3 rounded-xl transition-colors ${
-                  isDark ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-gray-100 text-gray-700'
-                }`}
+                styles={{ root: { justifyContent: 'flex-start', fontWeight: 500 } }}
               >
-                <History className="w-4 h-4" />
-                <span className="text-sm font-medium">{t('sessionHistory', lang)} ({productSessions.length})</span>
-                <ChevronDown className={`w-4 h-4 ml-auto transition-transform ${showHistory ? 'rotate-180' : ''}`} />
-              </button>
+                <IconHistory size={16} />
+                <Text size="sm" fw={500}>{t('sessionHistory', lang)} ({productSessions.length})</Text>
+                <IconChevronDown size={16} style={{ marginLeft: 'auto', transform: showHistory ? 'rotate(180deg)' : undefined, transition: 'transform 0.2s' }} />
+              </Button>
               {showHistory && (
-                <div className="mt-2 space-y-2 max-h-48 overflow-y-auto">
-                  {[...productSessions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((s) => (
-                    <div key={s.id} className={`p-3 rounded-xl text-sm ${
-                      isDark ? 'bg-slate-800/50' : 'bg-gray-50'
-                    }`}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className={`font-medium ${isDark ? 'text-slate-200' : 'text-gray-800'}`}>
-                          {new Date(s.date).toLocaleDateString()}
-                        </span>
-                        <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                          {s.amount}g · {s.people}p · {s.hitsCount}hits
-                        </span>
-                      </div>
-                      {s.notes && (
-                        <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-gray-500'} line-clamp-2`}>{s.notes}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                <ScrollArea.Autosize mah={192} mt="xs">
+                  <Stack gap="xs">
+                    {sortedHistory.map((s) => (
+                      <Paper withBorder p="sm" radius="md" bg={isDark ? 'var(--mantine-color-slate-8)' : undefined}>
+                        <Group justify="space-between" mb={4}>
+                          <Text size="sm" fw={500}>{new Date(s.date).toLocaleDateString()}</Text>
+                          <Text size="xs" c="dimmed">{s.amount}g · {s.people}p · {s.hitsCount}hits</Text>
+                        </Group>
+                        {s.notes && <Text size="xs" c="dimmed" lineClamp={2}>{s.notes}</Text>}
+                      </Paper>
+                    ))}
+                  </Stack>
+                </ScrollArea.Autosize>
               )}
-            </div>
+            </Box>
           )}
-        </div>
+        </Stack>
+      </Box>
 
-        {/* Footer */}
-        <div className={`flex items-center gap-3 p-5 border-t flex-shrink-0 ${
-          isDark ? 'border-slate-800' : 'border-gray-200'
-        }`}>
-          {product && onDelete && (
-            <button
-              onClick={() => {
-                onDelete(product.id);
-                handleClose();
-              }}
-              aria-label={t('delete', lang)}
-              className={`px-4 py-2 rounded-xl font-medium transition-all ${
-                isDark 
-                  ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' 
-                  : 'bg-red-50 text-red-600 hover:bg-red-100'
-              }`}
-            >
-              {t('delete', lang)}
-            </button>
-          )}
-          <div className="flex-1" />
-          <button
-            onClick={handleClose}
-            aria-label={t('cancel', lang)}
-            className={`px-4 py-2 rounded-xl font-medium transition-all ${
-              isDark 
-                ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
+      <Divider />
+
+      <Group p="lg" justify="space-between" gap="sm">
+        {product && onDelete && (
+          <Button
+            variant="light" color="red"
+            onClick={() => {
+              onDelete(product.id);
+              handleClose();
+            }}
+            aria-label={t('delete', lang)}
           >
-            {t('cancel', lang)}
-          </button>
-          <button
+            {t('delete', lang)}
+          </Button>
+        )}
+        <Group gap="sm" ml="auto">
+          <Button variant="default" onClick={handleClose} aria-label={t('cancel', lang)} styles={{ root: { color: dimColor } }}>{t('cancel', lang)}</Button>
+          <Button
+            color="cyan"
             onClick={handleSubmit}
             disabled={!name.trim()}
             aria-label={product ? t('save', lang) : t('addProduct', lang)}
-            className={`px-6 py-2 rounded-xl font-bold transition-all ${
-              name.trim()
-                ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white hover:from-cyan-400 hover:to-emerald-400'
-                : isDark 
-                  ? 'bg-slate-700 text-slate-500 cursor-not-allowed' 
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            }`}
+            className="bg-gradient-to-r from-cyan-500 to-emerald-500"
           >
             {product ? t('save', lang) : t('addProduct', lang)}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </Group>
+      </Group>
+    </Modal>
   );
 });

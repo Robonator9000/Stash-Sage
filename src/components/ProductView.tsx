@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import type { Product } from '../types';
 import { supabase } from '../utils/supabase';
 import { t } from '../utils/translations';
-import { ChevronLeft, Star, Scale, FlaskConical, StickyNote, Calendar, Tag } from 'lucide-react';
+import { IconChevronLeft, IconStar, IconScale, IconFlask2, IconNote, IconCalendar, IconTag } from '@tabler/icons-react';
+import { Paper, Group, Stack, Text, Badge, Loader, Box, UnstyledButton } from '@mantine/core';
 
 interface ProductViewProps {
   productId: string;
@@ -55,141 +56,138 @@ export function ProductView({ productId, onClose, isDark, lang }: ProductViewPro
 
   const allImages = product?.pictures?.filter(Boolean) || (product?.picture ? [product.picture] : []);
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex flex-col" onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} className="flex flex-col flex-1 min-h-0 max-w-3xl w-full mx-auto">
-        {/* Back button */}
-        <div className="flex items-center justify-between px-4 py-3 shrink-0">
-          <button type="button" onClick={onClose}
-            className="flex items-center gap-2 text-white hover:text-white/80 transition-colors">
-            <ChevronLeft className="w-5 h-5" />
-            <span className="text-sm font-medium">{t('back', lang)}</span>
-          </button>
-        </div>
+  const mutedText = isDark ? 'var(--mantine-color-dark-3)' : 'var(--mantine-color-gray-5)';
+  const primaryText = isDark ? 'var(--mantine-color-dark-0)' : 'var(--mantine-color-gray-9)';
+  const statBg = isDark ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-0)';
 
-        <div className="flex-1 overflow-y-auto px-4 pb-8">
+  return (
+    <Box style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.8)', display: 'flex', flexDirection: 'column' }} onClick={onClose}>
+      <Box onClick={e => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, maxWidth: 768, width: '100%', margin: '0 auto' }}>
+        <Group justify="space-between" px="md" py="sm" style={{ flexShrink: 0 }}>
+          <UnstyledButton type="button" onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#fff' }}>
+            <IconChevronLeft size={20} />
+            <Text size="sm" fw={500}>{t('back', lang)}</Text>
+          </UnstyledButton>
+        </Group>
+
+        <Box style={{ flex: 1, overflowY: 'auto', padding: '0 16px 32px' }}>
           {loading ? (
-            <div className="flex items-center justify-center h-48">
-              <div className={`w-8 h-8 border-2 rounded-full animate-spin ${isDark ? 'border-cyan-500 border-t-transparent' : 'border-cyan-500 border-t-transparent'}`} />
-            </div>
+            <Group justify="center" align="center" style={{ height: 192 }}>
+              <Loader color="cyan" />
+            </Group>
           ) : error ? (
-            <div className={`p-8 text-center text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+            <Text ta="center" py="xl" size="sm" c={mutedText}>
               {t('noProductsFound', lang)}
-            </div>
+            </Text>
           ) : product ? (
-            <div className={`rounded-2xl overflow-hidden ${isDark ? 'bg-gray-950 border border-white/5' : 'bg-white border border-gray-200'}`}>
-              {/* Images */}
+            <Paper
+              radius="lg"
+              style={{ overflow: 'hidden', background: isDark ? '#0a0a0a' : '#fff', border: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : 'var(--mantine-color-gray-2)'}` }}
+            >
               {allImages.length > 0 && (
-                <div className="grid grid-cols-2 gap-1">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 4 }}>
                   {allImages.map((img, i) => (
-                    <div key={i} className={`${i === 0 && allImages.length === 1 ? 'col-span-2' : ''} aspect-video`}>
-                      <img src={img} alt="" loading="lazy" className="w-full h-full object-cover" />
+                    <div key={i} style={{ gridColumn: i === 0 && allImages.length === 1 ? '1 / -1' : undefined, aspectRatio: '16/9' }}>
+                      <img src={img} alt="" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                   ))}
                 </div>
               )}
 
-              <div className="p-5 space-y-4">
-                {/* Name + Brand */}
+              <Stack p="md" gap="md">
                 <div>
-                  <h2 className={`text-xl font-bold font-display ${isDark ? 'text-frost' : 'text-gray-900'}`}>{product.name}</h2>
+                  <Text fw={700} size="xl" c={primaryText}>{product.name}</Text>
                   {product.brand && (
-                    <p className={`text-sm mt-0.5 ${isDark ? 'text-muted' : 'text-gray-500'}`}>{product.brand}</p>
+                    <Text size="sm" style={{ marginTop: 2 }} c={mutedText}>{product.brand}</Text>
                   )}
                 </div>
 
-                {/* Type + Strain */}
-                <div className="flex flex-wrap gap-2">
+                <Group gap={8} wrap="wrap">
                   {product.type && (
-                    <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${isDark ? 'bg-midnight text-cyanx' : 'bg-cyan-50 text-cyan-600'}`}>{product.type}</span>
+                    <Badge size="lg" variant="light" color="cyan" radius="sm">{product.type}</Badge>
                   )}
                   {product.strain && product.strain !== product.name && (
-                    <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${isDark ? 'bg-surface text-mist' : 'bg-gray-100 text-gray-600'}`}>{product.strain}</span>
+                    <Badge size="lg" variant="light" color="gray" radius="sm">{product.strain}</Badge>
                   )}
-                </div>
+                </Group>
 
-                {/* Stats grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
                   {product.thc > 0 && (
-                    <div className={`p-3 rounded-xl ${isDark ? 'bg-midnight/50' : 'bg-gray-50'}`}>
-                      <div className="text-xs text-muted">THC</div>
-                      <div className={`text-lg font-bold ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>{product.thc}%</div>
-                    </div>
+                    <Paper p="md" radius="md" withBorder style={{ background: statBg }}>
+                      <Text size="xs" c="dimmed">THC</Text>
+                      <Text fw={700} size="lg" c={isDark ? 'var(--mantine-color-orange-4)' : 'var(--mantine-color-orange-6)'}>{product.thc}%</Text>
+                    </Paper>
                   )}
                   {product.cbd > 0 && (
-                    <div className={`p-3 rounded-xl ${isDark ? 'bg-midnight/50' : 'bg-gray-50'}`}>
-                      <div className="text-xs text-muted">CBD</div>
-                      <div className={`text-lg font-bold ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>{product.cbd}%</div>
-                    </div>
+                    <Paper p="md" radius="md" withBorder style={{ background: statBg }}>
+                      <Text size="xs" c="dimmed">CBD</Text>
+                      <Text fw={700} size="lg" c={isDark ? 'var(--mantine-color-blue-4)' : 'var(--mantine-color-blue-6)'}>{product.cbd}%</Text>
+                    </Paper>
                   )}
-                  <div className={`p-3 rounded-xl ${isDark ? 'bg-midnight/50' : 'bg-gray-50'}`}>
-                    <div className="text-xs text-muted">Amount</div>
-                    <div className={`text-lg font-bold flex items-center gap-1 ${isDark ? 'text-frost' : 'text-gray-900'}`}>
-                      <Scale className="w-4 h-4" />{product.amount}g
-                    </div>
-                  </div>
+<Paper p="md" radius="md" withBorder style={{ background: statBg }}>
+                    <Text size="xs" c="dimmed">Amount</Text>
+                    <Group gap={6}>
+                      <IconScale size={16} />
+                      <Text fw={700} size="lg" c={primaryText}>{product.amount}g</Text>
+                    </Group>
+                  </Paper>
                   {product.price > 0 && (
-                    <div className={`p-3 rounded-xl ${isDark ? 'bg-midnight/50' : 'bg-gray-50'}`}>
-                      <div className="text-xs text-muted">Price</div>
-                      <div className={`text-lg font-bold ${isDark ? 'text-emera' : 'text-emerald-600'}`}>${product.price.toFixed(2)}</div>
-                    </div>
+                    <Paper p="md" radius="md" withBorder style={{ background: statBg }}>
+                      <Text size="xs" c="dimmed">Price</Text>
+                      <Text fw={700} size="lg" c={isDark ? 'var(--mantine-color-emerald-6)' : 'var(--mantine-color-emerald-6)'}>${product.price.toFixed(2)}</Text>
+                    </Paper>
                   )}
                 </div>
 
-                {/* Rating */}
                 {product.rating > 0 && (
-                  <div className="flex items-center gap-1.5">
+                  <Group gap={6}>
                     {Array.from({ length: 5 }, (_, i) => (
-                      <Star key={i} className={`w-4 h-4 ${i < Math.round(product.rating) ? 'text-amber-500 fill-amber-500' : isDark ? 'text-slate-600' : 'text-gray-300'}`} />
+                      <IconStar key={i} size={16} color={i < Math.round(product.rating) ? 'var(--mantine-color-amber-6)' : (isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-3)')} style={i < Math.round(product.rating) ? { fill: 'var(--mantine-color-amber-5)' } : undefined} />
                     ))}
-                    <span className={`text-sm ml-1 ${isDark ? 'text-muted' : 'text-gray-500'}`}>{product.rating.toFixed(1)}</span>
-                  </div>
+                    <Text size="sm" ml={4} c={mutedText}>{product.rating.toFixed(1)}</Text>
+                  </Group>
                 )}
 
-                {/* Tags */}
                 {product.tags && (
                   <div>
-                    <div className={`text-xs font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1 ${isDark ? 'text-muted' : 'text-gray-400'}`}>
-                      <Tag className="w-3 h-3" /> Tags
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
+                    <Text size="xs" fw={600} tt="uppercase" style={{ letterSpacing: '0.05em', marginBottom: 6 }} c={isDark ? 'var(--mantine-color-dark-3)' : 'var(--mantine-color-gray-4)'}>
+                      <Group gap={4}><IconTag size={12} /> Tags</Group>
+                    </Text>
+                    <Group gap={6} wrap="wrap">
                       {product.tags.split(',').map(t => t.trim()).filter(Boolean).map(tag => (
-                        <span key={tag} className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${isDark ? 'bg-surface text-cyanx' : 'bg-cyan-50 text-cyan-600'}`}>{tag}</span>
+                        <Badge key={tag} variant="light" color="cyan" radius="sm">{tag}</Badge>
                       ))}
-                    </div>
+                    </Group>
                   </div>
                 )}
 
-                {/* Effects */}
                 {product.effects && (
-                  <div className="flex items-start gap-2">
-                    <FlaskConical className={`w-4 h-4 mt-0.5 shrink-0 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
-                    <span className={`text-sm ${isDark ? 'text-mist' : 'text-gray-600'}`}>{product.effects}</span>
-                  </div>
+                  <Group align="flex-start" gap={8}>
+                    <IconFlask2 size={16} style={{ marginTop: 2, flexShrink: 0, color: mutedText }} />
+                    <Text size="sm" c={isDark ? 'var(--mantine-color-dark-2)' : 'var(--mantine-color-gray-6)'}>{product.effects}</Text>
+                  </Group>
                 )}
 
-                {/* Notes */}
                 {product.notes && (
-                  <div className="flex items-start gap-2">
-                    <StickyNote className={`w-4 h-4 mt-0.5 shrink-0 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
-                    <p className={`text-sm leading-relaxed ${isDark ? 'text-mist' : 'text-gray-600'}`}>{product.notes}</p>
-                  </div>
+                  <Group align="flex-start" gap={8}>
+                    <IconNote size={16} style={{ marginTop: 2, flexShrink: 0, color: mutedText }} />
+                    <Text size="sm" style={{ lineHeight: 1.6 }} c={isDark ? 'var(--mantine-color-dark-2)' : 'var(--mantine-color-gray-6)'}>{product.notes}</Text>
+                  </Group>
                 )}
 
-                {/* Purchase date */}
                 {product.purchasedAt && (
-                  <div className="flex items-center gap-2">
-                    <Calendar className={`w-4 h-4 shrink-0 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
-                    <span className={`text-sm ${isDark ? 'text-mist' : 'text-gray-600'}`}>
+                  <Group align="center" gap={8}>
+                    <IconCalendar size={16} style={{ flexShrink: 0, color: mutedText }} />
+                    <Text size="sm" c={isDark ? 'var(--mantine-color-dark-2)' : 'var(--mantine-color-gray-6)'}>
                       Purchased {new Date(product.purchasedAt).toLocaleDateString()}
-                    </span>
-                  </div>
+                    </Text>
+                  </Group>
                 )}
-              </div>
-            </div>
+              </Stack>
+            </Paper>
           ) : null}
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 }

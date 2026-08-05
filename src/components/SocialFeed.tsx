@@ -6,7 +6,8 @@ import { PostCard } from './PostCard';
 import { CreatePostCard } from './CreatePostCard';
 import { PostDetailView } from './PostDetailView';
 import { showToast } from './Toast';
-import { Bookmark, X } from 'lucide-react';
+import { SegmentedControl, Paper, Text, Group, UnstyledButton, ActionIcon, Textarea, Button, Loader, Skeleton, Stack, Box } from '@mantine/core';
+import { IconBookmark, IconX } from '@tabler/icons-react';
 import { getProfiles } from '../utils/profileCache';
 
 const TRENDING_CACHE_TTL = 60 * 1000;
@@ -30,6 +31,13 @@ interface SocialFeedProps {
 
 const PAGE_SIZE = 10;
 let socialFeedChannelCounter = 0;
+
+const feedOptions = [
+  { value: 'latest' as const, label: 'Latest' },
+  { value: 'following' as const, label: 'Following' },
+  { value: 'trending' as const, label: 'Trending' },
+  { value: 'bookmarked' as const, label: (<Group gap={4} wrap="nowrap"><IconBookmark size={12} />Bookmarked</Group>) },
+];
 
 export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId, username, products, profile, onViewProfile, viewPostId, onViewPost, onClosePost, activeHashtag: externalHashtag, onHashtagClick: externalHashtagClick }: SocialFeedProps) {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -495,34 +503,35 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
   const quotePost = quotePostId ? posts.find(p => p.id === quotePostId) : null;
   const focusedPost = viewPostId ? posts.find(p => p.id === viewPostId) : null;
 
+  const mutedColor = isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-6)';
+
   return (
-    <div className="space-y-4">
+    <Stack gap="md">
       {quotePostId && quotePost && (
-        <div className={`p-4 rounded-2xl ${isDark ? 'bg-surface/40 border border-edge backdrop-blur-sm' : 'bg-white/70 border border-gray-200 backdrop-blur-sm'}`}>
-          <div className="flex items-center justify-between mb-3">
-            <span className={`text-sm font-medium ${isDark ? 'text-frost' : 'text-gray-800'}`}>{t('sharePost', lang)}</span>
-            <button onClick={() => { setQuotePostId(null); setQuoteContent(''); }} className={isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}>
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-          <div className={`p-3 rounded-xl border mb-3 ${isDark ? 'bg-midnight/50 border-edge' : 'bg-gray-50 border-gray-200'}`}>
-            <div className="flex items-center gap-2 mb-1">
-              <span className={`text-xs font-display font-bold ${isDark ? 'text-frost' : 'text-gray-800'}`}>
+        <Paper p="md" radius="md" withBorder style={{ background: isDark ? 'var(--mantine-color-dark-6)' : 'rgba(255,255,255,0.7)', backdropFilter: 'blur(4px)' }}>
+          <Group justify="space-between" mb="sm">
+            <Text size="sm" fw={500} style={{ color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)' }}>{t('sharePost', lang)}</Text>
+            <ActionIcon variant="subtle" onClick={() => { setQuotePostId(null); setQuoteContent(''); }} aria-label="Close quote">
+              <IconX size={16} />
+            </ActionIcon>
+          </Group>
+          <Paper p="sm" radius="md" mb="sm" withBorder style={{ background: isDark ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-1)' }}>
+            <Group gap="sm" mb={4}>
+              <Text size="xs" fw={700} style={{ color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)' }}>
                 {quotePost.author?.username || 'Unknown'}
-              </span>
-            </div>
-            <p className={`text-xs whitespace-pre-wrap ${isDark ? 'text-mist' : 'text-gray-600'}`}>
+              </Text>
+            </Group>
+            <Text size="xs" style={{ whiteSpace: 'pre-wrap', color: isDark ? 'var(--mantine-color-gray-2)' : 'var(--mantine-color-gray-7)' }}>
               {quotePost.content}
-            </p>
-          </div>
-          <textarea
+            </Text>
+          </Paper>
+          <Textarea
             value={quoteContent}
             onChange={e => setQuoteContent(e.target.value.slice(0, 500))}
             placeholder={`${t('sharePost', lang)}...`}
-            className={`w-full text-sm px-3 py-2 rounded-xl outline-none resize-none mb-2 ${
-              isDark ? 'bg-midnight text-frost border border-edge focus:border-cyanx/50 placeholder-muted' : 'bg-gray-50 text-gray-800 border border-gray-200 focus:border-cyan-500 placeholder-gray-400'
-            }`}
-            rows={2}
+            minRows={2}
+            maxLength={500}
+            mb="xs"
             autoFocus
             onKeyDown={e => {
               if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -530,17 +539,19 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
               }
             }}
           />
-          <div className="flex justify-end">
-            <button
-            onClick={() => {
-              if (quoteContent.trim()) handleQuotePost(quoteContent.trim());
-            }}
-              className="px-3 py-1.5 rounded-xl text-xs font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark"
+          <Group justify="flex-end">
+            <Button
+              variant="gradient"
+              gradient={{ from: 'cyan', to: 'emerald' }}
+              size="xs"
+              onClick={() => {
+                if (quoteContent.trim()) handleQuotePost(quoteContent.trim());
+              }}
             >
               {t('postButton', lang)}
-            </button>
-          </div>
-        </div>
+            </Button>
+          </Group>
+        </Paper>
       )}
 
       {showCreatePostCard && (
@@ -556,77 +567,67 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
         />
       )}
 
-      {/* Feed filter */}
-      <div role="tablist" className={`flex items-center gap-1 p-1 rounded-xl ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
-        {(['latest', 'following', 'trending', 'bookmarked'] as const).map(f => (
-          <button
-            key={f}
-            role="tab"
-            aria-selected={feedFilter === f}
-            onClick={() => setFeedFilter(f)}
-            className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-              feedFilter === f
-                ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm'
-                : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            {f === 'bookmarked' && <Bookmark className={`w-3.5 h-3.5 ${feedFilter === f ? 'fill-current' : ''}`} />}
-            {f === 'latest' ? 'Latest' : f === 'following' ? 'Following' : f === 'trending' ? 'Trending' : 'Bookmarked'}
-          </button>
-        ))}
-      </div>
+      <SegmentedControl
+        value={feedFilter}
+        onChange={(value) => setFeedFilter(value as 'latest' | 'following' | 'trending' | 'bookmarked')}
+        data={feedOptions}
+        fullWidth
+        radius="md"
+        size="sm"
+      />
 
       {loading && (
-        <div aria-busy="true" aria-label="Loading posts" className="space-y-4">
-          {[1, 2, 3].map(i => (
-            <div key={i} className={`p-4 rounded-2xl ${isDark ? 'bg-surface/40 border border-edge backdrop-blur-sm' : 'bg-white/70 border border-gray-200 backdrop-blur-sm'}`}>
-              <div className="flex items-start gap-3">
-                <div className={`w-9 h-9 rounded-xl animate-pulse ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
-                <div className="flex-1 space-y-2">
-                  <div className={`h-3 w-24 rounded animate-pulse ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
-                  <div className={`h-3 w-full rounded animate-pulse ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
-                  <div className={`h-3 w-3/4 rounded animate-pulse ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
-                </div>
-              </div>
-            </div>
-          ))}
+        <div aria-busy="true" aria-label="Loading posts">
+          <Stack gap="md">
+            {[1, 2, 3].map(i => (
+              <Paper key={i} p="md" radius="md" withBorder style={{ background: isDark ? 'var(--mantine-color-dark-6)' : 'rgba(255,255,255,0.7)', backdropFilter: 'blur(4px)' }}>
+                <Group align="flex-start" gap="sm" wrap="nowrap">
+                  <Skeleton width={36} height={36} radius="md" />
+                  <Box style={{ flex: 1 }}>
+                    <Skeleton height={12} width={96} radius="md" mb="sm" />
+                    <Skeleton height={12} radius="md" mb="sm" />
+                    <Skeleton height={12} width="75%" radius="md" />
+                  </Box>
+                </Group>
+              </Paper>
+            ))}
+          </Stack>
         </div>
       )}
 
       {error && (
-        <div className={`p-4 rounded-2xl text-center text-sm ${isDark ? 'bg-red-900/20 text-red-400 border border-red-900/30' : 'bg-red-50 text-red-500 border border-red-200'}`}>
-          {error}
-        </div>
+        <Paper p="md" radius="md" ta="center" withBorder style={{ background: isDark ? 'var(--mantine-color-red-9)' : 'var(--mantine-color-red-1)' }}>
+          <Text size="sm" c="red">{error}</Text>
+        </Paper>
       )}
 
-      {/* Trending hashtags */}
       {(trendingTags.length > 0 || activeHashtag) && (
-        <div className={`flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none ${isDark ? 'text-mist' : 'text-gray-600'}`}>
+        <Group gap="sm" wrap="nowrap" style={{ overflowX: 'auto', paddingBottom: 4 }}>
           {activeHashtag && (
-            <button onClick={() => handleHashtagClick(activeHashtag)}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-cyanx/20 text-cyanx whitespace-nowrap">
-              <X className="w-3 h-3" /> #{activeHashtag}
-            </button>
+            <UnstyledButton onClick={() => handleHashtagClick(activeHashtag)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 'var(--mantine-radius-md)', fontSize: 12, fontWeight: 500, whiteSpace: 'nowrap', background: 'var(--mantine-color-cyan-1)', color: 'var(--mantine-color-cyan-8)' }}>
+              <IconX size={12} /> #{activeHashtag}
+            </UnstyledButton>
           )}
           {trendingTags.map(tag => (
-            <button key={tag} onClick={(e) => { e.stopPropagation(); handleHashtagClick(tag); }}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-                activeHashtag === tag
-                  ? 'bg-cyanx/20 text-cyanx'
-                  : isDark ? 'bg-midnight text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:text-gray-800'
-              }`}>
+            <UnstyledButton key={tag} onClick={(e) => { e.stopPropagation(); handleHashtagClick(tag); }}
+              style={{
+                padding: '4px 10px', borderRadius: 'var(--mantine-radius-md)', fontSize: 12, fontWeight: 500, whiteSpace: 'nowrap',
+                background: activeHashtag === tag ? 'var(--mantine-color-cyan-1)' : (isDark ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-1)'),
+                color: activeHashtag === tag ? 'var(--mantine-color-cyan-8)' : mutedColor,
+              }}>
               #{tag}
-            </button>
+            </UnstyledButton>
           ))}
-        </div>
+        </Group>
       )}
 
       {!loading && !error && displayedPosts.length === 0 && (
-        <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/40 border border-edge backdrop-blur-sm' : 'bg-white/70 border border-gray-200 backdrop-blur-sm'}`}>
-          <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+        <Paper p="xl" radius="md" ta="center" withBorder style={{ background: isDark ? 'var(--mantine-color-dark-6)' : 'rgba(255,255,255,0.7)', backdropFilter: 'blur(4px)' }}>
+          <Text size="sm" c="dimmed">
             {activeHashtag ? `No posts tagged #${activeHashtag}` : feedFilter === 'following' ? 'No posts from people you follow yet' : t('noPostsYet', lang)}
-          </p>
-        </div>
+          </Text>
+        </Paper>
       )}
 
       {displayedPosts.map(post => (
@@ -655,15 +656,12 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       ))}
 
       {loadingMore && (
-        <div className="flex justify-center py-4">
-          <svg className={`w-6 h-6 animate-spin ${isDark ? 'text-muted' : 'text-gray-400'}`} viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-        </div>
+        <Group justify="center" py="md">
+          <Loader size={24} color={mutedColor} />
+        </Group>
       )}
 
-      <div ref={observerRef} className="h-4" />
+      <div ref={observerRef} style={{ height: 16 }} />
 
       {focusedPost && (
         <PostDetailView
@@ -685,6 +683,6 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
           onPostClick={handlePostClick}
         />
       )}
-    </div>
+    </Stack>
   );
 });

@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import type { Product } from '../types';
 import { t } from '../utils/translations';
+import { Paper, Text, Group, Textarea, Button, Avatar, ActionIcon, Loader, UnstyledButton, Box } from '@mantine/core';
+import { IconPhoto, IconLink, IconBuildingStore, IconX } from '@tabler/icons-react';
 
 interface CreatePostCardProps {
   isDark: boolean;
@@ -15,6 +17,8 @@ interface CreatePostCardProps {
 
 const MAX_CHARS = 500;
 const MAX_IMAGES = 4;
+
+const avatarGradient = 'linear-gradient(135deg, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))';
 
 export function CreatePostCard({ isDark, lang, displayName, currentUserId, products, avatarUrl, onSubmit, onViewProfile }: CreatePostCardProps) {
   const [content, setContent] = useState('');
@@ -85,31 +89,23 @@ export function CreatePostCard({ isDark, lang, displayName, currentUserId, produ
   const remaining = MAX_CHARS - content.length;
   const isValid = content.trim().length > 0;
 
+  const mutedColor = isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-6)';
+
   return (
-    <div className={`p-4 rounded-2xl backdrop-blur-sm ${isDark ? 'bg-surface/40 border border-edge' : 'bg-white/70 border border-gray-200'}`}>
-      <div className="flex items-start gap-3">
-        <button
-          onClick={() => onViewProfile?.(currentUserId)}
-          className="w-9 h-9 rounded-xl shrink-0 overflow-hidden"
-        >
-          {avatarUrl ? (
-            <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-cyanx to-emera">
-              <span className="text-white font-display font-bold text-sm">
-                {(displayName[0] || '?').toUpperCase()}
-              </span>
-            </div>
-          )}
-        </button>
-        <div className="flex-1 min-w-0">
-          <button
-            onClick={() => onViewProfile?.(currentUserId)}
-            className={`text-sm font-semibold mb-0.5 ${isDark ? 'text-frost hover:underline' : 'text-gray-800 hover:underline'}`}
-          >
-            {displayName}
-          </button>
-          <textarea
+    <Paper p="md" radius="md" withBorder style={{ background: isDark ? 'var(--mantine-color-dark-6)' : 'rgba(255,255,255,0.7)', backdropFilter: 'blur(4px)' }}>
+      <Group align="flex-start" gap="sm" wrap="nowrap">
+        <UnstyledButton onClick={() => onViewProfile?.(currentUserId)} style={{ flexShrink: 0 }}>
+          <Avatar size={36} radius="md" src={avatarUrl} style={{ backgroundImage: avatarGradient }}>
+            {(displayName[0] || '?').toUpperCase()}
+          </Avatar>
+        </UnstyledButton>
+        <Box style={{ flex: 1, minWidth: 0 }}>
+          <UnstyledButton onClick={() => onViewProfile?.(currentUserId)}>
+            <Text size="sm" fw={600} mb={2} className="hover:underline" style={{ color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)' }}>
+              {displayName}
+            </Text>
+          </UnstyledButton>
+          <Textarea
             ref={textareaRef}
             id="post-content"
             name="post-content"
@@ -117,139 +113,124 @@ export function CreatePostCard({ isDark, lang, displayName, currentUserId, produ
             value={content}
             onChange={e => setContent(e.target.value.slice(0, MAX_CHARS))}
             placeholder={t('postPlaceholder', lang)}
-            rows={1}
-            className={`w-full resize-none text-sm outline-none transition-colors ${
-              isDark ? 'bg-transparent text-frost placeholder-muted' : 'bg-transparent text-gray-800 placeholder-gray-400'
-            }`}
+            minRows={1}
+            maxLength={MAX_CHARS}
+            variant="unstyled"
+            style={{ background: 'transparent' }}
           />
 
           {selectedProduct && (
-            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium mt-2 ${
-              isDark ? 'bg-midnight text-cyanx' : 'bg-cyan-50 text-cyan-700'
-            }`}>
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" />
-              </svg>
-              {selectedProduct.name}
-              <button
-                onClick={() => setSelectedProduct(null)}
-                aria-label="Remove linked product"
-                className="ml-1 hover:opacity-70"
-              >
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+            <Group gap={6} mt="xs" align="center" style={{ display: 'inline-flex', padding: '4px 10px', borderRadius: 'var(--mantine-radius-md)', fontSize: 12, fontWeight: 500, background: isDark ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-cyan-1)', color: isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)' }}>
+              <IconBuildingStore size={14} />
+              <Text size="xs" fw={500}>{selectedProduct.name}</Text>
+              <UnstyledButton onClick={() => setSelectedProduct(null)} aria-label="Remove linked product" style={{ marginLeft: 4 }}>
+                <IconX size={12} />
+              </UnstyledButton>
+            </Group>
           )}
 
           {imagePreviews.length > 0 && (
-            <div className="flex gap-2 mt-2 flex-wrap">
+            <Group gap="sm" mt="xs" wrap="wrap">
               {imagePreviews.map((url, i) => (
-                <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden group">
-                  <img src={url} alt="" className="w-full h-full object-cover" />
-                  <button
+                <Box key={i} pos="relative" w={64} h={64} style={{ overflow: 'hidden', borderRadius: 'var(--mantine-radius-md)' }}>
+                  <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <ActionIcon
+                    variant="transparent"
                     onClick={() => removeImage(i)}
                     aria-label={`Remove image ${i + 1}`}
-                    className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    size={20}
+                    radius="xl"
+                    style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.6)', color: 'white' }}
                   >
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
+                    <IconX size={12} />
+                  </ActionIcon>
+                </Box>
               ))}
-            </div>
+            </Group>
           )}
 
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-edge/50">
-            <div className="flex items-center gap-1">
+          <Group justify="space-between" mt="sm" pt="sm" style={{ borderTop: `1px solid ${isDark ? 'var(--mantine-color-gray-8)' : 'var(--mantine-color-gray-2)'}` }}>
+            <Group gap={4}>
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
                 multiple
                 onChange={handleImageSelect}
-                className="hidden"
+                style={{ display: 'none' }}
               />
-              <button
+              <UnstyledButton
                 onClick={() => fileInputRef.current?.click()}
                 aria-label="Add images"
                 disabled={imageFiles.length >= MAX_IMAGES}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  imageFiles.length >= MAX_IMAGES
-                    ? isDark ? 'text-muted/50 cursor-not-allowed' : 'text-gray-300 cursor-not-allowed'
-                    : isDark ? 'text-muted hover:text-frost hover:bg-midnight' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-                }`}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 'var(--mantine-radius-md)',
+                  fontSize: 12, fontWeight: 500, color: imageFiles.length >= MAX_IMAGES ? (isDark ? 'var(--mantine-color-gray-7)' : 'var(--mantine-color-gray-4)') : mutedColor,
+                  cursor: imageFiles.length >= MAX_IMAGES ? 'not-allowed' : 'pointer',
+                }}
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                </svg>
+                <IconPhoto size={16} />
                 {t('addImages', lang)}
                 {imageFiles.length > 0 && (
-                  <span className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>{imageFiles.length}/{MAX_IMAGES}</span>
+                  <Text size="xs" c="dimmed">{imageFiles.length}/{MAX_IMAGES}</Text>
                 )}
-              </button>
+              </UnstyledButton>
 
-              <div className="relative" ref={pickerRef}>
-                <button
+              <Box ref={pickerRef} style={{ position: 'relative' }}>
+                <UnstyledButton
                   onClick={() => setShowProductPicker(!showProductPicker)}
                   aria-label="Toggle product picker"
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    isDark ? 'text-muted hover:text-frost hover:bg-midnight' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-                  }`}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 'var(--mantine-radius-md)', fontSize: 12, fontWeight: 500, color: mutedColor }}
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" />
-                  </svg>
+                  <IconLink size={16} />
                   {t('linkProduct', lang)}
-                </button>
+                </UnstyledButton>
 
                 {showProductPicker && products.length > 0 && (
-                  <div className={`absolute bottom-full left-0 mb-1 w-56 max-h-48 overflow-y-auto rounded-xl shadow-lg z-10 ${
-                    isDark ? 'bg-card border border-edge' : 'bg-white border border-gray-200'
-                  }`}>
+                  <Box
+                    style={{
+                      position: 'absolute', bottom: '100%', left: 0, marginBottom: 4, width: 224, maxHeight: 192,
+                      overflowY: 'auto', borderRadius: 'var(--mantine-radius-md)', boxShadow: 'var(--mantine-shadow-lg)',
+                      background: isDark ? 'var(--mantine-color-dark-7)' : 'white',
+                      border: `1px solid ${isDark ? 'var(--mantine-color-gray-8)' : 'var(--mantine-color-gray-2)'}`,
+                      zIndex: 10,
+                    }}
+                  >
                     {products.map(p => (
-                      <button
+                      <UnstyledButton
                         key={p.id}
                         onClick={() => { setSelectedProduct(p); setShowProductPicker(false); }}
-                        className={`w-full text-left px-3 py-2 text-sm transition-colors ${
-                          isDark ? 'hover:bg-midnight text-frost' : 'hover:bg-gray-50 text-gray-800'
-                        } ${selectedProduct?.id === p.id ? (isDark ? 'bg-midnight' : 'bg-gray-50') : ''}`}
+                        style={{
+                          width: '100%', textAlign: 'left', padding: '8px 12px', fontSize: 14,
+                          background: selectedProduct?.id === p.id ? (isDark ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-1)') : 'transparent',
+                          color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)',
+                        }}
                       >
-                        <span className="font-medium">{p.name}</span>
-                        <span className={`ml-2 text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>{p.strain}</span>
-                      </button>
+                        <Text fw={500} size="sm" component="span">{p.name}</Text>
+                        <Text size="xs" c="dimmed" component="span" ml="sm">{p.strain}</Text>
+                      </UnstyledButton>
                     ))}
-                  </div>
+                  </Box>
                 )}
-              </div>
-            </div>
+              </Box>
+            </Group>
 
-            <div className="flex items-center gap-3">
-              <span className={`text-xs ${remaining < 50 ? 'text-orange-500' : isDark ? 'text-muted' : 'text-gray-400'}`}>
+            <Group gap="sm" align="center">
+              <Text size="xs" style={{ color: remaining < 50 ? 'var(--mantine-color-orange-6)' : mutedColor }}>
                 {remaining}
-              </span>
-              <button
+              </Text>
+              <Button
+                variant="gradient"
+                gradient={{ from: 'cyan', to: 'emerald' }}
                 onClick={handleSubmit}
                 disabled={!isValid || submitting}
-                className={`px-4 py-1.5 rounded-xl text-sm font-medium transition-all ${
-                  isValid && !submitting
-                    ? 'text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark'
-                    : isDark ? 'bg-midnight text-muted cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                }`}
               >
-                {submitting ? (
-                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                ) : t('postButton', lang)}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+                {submitting ? <Loader size={16} /> : t('postButton', lang)}
+              </Button>
+            </Group>
+          </Group>
+        </Box>
+      </Group>
+    </Paper>
   );
 }

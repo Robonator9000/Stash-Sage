@@ -3,10 +3,11 @@ import { createPortal } from 'react-dom';
 import { Product } from '../types';
 import { formatDate, formatPrecision } from '../utils/helpers';
 import { gramsToOz } from '../utils/convert';
-import { Star, Heart, Flame, Clock, Package, DollarSign } from 'lucide-react';
+import { IconStar, IconHeart, IconFlame, IconClock, IconPackage, IconCurrencyDollar } from '@tabler/icons-react';
 import { t } from '../utils/translations';
 import { useSettings } from '../utils/useSettings';
 import { showToast } from './Toast';
+import { Card, Group, Text, Center, UnstyledButton } from '@mantine/core';
 
 interface ProductCardProps {
   product: Product;
@@ -31,6 +32,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
 
   const [strainHovered, setStrainHovered] = useState(false);
   const [amountHovered, setAmountHovered] = useState(false);
+  const [compactHovered, setCompactHovered] = useState(false);
   const [pickingStrain, setPickingStrain] = useState<string | null>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
 
@@ -58,13 +60,13 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
     }
     switch (product.type.toLowerCase()) {
       case 'indica':
-        return { bg: isDark ? 'bg-purple-500/15' : 'bg-purple-100', text: 'text-purple-400', border: 'border-purple-500/30', customHex: '' };
+        return { bg: 'rgba(168,85,247,0.15)', text: '#c084fc', border: 'rgba(168,85,247,0.3)', customHex: '' };
       case 'sativa':
-        return { bg: isDark ? 'bg-amberx/15' : 'bg-amber-100', text: 'text-amberx', border: 'border-amberx/30', customHex: '' };
+        return { bg: 'rgba(245,158,11,0.15)', text: '#fbbf24', border: 'rgba(245,158,11,0.3)', customHex: '' };
       case 'hybrid':
-        return { bg: isDark ? 'bg-emera/15' : 'bg-emerald-100', text: 'text-emera', border: 'border-emera/30', customHex: '' };
+        return { bg: 'rgba(16,185,129,0.15)', text: '#34d399', border: 'rgba(16,185,129,0.3)', customHex: '' };
       default:
-        return { bg: isDark ? 'bg-mist/15' : 'bg-gray-100', text: 'text-mist', border: 'border-mist/30', customHex: '' };
+        return { bg: 'rgba(148,163,184,0.15)', text: '#94a3b8', border: 'rgba(148,163,184,0.3)', customHex: '' };
     }
   }, [product.type, isDark, settings.customStrainColors]);
 
@@ -74,42 +76,42 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
       const r = parseInt(hex.slice(1, 3), 16);
       const g = parseInt(hex.slice(3, 5), 16);
       const b = parseInt(hex.slice(5, 7), 16);
-      return { borderClass: '', glowRgb: `rgba(${r},${g},${b},0.35)` };
+      return { borderHex: '', glowRgb: `rgba(${r},${g},${b},0.35)` };
     }
-    const known: Record<string, { borderClass: string; glowRgb: string }> = {
-      indica: { borderClass: 'border-purple-500/50', glowRgb: 'rgba(168,85,247,0.35)' },
-      sativa: { borderClass: 'border-amberx/50', glowRgb: 'rgba(245,158,11,0.35)' },
-      hybrid: { borderClass: 'border-emera/50', glowRgb: 'rgba(16,185,129,0.35)' },
+    const known: Record<string, { borderHex: string; glowRgb: string }> = {
+      indica: { borderHex: '#a855f7', glowRgb: 'rgba(168,85,247,0.35)' },
+      sativa: { borderHex: '#f59e0b', glowRgb: 'rgba(245,158,11,0.35)' },
+      hybrid: { borderHex: '#10b981', glowRgb: 'rgba(16,185,129,0.35)' },
     };
     const hit = known[product.type.toLowerCase()];
     if (hit) return hit;
-    return { borderClass: 'border-mist/40', glowRgb: 'rgba(148,163,184,0.25)' };
+    return { borderHex: '#94a3b8', glowRgb: 'rgba(148,163,184,0.25)' };
   }, [product.type, settings.customStrainColors]);
 
   const glowStyle = useMemo(() => ({
     boxShadow: `3px 0 22px -6px ${highlight.glowRgb}`,
-    ...(!highlight.borderClass ? { borderLeftColor: settings.customStrainColors?.[product.type] || '#94a3b8' } : {}),
+    borderLeft: `5px solid ${settings.customStrainColors?.[product.type] || highlight.borderHex}`,
   }), [highlight, settings.customStrainColors, product.type]);
 
   const displayType = product.type.charAt(0).toUpperCase() + product.type.slice(1);
 
   const renderColorPicker = () => pickingStrain === product.type && createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" onClick={() => setPickingStrain(null)}>
-      <div ref={pickerRef} className="p-4 rounded-2xl flex gap-3 flex-wrap max-w-[280px]" style={{ backgroundColor: isDark ? '#1a2332' : '#fff' }} onClick={e => e.stopPropagation()}>
-        <div className="w-full text-xs font-medium mb-1" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)' }} onClick={() => setPickingStrain(null)}>
+      <div ref={pickerRef} onClick={e => e.stopPropagation()} style={{ padding: 16, borderRadius: 16, display: 'flex', gap: 12, flexWrap: 'wrap', maxWidth: 280, background: isDark ? '#1a2332' : '#fff', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
+        <div style={{ width: '100%', fontSize: 12, fontWeight: 500, marginBottom: 4, color: isDark ? '#94a3b8' : '#64748b' }}>
           Color for <strong>{displayType}</strong>
         </div>
         {COLOR_PRESETS.map(c => (
-          <button
+          <UnstyledButton
             key={c}
             onClick={(e) => { e.stopPropagation(); updateSettings({ customStrainColors: { ...settings.customStrainColors, [product.type]: c } }); setPickingStrain(null); }}
-            className="w-8 h-8 rounded-full transition-transform hover:scale-125"
-            style={{ backgroundColor: c }}
+            style={{ width: 32, height: 32, borderRadius: '50%', transition: 'transform 0.2s', background: c }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.25)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
           />
         ))}
-        <button
-          className="w-full text-xs mt-1 py-1 rounded-lg hover:opacity-80"
-          style={{ color: isDark ? '#94a3b8' : '#64748b' }}
+        <UnstyledButton
+          style={{ width: '100%', fontSize: 12, marginTop: 4, padding: '4px 0', borderRadius: 8, color: isDark ? '#94a3b8' : '#64748b' }}
           onClick={(e) => {
             e.stopPropagation();
             const next = { ...settings.customStrainColors };
@@ -119,21 +121,39 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
           }}
         >
           Reset to default
-        </button>
+        </UnstyledButton>
       </div>
     </div>,
     document.body
   );
 
-  const strainBadge = (extraClass: string) => strainColors.customHex ? (
-    <span className={extraClass} style={{ backgroundColor: strainColors.customHex + '20', color: strainColors.customHex, borderColor: strainColors.customHex + '40' }}>{displayType}</span>
-  ) : (
-    <span className={extraClass}>{displayType}</span>
+  const renderStrainBadge = (inner: { padding: string; bg?: string; color?: string; border?: string; transform?: string }) => (
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: inner.padding,
+        fontSize: '0.75rem',
+        fontWeight: 500,
+        borderRadius: 999,
+        border: `1px solid ${inner.border || 'transparent'}`,
+        background: inner.bg || undefined,
+        color: inner.color || undefined,
+        transform: inner.transform,
+        cursor: 'pointer',
+        ...(strainColors.customHex
+          ? { background: strainColors.customHex + '20', color: strainColors.customHex, border: `1px solid ${strainColors.customHex + '40'}` }
+          : {}),
+      }}
+    >
+      {displayType}
+    </span>
   );
 
   const vibrantStrainColor = isDark
-    ? { bg: 'bg-cyan-500/30', text: 'text-cyan-300', border: 'border-cyan-400/60' }
-    : { bg: 'bg-cyan-200', text: 'text-cyan-800', border: 'border-cyan-500/60' };
+    ? { bg: 'rgba(6,182,212,0.3)', text: '#67e8f9', border: 'rgba(34,211,238,0.6)' }
+    : { bg: 'rgba(165,243,252,0.6)', text: '#0e7490', border: 'rgba(6,182,212,0.6)' };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -169,374 +189,374 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
     }
   };
 
+  const cardBg = isDark ? 'var(--mantine-color-dark-7)' : '#fff';
+  const primaryText = isDark ? 'var(--mantine-color-dark-0)' : 'var(--mantine-color-gray-9)';
+  const secondaryText = isDark ? 'var(--mantine-color-dark-3)' : 'var(--mantine-color-gray-5)';
+  const mutedText = isDark ? 'var(--mantine-color-dark-2)' : 'var(--mantine-color-gray-4)';
+  const borderColor = isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-2)';
+
+  const favoriteOutline = product.favorite
+    ? { outline: `1px solid ${isDark ? 'rgba(251,191,36,0.4)' : 'rgba(217,119,6,0.4)'}` }
+    : undefined;
+  const selectedOutline = selected ? { outline: '2px solid var(--mantine-color-cyan-6)' } : undefined;
+
+  const renderSelectRing = (size: number, checkSize: number, absolute?: boolean, top?: number, left?: number) => (
+    <div
+      style={{
+        position: absolute ? 'absolute' : 'relative',
+        top: absolute ? top : undefined,
+        left: absolute ? left : undefined,
+        zIndex: 30,
+        width: size,
+        height: size,
+        borderRadius: 6,
+        border: `2px solid ${selected ? 'var(--mantine-color-cyan-6)' : isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)'}`,
+        background: selected ? 'var(--mantine-color-cyan-6)' : (isDark ? 'rgba(10,10,10,0.8)' : 'rgba(255,255,255,0.9)'),
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        cursor: 'pointer',
+      }}
+      onClick={(e) => { e.stopPropagation(); onToggleSelect?.(product.id); }}
+    >
+      {selected && (
+        <svg width={checkSize} height={checkSize} fill="none" viewBox="0 0 24 24" stroke="#fff" strokeWidth={3}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      )}
+    </div>
+  );
+
+  const renderAmountText = (fontSize: string) => (
+    <span
+      style={{
+        fontSize,
+        fontWeight: 500,
+        background: 'linear-gradient(to right, var(--mantine-color-cyan-6), var(--mantine-color-emerald-6))',
+        WebkitBackgroundClip: 'text',
+        backgroundClip: 'text',
+        color: 'transparent',
+      }}
+    >
+      {showOz ? formatPrecision(gramsToOz(product.amount), precision) + 'oz' : amountString}
+    </span>
+  );
+
+  const renderIconButton = (
+    onClick: (e: React.MouseEvent) => void,
+    aria: string,
+    variant: 'cyan' | 'amber' | 'plain',
+    children: React.ReactNode
+  ) => (
+    <UnstyledButton
+      onClick={onClick}
+      aria-label={aria}
+      style={{
+        padding: 8,
+        borderRadius: 8,
+        color:
+          variant === 'plain'
+            ? product.favorite ? 'var(--mantine-color-amber-6)' : (isDark ? 'var(--mantine-color-dark-1)' : 'var(--mantine-color-gray-4)')
+            : variant === 'cyan'
+              ? 'var(--mantine-color-cyan-6)'
+              : 'var(--mantine-color-amber-6)',
+        background:
+          variant === 'plain'
+            ? 'transparent'
+            : variant === 'cyan'
+              ? (isDark ? 'rgba(6,182,212,0.12)' : 'var(--mantine-color-cyan-1)')
+              : (isDark ? 'rgba(251,191,36,0.12)' : 'var(--mantine-color-amber-1)'),
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        {children}
+      </div>
+    </UnstyledButton>
+  );
+
   if (layout === 'list') {
     return (
-      <div
-        className={`group relative rounded-xl transition-all cursor-pointer ${
-          isDark
-            ? `bg-midnight border-0 border-l-[5px] ${highlight.borderClass} hover:border-l-surface-light`
-            : `bg-white border-0 border-l-[5px] ${highlight.borderClass} hover:border-l-gray-300`
-        } ${product.favorite ? 'ring-1 ring-amberx/40' : ''} ${selected ? (isDark ? 'ring-2 ring-cyanx' : 'ring-2 ring-cyan-500') : ''}`}
-        style={glowStyle}
+      <Card
+        p={0}
+        radius="lg"
+        
+        style={{ cursor: 'pointer', transition: 'all 0.2s', background: cardBg, ...glowStyle, ...favoriteOutline, ...selectedOutline }}
       >
-        <div className="flex items-center gap-4 p-4" onClick={handleCardClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}>
-          {isSelectMode && (
-            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-              selected
-                ? 'bg-cyanx border-cyanx'
-                : isDark ? 'border-slate-600' : 'border-gray-300'
-            }`}
-              onClick={(e) => { e.stopPropagation(); onToggleSelect?.(product.id); }}
-            >
-              {selected && (
-                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              )}
-            </div>
-          )}
-          <div className="relative flex-shrink-0">
+        <Group gap="md" p="md" wrap="nowrap" onClick={handleCardClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}>
+          {isSelectMode && renderSelectRing(20, 12)}
+          <Group style={{ position: 'relative', flexShrink: 0 }} align="center">
             {(product.pictures?.[0] || product.picture) ? (
-              <img src={(product.pictures?.[0] || product.picture)} alt={product.name} loading="lazy" decoding="async" className="w-16 h-16 rounded-lg object-cover" />
+              <img src={(product.pictures?.[0] || product.picture)} alt={product.name} loading="lazy" decoding="async" style={{ width: 64, height: 64, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
             ) : (
-              <div className={`w-16 h-16 rounded-lg flex items-center justify-center ${isDark ? 'bg-surface' : 'bg-gray-100'}`}>
-                <Package className={`w-6 h-6 ${isDark ? 'text-haze' : 'text-gray-400'}`} />
-              </div>
+              <Center w={64} h={64} style={{ borderRadius: 8, background: isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)', flexShrink: 0 }}>
+                <IconPackage size={24} color={isDark ? 'var(--mantine-color-dark-1)' : 'var(--mantine-color-gray-4)'} />
+              </Center>
             )}
             {product.favorite && (
-              <div className="absolute -top-1 -right-1 w-5 h-5 bg-amberx rounded-full flex items-center justify-center">
-                <Heart className="w-3 h-3 text-white fill-white" />
-              </div>
+              <Center style={{ position: 'absolute', top: -4, right: -4, width: 20, height: 20, borderRadius: '50%', background: 'var(--mantine-color-amber-6)' }}>
+                <IconHeart size={11} color="#fff" style={{ fill: '#fff' }} />
+              </Center>
             )}
-          </div>
+          </Group>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className={`font-bold truncate ${isDark ? 'text-frost' : 'text-gray-900'}`}>{product.name}</h3>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <Group gap="xs" align="center" wrap="nowrap" mb={2}>
+              <Text fw={700} c={primaryText} truncate>{product.name}</Text>
               <span onClick={(e) => { e.stopPropagation(); setPickingStrain(product.type); }}>
-                {strainBadge(`px-2 py-0.5 rounded-full text-xs font-medium ${strainColors.bg || ''} ${strainColors.text || ''}`)}
+                {renderStrainBadge({ padding: '2px 8px', bg: strainColors.bg || undefined, color: strainColors.text || undefined, border: strainColors.border || undefined })}
               </span>
               {renderColorPicker()}
-            </div>
+            </Group>
             {product.brand && (
-              <p className={`text-sm truncate ${isDark ? 'text-mist' : 'text-gray-500'}`}>{t('from', lang)} {product.brand}</p>
+              <Text size="sm" c={secondaryText} truncate>{t('from', lang)} {product.brand}</Text>
             )}
-            <div className="flex items-center gap-3 mt-1">
-              <span className={`text-sm font-medium bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent`}>
-                {amountString}
-              </span>
-              {product.thc > 0 && (
-                <span className={`text-xs ${isDark ? 'text-haze' : 'text-gray-400'}`}>{t('thc', lang)}: {product.thc}%</span>
-              )}
+            <Group gap="md" mt={4}>
+              {renderAmountText('0.875rem')}
+              {product.thc > 0 && <Text size="xs" c={mutedText}>{t('thc', lang)}: {product.thc}%</Text>}
               {product.rating > 0 && (
-                <div className="flex items-center gap-1">
-                  <Star className="w-3 h-3 text-amberx fill-amberx" />
-                  <span className={`text-xs ${isDark ? 'text-mist' : 'text-gray-500'}`}>{product.rating}</span>
-                </div>
+                <Group gap={4}>
+                  <IconStar size={12} color="var(--mantine-color-amber-6)" style={{ fill: 'var(--mantine-color-amber-6)' }} />
+                  <Text size="xs" c={secondaryText}>{product.rating}</Text>
+                </Group>
               )}
-            </div>
+            </Group>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={(e) => buttonAction(e, () => onConsume(product))}
-              aria-label={t('consume', lang)}
-              className={`p-2 rounded-lg transition-all ${isDark ? 'bg-cyanx/12 text-cyanx hover:bg-cyanx/20' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'}`}
-            >
-              <Flame className="w-4 h-4" />
-            </button>
-            <button
-              onClick={(e) => buttonAction(e, () => onSell(product))}
-              aria-label={t('sell', lang)}
-              className={`p-2 rounded-lg transition-all ${isDark ? 'bg-amberx/12 text-amberx hover:bg-amberx/20' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'}`}
-            >
-              <DollarSign className="w-4 h-4" />
-            </button>
-            <button
-              onClick={(e) => buttonAction(e, () => onToggleFavorite(product.id))}
-              aria-label={product.favorite ? t('filterFavorites', lang) : t('addToFavorites', lang)}
-              className={`p-2 rounded-lg transition-all ${product.favorite ? 'text-amberx' : isDark ? 'text-haze hover:text-amberx' : 'text-gray-400 hover:text-amber-500'}`}
-            >
-              <Heart className={`w-4 h-4 ${product.favorite ? 'fill-current' : ''}`} />
-            </button>
-          </div>
-        </div>
-      </div>
+          <Group gap={6} wrap="nowrap" style={{ flexShrink: 0 }}>
+            {renderIconButton((e) => buttonAction(e, () => onConsume(product)), t('consume', lang), 'cyan', <IconFlame size={16} />)}
+            {renderIconButton((e) => buttonAction(e, () => onSell(product)), t('sell', lang), 'amber', <IconCurrencyDollar size={16} />)}
+            {renderIconButton(
+              (e) => buttonAction(e, () => onToggleFavorite(product.id)),
+              product.favorite ? t('filterFavorites', lang) : t('addToFavorites', lang),
+              'plain',
+              <IconHeart size={16} style={product.favorite ? { fill: 'currentColor' } : undefined} />
+            )}
+          </Group>
+        </Group>
+      </Card>
     );
   }
 
   if (layout === 'compact') {
     return (
-      <div
-        className={`group relative rounded-xl transition-all cursor-pointer ${
-          isDark
-            ? `bg-midnight border-0 border-l-[5px] ${highlight.borderClass} hover:border-l-cyanx/30`
-            : `bg-white border-0 border-l-[5px] ${highlight.borderClass} hover:border-l-cyan-400/50`
-        } ${product.favorite ? 'ring-1 ring-amberx/40' : ''} ${selected ? (isDark ? 'ring-2 ring-cyanx' : 'ring-2 ring-cyan-500') : ''}`}
-        style={glowStyle}
+      <Card
+        p={0}
+        radius="lg"
+        
+        style={{ cursor: 'pointer', transition: 'all 0.2s', background: cardBg, ...glowStyle, ...favoriteOutline, ...selectedOutline }}
         onClick={handleCardClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}
+        onMouseEnter={() => setCompactHovered(true)}
+        onMouseLeave={() => setCompactHovered(false)}
       >
-        {isSelectMode && (
-          <div className={`absolute top-2 left-2 z-30 w-5 h-5 rounded border-2 flex items-center justify-center ${
-            selected
-              ? 'bg-cyanx border-cyanx'
-              : isDark ? 'border-slate-600 bg-deep/80' : 'border-gray-300 bg-white/90'
-          }`}
-            onClick={(e) => { e.stopPropagation(); onToggleSelect?.(product.id); }}
-          >
-            {selected && (
-              <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            )}
-          </div>
-        )}
-        <div className="aspect-square relative overflow-hidden rounded-t-xl">
+        {isSelectMode && renderSelectRing(20, 12, true, 8, 8)}
+        <div style={{ aspectRatio: '1/1', position: 'relative', overflow: 'hidden', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
           {(product.pictures?.[0] || product.picture) ? (
-            <img src={(product.pictures?.[0] || product.picture)} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+            <img src={(product.pictures?.[0] || product.picture)} alt={product.name} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
-            <div className={`w-full h-full flex items-center justify-center ${isDark ? 'bg-surface' : 'bg-gray-100'}`}>
-              <Package className={`w-8 h-8 ${isDark ? 'text-haze' : 'text-gray-400'}`} />
-            </div>
+            <Center style={{ width: '100%', height: '100%', background: isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)' }}>
+              <IconPackage size={32} color={isDark ? 'var(--mantine-color-dark-1)' : 'var(--mantine-color-gray-4)'} />
+            </Center>
           )}
-          <div className="absolute top-2 left-2">
+          <div style={{ position: 'absolute', top: 8, left: 8 }}>
             <span onClick={(e) => { e.stopPropagation(); setPickingStrain(product.type); }}>
-              {strainBadge(`px-2 py-1 rounded-full text-xs font-medium ${strainColors.bg || ''} ${strainColors.text || ''}`)}
+              {renderStrainBadge({ padding: '4px 8px', bg: strainColors.bg || undefined, color: strainColors.text || undefined, border: strainColors.border || undefined })}
             </span>
             {renderColorPicker()}
           </div>
           {product.favorite && (
-            <div className="absolute top-2 right-2 w-6 h-6 bg-amberx rounded-full flex items-center justify-center">
-              <Heart className="w-3 h-3 text-white fill-white" />
-            </div>
+            <Center style={{ position: 'absolute', top: 8, right: 8, width: 24, height: 24, borderRadius: '50%', background: 'var(--mantine-color-amber-6)' }}>
+              <IconHeart size={12} color="#fff" style={{ fill: '#fff' }} />
+            </Center>
           )}
-          <div className={`absolute bottom-0 left-0 right-0 px-2 py-1.5 backdrop-blur-sm ${isDark ? 'bg-deep/80' : 'bg-white/90'}`}>
-            <span className="text-sm font-medium bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent">
-              {amountString}
-            </span>
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '6px 8px', backdropFilter: 'blur(4px)', background: isDark ? 'rgba(10,10,10,0.8)' : 'rgba(255,255,255,0.9)' }}>
+            {renderAmountText('0.875rem')}
           </div>
         </div>
-        <div className="p-2">
-          <h3 className={`font-bold text-sm truncate ${isDark ? 'text-frost' : 'text-gray-900'}`}>{product.name}</h3>
+        <div style={{ padding: 8 }}>
+          <Text fw={700} size="sm" c={primaryText} truncate>{product.name}</Text>
           {product.rating > 0 && (
-            <div className="flex items-center gap-1 mt-1">
-              <Star className="w-3 h-3 text-amberx fill-amberx" />
-              <span className={`text-xs ${isDark ? 'text-mist' : 'text-gray-500'}`}>{product.rating}</span>
-            </div>
+            <Group gap={4} align="center">
+              <IconStar size={12} color="var(--mantine-color-amber-6)" style={{ fill: 'var(--mantine-color-amber-6)' }} />
+              <Text size="xs" c={secondaryText}>{product.rating}</Text>
+            </Group>
           )}
         </div>
-        <div className="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
-          <button onClick={(e) => buttonAction(e, () => onConsume(product))} aria-label={t('consume', lang)}
-            className={`p-1.5 rounded-lg ${isDark ? 'bg-cyanx/15 text-cyanx hover:bg-cyanx/25' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'}`}>
-            <Flame className="w-3.5 h-3.5" />
-          </button>
-          <button onClick={(e) => buttonAction(e, () => onSell(product))} aria-label="Sell"
-            className={`p-1.5 rounded-lg ${isDark ? 'bg-amberx/15 text-amberx hover:bg-amberx/25' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'}`}>
-            <DollarSign className="w-3.5 h-3.5" />
-          </button>
-          <button onClick={(e) => buttonAction(e, () => onToggleFavorite(product.id))} aria-label={product.favorite ? t('filterFavorites', lang) : 'Add to favourites'}
-            className={`p-1.5 rounded-lg ${product.favorite ? 'text-amberx' : isDark ? 'text-haze hover:text-amberx' : 'text-gray-400 hover:text-amber-500'}`}>
-            <Heart className={`w-3.5 h-3.5 ${product.favorite ? 'fill-current' : ''}`} />
-          </button>
+        <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 4, opacity: compactHovered ? 1 : 0, transition: 'all 0.2s' }}>
+          {renderIconButton((e) => buttonAction(e, () => onConsume(product)), t('consume', lang), 'cyan', <IconFlame size={14} />)}
+          {renderIconButton((e) => buttonAction(e, () => onSell(product)), 'Sell', 'amber', <IconCurrencyDollar size={14} />)}
+          {renderIconButton(
+            (e) => buttonAction(e, () => onToggleFavorite(product.id)),
+            product.favorite ? t('filterFavorites', lang) : 'Add to favourites',
+            'plain',
+            <IconHeart size={14} style={product.favorite ? { fill: 'currentColor' } : undefined} />
+          )}
         </div>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div
-      className={`group relative rounded-2xl transition-all cursor-pointer overflow-hidden flex flex-col ${
-        isDark
-          ? `bg-midnight border-0 border-l-[5px] ${highlight.borderClass} hover:border-l-cyanx/30`
-          : `bg-white border-0 border-l-[5px] ${highlight.borderClass} hover:border-l-cyan-400/50`
-      } ${product.favorite ? 'ring-1 ring-amberx/40' : ''} ${selected ? (isDark ? 'ring-2 ring-cyanx' : 'ring-2 ring-cyan-500') : ''}`}
-      style={glowStyle}
+    <Card
+      p={0}
+      radius="lg"
+      
+      style={{
+        cursor: 'pointer',
+        transition: 'all 0.2s',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        background: cardBg,
+        ...glowStyle,
+        ...favoriteOutline,
+        ...selectedOutline,
+      }}
       onClick={handleCardClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}
     >
-      {isSelectMode && (
-        <div className={`absolute top-3 left-3 z-30 w-6 h-6 rounded border-2 flex items-center justify-center ${
-          selected
-            ? 'bg-cyanx border-cyanx'
-            : isDark ? 'border-slate-600 bg-deep/80' : 'border-gray-300 bg-white/90'
-        }`}
-          onClick={(e) => { e.stopPropagation(); onToggleSelect?.(product.id); }}
-        >
-          {selected && (
-            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-          )}
-        </div>
-      )}
-      {/* Image Section */}
-      <div className="relative aspect-video flex-shrink-0">
+      {isSelectMode && renderSelectRing(24, 14, true, 12, 12)}
+      <div style={{ position: 'relative', aspectRatio: '16/9', flexShrink: 0 }}>
         {(product.pictures?.[0] || product.picture) ? (
           <img
             src={(product.pictures?.[0] || product.picture)} alt={product.name}
             loading="lazy" decoding="async"
-            className="w-full h-full object-cover"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         ) : (
-          <div className={`w-full h-full flex items-center justify-center ${isDark ? 'bg-surface' : 'bg-gray-100'}`}>
-            <Package className={`w-12 h-12 ${isDark ? 'text-haze' : 'text-gray-400'}`} />
-          </div>
+          <Center style={{ width: '100%', height: '100%', background: isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)' }}>
+            <IconPackage size={48} color={isDark ? 'var(--mantine-color-dark-1)' : 'var(--mantine-color-gray-4)'} />
+          </Center>
         )}
 
-        {/* Strain Type Badge */}
         <div
-          className={`absolute top-3 left-3 z-20 transition-all duration-200 ease-out rounded-full ${
-            strainHovered && !strainColors.customHex ? vibrantStrainColor.bg + ' ' + vibrantStrainColor.text + ' ' + vibrantStrainColor.border + ' scale-110' : `${strainColors.bg || ''} ${strainColors.text || ''} ${strainColors.border || ''}`
-          }`}
+          style={{
+            position: 'absolute', top: 12, left: 12, zIndex: 20,
+            transition: 'all 0.2s ease-out', borderRadius: 999,
+          }}
           onMouseEnter={() => setStrainHovered(true)}
           onMouseLeave={() => setStrainHovered(false)}
         >
           <span onClick={(e) => { e.stopPropagation(); setPickingStrain(product.type); }}>
-            {strainBadge(`px-3 py-1 rounded-full text-xs font-medium border transition-colors duration-200 ${
-              strainHovered && !strainColors.customHex
-                ? vibrantStrainColor.bg + ' ' + vibrantStrainColor.text + ' ' + vibrantStrainColor.border
-                : `${strainColors.bg || ''} ${strainColors.text || ''} ${strainColors.border || ''}`
-            }`)}
+            {renderStrainBadge({
+              padding: '4px 12px',
+              bg: (strainHovered && !strainColors.customHex) ? vibrantStrainColor.bg : (strainColors.bg || undefined),
+              color: (strainHovered && !strainColors.customHex) ? vibrantStrainColor.text : (strainColors.text || undefined),
+              border: (strainHovered && !strainColors.customHex) ? vibrantStrainColor.border : (strainColors.border || undefined),
+              transform: (strainHovered && !strainColors.customHex) ? 'scale(1.1)' : undefined,
+            })}
           </span>
           {renderColorPicker()}
         </div>
 
-        {/* Favorite Heart */}
-        <div className="absolute top-3 right-3 z-20 transition-all duration-200">
+        <div style={{ position: 'absolute', top: 12, right: 12, zIndex: 20, transition: 'all 0.2s' }}>
           {product.favorite ? (
-            <div className="w-8 h-8 bg-amberx rounded-full flex items-center justify-center shadow-lg"
+            <Center style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--mantine-color-amber-6)', boxShadow: '0 4px 15px rgba(0,0,0,0.3)', cursor: 'pointer' }}
               onClick={(e) => buttonAction(e, () => onToggleFavorite(product.id))}
             >
-              <Heart className="w-4 h-4 text-white fill-white" />
-            </div>
+              <IconHeart size={16} color="#fff" style={{ fill: '#fff' }} />
+            </Center>
           ) : (
-            <button
+            <UnstyledButton
               onClick={(e) => buttonAction(e, () => onToggleFavorite(product.id))}
-              className={`w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 ${
-                isDark ? 'bg-deep/80 text-mist hover:text-amberx' : 'bg-white/90 text-gray-400 hover:text-amber-500'
-              }`}
+              style={{ width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.3)', transition: 'all 0.2s', background: isDark ? 'rgba(10,10,10,0.8)' : 'rgba(255,255,255,0.9)', color: isDark ? 'var(--mantine-color-dark-1)' : 'var(--mantine-color-gray-4)' }}
               aria-label={t('addToFavorites', lang)}
             >
-              <Heart className="w-4 h-4" />
-            </button>
+              <IconHeart size={16} />
+            </UnstyledButton>
           )}
         </div>
 
-        {/* Amount Badge */}
         <div
-          className={`absolute bottom-3 right-3 z-20 transition-all duration-200 ease-out rounded-lg ${
-            amountHovered ? 'scale-110' : 'scale-100'
-          }`}
+          style={{ position: 'absolute', bottom: 12, right: 12, zIndex: 20, transition: 'all 0.2s ease-out', transform: amountHovered ? 'scale(1.1)' : 'scale(1)' }}
           onMouseEnter={() => setAmountHovered(true)}
           onMouseLeave={() => setAmountHovered(false)}
           onClick={handleAmountClick}
         >
-          <div className={`px-3 py-1.5 rounded-lg font-medium text-sm backdrop-blur-sm cursor-pointer ${
-            isDark ? 'bg-deep/80' : 'bg-white/90'
-          }`}>
-            <span className={`bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent ${
-              amountHovered ? 'text-base' : 'text-sm'
-            }`}>
-              {showOz ? formatPrecision(gramsToOz(product.amount), precision) + 'oz' : amountString}
-            </span>
+          <div style={{ padding: '6px 12px', borderRadius: 8, backdropFilter: 'blur(4px)', cursor: 'pointer', background: isDark ? 'rgba(10,10,10,0.8)' : 'rgba(255,255,255,0.9)' }}>
+            {renderAmountText(amountHovered ? '1rem' : '0.875rem')}
           </div>
           {amountHovered && !showOz && (
-            <div className={`absolute -top-8 right-0 px-2 py-1 rounded-md text-xs whitespace-nowrap shadow-lg ${
-              isDark ? 'bg-surface text-mist' : 'bg-gray-100 text-gray-600'
-            }`}>
+            <div style={{ position: 'absolute', top: -32, right: 0, padding: '4px 8px', borderRadius: 6, fontSize: 12, whiteSpace: 'nowrap', boxShadow: '0 4px 15px rgba(0,0,0,0.2)', background: isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)', color: isDark ? 'var(--mantine-color-dark-2)' : 'var(--mantine-color-gray-6)' }}>
               Convert to oz
             </div>
           )}
         </div>
       </div>
 
-      <div className="p-4 flex flex-col flex-1">
-        <div className="flex-1">
-          <div className="flex items-start justify-between mb-2">
-            <div className="flex-1 min-w-0">
-              <h3 className={`font-bold text-lg truncate ${isDark ? 'text-frost' : 'text-gray-900'}`}>{product.name}</h3>
-              {product.brand && <p className={`text-sm truncate ${isDark ? 'text-mist' : 'text-gray-500'}`}>{t('from', lang)} {product.brand}</p>}
-            </div>
+      <div style={{ padding: 16, display: 'flex', flexDirection: 'column', flex: 1 }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ marginBottom: 8 }}>
+            <Text fw={700} size="lg" c={primaryText} truncate>{product.name}</Text>
+            {product.brand && <Text size="sm" c={secondaryText} truncate style={{ marginTop: 2 }}>{t('from', lang)} {product.brand}</Text>}
           </div>
 
-          <div className="flex items-center gap-3 mb-3">
+          <Group gap="md" wrap="nowrap" style={{ marginBottom: 12 }}>
             {product.thc > 0 && (
-              <div className="flex items-center gap-1">
-                <span className={`text-xs font-medium ${isDark ? 'text-haze' : 'text-gray-400'}`}>{t('thc', lang)}</span>
-                <span className={`text-sm font-bold ${isDark ? 'text-frost' : 'text-gray-900'}`}>{product.thc}%</span>
-              </div>
+              <Group gap={4} wrap="nowrap">
+                <Text size="xs" fw={500} c={mutedText}>{t('thc', lang)}</Text>
+                <Text size="sm" fw={700} c={primaryText}>{product.thc}%</Text>
+              </Group>
             )}
             {product.cbd > 0 && (
-              <div className="flex items-center gap-1">
-                <span className={`text-xs font-medium ${isDark ? 'text-haze' : 'text-gray-400'}`}>{t('cbd', lang)}</span>
-                <span className={`text-sm font-bold ${isDark ? 'text-frost' : 'text-gray-900'}`}>{product.cbd}%</span>
-              </div>
+              <Group gap={4} wrap="nowrap">
+                <Text size="xs" fw={500} c={mutedText}>{t('cbd', lang)}</Text>
+                <Text size="sm" fw={700} c={primaryText}>{product.cbd}%</Text>
+              </Group>
             )}
-          </div>
+          </Group>
 
           {product.rating > 0 && (
-            <div className="flex items-center gap-0 mb-3">
+            <Group gap={0} wrap="nowrap" style={{ marginBottom: 12 }}>
               {[1, 2, 3, 4, 5].map((star) => {
                 const fillPercent = product.rating >= star ? 100 : product.rating >= star - 0.5 ? 50 : 0;
                 return (
-                  <div key={star} className="relative w-4 h-4">
-                    <Star className={`w-4 h-4 absolute inset-0 ${isDark ? 'text-edge' : 'text-gray-300'}`} />
-                    <div className="absolute inset-0 overflow-hidden" style={{ width: `${fillPercent}%` }}>
-                      <Star className="w-4 h-4 text-amberx fill-amberx" />
+                  <div key={star} style={{ position: 'relative', width: 16, height: 16 }}>
+                    <IconStar size={16} style={{ position: 'absolute', inset: 0, color: isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-3)' }} />
+                    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', width: `${fillPercent}%` }}>
+                      <IconStar size={16} color="var(--mantine-color-amber-6)" style={{ fill: 'var(--mantine-color-amber-6)' }} />
                     </div>
                   </div>
                 );
               })}
-            </div>
+            </Group>
           )}
 
           {product.lastConsumed && (
-            <div className={`flex items-center gap-1.5 text-xs ${isDark ? 'text-haze' : 'text-gray-400'}`}>
-              <Clock className="w-3 h-3" />
-              {t('lastConsumed', lang)}: {formatDate(product.lastConsumed, lang)}
-            </div>
+            <Group gap={6} style={{ alignItems: 'center' }}>
+              <IconClock size={12} color={mutedText} />
+              <Text size="xs" c={mutedText}>
+                {t('lastConsumed', lang)}: {formatDate(product.lastConsumed, lang)}
+              </Text>
+            </Group>
           )}
         </div>
 
-        <div className={`flex items-center gap-2 mt-auto pt-4 border-t border-dashed ${isDark ? 'border-edge' : 'border-gray-200'}`}>
-          <button
+        <Group gap={8} style={{ marginTop: 'auto', paddingTop: 16, borderTop: `1px dashed ${borderColor}` }} align="stretch">
+          <UnstyledButton
             onClick={(e) => buttonAction(e, () => onConsume(product))}
             aria-label={t('consume', lang)}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98] ${
-              isDark
-                ? 'bg-gradient-to-r from-cyanx/10 to-emera/10 text-cyanx hover:from-cyanx/20 hover:to-emera/20'
-                : 'bg-gradient-to-r from-cyan-100 to-emerald-100 text-cyan-700 hover:from-cyan-200 hover:to-emerald-200'
-            }`}
+            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '8px 0', borderRadius: 12, fontWeight: 500, transition: 'all 0.2s', color: 'var(--mantine-color-cyan-6)', background: isDark ? 'linear-gradient(to right, rgba(6,182,212,0.1), rgba(16,185,129,0.1))' : 'linear-gradient(to right, var(--mantine-color-cyan-1), var(--mantine-color-emerald-1))' }}
           >
-            <Flame className="w-4 h-4" />
-            <span className="text-sm">{t('consume', lang)}</span>
-          </button>
-          <button
+            <IconFlame size={16} />
+            <Text size="sm">{t('consume', lang)}</Text>
+          </UnstyledButton>
+          <UnstyledButton
             onClick={(e) => buttonAction(e, () => onSell(product))}
             aria-label="Sell"
-            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-[0.98] ${
-              isDark
-                ? 'bg-amberx/10 text-amberx hover:bg-amberx/20'
-                : 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700 hover:from-amber-200 hover:to-orange-200'
-            }`}
+            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '8px 0', borderRadius: 12, fontWeight: 500, transition: 'all 0.2s', color: 'var(--mantine-color-amber-6)', background: isDark ? 'rgba(251,191,36,0.1)' : 'linear-gradient(to right, var(--mantine-color-amber-1), var(--mantine-color-orange-1))' }}
           >
-            <DollarSign className="w-4 h-4" />
-            <span className="text-sm">{t('sell', lang)}</span>
-          </button>
-          <button
+            <IconCurrencyDollar size={16} />
+            <Text size="sm">{t('sell', lang)}</Text>
+          </UnstyledButton>
+          <UnstyledButton
             onClick={(e) => buttonAction(e, () => onToggleFavorite(product.id))}
             aria-label={product.favorite ? t('filterFavorites', lang) : 'Add to favourites'}
-            className={`p-2 rounded-xl transition-all ${
-              product.favorite
-                ? 'bg-amberx/15 text-amberx'
-                : isDark
-                  ? 'bg-edge/50 text-haze hover:text-amberx hover:bg-amberx/10'
-                  : 'bg-gray-100 text-gray-400 hover:text-amber-500 hover:bg-amber-50'
-            }`}
+            style={{ padding: 8, borderRadius: 12, transition: 'all 0.2s', color: product.favorite ? 'var(--mantine-color-amber-6)' : (isDark ? 'var(--mantine-color-dark-2)' : 'var(--mantine-color-gray-4)'), background: isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-1)' }}
           >
-            <Heart className={`w-5 h-5 ${product.favorite ? 'fill-current' : ''}`} />
-          </button>
-        </div>
+            <IconHeart size={20} style={product.favorite ? { fill: 'currentColor' } : undefined} />
+          </UnstyledButton>
+        </Group>
       </div>
-    </div>
+    </Card>
   );
 });

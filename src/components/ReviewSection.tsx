@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import type { ListingReview } from '../types';
 import { supabase } from '../utils/supabase';
 import { t } from '../utils/translations';
-import { Star, MessageSquare, Trash2 } from 'lucide-react';
+import { Box, Text, Group, Textarea, Button, Avatar, ActionIcon, Paper, UnstyledButton } from '@mantine/core';
+import { IconStar, IconMessageCircle, IconTrash } from '@tabler/icons-react';
 
 interface ReviewSectionProps {
   listingId: string;
@@ -12,6 +13,9 @@ interface ReviewSectionProps {
   lang: string;
   onViewProfile?: (userId: string) => void;
 }
+
+const amber = '#f59e0b';
+const avatarGradient = 'linear-gradient(135deg, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))';
 
 export function ReviewSection({ listingId, isOwner, currentUserId, isDark, lang, onViewProfile }: ReviewSectionProps) {
   const [reviews, setReviews] = useState<ListingReview[]>([]);
@@ -79,94 +83,86 @@ export function ReviewSection({ listingId, isOwner, currentUserId, isDark, lang,
   }, [myReview]);
 
   return (
-    <div className={`mt-4 pt-4 border-t ${isDark ? 'border-edge' : 'border-gray-200'}`}>
-      {/* Summary */}
-      <div className="flex items-center gap-3 mb-3">
-        <div className="flex items-center gap-1">
-          {[1, 2, 3, 4, 5].map(s => (
-            <Star key={s} className={`w-4 h-4 ${s <= Math.round(avgRating) ? 'text-amber-400 fill-amber-400' : isDark ? 'text-midnight' : 'text-gray-300'}`} />
-          ))}
-        </div>
-        <span className={`text-sm font-medium ${isDark ? 'text-frost' : 'text-gray-700'}`}>
+    <Box>
+      <Group gap="sm" mb="xs">
+        {[1, 2, 3, 4, 5].map(s => (
+          <IconStar key={s} size={16} fill={s <= Math.round(avgRating) ? 'currentColor' : 'none'} style={{ color: s <= Math.round(avgRating) ? amber : (isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-3)') }} />
+        ))}
+        <Text size="sm" fw={500} style={{ color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-7)' }}>
           {reviews.length > 0 ? `${avgRating.toFixed(1)} (${reviews.length})` : t('noReviews', lang)}
-        </span>
-      </div>
+        </Text>
+      </Group>
 
-      {/* Write review button */}
       {currentUserId && !isOwner && (
-        <button onClick={openForm}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all mb-3 ${isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-          <MessageSquare className="w-3.5 h-3.5" />
+        <Button onClick={openForm} variant="default" size="xs" mb="sm" leftSection={<IconMessageCircle size={14} />}>
           {myReview ? t('editReview', lang) : t('writeReview', lang)}
-        </button>
+        </Button>
       )}
 
-      {/* Review form */}
       {showForm && (
-        <div className={`p-4 rounded-xl mb-3 ${isDark ? 'bg-surface/50 border border-edge' : 'bg-gray-50 border border-gray-200'}`}>
-          <div className="flex items-center gap-1 mb-3">
+        <Paper p="sm" radius="md" mb="sm" withBorder style={{ background: isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)' }}>
+          <Group gap={4} mb="sm">
             {[1, 2, 3, 4, 5].map(s => (
               <button key={s} type="button" onClick={() => setMyRating(s)} onMouseEnter={() => setHoverRating(s)} onMouseLeave={() => setHoverRating(0)}
-                className="p-0.5" aria-label={`${s} star${s > 1 ? 's' : ''}`}>
-                <Star className={`w-6 h-6 transition-colors ${(hoverRating || myRating) >= s ? 'text-amber-400 fill-amber-400' : isDark ? 'text-midnight' : 'text-gray-300'}`} />
+                style={{ padding: 2, background: 'transparent', border: 'none', cursor: 'pointer' }} aria-label={`${s} star${s > 1 ? 's' : ''}`}>
+                <IconStar size={24} fill={(hoverRating || myRating) >= s ? 'currentColor' : 'none'} style={{ color: (hoverRating || myRating) >= s ? amber : (isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-3)') }} />
               </button>
             ))}
-          </div>
-          <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder={t('reviewPlaceholder', lang)} rows={2}
-            className={`w-full px-3 py-2 rounded-lg text-sm outline-none resize-none transition-colors ${isDark ? 'bg-midnight text-frost border border-edge focus:border-cyanx/50 placeholder-muted' : 'bg-white text-gray-800 border border-gray-200 focus:border-cyan-400 placeholder-gray-400'}`} />
-          <div className="flex gap-2 mt-2">
-            <button onClick={handleSubmit} disabled={myRating === 0 || submitting}
-              className="px-4 py-1.5 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark disabled:opacity-50 transition-all">
+          </Group>
+          <Textarea
+            value={comment}
+            onChange={e => setComment(e.target.value)}
+            placeholder={t('reviewPlaceholder', lang)}
+            minRows={2}
+          />
+          <Group gap="sm" mt="sm">
+            <Button variant="gradient" gradient={{ from: 'cyan', to: 'emerald' }} onClick={handleSubmit} disabled={myRating === 0 || submitting}>
               {submitting ? '...' : t('submit', lang)}
-            </button>
-            <button onClick={() => setShowForm(false)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'}`}>
+            </Button>
+            <Button variant="subtle" onClick={() => setShowForm(false)}>
               {t('cancel', lang)}
-            </button>
-          </div>
-        </div>
+            </Button>
+          </Group>
+        </Paper>
       )}
 
-      {/* Reviews list */}
       {!loading && reviews.length === 0 && !showForm && (
-        <p className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>{t('noReviewsYet', lang)}</p>
+        <Text size="xs" c="dimmed">{t('noReviewsYet', lang)}</Text>
       )}
       {reviews.map(r => (
-        <div key={r.id} className={`flex gap-3 py-3 ${isDark ? '' : ''}`}>
-          <button onClick={() => onViewProfile?.(r.user_id)} className="shrink-0">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden ${r.author?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
-              {r.author?.avatar_url ? (
-                <img src={r.author.avatar_url} alt="" loading="lazy" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-white text-xs font-bold">{(r.author?.username?.[0] || '?').toUpperCase()}</span>
-              )}
-            </div>
-          </button>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <button onClick={() => onViewProfile?.(r.user_id)} className={`text-xs font-semibold hover:underline ${isDark ? 'text-frost' : 'text-gray-800'}`}>
-                {r.author?.username || 'User'}
-              </button>
-              <div className="flex items-center gap-0.5">
+        <Group key={r.id} gap="md" py="sm" align="flex-start" wrap="nowrap">
+          <UnstyledButton onClick={() => onViewProfile?.(r.user_id)} style={{ flexShrink: 0 }}>
+            <Avatar size={32} radius="md" src={r.author?.avatar_url} style={{ backgroundImage: avatarGradient }}>
+              {(r.author?.username?.[0] || '?').toUpperCase()}
+            </Avatar>
+          </UnstyledButton>
+          <Box style={{ flex: 1, minWidth: 0 }}>
+            <Group gap="xs" align="center" wrap="wrap">
+              <UnstyledButton onClick={() => onViewProfile?.(r.user_id)}>
+                <Text size="xs" fw={600} className="hover:underline" style={{ color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)' }}>
+                  {r.author?.username || 'User'}
+                </Text>
+              </UnstyledButton>
+              <Group gap={2}>
                 {[1, 2, 3, 4, 5].map(s => (
-                  <Star key={s} className={`w-3 h-3 ${s <= r.rating ? 'text-amber-400 fill-amber-400' : isDark ? 'text-midnight' : 'text-gray-300'}`} />
+                  <IconStar key={s} size={12} fill={s <= r.rating ? 'currentColor' : 'none'} style={{ color: s <= r.rating ? amber : (isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-3)') }} />
                 ))}
-              </div>
-              <span className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+              </Group>
+              <Text size="xs" c="dimmed">
                 {new Date(r.created_at).toLocaleDateString(lang)}
-              </span>
+              </Text>
               {r.user_id === currentUserId && (
-                <button onClick={() => handleDelete(r.id)} className="ml-auto text-red-400 hover:text-red-500" aria-label="Delete review">
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                <ActionIcon variant="subtle" color="red" size="sm" onClick={() => handleDelete(r.id)} aria-label="Delete review" style={{ marginLeft: 'auto' }}>
+                  <IconTrash size={14} />
+                </ActionIcon>
               )}
-            </div>
+            </Group>
             {r.comment && (
-              <p className={`text-sm mt-1 ${isDark ? 'text-mist' : 'text-gray-600'}`}>{r.comment}</p>
+              <Text size="sm" mt={4} style={{ color: isDark ? 'var(--mantine-color-gray-2)' : 'var(--mantine-color-gray-7)' }}>{r.comment}</Text>
             )}
-          </div>
-        </div>
+          </Box>
+        </Group>
       ))}
-    </div>
+    </Box>
   );
 }

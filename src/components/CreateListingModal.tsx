@@ -5,8 +5,8 @@ import type { MarketplaceListing, Product, PriceOption, ContactEntry } from '../
 import { CONTACT_PLATFORMS, MARKETPLACE_CATEGORIES } from '../types';
 import { uploadListingImages } from '../utils/supabase';
 import { t } from '../utils/translations';
-import { X, Camera, Tag, DollarSign, Plus, Trash2, Scale } from 'lucide-react';
-
+import { Modal, Group, Stack, TextInput, Textarea, NumberInput, Select, Button, ActionIcon, Paper, Divider, Box, Text, ScrollArea, Image } from '@mantine/core';
+import { IconCamera, IconTag, IconCurrencyDollar, IconPlus, IconTrash, IconX, IconScale } from '@tabler/icons-react';
 
 interface CreateListingModalProps {
   isDark: boolean;
@@ -98,243 +98,268 @@ export function CreateListingModal({ isDark, lang, products, currentUserId, init
     }
   }
 
+  const canSubmit = !submitting && !!title.trim() && contacts.some(c => c.value.trim()) && (priceOptions.length === 0 ? !!price.trim() : !priceOptions.some(o => !o.amount || !o.price));
+
+  const dimColor = isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-6)';
+
   return (
-    <div
-      className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-200 ${
-        isVisible ? 'bg-black/10 backdrop-blur-[2px]' : 'bg-black/0'
-      }`}
-      onClick={handleClose}
-      role="dialog"
-      aria-modal="true"
+    <Modal
+      opened={isVisible}
+      onClose={handleClose}
+      size="lg"
+      centered
+      radius="lg"
+      closeOnEscape={false}
       aria-label={initial ? t('editListing', lang) : t('createListing', lang)}
+      styles={{ content: { display: 'flex', flexDirection: 'column', maxHeight: '90vh' }, body: { padding: 0, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 } }}
     >
-      <div
-        className={`w-full max-w-lg rounded-2xl border-2 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col transition-all duration-200 ${
-          isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
-        } ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className={`flex items-center justify-between px-5 py-4 border-b flex-shrink-0 ${
-          isDark ? 'border-slate-800' : 'border-gray-200'
-        }`}>
-          <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            {initial ? t('editListing', lang) : t('createListing', lang)}
-          </h2>
-          <button type="button" onClick={handleClose} aria-label="Close dialog"
-            className={`p-1.5 rounded-xl transition-all ${isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'}`}>
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-4 space-y-3 overflow-y-auto flex-1">
-
-        {/* Images - at the top */}
-        <div>
-          <label className={`block text-xs font-medium mb-1.5 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-            {t('listingImage', lang)}
-          </label>
-          <div className="flex gap-1.5 flex-wrap">
-            {existingImages.map((url, i) => (
-              <div key={`e-${i}`} className="relative w-16 h-16 rounded-lg overflow-hidden group">
-                <img src={url} alt="" className="w-full h-full object-cover" />
-                <button type="button" onClick={() => removeExistingImage(i)} aria-label="Remove image"
-                  className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
-            {newImagePreviews.map((preview, i) => (
-              <div key={`n-${i}`} className="relative w-16 h-16 rounded-lg overflow-hidden group">
-                <img src={preview} alt="" className="w-full h-full object-cover" />
-                <button type="button" onClick={() => removeNewImage(i)} aria-label="Remove image"
-                  className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
-            {(existingImages.length + newImagePreviews.length) < 9 && (
-              <button type="button" onClick={() => fileInputRef.current?.click()} aria-label="Upload image"
-                className={`w-16 h-16 rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-0.5 cursor-pointer transition-all ${isDark ? 'border-slate-700 hover:border-slate-600 text-slate-500' : 'border-gray-300 hover:border-gray-400 text-gray-400'}`}>
-                <Camera className="w-4 h-4" />
-                <span className="text-[8px]">{t('uploadPicture', lang)}</span>
-              </button>
-            )}
-          </div>
-          <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
-        </div>
-
-        {/* Title */}
-        <div>
-          <label htmlFor="listing-title" className={`block text-xs font-medium mb-1 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-            {t('listingTitle', lang)}
-          </label>
-          <input id="listing-title" name="title" type="text" value={title} onChange={e => setTitle(e.target.value)} required
-            className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition-colors ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'}`} />
-        </div>
-
-        {/* Description */}
-        <div>
-          <label htmlFor="listing-desc" className={`block text-xs font-medium mb-1 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-            {t('listingDescription', lang)}
-          </label>
-          <textarea id="listing-desc" name="description" value={description} onChange={e => setDescription(e.target.value)} rows={2}
-            className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none resize-none transition-colors ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'}`} />
-        </div>
-
-        {/* Pricing */}
-        <div>
-          <label className={`block text-xs font-medium mb-1.5 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-            Pricing
-          </label>
-
-          {priceOptions.length === 0 ? (
-            <div className="relative mb-2">
-              <DollarSign className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${isDark ? 'text-slate-400' : 'text-gray-400'}`} />
-              <input id="listing-price" name="price" type="number" step="0.01" min="0" value={price} onChange={e => setPrice(e.target.value)} required
-                className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm outline-none transition-colors ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'}`} />
-            </div>
-          ) : (
-            <div className="space-y-1.5 mb-2">
-              {priceOptions.map((opt, i) => (
-                <div key={i} className="flex items-center gap-1.5">
-                  <div className="relative flex-1">
-                    <Scale className={`absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${isDark ? 'text-slate-400' : 'text-gray-400'}`} />
-                    <input type="number" step="0.1" min="0" value={opt.amount || ''} onChange={e => {
-                      const newOpts = [...priceOptions];
-                      newOpts[i] = { ...newOpts[i], amount: parseFloat(e.target.value) || 0 };
-                      setPriceOptions(newOpts);
-                    }} placeholder="Amount"
-                      className={`w-full pl-8 pr-7 py-2 rounded-lg border text-sm outline-none transition-colors ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'}`} />
-                    <span className={`absolute right-2.5 top-1/2 -translate-y-1/2 text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>g</span>
-                  </div>
-                  <div className="relative flex-[1.5]">
-                    <DollarSign className={`absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${isDark ? 'text-slate-400' : 'text-gray-400'}`} />
-                    <input type="number" step="0.01" min="0" value={opt.price || ''} onChange={e => {
-                      const newOpts = [...priceOptions];
-                      newOpts[i] = { ...newOpts[i], price: parseFloat(e.target.value) || 0 };
-                      setPriceOptions(newOpts);
-                    }} placeholder="Price"
-                      className={`w-full pl-8 pr-3 py-2 rounded-lg border text-sm outline-none transition-colors ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500'}`} />
-                  </div>
-                  <button type="button" onClick={() => setPriceOptions(prev => prev.filter((_, j) => j !== i))} aria-label="Remove weight option"
-                    className={`p-2 rounded-lg transition-all shrink-0 ${isDark ? 'text-red-400 hover:bg-red-900/20' : 'text-red-500 hover:bg-red-50'}`}>
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="flex items-center gap-2">
-            {priceOptions.length > 0 && (
-              <button type="button" onClick={() => setPriceOptions([])} className={`text-xs font-medium transition-all ${isDark ? 'text-muted hover:text-frost' : 'text-gray-500 hover:text-gray-700'}`}>
-                Use single price
-              </button>
-            )}
-            <button type="button" onClick={() => setPriceOptions(prev => [...prev, { amount: 0, price: 0 }])}
-              className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${isDark ? 'bg-slate-800 text-cyanx hover:bg-slate-700' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'}`}>
-              <Plus className="w-3 h-3" />
-              Add weight
-            </button>
-          </div>
-        </div>
-
-        {/* Category */}
-        <div>
-          <label htmlFor="listing-category" className={`block text-xs font-medium mb-1 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-            {t('listingCategory', lang)}
-          </label>
-          <select id="listing-category" name="category" value={category} onChange={e => setCategory(e.target.value)}
-            className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition-colors ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}>
-            <option value="">{t('listingCategory', lang)}...</option>
-            {MARKETPLACE_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-          </select>
-        </div>
-
-        {/* Contacts */}
-        <div>
-          <label className={`block text-xs font-medium mb-1.5 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-            {t('contactInfo', lang)}
-          </label>
-          <div className="space-y-2">
-            {contacts.map((contact, i) => (
-              <div key={i} className="flex gap-1.5">
-                <select value={contact.platform} onChange={e => {
-                  const next = [...contacts];
-                  next[i] = { ...next[i], platform: e.target.value };
-                  setContacts(next);
-                }}
-                  className={`px-2 py-2 rounded-lg border text-xs outline-none transition-colors shrink-0 ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}>
-                  {CONTACT_PLATFORMS.map(pf => (
-                    <option key={pf} value={pf}>{pf}</option>
-                  ))}
-                </select>
-                <input type="text" value={contact.value} onChange={e => {
-                  const next = [...contacts];
-                  next[i] = { ...next[i], value: e.target.value };
-                  setContacts(next);
-                }} placeholder={contact.platform === 'email' ? 'user@example.com' : contact.platform === 'phone' ? '+1 555 0000' : '@username'}
-                  className={`flex-1 px-3 py-2 rounded-lg border text-sm outline-none transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'}`} />
-                {contacts.length > 1 && (
-                  <button type="button" onClick={() => setContacts(prev => prev.filter((_, j) => j !== i))} aria-label="Remove contact"
-                    className={`p-2 rounded-lg transition-all shrink-0 ${isDark ? 'text-red-400 hover:bg-red-900/20' : 'text-red-500 hover:bg-red-50'}`}>
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+        <Text fw={700} size="lg" p="lg" pb="sm">{initial ? t('editListing', lang) : t('createListing', lang)}</Text>
+        <Box p="lg" pt="xs" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+          <Stack gap="md">
+            <Box>
+              <Text fw={500} size="xs" mb={6}>{t('listingImage', lang)}</Text>
+              <Group gap={6} align="flex-start">
+                {existingImages.map((url, i) => (
+                  <Box key={`e-${i}`} style={{ position: 'relative', width: 64, height: 64, borderRadius: 8, overflow: 'hidden' }}>
+                    <Image src={url} alt="" w={64} h={64} fit="cover" />
+                    <ActionIcon size="xs" radius="xl" color="red" onClick={() => removeExistingImage(i)} aria-label="Remove image" style={{ position: 'absolute', top: 2, right: 2 }}>
+                      <IconX size={12} />
+                    </ActionIcon>
+                  </Box>
+                ))}
+                {newImagePreviews.map((preview, i) => (
+                  <Box key={`n-${i}`} style={{ position: 'relative', width: 64, height: 64, borderRadius: 8, overflow: 'hidden' }}>
+                    <Image src={preview} alt="" w={64} h={64} fit="cover" />
+                    <ActionIcon size="sm" radius="sm" color="red" onClick={() => removeNewImage(i)} aria-label="Remove image" style={{ position: 'absolute', top: 2, right: 2 }}>
+                      <IconX size={12} />
+                    </ActionIcon>
+                  </Box>
+                ))}
+                {(existingImages.length + newImagePreviews.length) < 9 && (
+                  <Button
+                    variant="default"
+                    w={64} h={64} p={0}
+                    style={{ borderStyle: 'dashed', color: dimColor, flexDirection: 'column', gap: 2 }}
+                    onClick={() => fileInputRef.current?.click()}
+                    aria-label="Upload image"
+                  >
+                    <IconCamera size={16} />
+                    <Text size="8" style={{ fontSize: 8 }}>{t('uploadPicture', lang)}</Text>
+                  </Button>
                 )}
-              </div>
-            ))}
-          </div>
-          {contacts.length < 5 && (
-            <button type="button" onClick={() => setContacts(prev => [...prev, { platform: 'email', value: '' }])}
-              className={`mt-1.5 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${isDark ? 'bg-slate-800 text-cyanx hover:bg-slate-700' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'}`}>
-              <Plus className="w-3 h-3" />
-              Add contact
-            </button>
-          )}
-        </div>
+              </Group>
+              <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleImageUpload} style={{ display: 'none' }} />
+            </Box>
 
-        {/* Link product */}
-        <div>
-          <label className={`block text-xs font-medium mb-1 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-            {t('linkProduct', lang)}
-          </label>
-          {linkedProduct ? (
-            <div className={`flex items-center gap-2 px-3 py-2 rounded-xl ${isDark ? 'bg-slate-800/50' : 'bg-gray-50'}`}>
-              <Tag className={`w-3.5 h-3.5 shrink-0 ${isDark ? 'text-cyanx' : 'text-cyan-600'}`} />
-              <span className={`text-sm font-medium flex-1 ${isDark ? 'text-white' : 'text-gray-800'}`}>{linkedProduct.name}</span>
-              <button type="button" onClick={() => { setLinkedProductId(''); setShowProductPicker(false); }}
-                className={`text-[10px] font-medium ${isDark ? 'text-red-400 hover:text-red-300' : 'text-red-500 hover:text-red-600'}`}>
-                {t('removeProduct', lang)}
-              </button>
-            </div>
-          ) : (
-            <div className="relative">
-              <button type="button" onClick={() => setShowProductPicker(!showProductPicker)}
-                className={`w-full px-3 py-2.5 rounded-xl border text-sm text-left transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600' : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300'}`}>
-                {t('linkProduct', lang)}...
-              </button>
-              {showProductPicker && (
-                <div className={`absolute top-full left-0 right-0 mt-1 rounded-xl border-2 shadow-xl z-10 max-h-36 overflow-y-auto ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'}`}>
-                  {products.map(p => (
-                    <button key={p.id} type="button" onClick={() => { setLinkedProductId(p.id); setShowProductPicker(false); }}
-                      className={`w-full px-3 py-2 text-sm text-left transition-all ${isDark ? 'text-slate-300 hover:bg-slate-700' : 'text-gray-700 hover:bg-gray-50'}`}>
-                      {p.name}
-                    </button>
+            <TextInput
+              id="listing-title"
+              name="title"
+              value={title}
+              onChange={e => setTitle(e.currentTarget.value)}
+              label={t('listingTitle', lang)}
+              required
+            />
+
+            <Textarea
+              id="listing-desc"
+              name="description"
+              value={description}
+              onChange={e => setDescription(e.currentTarget.value)}
+              label={t('listingDescription', lang)}
+              minRows={2}
+            />
+
+            <Box>
+              <Text fw={500} size="xs" mb={6}>Pricing</Text>
+
+              {priceOptions.length === 0 ? (
+                <NumberInput
+                  id="listing-price"
+                  name="price"
+                  value={price === '' ? '' : parseFloat(price)}
+                  onChange={(v) => setPrice(v === '' ? '' : String(typeof v === 'number' ? v : parseFloat(v) || 0))}
+                  required
+                  min={0} step={0.01} decimalScale={2}
+                  mb="sm"
+                  leftSection={<IconCurrencyDollar size={14} />}
+                />
+              ) : (
+                <Stack gap={6} mb="sm">
+                  {priceOptions.map((opt, i) => (
+                    <Group key={i} gap={6} align="center">
+                      <NumberInput
+                        flex={1}
+                        value={opt.amount || ''}
+                        onChange={(v) => {
+                          const newOpts = [...priceOptions];
+                          newOpts[i] = { ...newOpts[i], amount: typeof v === 'number' ? v : parseFloat(v) || 0 };
+                          setPriceOptions(newOpts);
+                        }}
+                        placeholder="Amount"
+                        min={0} step={0.1}
+                        size="xs"
+                        leftSection={<IconScale size={14} />}
+                        rightSection={<Text size="xs" c="dimmed">g</Text>}
+                      />
+                      <NumberInput
+                        flex={1.5}
+                        value={opt.price || ''}
+                        onChange={(v) => {
+                          const newOpts = [...priceOptions];
+                          newOpts[i] = { ...newOpts[i], price: typeof v === 'number' ? v : parseFloat(v) || 0 };
+                          setPriceOptions(newOpts);
+                        }}
+                        placeholder="Price"
+                        min={0} step={0.01}
+                        size="xs"
+                        leftSection={<IconCurrencyDollar size={14} />}
+                      />
+                      <ActionIcon variant="subtle" color="red" onClick={() => setPriceOptions(prev => prev.filter((_, j) => j !== i))} aria-label="Remove weight option">
+                        <IconTrash size={14} />
+                      </ActionIcon>
+                    </Group>
                   ))}
-                </div>
+                </Stack>
               )}
-            </div>
-          )}
-        </div>
 
-        {/* Submit */}
-        <button type="submit" disabled={submitting || !title.trim() || !contacts.some(c => c.value.trim()) || (priceOptions.length === 0 && !price.trim()) || (priceOptions.length > 0 && priceOptions.some(o => !o.amount || !o.price))}
-          className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-cyanx/20">
-          {submitting ? '...' : initial ? t('editListing', lang) : t('createListing', lang)}
-        </button>
+              <Group gap="sm">
+                {priceOptions.length > 0 && (
+                  <Button variant="subtle" size="xs" p={0} autoContrast onClick={() => setPriceOptions([])} styles={{ root: { color: dimColor, height: 'auto' } }}>
+                    Use single price
+                  </Button>
+                )}
+                <Button
+                  size="xs" variant="light" color="cyan" leftSection={<IconPlus size={14} />}
+                  onClick={() => setPriceOptions(prev => [...prev, { amount: 0, price: 0 }])}
+                  styles={{ root: { height: 'auto', padding: '6px 10px' } }}
+                >
+                  Add weight
+                </Button>
+              </Group>
+            </Box>
+
+            <Select
+              id="listing-category"
+              name="category"
+              value={category || null}
+              onChange={(v) => setCategory(v || '')}
+              label={t('listingCategory', lang)}
+              placeholder={`${t('listingCategory', lang)}...`}
+              data={MARKETPLACE_CATEGORIES}
+              searchable
+              clearable
+              nothingFoundMessage="No options"
+            />
+
+            <Box>
+              <Text fw={500} size="xs" mb={6}>{t('contactInfo', lang)}</Text>
+              <Stack gap={6}>
+                {contacts.map((contact, i) => (
+                  <Group key={i} gap={6} align="center">
+                    <Select
+                      value={contact.platform}
+                      onChange={(v) => {
+                        if (!v) return;
+                        const next = [...contacts];
+                        next[i] = { ...next[i], platform: v };
+                        setContacts(next);
+                      }}
+                      data={CONTACT_PLATFORMS}
+                      size="xs"
+                      style={{ width: 110, flexShrink: 0 }}
+                    />
+                    <TextInput
+                      flex={1}
+                      value={contact.value}
+                      onChange={e => {
+                        const next = [...contacts];
+                        next[i] = { ...next[i], value: e.currentTarget.value };
+                        setContacts(next);
+                      }}
+                      placeholder={contact.platform === 'email' ? 'user@example.com' : contact.platform === 'phone' ? '+1 555 0000' : '@username'}
+                      size="xs"
+                    />
+                    {contacts.length > 1 && (
+                      <ActionIcon size="md" variant="subtle" color="red" onClick={() => setContacts(prev => prev.filter((_, j) => j !== i))} aria-label="Remove contact">
+                        <IconTrash size={14} />
+                      </ActionIcon>
+                    )}
+                  </Group>
+                ))}
+              </Stack>
+              {contacts.length < 5 && (
+                <Button
+                  size="xs" mt={6} variant="light" color="cyan" leftSection={<IconPlus size={14} />}
+                  onClick={() => setContacts(prev => [...prev, { platform: 'email', value: '' }])}
+                  style={{ height: 'auto', padding: '6px 10px' }}
+                >
+                  Add contact
+                </Button>
+              )}
+            </Box>
+
+            <Box>
+              <Text fw={500} size="xs" mb={6}>{t('linkProduct', lang)}</Text>
+              {linkedProduct ? (
+                <Paper withBorder radius="md" bg={isDark ? 'var(--mantine-color-slate-8)' : undefined} p="xs" px="sm">
+                  <Group gap="sm">
+                    <IconTag size={14} style={{ color: dimColor, flexShrink: 0 }} />
+                    <Text size="sm" fw={500} flex={1}>{linkedProduct.name}</Text>
+                    <Button
+                      variant="subtle" size="xs" p={0} color="red"
+                      onClick={() => { setLinkedProductId(''); setShowProductPicker(false); }}
+                      style={{ height: 'auto' }}
+                    >
+                      {t('removeProduct', lang)}
+                    </Button>
+                  </Group>
+                </Paper>
+              ) : (
+                <Box>
+                  <Button
+                    variant="default" fullWidth
+                    onClick={() => setShowProductPicker(!showProductPicker)}
+                    styles={{ root: { color: dimColor, justifyContent: 'flex-start' } }}
+                  >
+                    {t('linkProduct', lang)}...
+                  </Button>
+                  {showProductPicker && (
+                    <ScrollArea.Autosize mah={144} style={{ marginTop: 6, border: `1px solid var(--mantine-color-default-border)`, borderRadius: 8 }}>
+                      <Stack gap={0}>
+                        {products.map(p => (
+                          <Button
+                            key={p.id}
+                            variant="subtle" h="auto" p="xs" px="sm" fullWidth
+                            onClick={() => { setLinkedProductId(p.id); setShowProductPicker(false); }}
+                            style={{ justifyContent: 'flex-start', fontWeight: 400 }}
+                          >
+                            {p.name}
+                          </Button>
+                        ))}
+                      </Stack>
+                    </ScrollArea.Autosize>
+                  )}
+                </Box>
+              )}
+            </Box>
+
+            <Divider />
+
+            <Button
+              type="submit"
+              fullWidth
+              size="md"
+              loading={submitting}
+              disabled={!canSubmit}
+              className="bg-gradient-to-r from-cyan-500 to-emerald-500"
+              styles={{ root: { boxShadow: '0 10px 20px rgba(0,0,0,0.35)' } }}
+            >
+              {submitting ? '...' : initial ? t('editListing', lang) : t('createListing', lang)}
+            </Button>
+          </Stack>
+        </Box>
       </form>
-      </div>
-    </div>
+    </Modal>
   );
 }

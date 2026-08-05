@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { Product } from '../types';
 import { ProductCard } from './ProductCard';
 import { EmptyState } from './EmptyState';
+import { SimpleGrid, Stack } from '@mantine/core';
 
 interface ProductGridProps {
   products: Product[];
@@ -35,41 +36,55 @@ export const ProductGrid = memo(function ProductGrid({
   onToggleSelect,
 }: ProductGridProps) {
   return (
-    <main className="py-4">
-
-
+    <Stack pt="md">
       {filteredProducts.length === 0 ? (
         <EmptyState
           isDark={isDark}
           hasProducts={products.length > 0}
           onAddProduct={onAddProduct}
         />
-      ) : (
-        <div className={
-          layout === 'grid'
-            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
-            : layout === 'list'
-              ? 'flex flex-col gap-3'
-              : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3'
-        }>
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onClick={onEditProduct}
-                onConsume={onConsumeProduct}
-                onSell={onSellProduct}
-                onToggleFavorite={onToggleFavorite}
-                isDark={isDark}
-                layout={layout}
-                precision={precision}
-                isSelectMode={isSelectMode}
-                selected={selectedIds?.has(product.id) || false}
-                onToggleSelect={onToggleSelect}
-              />
+      ) : layout === 'list' ? (
+        <Stack gap="sm">
+          {filteredProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onClick={onEditProduct}
+              onConsume={onConsumeProduct}
+              onSell={onSellProduct}
+              onToggleFavorite={onToggleFavorite}
+              isDark={isDark}
+              layout={layout}
+              precision={precision}
+              isSelectMode={isSelectMode}
+              selected={selectedIds?.has(product.id) || false}
+              onToggleSelect={onToggleSelect}
+            />
           ))}
-        </div>
+        </Stack>
+      ) : (
+        <SimpleGrid
+          cols={layout === 'grid' ? { base: 1, sm: 2, lg: 3, xl: 4 } : { base: 2, sm: 3, md: 4, lg: 5, xl: 6 }}
+          spacing="md"
+        >
+          {filteredProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onClick={onEditProduct}
+              onConsume={onConsumeProduct}
+              onSell={onSellProduct}
+              onToggleFavorite={onToggleFavorite}
+              isDark={isDark}
+              layout={layout}
+              precision={precision}
+              isSelectMode={isSelectMode}
+              selected={selectedIds?.has(product.id) || false}
+              onToggleSelect={onToggleSelect}
+            />
+          ))}
+        </SimpleGrid>
       )}
-    </main>
+    </Stack>
   );
 });
