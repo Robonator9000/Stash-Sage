@@ -284,7 +284,7 @@ export function LeftSidebar({
         </Box>
       )}
 
-      <ScrollArea style={{ flex: 1 }} offsetScrollbars>
+      <ScrollArea style={{ flex: 1, minHeight: 0 }} offsetScrollbars>
         <Box py="xs">
           {sectionOrder.map(section => {
             const items = navItems.filter(i => i.section === section &&
@@ -338,43 +338,50 @@ export function LeftSidebar({
         </Box>
       </ScrollArea>
 
-      {!collapsed && user && (
+      {user && (
         <Box
-          px="sm"
+          px={collapsed ? 'xs' : 'sm'}
           py="sm"
           style={{
             borderTop: '1px solid var(--mantine-color-gray-3)',
+            marginTop: 'auto',
           }}
         >
-          <Group gap="sm" wrap="nowrap">
-            <Tooltip label="Edit profile" position="right" openDelay={300}>
-              <UnstyledButton onClick={() => onOpenProfileSettings?.()}>
-                <Avatar
-                  src={profileAvatar}
-                  alt={profileUsername}
-                  size={36}
-                  radius="xl"
-                  color="cyan"
+          {collapsed ? (
+            <Group justify="center">
+              <Tooltip label="Edit profile" position="right" openDelay={300}>
+                <UnstyledButton onClick={() => onOpenProfileSettings?.()}>
+                  <Avatar src={profileAvatar} alt={profileUsername} size={32} radius="xl" color="cyan">
+                    {profileUsername?.[0]?.toUpperCase()}
+                  </Avatar>
+                </UnstyledButton>
+              </Tooltip>
+            </Group>
+          ) : (
+            <Group gap="sm" wrap="nowrap">
+              <Tooltip label="Edit profile" position="right" openDelay={300}>
+                <UnstyledButton onClick={() => onOpenProfileSettings?.()}>
+                  <Avatar src={profileAvatar} alt={profileUsername} size={36} radius="xl" color="cyan">
+                    {profileUsername?.[0]?.toUpperCase()}
+                  </Avatar>
+                </UnstyledButton>
+              </Tooltip>
+              <Box style={{ flex: 1, overflow: 'hidden' }}>
+                <UnstyledButton
+                  onClick={() => openCommunityProfile(profileUsername)}
+                  style={{ width: '100%', borderRadius: 'var(--mantine-radius-md)' }}
+                  aria-label={`View @${profileUsername} profile`}
                 >
-                  {profileUsername?.[0]?.toUpperCase()}
-                </Avatar>
-              </UnstyledButton>
-            </Tooltip>
-            <Box style={{ flex: 1, overflow: 'hidden' }}>
-              <UnstyledButton
-                onClick={() => openCommunityProfile(profileUsername)}
-                style={{ width: '100%', borderRadius: 'var(--mantine-radius-md)' }}
-                aria-label={`View @${profileUsername} profile`}
-              >
-                <Text size="sm" fw={600} truncate>
-                  {profileDisplayName}
-                </Text>
-                <Text size="xs" c="cyan" truncate>
-                  @{profileUsername}
-                </Text>
-              </UnstyledButton>
-            </Box>
-          </Group>
+                  <Text size="sm" fw={600} truncate>
+                    {profileDisplayName}
+                  </Text>
+                  <Text size="xs" c="cyan" truncate>
+                    @{profileUsername}
+                  </Text>
+                </UnstyledButton>
+              </Box>
+            </Group>
+          )}
         </Box>
       )}
     </Box>

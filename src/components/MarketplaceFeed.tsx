@@ -9,6 +9,7 @@ import { Plus, ArrowUpDown } from 'lucide-react';
 import { getProfiles } from '../utils/profileCache';
 import { Carousel } from '@mantine/carousel';
 import { Paper, Text, SimpleGrid } from '@mantine/core';
+import { BorderAnimate } from '@gfazioli/mantine-border-animate';
 
 interface MarketplaceFeedProps {
   isDark: boolean;
@@ -225,11 +226,14 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
       {/* Sell button - centered prominent */}
       <div className="flex justify-center">
         {currentUserId ? (
-          <button onClick={handleOpenCreate} aria-label="Create new listing"
-            className="flex items-center gap-2.5 px-7 py-3.5 rounded-xl text-base font-bold text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all shadow-lg shadow-cyanx/25 hover:shadow-xl hover:shadow-cyanx/30 hover:scale-[1.02] active:scale-[0.98]">
-            <Plus className="w-5 h-5" />
-            {t('sellSomething', lang)}
-          </button>
+          <BorderAnimate variant="beam" beamMode="conic" radius="lg" duration={3.5} borderWidth={2} size="md"
+            colorStops={[{ color: 'var(--mantine-color-cyan-6)', position: 0 }, { color: 'var(--mantine-color-emerald-5)', position: 50 }, { color: 'var(--mantine-color-cyan-6)', position: 100 }]}>
+            <button onClick={handleOpenCreate} aria-label="Create new listing"
+              className="flex items-center gap-2.5 px-7 py-3.5 rounded-xl text-base font-bold text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark transition-all shadow-lg shadow-cyanx/25 hover:shadow-xl hover:shadow-cyanx/30 hover:scale-[1.02] active:scale-[0.98]">
+              <Plus className="w-5 h-5" />
+              {t('sellSomething', lang)}
+            </button>
+          </BorderAnimate>
         ) : (
           <div className={`w-full p-4 rounded-2xl text-center text-sm ${isDark ? 'bg-surface/50 border border-edge text-mist' : 'bg-white border border-gray-200 text-gray-500'}`}>
             Sign in to create a listing.
@@ -264,32 +268,46 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
           const active = categoryFilter === cat.id;
           return (
             <Carousel.Slide key={cat.id}>
-              <Paper
-                onClick={() => setCategoryFilter(cat.id)}
-                style={{
-                  height: 110, display: 'flex', flexDirection: 'column',
-                  alignItems: 'center', justifyContent: 'center', gap: 4,
-                  cursor: 'pointer', userSelect: 'none',
-                  background: active
-                    ? 'linear-gradient(135deg, var(--mantine-color-cyan-6), var(--mantine-color-blue-6))'
-                    : isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
-                  color: active ? '#fff' : undefined,
-                  border: active ? 'none' : `1px solid ${isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)'}`,
-                  transition: 'transform 0.15s, box-shadow 0.15s',
-                }}
-                radius="md"
-                withBorder={!active}
-                onMouseEnter={(e) => {
-                  if (!active) (e.currentTarget as HTMLElement).style.transform = 'scale(1.04)';
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
-                }}
-              >
-                <Text size="xl">{cat.icon}</Text>
-                <Text size="xs" fw={600}>{cat.label}</Text>
-                <Text size="xs" c={active ? 'white' : 'dimmed'}>{categoryCounts[cat.id] || 0} <span style={{ fontWeight: 600 }}>items</span></Text>
-              </Paper>
+              {active ? (
+                <BorderAnimate variant="glow" radius="md" duration={3} borderWidth={2} blur="sm"
+                  colorFrom="var(--mantine-color-cyan-6)" colorTo="var(--mantine-color-blue-6)">
+                  <Paper
+                    onClick={() => setCategoryFilter(cat.id)}
+                    style={{
+                      height: 110, display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', justifyContent: 'center', gap: 4,
+                      cursor: 'pointer', userSelect: 'none',
+                      background: 'linear-gradient(135deg, var(--mantine-color-cyan-6), var(--mantine-color-blue-6))',
+                      color: '#fff',
+                      transition: 'transform 0.15s, box-shadow 0.15s',
+                    }}
+                    radius="md"
+                  >
+                    <Text size="xl">{cat.icon}</Text>
+                    <Text size="xs" fw={600}>{cat.label}</Text>
+                    <Text size="xs" c="white">{categoryCounts[cat.id] || 0} <span style={{ fontWeight: 600 }}>items</span></Text>
+                  </Paper>
+                </BorderAnimate>
+              ) : (
+                <Paper
+                  onClick={() => setCategoryFilter(cat.id)}
+                  style={{
+                    height: 110, display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center', gap: 4,
+                    cursor: 'pointer', userSelect: 'none',
+                    background: isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
+                    border: `1px solid ${isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)'}`,
+                    transition: 'transform 0.15s, box-shadow 0.15s',
+                  }}
+                  radius="md"
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.04)'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
+                >
+                  <Text size="xl">{cat.icon}</Text>
+                  <Text size="xs" fw={600}>{cat.label}</Text>
+                  <Text size="xs" c="dimmed">{categoryCounts[cat.id] || 0} <span style={{ fontWeight: 600 }}>items</span></Text>
+                </Paper>
+              )}
             </Carousel.Slide>
           );
         })}
@@ -314,8 +332,12 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
       {loading && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3" aria-busy="true" aria-label="Loading listings">
           {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className={`aspect-square rounded-2xl overflow-hidden animate-pulse ${isDark ? 'bg-surface/60 border border-edge' : 'bg-white border border-gray-200'}`}>
-              <div className={`w-full h-full ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
+            <div key={i} className={`rounded-2xl overflow-hidden animate-pulse ${isDark ? 'bg-surface/60 border border-edge' : 'bg-white border border-gray-200'}`}>
+              <div className={`h-44 ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
+              <div className="p-3 space-y-2">
+                <div className={`h-3 rounded ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
+                <div className={`h-3 w-2/3 rounded ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
+              </div>
             </div>
           ))}
         </div>

@@ -50,9 +50,22 @@ export default function App() {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = (searchParams.get('tab') as 'stash' | 'community' | 'marketplace' | 'admin' | 'notifications' | 'bookmarks' | 'history' | 'messages' | 'explore') || 'stash';
   function setActiveTab(tab: string) {
-    setSearchParams(prev => { prev.set('tab', tab); prev.delete('user'); return prev; }, { replace: true });
+    setSearchParams(prev => { prev.set('tab', tab); if (tab !== 'stash') prev.delete('section'); prev.delete('user'); return prev; }, { replace: true });
   }
+  const openDashboard = useCallback(() => {
+    setStashSection('dashboard');
+    setSearchParams(prev => { prev.set('tab', 'stash'); prev.set('section', 'dashboard'); prev.delete('user'); return prev; }, { replace: true });
+  }, [setSearchParams]);
   const [stashSection, setStashSection] = useState<'products' | 'dashboard'>('products');
+
+  useEffect(() => {
+    const section = searchParams.get('section');
+    if (activeTab === 'stash' && section === 'dashboard') setStashSection('dashboard');
+    else if (activeTab === 'stash' && stashSection === 'dashboard' && !section) {
+      setSearchParams(prev => { prev.delete('section'); return prev; }, { replace: true });
+    }
+  }, [activeTab, searchParams, stashSection, setSearchParams]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedQuery = useDebounce(searchQuery, 200);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -505,7 +518,7 @@ export default function App() {
 
 
       {/* Main layout with left sidebar */}
-      <div className="flex max-w-7xl mx-auto px-4 py-4 flex-1 gap-4 lg:gap-6 w-full pb-16 lg:pb-0">
+      <div className="flex flex-1 w-full">
         {/* Left Nav - desktop only, pinned to left wall, sticky on scroll */}
         <div className="hidden lg:block lg:sticky lg:top-0 lg:self-start lg:h-screen shrink-0">
           <Box style={{ height: '100vh' }}>
@@ -516,13 +529,14 @@ export default function App() {
               onSettings={() => { setIsSettingsOpen(true); }}
               onOpenProfileSettings={() => { setSettingsDefaultTab('profile'); setIsSettingsOpen(true); }}
               currentUserId={user?.id || ''}
-              onDashboard={() => { setStashSection('dashboard'); setActiveTab('stash'); }}
+              onDashboard={openDashboard}
             />
           </Box>
         </div>
 
         {/* Main content */}
-        <main className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0">
+        <main className="max-w-7xl mx-auto px-4 py-4 w-full pb-16 lg:pb-0">
           {/* ==================== SETTINGS PAGE ==================== */}
         {isSettingsOpen && (
           <ErrorBoundary isDark={isDark} lang={lang}>
@@ -896,6 +910,7 @@ export default function App() {
         )}
 
       </main>
+        </div>
       </div>
 
       {/* Bottom Nav - mobile only */}
@@ -969,17 +984,6 @@ export default function App() {
           lang={lang}
           initialTargetUserId={showChat ? (chatTargetUserId || undefined) : undefined}
           onClose={() => { setShowChat(false); setChatTargetUserId(null); }}
-        />
-      )}
-
-      {isSettingsOpen && (
-        <SettingsSheet
-          products={products}
-          onImport={handleImport}
-          onMergeImport={handleMergeImport}
-          onClose={() => setIsSettingsOpen(false)}
-          isDark={isDark}
-          defaultTab={settingsDefaultTab}
         />
       )}
 

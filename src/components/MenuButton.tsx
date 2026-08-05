@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BorderAnimate } from '@gfazioli/mantine-border-animate';
 
 export function MenuButton() {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ export function MenuButton() {
       onClick={() => navigate('/menu')}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="fixed bottom-20 left-4 z-50 group lg:bottom-6 lg:left-6"
+      className="fixed top-20 right-4 z-50 group lg:top-6 lg:right-6"
       title="New Products Menu"
     >
       {/* Outer glow ring */}
@@ -35,25 +36,39 @@ export function MenuButton() {
         className="absolute inset-[-6px] rounded-full bg-[#EF1187]/20 blur-md pointer-events-none"
       />
       {/* Main circle */}
-      <div className={`relative w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${
-        hovered
-          ? 'bg-gradient-to-br from-[#EF1187] to-[#BF0F6C] shadow-lg shadow-[#EF1187]/30 scale-110'
-          : 'bg-gradient-to-br from-[#EF1187] to-[#d40e76] shadow-md shadow-[#EF1187]/20'
-      }`}>
-        {/* Inner ring */}
-        <div className="absolute inset-1 rounded-full border border-white/20" />
-        {/* Star sparkle */}
-        <svg className={`w-6 h-6 text-white transition-transform duration-300 ${hovered ? 'rotate-45 scale-110' : ''}`} viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 0L14.59 8.41L23 12L14.59 15.59L12 24L9.41 15.59L1 12L9.41 8.41L12 0Z" />
-        </svg>
-        {/* Pulse dot */}
-        <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-[#13EEEF] rounded-full border-2 border-[#EF1187]">
-          <div className="absolute inset-0 rounded-full bg-[#13EEEF] animate-ping opacity-75" />
+      <BorderAnimate
+        variant="beam"
+        beamMode="conic"
+        radius="xl"
+        duration={4}
+        borderWidth={2}
+        size="md"
+        colorStops={[
+          { color: '#EF1187', position: 0 },
+          { color: '#13EEEF', position: 50 },
+          { color: '#EF1187', position: 100 },
+        ]}
+      >
+        <div className={`relative w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${
+          hovered
+            ? 'bg-gradient-to-br from-[#EF1187] to-[#BF0F6C] shadow-lg shadow-[#EF1187]/30 scale-110'
+            : 'bg-gradient-to-br from-[#EF1187] to-[#d40e76] shadow-md shadow-[#EF1187]/20'
+        }`}>
+          {/* Inner ring */}
+          <div className="absolute inset-1 rounded-full border border-white/20" />
+          {/* Star sparkle */}
+          <svg className={`w-6 h-6 text-white transition-transform duration-300 ${hovered ? 'rotate-45 scale-110' : ''}`} viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0L14.59 8.41L23 12L14.59 15.59L12 24L9.41 15.59L1 12L9.41 8.41L12 0Z" />
+          </svg>
+          {/* Pulse dot */}
+          <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-[#13EEEF] rounded-full border-2 border-[#EF1187]">
+            <div className="absolute inset-0 rounded-full bg-[#13EEEF] animate-ping opacity-75" />
+          </div>
         </div>
-      </div>
+      </BorderAnimate>
       {/* Label on hover */}
-      <div className={`absolute left-full ml-3 top-1/2 -translate-y-1/2 whitespace-nowrap transition-all duration-200 pointer-events-none ${
-        hovered ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
+      <div className={`absolute right-full mr-3 top-1/2 -translate-y-1/2 whitespace-nowrap transition-all duration-200 pointer-events-none ${
+        hovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'
       }`}>
         <div className="bg-[#29292C] text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-lg border border-white/10 flex items-center gap-2">
           <span className="text-[#13EEEF] font-bold">NEW</span>

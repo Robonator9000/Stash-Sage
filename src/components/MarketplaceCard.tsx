@@ -1,11 +1,13 @@
-import { memo, useState, useCallback, useEffect, useRef } from 'react';
+import { memo, useState, useCallback, useEffect } from 'react';
 import type { MarketplaceListing, Product } from '../types';
 import { t } from '../utils/translations';
 import { getContactUrl, copyToClipboard, timeAgo } from '../utils/helpers';
-import { Tag, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, MessageCircle, Star, Scale, MoreVertical, FlaskConical, Calendar, StickyNote, Pin } from 'lucide-react';
+import { Tag, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, MessageCircle, Star, Scale, FlaskConical, Calendar, StickyNote, Pin } from 'lucide-react';
 import { ReviewSection } from './ReviewSection';
 import { ProductView } from './ProductView';
-import { Card, Image, Badge, Group, Text, ActionIcon, Button } from '@mantine/core';
+import { Card, Image, Badge, Group, Text, ActionIcon, Avatar } from '@mantine/core';
+import { useContextMenu } from 'mantine-contextmenu';
+import { IconEdit, IconChecks, IconTrash, IconPinned, IconBookmark, IconMessageCircle } from '@tabler/icons-react';
 
 const CATEGORY_GLOW: Record<string, string> = {
   flower: '16,185,129',
@@ -70,9 +72,31 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
   const [confirmAction, setConfirmAction] = useState<{ type: 'delete' | 'sold', listingId: string } | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [showProductDetail, setShowProductDetail] = useState(false);
-  const [showOwnerMenu, setShowOwnerMenu] = useState(false);
   const [viewProductId, setViewProductId] = useState<string | null>(null);
-  const ownerMenuRef = useRef<HTMLDivElement>(null);
+  const { showContextMenu } = useContextMenu();
+
+  const handleOwnerContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isOwner) return;
+    showContextMenu([
+      { key: 'edit', icon: <IconEdit size={16} />, title: t('editProduct', lang), onClick: () => onEdit?.(listing) },
+      { key: 'sold', icon: <IconChecks size={16} />, title: t('markAsSold', lang), color: 'green', onClick: () => setConfirmAction({ type: 'sold', listingId: listing.id }) },
+      { key: 'pin', icon: <IconPinned size={16} />, title: isPinned ? 'Unpin from top' : 'Pin to top', onClick: () => onPinToggle?.(listing.id) },
+      { key: 'divider' },
+      { key: 'delete', icon: <IconTrash size={16} />, title: t('delete', lang), color: 'red', onClick: () => setConfirmAction({ type: 'delete', listingId: listing.id }) },
+    ]);
+  };
+
+  const handleViewerContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isOwner) return;
+    showContextMenu([
+      { key: 'save', icon: <IconBookmark size={16} />, title: listing.saved_by_me ? t('unsaveListing', lang) : t('saveListing', lang), onClick: () => onSave?.(listing.id) },
+      ...(onStartChat ? [{ key: 'chat', icon: <IconMessageCircle size={16} />, title: t('startChat', lang), onClick: () => onStartChat(listing.id) }] : []),
+    ]);
+  };
 
   const glowRgb = CATEGORY_GLOW[listing.category] || CATEGORY_GLOW.other;
 
@@ -107,138 +131,118 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
     return () => window.removeEventListener('keydown', onKey);
   }, [showDetailPopup, allImages.length]);
 
-  useEffect(() => {
-    if (!showOwnerMenu) return;
-    function onClick(e: MouseEvent) {
-      if (ownerMenuRef.current && !ownerMenuRef.current.contains(e.target as Node)) {
-        setShowOwnerMenu(false);
-      }
-    }
-    document.addEventListener('mousedown', onClick);
-    return () => document.removeEventListener('mousedown', onClick);
-  }, [showOwnerMenu]);
-
   return (
     <>
-      <Card p={0} radius="lg" shadow="sm"
-        className={`relative aspect-square overflow-hidden transition-all duration-300 ${isDark ? 'bg-surface/60' : 'bg-white'} cursor-zoom-in group hover:-translate-y-0.5`}
-        style={{ boxShadow: `0 0 35px -4px rgba(${glowRgb},0.35)` }}
-        onClick={() => setShowDetailPopup(true)} role="article">
+      <Card p="lg" radius="md" shadow="sm" withBorder
+        className={`relative transition-all duration-300 ${isDark ? 'bg-surface/60' : 'bg-white'} cursor-zoom-in group hover:-translate-y-0.5`}
+        style={{ boxShadow: `0 0 25px -6px rgba(${glowRgb},0.3)` }}
+        onClick={() => setShowDetailPopup(true)} role="article"
+        onContextMenu={isOwner ? handleOwnerContextMenu : handleViewerContextMenu}>
 
-        <div className="absolute inset-0">
-          {allImages.length > 0 ? (
-            <Image src={allImages[currentImageIndex]} alt={listing.title}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-          ) : (
-            <div className={`w-full h-full flex items-center justify-center ${isDark ? 'bg-surface' : 'bg-gray-100'}`}>
-              <Text size="sm" c="dimmed">No image</Text>
-            </div>
-          )}
-        </div>
-
-        {allImages.length > 1 && (
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
-            <ActionIcon variant="transparent" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i => (i - 1 + allImages.length) % allImages.length); }} aria-label="Previous image"
-              className="absolute left-2 top-1/2 -translate-y-1/2" style={{ background: 'rgba(0,0,0,0.4)', color: 'white' }}>
-              <ChevronLeft className="w-4 h-4" />
-            </ActionIcon>
-            <ActionIcon variant="transparent" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i => (i + 1) % allImages.length); }} aria-label="Next image"
-              className="absolute right-2 top-1/2 -translate-y-1/2" style={{ background: 'rgba(0,0,0,0.4)', color: 'white' }}>
-              <ChevronRight className="w-4 h-4" />
-            </ActionIcon>
-            <div className="absolute bottom-[86px] left-1/2 -translate-x-1/2 flex gap-1">
-              {allImages.map((_, i) => (
-                <button key={i} type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i); }} aria-label={`Image ${i + 1}`}
-                  className={`w-1.5 h-1.5 rounded-full transition-all ${i === currentImageIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/80'}`} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {listing.status === 'sold' && (
-          <Badge className="absolute top-2 left-2 z-10" color="red" variant="filled" size="sm">
-            {t('statusSold', lang)}
-          </Badge>
-        )}
-
-        <div className="absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
-
-        {listing.category && (
-          <Badge className="absolute top-2 right-2 z-10" size="sm"
-            style={{ backgroundColor: `rgba(${glowRgb},0.88)`, color: 'white' }}>
-            {listing.category}
-          </Badge>
-        )}
-
-        <div className="absolute top-2 right-2 flex items-center gap-1 z-10" onClick={e => e.stopPropagation()}>
-          {currentUserId && currentUserId !== listing.user_id && (
-            <ActionIcon onClick={() => onSave?.(listing.id)} aria-label={listing.saved_by_me ? t('unsaveListing', lang) : t('saveListing', lang)}
-              variant="transparent" className={listing.saved_by_me ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/30' : ''}
-              style={listing.saved_by_me ? {} : { background: 'rgba(0,0,0,0.2)', color: 'white' }}>
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill={listing.saved_by_me ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
-                <path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z" />
-              </svg>
-            </ActionIcon>
-          )}
-          {isOwner && listing.status === 'active' && onPinToggle && (
-            <ActionIcon onClick={() => onPinToggle(listing.id)} aria-label={isPinned ? 'Unpin listing' : 'Pin listing to top'}
-              variant="transparent" className={isPinned ? 'bg-cyanx/30 text-cyanx' : ''}
-              style={isPinned ? {} : { background: 'rgba(0,0,0,0.2)', color: 'white' }}>
-              <Pin className="w-3.5 h-3.5" fill={isPinned ? 'currentColor' : 'none'} />
-            </ActionIcon>
-          )}
-          {isOwner && listing.status === 'active' && (
-            <div ref={ownerMenuRef} className="relative">
-              <ActionIcon onClick={() => setShowOwnerMenu(s => !s)} aria-label="Listing options"
-                variant="transparent" style={{ background: 'rgba(0,0,0,0.2)', color: 'white' }}>
-                <MoreVertical className="w-3.5 h-3.5" />
-              </ActionIcon>
-              {showOwnerMenu && (
-                <div className={`absolute right-0 top-full mt-1 w-44 rounded-xl shadow-xl border overflow-hidden z-30 ${isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
-                  <Button variant="subtle" fullWidth onClick={() => { onEdit?.(listing); setShowOwnerMenu(false); }}
-                    className={isDark ? 'text-frost hover:bg-surface' : 'text-gray-700 hover:bg-gray-50'}
-                    styles={{ root: { justifyContent: 'flex-start', padding: '10px 16px', height: 'auto', fontSize: '14px' } }}>
-                    {t('editProduct', lang)}
-                  </Button>
-                  <Button variant="subtle" fullWidth onClick={() => { setConfirmAction({ type: 'sold', listingId: listing.id }); setShowOwnerMenu(false); }}
-                    className={isDark ? 'text-emera hover:bg-surface' : 'text-emerald-600 hover:bg-gray-50'}
-                    styles={{ root: { justifyContent: 'flex-start', padding: '10px 16px', height: 'auto', fontSize: '14px' } }}>
-                    {t('markAsSold', lang)}
-                  </Button>
-                  <div className={`h-px ${isDark ? 'bg-edge' : 'bg-gray-200'}`} />
-                  <Button variant="subtle" fullWidth onClick={() => { setConfirmAction({ type: 'delete', listingId: listing.id }); setShowOwnerMenu(false); }}
-                    className={isDark ? 'text-red-400 hover:bg-surface' : 'text-red-500 hover:bg-gray-50'}
-                    styles={{ root: { justifyContent: 'flex-start', padding: '10px 16px', height: 'auto', fontSize: '14px' } }}>
-                    {t('delete', lang)}
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="absolute inset-x-0 bottom-0 p-3 flex flex-col gap-1.5 pointer-events-none">
-          <Text size="xs" c="white" opacity={0.7}>{timeAgo(listing.created_at, lang)}</Text>
-          <Text c="white" fw={700} size="sm" lineClamp={1}>{listing.title}</Text>
-          <Group gap={8} align="center">
-            {listing.price_options && listing.price_options.length > 0 ? (
-              <>
-                <Text c="white" fw={700} size="lg">
-                  From ${Math.min(...listing.price_options.map(o => o.price)).toFixed(2)}
-                </Text>
-                <Text c="white" opacity={0.5} size="xs">{listing.price_options.length} opt.</Text>
-              </>
+        <Card.Section>
+          <div className="relative h-44 overflow-hidden">
+            {allImages.length > 0 ? (
+              <Image src={allImages[currentImageIndex]} alt={listing.title}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
             ) : (
-              <Text c="white" fw={700} size="lg">${listing.price.toFixed(2)}</Text>
+              <div className={`w-full h-full flex items-center justify-center ${isDark ? 'bg-surface' : 'bg-gray-100'}`}>
+                <Text size="sm" c="dimmed">No image</Text>
+              </div>
             )}
+
+            {allImages.length > 1 && (
+              <>
+                <ActionIcon variant="transparent" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i => (i - 1 + allImages.length) % allImages.length); }} aria-label="Previous image"
+                  className="absolute left-2 top-1/2 -translate-y-1/2" style={{ background: 'rgba(0,0,0,0.4)', color: 'white' }}>
+                  <ChevronLeft className="w-4 h-4" />
+                </ActionIcon>
+                <ActionIcon variant="transparent" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i => (i + 1) % allImages.length); }} aria-label="Next image"
+                  className="absolute right-2 top-1/2 -translate-y-1/2" style={{ background: 'rgba(0,0,0,0.4)', color: 'white' }}>
+                  <ChevronRight className="w-4 h-4" />
+                </ActionIcon>
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                  {allImages.map((_, i) => (
+                    <button key={i} type="button" onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i); }} aria-label={`Image ${i + 1}`}
+                      className={`w-1.5 h-1.5 rounded-full transition-all ${i === currentImageIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/80'}`} />
+                  ))}
+                </div>
+              </>
+            )}
+
+            {listing.status === 'sold' && (
+              <Badge className="absolute top-2 right-2 z-10" color="red" variant="filled" size="sm">
+                {t('statusSold', lang)}
+              </Badge>
+            )}
+
+            {/* Pin icon - top left */}
+            {isOwner && listing.status === 'active' && onPinToggle && (
+              <ActionIcon onClick={(e) => { e.stopPropagation(); onPinToggle(listing.id); }} aria-label={isPinned ? 'Unpin listing' : 'Pin listing to top'}
+                variant="transparent" className="absolute top-2 left-2 z-10" style={isPinned ? { background: 'rgba(6,182,212,0.5)', color: 'white' } : { background: 'rgba(0,0,0,0.3)', color: 'white' }}>
+                <Pin className="w-3.5 h-3.5" fill={isPinned ? 'currentColor' : 'none'} />
+              </ActionIcon>
+            )}
+
+            {/* Save bookmark - top right */}
+            {currentUserId && currentUserId !== listing.user_id && (
+              <ActionIcon onClick={(e) => { e.stopPropagation(); onSave?.(listing.id); }} aria-label={listing.saved_by_me ? t('unsaveListing', lang) : t('saveListing', lang)}
+                variant="transparent" className="absolute top-2 right-2 z-10"
+                style={listing.saved_by_me ? { background: 'rgba(255,140,0,0.8)', color: 'white' } : { background: 'rgba(0,0,0,0.3)', color: 'white' }}>
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill={listing.saved_by_me ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
+                  <path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z" />
+                </svg>
+              </ActionIcon>
+            )}
+
+            {/* Right-click hint badge for owners */}
+            {isOwner && listing.status === 'active' && (
+              <Badge size="xs" className="absolute bottom-2 left-2 z-10" style={{ background: 'rgba(0,0,0,0.4)', color: 'white' }}>
+                Right-click for options
+              </Badge>
+            )}
+          </div>
+        </Card.Section>
+
+        <Group justify="space-between" mt="md" mb="xs">
+          <Text fw={600} size="sm" lineClamp={1} style={{ flex: 1 }}>{listing.title}</Text>
+          {listing.category && (
+            <Badge size="sm" style={{ backgroundColor: `rgba(${glowRgb},0.88)`, color: 'white' }}>
+              {listing.category}
+            </Badge>
+          )}
+        </Group>
+
+        <Group gap={8} align="center">
+          {listing.price_options && listing.price_options.length > 0 ? (
+            <>
+              <Text fw={700} size="md">
+                From ${Math.min(...listing.price_options.map(o => o.price)).toFixed(2)}
+              </Text>
+              <Text c="dimmed" size="xs">{listing.price_options.length} opt.</Text>
+            </>
+          ) : (
+            <Text fw={700} size="md">${listing.price.toFixed(2)}</Text>
+          )}
+          <Text size="xs" c="dimmed" ml="auto">{timeAgo(listing.created_at, lang)}</Text>
+        </Group>
+
+        <Card.Section mt="md" p="sm" inheritPadding style={{ borderTop: `1px solid ${isDark ? 'var(--mantine-color-gray-8)' : 'var(--mantine-color-gray-2)'}` }}>
+          <Group gap="xs" wrap="nowrap">
+            <Avatar src={listing.author?.avatar_url} alt={listing.author?.username || 'User'} size={26} radius="xl" color="cyan"
+              onClick={(e) => { e.stopPropagation(); onViewProfile?.(listing.user_id); }}>
+              {(listing.author?.username?.[0] || '?').toUpperCase()}
+            </Avatar>
+            <Text size="xs" fw={500} lineClamp={1} style={{ flex: 1 }}>
+              {listing.author?.display_name || listing.author?.username || 'User'}
+            </Text>
             {listing.avg_seller_rating != null && listing.seller_review_count != null && listing.seller_review_count > 0 && (
-              <span className="ml-auto flex items-center gap-1 text-[11px] text-amber-400 font-semibold">
-                <Star className="w-3 h-3 fill-amber-400" />
+              <span className="flex items-center gap-1 text-[11px] text-amber-500 font-semibold">
+                <Star className="w-3 h-3 fill-amber-500" />
                 {listing.avg_seller_rating.toFixed(1)}
               </span>
             )}
           </Group>
-        </div>
+        </Card.Section>
       </Card>
 
       {/* Detail popup — Facebook-style fullscreen split */}

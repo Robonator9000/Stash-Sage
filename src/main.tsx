@@ -3,8 +3,11 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { registerSW } from 'virtual:pwa-register';
 import { MantineProvider, createTheme } from '@mantine/core';
+import { ContextMenuProvider } from 'mantine-contextmenu';
 import '@mantine/core/styles.css';
 import '@mantine/carousel/styles.css';
+import 'mantine-contextmenu/styles.css';
+import '@gfazioli/mantine-border-animate/styles.css';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthProvider } from './contexts/AuthContext';
@@ -45,12 +48,14 @@ createRoot(document.getElementById('root')!).render(
       <BrowserRouter>
         <AuthProvider>
           <MantineProvider theme={theme} defaultColorScheme="dark">
+            <ContextMenuProvider>
             <Routes>
               <Route path="/menu" element={<Suspense fallback={LoadingFallback}><MenuPage /></Suspense>} />
               <Route path="/profile/:userId" element={<Suspense fallback={LoadingFallback}><ProfilePage /></Suspense>} />
               <Route path="/redirect-profile" element={<div />} />
               <Route path="*" element={<App />} />
             </Routes>
+            </ContextMenuProvider>
           </MantineProvider>
         </AuthProvider>
       </BrowserRouter>
