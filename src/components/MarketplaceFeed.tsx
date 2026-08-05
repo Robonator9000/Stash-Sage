@@ -253,32 +253,34 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
         align="start"
       >
         {[
-          { id: 'all', label: 'All', icon: '\uD83D\uDCCB' },
-          { id: 'flower', label: 'Flower', icon: '\uD83C\uDF3F' },
-          { id: 'concentrate', label: 'Concentrate', icon: '\uD83D\uDC8E' },
-          { id: 'edible', label: 'Edible', icon: '\uD83C\uDF6A' },
-          { id: 'cartridge', label: 'Cartridge', icon: '\uD83D\uDD8A\uFE0F' },
-          { id: 'pre-roll', label: 'Pre-Roll', icon: '\uD83D\uDEAC' },
-          { id: 'tincture', label: 'Tincture', icon: '\uD83D\uDCA7' },
-          { id: 'topical', label: 'Topical', icon: '\uD83E\uDDF4' },
-          { id: 'seeds', label: 'Seeds', icon: '\uD83C\uDF31' },
-          { id: 'accessories', label: 'Access.', icon: '\uD83D\uDD27' },
-          { id: 'other', label: 'Other', icon: '\uD83D\uDCE6' },
+          { id: 'all', label: 'All', icon: '\uD83D\uDCCB', from: '#06b6d4', to: '#3b82f6' },
+          { id: 'flower', label: 'Flower', icon: '\uD83C\uDF3F', from: '#10b981', to: '#16a34a' },
+          { id: 'concentrate', label: 'Concentrate', icon: '\uD83D\uDC8E', from: '#f59e0b', to: '#f97316' },
+          { id: 'edible', label: 'Edible', icon: '\uD83C\uDF6A', from: '#f472b6', to: '#f43f5e' },
+          { id: 'cartridge', label: 'Cartridge', icon: '\uD83D\uDD8A\uFE0F', from: '#a855f7', to: '#7c3aed' },
+          { id: 'pre-roll', label: 'Pre-Roll', icon: '\uD83D\uDEAC', from: '#fb923c', to: '#ef4444' },
+          { id: 'tincture', label: 'Tincture', icon: '\uD83D\uDCA7', from: '#38bdf8', to: '#06b6d4' },
+          { id: 'topical', label: 'Topical', icon: '\uD83E\uDDF4', from: '#a3e635', to: '#22c55e' },
+          { id: 'seeds', label: 'Seeds', icon: '\uD83C\uDF31', from: '#2dd4bf', to: '#10b981' },
+          { id: 'accessories', label: 'Access.', icon: '\uD83D\uDD27', from: '#9ca3af', to: '#64748b' },
+          { id: 'other', label: 'Other', icon: '\uD83D\uDCE6', from: '#a8a29e', to: '#737373' },
         ].map(cat => {
           const active = categoryFilter === cat.id;
           return (
             <Carousel.Slide key={cat.id}>
               {active ? (
                 <BorderAnimate variant="glow" radius="md" duration={3} borderWidth={2} blur="sm"
-                  colorFrom="var(--mantine-color-cyan-6)" colorTo="var(--mantine-color-blue-6)">
+                  colorFrom={cat.from} colorTo={cat.to}>
                   <Paper
                     onClick={() => setCategoryFilter(cat.id)}
                     style={{
                       height: 110, display: 'flex', flexDirection: 'column',
                       alignItems: 'center', justifyContent: 'center', gap: 4,
                       cursor: 'pointer', userSelect: 'none',
-                      background: 'linear-gradient(135deg, var(--mantine-color-cyan-6), var(--mantine-color-blue-6))',
+                      background: `linear-gradient(135deg, ${cat.from}, ${cat.to})`,
                       color: '#fff',
+                      boxShadow: `0 4px 16px ${cat.from}55`,
+                      transform: 'scale(1.03)',
                       transition: 'transform 0.15s, box-shadow 0.15s',
                     }}
                     radius="md"
@@ -295,13 +297,21 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
                     height: 110, display: 'flex', flexDirection: 'column',
                     alignItems: 'center', justifyContent: 'center', gap: 4,
                     cursor: 'pointer', userSelect: 'none',
+                    border: '1px solid transparent',
                     background: isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
-                    border: `1px solid ${isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)'}`,
-                    transition: 'transform 0.15s, box-shadow 0.15s',
+                    transition: 'transform 0.15s, border-color 0.15s, background 0.15s',
                   }}
                   radius="md"
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.04)'; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
+                  onMouseEnter={(e) => {
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.borderColor = cat.from;
+                    el.style.backgroundImage = `linear-gradient(135deg, ${cat.from}22, ${cat.to}22)`;
+                  }}
+                  onMouseLeave={(e) => {
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.borderColor = 'transparent';
+                    el.style.backgroundImage = 'none';
+                  }}
                 >
                   <Text size="xl">{cat.icon}</Text>
                   <Text size="xs" fw={600}>{cat.label}</Text>

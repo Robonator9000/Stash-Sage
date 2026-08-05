@@ -59,9 +59,9 @@ interface LeftSidebarProps {
 }
 
 const allTabs: TabId[] = [
-  'stash', 'community', 'marketplace',
-  'history', 'notifications',
-  'dashboard', 'settings',
+  'stash', 'dashboard', 'history',
+  'community', 'marketplace',
+  'settings', 'notifications',
 ];
 
 export function LeftSidebar({
@@ -98,12 +98,12 @@ export function LeftSidebar({
 
   const navItems: NavItem[] = [
     { id: 'stash', label: 'Stash', icon: <IconHome size={20} />, section: 'primary' },
-    { id: 'community', label: 'Community', icon: <IconUsers size={20} />, section: 'primary' },
-    { id: 'marketplace', label: 'Market', icon: <IconShoppingCart size={20} />, section: 'primary' },
-    { id: 'history', label: 'History', icon: <IconHistory size={20} />, section: 'secondary', requiresAuth: true },
-    { id: 'notifications', label: 'Notifications', icon: <IconBell size={20} />, section: 'secondary', requiresAuth: true },
-    { id: 'dashboard', label: 'Dashboard', icon: <IconLayoutDashboard size={20} />, section: 'utility' },
+    { id: 'dashboard', label: 'Dashboard', icon: <IconLayoutDashboard size={20} />, section: 'primary' },
+    { id: 'history', label: 'History', icon: <IconHistory size={20} />, section: 'primary', requiresAuth: true },
+    { id: 'community', label: 'Feed', icon: <IconUsers size={20} />, section: 'secondary' },
+    { id: 'marketplace', label: 'Market', icon: <IconShoppingCart size={20} />, section: 'secondary' },
     { id: 'settings', label: 'Settings', icon: <IconSettings size={20} />, section: 'utility' },
+    { id: 'notifications', label: 'Notifications', icon: <IconBell size={20} />, section: 'utility', requiresAuth: true },
   ];
 
   const openCommunityProfile = useCallback((username: string) => {
@@ -167,8 +167,8 @@ export function LeftSidebar({
   }, []);
 
   const sectionLabel: Record<string, string> = {
-    primary: 'Main Navigation',
-    secondary: 'Activity',
+    primary: 'My Stash',
+    secondary: 'Community',
     utility: 'Utilities',
   };
 

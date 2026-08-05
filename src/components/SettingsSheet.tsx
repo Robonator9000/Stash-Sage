@@ -19,6 +19,7 @@ interface SettingsSheetProps {
   onClose: () => void;
   isDark?: boolean;
   defaultTab?: 'profile' | 'preferences' | 'session' | 'budget' | 'data' | 'security';
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 const LANGUAGES = [
@@ -37,8 +38,25 @@ const LANGUAGE_NAMES: Record<string, Record<string, string>> = {
   pt: { en: 'Ingl\u00eas', es: 'Espanhol', fr: 'Franc\u00eas', de: 'Alem\u00e3o', pt: 'Portugu\u00eas' },
 };
 
-export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDark = true, defaultTab = 'preferences' }: SettingsSheetProps) {
+export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDark = true, defaultTab = 'preferences', onDirtyChange }: SettingsSheetProps) {
   const { settings, updateSettings, toggleStatVisibility } = useSettings();
+  const [dirty, setDirty] = useState(false);
+  const settingsSnapshot = useRef(settings);
+
+  useEffect(() => {
+    settingsSnapshot.current = settings;
+  }, []);
+
+  useEffect(() => {
+    const changed = JSON.stringify(settingsSnapshot.current) !== JSON.stringify(settings);
+    if (changed) {
+      setDirty(true);
+      onDirtyChange?.(true);
+      if (!dirty) {
+        showToast({ id: 'settings-unsaved', title: '', body: t('unsavedChanges', settings.language) });
+      }
+    }
+  }, [settings, dirty, onDirtyChange]);
   const { user, signIn, signUp, updatePassword, updateEmail, error: authError } = useAuth();
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
@@ -232,7 +250,11 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const sectionLabel = `flex items-center gap-2 text-sm font-medium mb-3 ${isDark ? 'text-slate-300' : 'text-gray-700'}`;
 
   const lang = settings.language;
-  const handleClose = () => {
+  const handleSave = () => {
+    settingsSnapshot.current = settings;
+    setDirty(false);
+    onDirtyChange?.(false);
+    showToast({ id: 'settings-saved', title: '', body: t('settingsSaved', lang) });
     onClose();
   };
 
@@ -248,11 +270,13 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
             Manage your account, preferences and data
           </p>
         </div>
-        <button onClick={handleClose}
+        <button onClick={handleSave}
           className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border-2 ${
-            isDark ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-gray-200 text-gray-700 hover:bg-gray-100'
+            dirty
+              ? isDark ? 'bg-cyan-500/15 border-cyan-400/60 text-cyan-300 hover:bg-cyan-500/25' : 'bg-cyan-50 border-cyan-300 text-cyan-700 hover:bg-cyan-100'
+              : isDark ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-gray-200 text-gray-700 hover:bg-gray-100'
           }`}>
-          Done
+          {t('save', lang)}
         </button>
       </div>
 

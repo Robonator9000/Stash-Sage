@@ -73,6 +73,21 @@ export default function App() {
 
   const [showSmoke, setShowSmoke] = useState(false);
 
+  const [settingsDirty, setSettingsDirty] = useState(false);
+  const settingsSnapshot = useRef(settings);
+
+  useEffect(() => {
+    if (activeTab === 'settings' && !settingsDirty) settingsSnapshot.current = settings;
+  }, [activeTab, settingsDirty, settings]);
+
+  useEffect(() => {
+    if (settingsDirty && activeTab !== 'settings') {
+      replaceSettings(settingsSnapshot.current);
+      setSettingsDirty(false);
+      showToast({ id: 'settings-reverted', title: '', body: t('settingsReverted', settings.language) });
+    }
+  }, [activeTab, settingsDirty, replaceSettings, settings.language]);
+
   const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
   useEffect(() => {
     const goOnline = () => setIsOnline(true);
@@ -527,6 +542,7 @@ export default function App() {
               onClose={() => setActiveTab('stash')}
               isDark={isDark}
               defaultTab={settingsDefaultTab}
+              onDirtyChange={setSettingsDirty}
             />
           </ErrorBoundary>
         )}

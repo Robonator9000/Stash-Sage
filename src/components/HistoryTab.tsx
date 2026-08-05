@@ -127,8 +127,8 @@ export const HistoryTab = memo(function HistoryTab({
       )}
 
       {filteredHistory.length > 0 ? (
-        <ScrollArea>
-          <Table miw={750} verticalSpacing="sm" striped highlightOnHover>
+        <ScrollArea type="always">
+          <Table verticalSpacing="sm" striped highlightOnHover>
             <Table.Thead>
               <Table.Tr>
                 <Table.Th w={40}>
@@ -139,12 +139,12 @@ export const HistoryTab = memo(function HistoryTab({
                     aria-label="Select all"
                   />
                 </Table.Th>
-                <Table.Th>{t('strainType', lang)}</Table.Th>
+                <Table.Th w={90}>{t('strainType', lang)}</Table.Th>
                 <Table.Th>{t('products', lang)}</Table.Th>
                 <Table.Th ta="right">{t('amount', lang)}</Table.Th>
                 <Table.Th ta="right">{t('priceLabel', lang)}</Table.Th>
-                <Table.Th>{t('notesLabel', lang)}</Table.Th>
-                <Table.Th ta="right">When</Table.Th>
+                <Table.Th miw={180}>{t('notesLabel', lang)}</Table.Th>
+                <Table.Th ta="right" miw={150}>When</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -193,7 +193,12 @@ export const HistoryTab = memo(function HistoryTab({
                     )}
                   </Table.Td>
                   <Table.Td ta="right">
-                    <Text size="xs" c="dimmed">{formatActivityDate(entry.timestamp, lang)}</Text>
+                    <Group justify="flex-end" gap={6} wrap="nowrap">
+                      <Text size="xs" c="dimmed">{formatActivityDate(entry.timestamp, lang)}</Text>
+                      <Text size="xs" c="dimmed" opacity={0.7} title={entry.timestamp.toLocaleString()}>
+                        {entry.timestamp.toLocaleDateString(lang === 'en' ? 'en-US' : lang, { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </Text>
+                    </Group>
                   </Table.Td>
                 </Table.Tr>
               ))}
