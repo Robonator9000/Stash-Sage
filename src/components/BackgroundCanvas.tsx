@@ -126,6 +126,10 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
   }, [isDark]);
 
   return (
-    <canvas id="bg-canvas" ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }} />
+    <canvas
+      id="bg-canvas"
+      ref={canvasRef}
+      style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}
+    />
   );
 }

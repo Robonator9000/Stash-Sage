@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../utils/supabase';
 import { useDebounce } from '../hooks/useDebounce';
-import { Search } from 'lucide-react';
+import { Box, Button, Group, Stack, Text, TextInput, Avatar, Loader, Paper } from '@mantine/core';
+import { IconSearch } from '@tabler/icons-react';
 
 interface SearchResult {
   type: 'user' | 'post';
@@ -63,46 +64,97 @@ export function SearchWidget({ isDark, onViewProfile, onViewPost }: SearchWidget
     else onViewPost?.(item.id);
   }
 
+  const fieldBg = isDark ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-1)';
+  const fieldBorder = isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-2)';
+  const fieldColor = isDark ? 'var(--mantine-color-gray-0)' : 'var(--mantine-color-gray-8)';
+  const placeholderColor = isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-4)';
+  const dropdownBg = isDark ? 'var(--mantine-color-dark-6)' : '#fff';
+  const dropdownBorder = isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-2)';
+  const hoverBg = isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-0)';
+  const labelColor = isDark ? 'var(--mantine-color-gray-0)' : 'var(--mantine-color-gray-8)';
+  const mutedColor = isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-6)';
+  const gradient = 'linear-gradient(135deg, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))';
+
   return (
-    <div ref={ref} className="relative">
-      <div className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-colors ${isDark ? 'bg-midnight border border-edge' : 'bg-gray-100 border border-gray-200'}`}>
-        <Search className={`w-4 h-4 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
-        <input
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          placeholder="Search Stash Tracker"
-          className={`flex-1 text-sm bg-transparent outline-none ${isDark ? 'text-frost placeholder-muted' : 'text-gray-800 placeholder-gray-400'}`}
-          onFocus={() => { if (results.length > 0) setOpen(true); }}
-        />
-        {searching && (
-          <svg className={`w-3.5 h-3.5 animate-spin ${isDark ? 'text-muted' : 'text-gray-400'}`} viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-        )}
-      </div>
+    <Box ref={ref} style={{ position: 'relative', width: '100%' }}>
+      <TextInput
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search Stash Tracker"
+        onFocus={() => { if (results.length > 0) setOpen(true); }}
+        leftSection={<IconSearch size={16} />}
+        rightSection={searching ? <Loader size={14} /> : null}
+        radius="md"
+        styles={{
+          root: { width: '100%' },
+          input: {
+            background: fieldBg,
+            border: `1px solid ${fieldBorder}`,
+            color: fieldColor,
+            '::placeholder': { color: placeholderColor },
+          },
+        }}
+      />
       {open && (
-        <div className={`absolute top-full left-0 right-0 mt-1 rounded-xl shadow-lg z-20 overflow-hidden ${isDark ? 'bg-card border border-edge' : 'bg-white border border-gray-200'}`}>
-          {results.map(item => (
-            <button key={`${item.type}-${item.id}`} onClick={() => handleSelect(item)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${isDark ? 'hover:bg-midnight' : 'hover:bg-gray-50'}`}>
-              {item.type === 'user' ? (
-                <div className={`w-7 h-7 rounded-lg shrink-0 overflow-hidden ${item.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera flex items-center justify-center'}`}>
-                  {item.avatar_url ? <img src={item.avatar_url} alt="" className="w-full h-full object-cover" /> : <span className="text-white font-bold text-xs">{(item.label[0] || '?').toUpperCase()}</span>}
-                </div>
-              ) : (
-                <div className={`w-7 h-7 rounded-lg shrink-0 flex items-center justify-center ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
-                  <Search className={`w-3.5 h-3.5 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium truncate ${isDark ? 'text-frost' : 'text-gray-800'}`}>{item.label}</p>
-                <p className={`text-xs truncate ${isDark ? 'text-muted' : 'text-gray-400'}`}>{item.sublabel}</p>
-              </div>
-            </button>
-          ))}
-        </div>
+        <Paper
+          p="xs"
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            marginTop: 6,
+            zIndex: 20,
+            overflow: 'hidden',
+            background: dropdownBg,
+            border: `1px solid ${dropdownBorder}`,
+            boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+            borderRadius: 'var(--mantine-radius-md)',
+          }}
+        >
+          <Stack gap={2}>
+            {results.map(item => (
+              <Button
+                key={`${item.type}-${item.id}`}
+                fullWidth
+                variant="subtle"
+                onClick={() => handleSelect(item)}
+                style={{ height: 'auto', justifyContent: 'flex-start', padding: '6px 8px' }}
+                styles={{
+                  label: { width: '100%', justifyContent: 'flex-start' },
+                  root: { '&:hover': { background: hoverBg } },
+                }}
+              >
+                <Group gap="sm" wrap="nowrap" style={{ width: '100%' }}>
+                  {item.type === 'user' ? (
+                    <Avatar
+                      radius="sm"
+                      size={28}
+                      src={item.avatar_url}
+                      color="cyan"
+                      style={{ background: item.avatar_url ? 'transparent' : gradient, color: '#fff', fontWeight: 700, fontSize: 12 }}
+                    >
+                      {(item.label[0] || '?').toUpperCase()}
+                    </Avatar>
+                  ) : (
+                    <Avatar radius="sm" size={28} style={{ background: hoverBg }}>
+                      <IconSearch size={14} style={{ color: mutedColor }} />
+                    </Avatar>
+                  )}
+                  <Stack gap={0} style={{ flex: 1, minWidth: 0 }}>
+                    <Text size="sm" fw={500} truncate style={{ color: labelColor }}>
+                      {item.label}
+                    </Text>
+                    <Text size="xs" truncate style={{ color: mutedColor }}>
+                      {item.sublabel}
+                    </Text>
+                  </Stack>
+                </Group>
+              </Button>
+            ))}
+          </Stack>
+        </Paper>
       )}
-    </div>
+    </Box>
   );
 }

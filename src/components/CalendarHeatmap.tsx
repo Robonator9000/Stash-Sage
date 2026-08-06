@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Box, Group, Paper, Stack, Text } from '@mantine/core';
 import { Session } from '../types';
 import { t } from '../utils/translations';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -93,95 +94,155 @@ export function CalendarHeatmap({ sessions, isDark = true, lang = 'en' }: Calend
   }, [weeks]);
 
   const getColor = (intensity: number) => {
-    if (intensity === 0) return isDark ? 'bg-slate-800' : 'bg-gray-100';
-    if (intensity === 1) return isDark ? 'bg-emerald-900/60' : 'bg-emerald-200';
-    if (intensity === 2) return isDark ? 'bg-emerald-700' : 'bg-emerald-400';
-    if (intensity === 3) return isDark ? 'bg-emerald-500' : 'bg-emerald-500';
-    return isDark ? 'bg-emerald-400' : 'bg-emerald-600';
+    if (intensity === 0) return isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-1)';
+    if (intensity === 1) return isDark ? 'rgba(6, 78, 59, 0.6)' : 'var(--mantine-color-emerald-4)';
+    if (intensity === 2) return isDark ? 'var(--mantine-color-emerald-7)' : 'var(--mantine-color-emerald-4)';
+    if (intensity === 3) return isDark ? 'var(--mantine-color-emerald-5)' : 'var(--mantine-color-emerald-5)';
+    return isDark ? 'var(--mantine-color-emerald-4)' : 'var(--mantine-color-emerald-6)';
   };
 
+  const labelColor = isDark ? 'var(--mantine-color-dark-2)' : 'var(--mantine-color-gray-4)';
+
   return (
-    <div className={`rounded-2xl p-5 border ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-          {t('activity', lang)}
-        </h3>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setSelectedYear(y => y - 1)}
-            className={`p-1 rounded-lg transition-colors ${isDark ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`}
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <span className={`text-xs font-medium px-2 ${isDark ? 'text-slate-300' : 'text-gray-600'}`}>
-            {selectedYear}
-          </span>
-          <button
-            onClick={() => setSelectedYear(y => Math.min(y + 1, currentYear))}
-            disabled={selectedYear >= currentYear}
-            className={`p-1 rounded-lg transition-colors ${selectedYear >= currentYear ? 'opacity-30 cursor-not-allowed' : ''} ${isDark ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`}
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* Month labels */}
-      <div className="flex ml-8 mb-1 overflow-hidden">
-        {weeks.map((_, wi) => {
-          const label = monthLabels.find((l) => l.index === wi);
-          return (
-            <div
-              key={wi}
-              className={`text-[10px] leading-none flex-shrink-0 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}
-              style={{ width: `${100 / weeks.length}%`, visibility: label ? 'visible' : 'hidden' }}
+    <Paper
+      p="lg"
+      pos="relative"
+      style={{
+        border: `1px solid ${isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-2)'}`,
+        background: isDark ? 'rgba(18, 18, 24, 0.8)' : '#fff',
+      }}
+    >
+      <Stack gap="md">
+        <Group justify="space-between">
+          <Text size="sm" fw={600} c={isDark ? 'var(--mantine-color-white)' : 'var(--mantine-color-dark-9)'}>
+            {t('activity', lang)}
+          </Text>
+          <Group gap="xs">
+            <Box
+              component="button"
+              onClick={() => setSelectedYear((y) => y - 1)}
+              style={{
+                padding: '4px',
+                borderRadius: 'var(--mantine-radius-md)',
+                color: isDark ? 'var(--mantine-color-dark-2)' : 'var(--mantine-color-gray-5)',
+                cursor: 'pointer',
+                transition: 'background-color 150ms ease, color 150ms ease',
+                '&:hover': { background: isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-1)' },
+              }}
             >
-              {label?.label || ''}
-            </div>
-          );
-        })}
-      </div>
+              <ChevronLeft className="w-4 h-4" />
+            </Box>
+            <Text size="xs" fw={500} px="sm" c={isDark ? 'var(--mantine-color-dark-1)' : 'var(--mantine-color-gray-6)'}>
+              {selectedYear}
+            </Text>
+            <Box
+              component="button"
+              onClick={() => setSelectedYear((y) => Math.min(y + 1, currentYear))}
+              disabled={selectedYear >= currentYear}
+              style={{
+                padding: '4px',
+                borderRadius: 'var(--mantine-radius-md)',
+                color: isDark ? 'var(--mantine-color-dark-2)' : 'var(--mantine-color-gray-5)',
+                cursor: selectedYear >= currentYear ? 'not-allowed' : 'pointer',
+                opacity: selectedYear >= currentYear ? 0.3 : 1,
+                transition: 'background-color 150ms ease, color 150ms ease',
+                '&:hover': selectedYear >= currentYear
+                  ? undefined
+                  : { background: isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-1)' },
+              }}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Box>
+          </Group>
+        </Group>
 
-      <div className="flex gap-0.5">
-        {/* Day labels */}
-        <div className="flex flex-col gap-0.5 mr-1">
-          {DAYS.map((day, i) => (
-            <div
+        <Box style={{ display: 'flex', marginLeft: 32, marginBottom: 4, overflow: 'hidden' }}>
+          {weeks.map((_, wi) => {
+            const label = monthLabels.find((l) => l.index === wi);
+            return (
+              <Box
+                key={wi}
+                style={{
+                  width: `${100 / weeks.length}%`,
+                  visibility: label ? 'visible' : 'hidden',
+                  fontSize: 10,
+                  lineHeight: 1,
+                  flexShrink: 0,
+                  color: labelColor,
+                }}
+              >
+                {label?.label || ''}
+              </Box>
+            );
+          })}
+        </Box>
+
+        <Box style={{ display: 'flex', gap: 2 }}>
+          <Box style={{ display: 'flex', flexDirection: 'column', gap: 2, marginRight: 4 }}>
+            {DAYS.map((day, i) => (
+              <Box
+                key={i}
+                style={{
+                  fontSize: 10,
+                  lineHeight: 1,
+                  height: 13,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'flex-end',
+                  paddingRight: 4,
+                  width: 24,
+                  color: labelColor,
+                }}
+              >
+                {day}
+              </Box>
+            ))}
+          </Box>
+
+          <Box style={{ display: 'flex', gap: 2, overflowX: 'auto' }}>
+            {weeks.map((week, wi) => (
+              <Box key={wi} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {week.map((day, di) => (
+                  <Box
+                    key={di}
+                    style={{
+                      width: 13,
+                      height: 13,
+                      borderRadius: 'var(--mantine-radius-sm)',
+                      background: getColor(getIntensity(day.amount, maxAmount)),
+                    }}
+                    title={
+                      day.amount > 0
+                        ? `${day.date.toLocaleDateString()}: ${day.amount.toFixed(1)}g`
+                        : day.date.toLocaleDateString()
+                    }
+                  />
+                ))}
+              </Box>
+            ))}
+          </Box>
+        </Box>
+
+        <Group justify="flex-end" gap="xs">
+          <Text size="xs" c={labelColor}>
+            {t('less', lang)}
+          </Text>
+          {[0, 1, 2, 3, 4].map((i) => (
+            <Box
               key={i}
-              className={`text-[10px] leading-none h-[13px] flex items-center justify-end pr-1 ${
-                isDark ? 'text-slate-500' : 'text-gray-400'
-              }`}
-              style={{ width: '24px' }}
-            >
-              {day}
-            </div>
+              style={{
+                width: 13,
+                height: 13,
+                borderRadius: 'var(--mantine-radius-sm)',
+                background: getColor(i),
+              }}
+            />
           ))}
-        </div>
-
-        {/* Grid */}
-        <div className="flex gap-0.5 overflow-x-auto">
-          {weeks.map((week, wi) => (
-            <div key={wi} className="flex flex-col gap-0.5">
-              {week.map((day, di) => (
-                <div
-                  key={di}
-                  className={`w-[13px] h-[13px] rounded-sm ${getColor(getIntensity(day.amount, maxAmount))}`}
-                  title={day.amount > 0 ? `${day.date.toLocaleDateString()}: ${day.amount.toFixed(1)}g` : day.date.toLocaleDateString()}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Legend */}
-      <div className="flex items-center justify-end gap-1 mt-3">
-        <span className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('less', lang)}</span>
-        {[0, 1, 2, 3, 4].map((i) => (
-          <div key={i} className={`w-[13px] h-[13px] rounded-sm ${getColor(i)}`} />
-        ))}
-        <span className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('more', lang)}</span>
-      </div>
-    </div>
+          <Text size="xs" c={labelColor}>
+            {t('more', lang)}
+          </Text>
+        </Group>
+      </Stack>
+    </Paper>
   );
 }

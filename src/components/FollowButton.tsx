@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Button } from '@mantine/core';
+import { IconCheck, IconUserPlus } from '@tabler/icons-react';
 
 interface FollowButtonProps {
   userId: string;
@@ -27,23 +29,37 @@ export function FollowButton({ userId, currentUserId, isFollowing, isDark, onFol
     }
   }
 
+  const gradient = 'linear-gradient(135deg, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))';
+  const followingBg = isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)';
+  const followingColor = isDark ? 'var(--mantine-color-gray-3)' : 'var(--mantine-color-gray-6)';
+  const followingBorder = isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-2)';
+
   return (
-    <button
+    <Button
       onClick={handleClick}
       disabled={loading}
+      size="xs"
+      radius="md"
       aria-pressed={isFollowing}
       aria-label={isFollowing ? 'Unfollow' : 'Follow'}
-      className={`text-xs font-medium px-2.5 py-1 rounded-lg transition-all ${
-        loading ? 'opacity-50' : ''
-      } ${
-        isFollowing
-          ? isDark
-            ? 'bg-midnight text-mist border border-edge hover:border-red-500/50 hover:text-red-400'
-            : 'bg-gray-100 text-gray-500 border border-gray-200 hover:border-red-300 hover:text-red-500'
-          : 'bg-gradient-to-r from-cyanx to-emera text-white hover:from-cyanx-dark hover:to-emera-dark'
-      }`}
+      variant={isFollowing ? 'default' : 'filled'}
+      style={{
+        opacity: loading ? 0.5 : 1,
+        ...(isFollowing
+          ? { background: followingBg, color: followingColor, border: `1px solid ${followingBorder}` }
+          : { background: gradient, color: '#fff' }),
+      }}
+      styles={isFollowing ? {
+        root: {
+          '&:hover': {
+            background: followingBg,
+            color: 'var(--mantine-color-red-4)',
+            border: `1px solid ${isDark ? 'rgba(239,68,68,0.5)' : 'var(--mantine-color-red-3)'}`,
+          },
+        },
+      } : undefined}
     >
-      {loading ? '...' : isFollowing ? 'Following' : 'Follow'}
-    </button>
+      {loading ? '...' : isFollowing ? <><IconCheck size={12} /> Following</> : <><IconUserPlus size={12} /> Follow</>}
+    </Button>
   );
 }

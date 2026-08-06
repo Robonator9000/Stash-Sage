@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase';
+import { Box, Text, Button, Paper, Stack, Group } from '@mantine/core';
+import { IconHash, IconTrendingUp } from '@tabler/icons-react';
 
 const TRENDING_CACHE_TTL = 60 * 1000;
 let cachedTrendingTags: string[] | null = null;
@@ -35,27 +37,61 @@ export function TrendsWidget({ isDark, activeHashtag, onHashtagClick }: TrendsWi
 
   if (tags.length === 0) return null;
 
+  const cardBg = isDark ? 'var(--mantine-color-dark-6)' : '#fff';
+  const borderColor = isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-2)';
+  const headerText = isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)';
+  const textColor = isDark ? 'var(--mantine-color-gray-2)' : 'var(--mantine-color-gray-6)';
+  const mutedColor = isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-5)';
+  const hoverBg = isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-1)';
+  const activeColor = isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)';
+
   return (
-    <div className={`rounded-2xl backdrop-blur-sm ${isDark ? 'bg-surface/40 border border-edge' : 'bg-white/70 border border-gray-200'}`}>
-      <div className={`px-4 py-3 border-b ${isDark ? 'border-edge' : 'border-gray-200'}`}>
-        <h3 className={`text-sm font-bold ${isDark ? 'text-frost' : 'text-gray-800'}`}>Trends for you</h3>
-      </div>
-      <div className="p-2 space-y-0.5">
-        {tags.map(tag => (
-          <button
-            key={tag}
-            onClick={() => onHashtagClick?.(tag)}
-            className={`w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-              activeHashtag === tag
-                ? 'bg-cyanx/20 text-cyanx'
-                : isDark ? 'text-mist hover:bg-midnight hover:text-frost' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
-            }`}
-          >
-            <span className="text-xs text-muted">Trending</span>
-            <p className="font-medium">#{tag}</p>
-          </button>
-        ))}
-      </div>
-    </div>
+    <Paper
+      radius="md"
+      style={{ background: cardBg, border: `1px solid ${borderColor}`, overflow: 'hidden' }}
+    >
+      <Box px="md" py="sm" style={{ borderBottom: `1px solid ${borderColor}` }}>
+        <Group gap={6} wrap="nowrap">
+          <IconTrendingUp size={16} style={{ color: activeColor }} />
+          <Text fw={700} size="sm" style={{ color: headerText }}>
+            Trends for you
+          </Text>
+        </Group>
+      </Box>
+      <Stack gap={4} p="xs">
+        {tags.map(tag => {
+          const isActive = activeHashtag === tag;
+          return (
+            <Button
+              key={tag}
+              fullWidth
+              variant="subtle"
+              onClick={() => onHashtagClick?.(tag)}
+              style={{ height: 'auto', justifyContent: 'flex-start', padding: '4px 8px' }}
+              styles={{
+                label: { width: '100%', justifyContent: 'flex-start' },
+                root: {
+                  borderRadius: 'var(--mantine-radius-md)',
+                  background: isActive ? 'rgba(34, 211, 238, 0.15)' : 'transparent',
+                  '&:hover': { background: isActive ? 'rgba(34, 211, 238, 0.2)' : hoverBg },
+                },
+              }}
+            >
+              <Stack gap={0} style={{ width: '100%' }}>
+                <Text size="xs" fw={500} style={{ color: isActive ? activeColor : mutedColor }}>
+                  Trending
+                </Text>
+                <Group gap={4} wrap="nowrap">
+                  <IconHash size={14} style={{ color: isActive ? activeColor : textColor }} />
+                  <Text fw={600} size="sm" style={{ color: isActive ? activeColor : textColor }}>
+                    {tag}
+                  </Text>
+                </Group>
+              </Stack>
+            </Button>
+          );
+        })}
+      </Stack>
+    </Paper>
   );
 }

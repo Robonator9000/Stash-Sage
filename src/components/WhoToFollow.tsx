@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase';
+import { Paper, Stack, Group, Text, Box, Button, Avatar, ActionIcon } from '@mantine/core';
+import { IconUserPlus } from '@tabler/icons-react';
 
 interface WhoToFollowProps {
   isDark: boolean;
@@ -25,26 +27,67 @@ export function WhoToFollow({ isDark, currentUserId, onViewProfile }: WhoToFollo
 
   if (suggestions.length === 0) return null;
 
+  const cardBg = isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(255,255,255,0.7)';
+  const borderColor = isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-2)';
+  const headerText = isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)';
+  const frostText = isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)';
+  const mutedColor = isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-5)';
+  const gradient = 'linear-gradient(135deg, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))';
+  const accentColor = isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)';
+
   return (
-    <div className={`rounded-2xl backdrop-blur-sm ${isDark ? 'bg-surface/40 border border-edge' : 'bg-white/70 border border-gray-200'}`}>
-      <div className={`px-4 py-3 border-b ${isDark ? 'border-edge' : 'border-gray-200'}`}>
-        <h3 className={`text-sm font-bold ${isDark ? 'text-frost' : 'text-gray-800'}`}>Who to follow</h3>
-      </div>
-      <div className="p-2 space-y-1">
+    <Paper
+      radius="md"
+      style={{ background: cardBg, border: `1px solid ${borderColor}`, overflow: 'hidden' }}
+    >
+      <Box px="md" py="sm" style={{ borderBottom: `1px solid ${borderColor}` }}>
+        <Group gap={6} wrap="nowrap">
+          <IconUserPlus size={16} style={{ color: accentColor }} />
+          <Text fw={700} size="sm" style={{ color: headerText }}>
+            Who to follow
+          </Text>
+        </Group>
+      </Box>
+      <Stack gap={4} p="xs">
         {suggestions.map(u => (
-          <div key={u.user_id} className="flex items-center gap-3 px-3 py-2">
-            <button onClick={() => onViewProfile?.(u.user_id)} className={`w-8 h-8 rounded-xl shrink-0 overflow-hidden ${u.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
-              {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-full h-full object-cover" /> : <span className="text-white font-display font-bold text-xs">{(u.display_name?.[0] || u.username?.[0] || '?').toUpperCase()}</span>}
-            </button>
-            <div className="flex-1 min-w-0">
-              <button onClick={() => onViewProfile?.(u.user_id)} className={`text-sm font-semibold hover:underline block truncate ${isDark ? 'text-frost' : 'text-gray-800'}`}>{u.display_name || u.username}</button>
-              <p className={`text-xs truncate ${isDark ? 'text-muted' : 'text-gray-400'}`}>@{u.username}</p>
-            </div>
+          <Group key={u.user_id} gap="sm" wrap="nowrap" p="xs" style={{ alignItems: 'center' }}>
+            <ActionIcon
+              variant="subtle"
+              radius="md"
+              size={32}
+              onClick={() => onViewProfile?.(u.user_id)}
+              style={{ padding: 0, overflow: 'hidden', background: u.avatar_url ? 'transparent' : gradient }}
+            >
+              <Avatar
+                src={u.avatar_url || undefined}
+                radius="md"
+                size={32}
+                color="cyan"
+                style={{ background: 'transparent', fontWeight: 700, fontSize: 12, color: '#fff' }}
+              >
+                {(u.display_name?.[0] || u.username?.[0] || '?').toUpperCase()}
+              </Avatar>
+            </ActionIcon>
+            <Box style={{ flex: 1, minWidth: 0 }}>
+              <Button
+                variant="subtle"
+                onClick={() => onViewProfile?.(u.user_id)}
+                style={{ height: 'auto', padding: 0, marginBottom: -2 }}
+                styles={{ label: { display: 'block', width: '100%' } }}
+              >
+                <Text size="sm" fw={600} truncate style={{ color: frostText }}>
+                  {u.display_name || u.username}
+                </Text>
+              </Button>
+              <Text size="xs" truncate style={{ color: mutedColor }}>
+                @{u.username}
+              </Text>
+            </Box>
             <FollowButtonSmall userId={u.user_id} currentUserId={currentUserId} isDark={isDark} />
-          </div>
+          </Group>
         ))}
-      </div>
-    </div>
+      </Stack>
+    </Paper>
   );
 }
 
@@ -65,15 +108,26 @@ function FollowButtonSmall({ userId, currentUserId, isDark }: { userId: string; 
     setLoading(false);
   }
 
+  const gradient = 'linear-gradient(135deg, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))';
+
   return (
-    <button onClick={handleToggle} disabled={loading}
-      className={`shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-        isFollowing
-          ? isDark ? 'bg-midnight text-muted border border-edge' : 'bg-gray-100 text-gray-500 border border-gray-200'
-          : 'text-white bg-gradient-to-r from-cyanx to-emera hover:from-cyanx-dark hover:to-emera-dark'
-      }`}
+    <Button
+      onClick={handleToggle}
+      disabled={loading}
+      size="xs"
+      radius="md"
+      style={{
+        opacity: loading ? 0.5 : 1,
+        background: isFollowing ? 'transparent' : gradient,
+        color: isFollowing
+          ? isDark ? 'var(--mantine-color-gray-4)' : 'var(--mantine-color-gray-6)'
+          : '#fff',
+        border: isFollowing
+          ? `1px solid ${isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-2)'}`
+          : 'none',
+      }}
     >
       {loading ? '...' : isFollowing ? 'Following' : 'Follow'}
-    </button>
+    </Button>
   );
 }
