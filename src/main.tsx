@@ -28,6 +28,14 @@ const theme = createTheme({
       '#e2e8f0', '#cbd5e1', '#94a3b8', '#64748b', '#475569',
       '#334155', '#1e293b', '#1a2332', '#111827', '#0b1120',
     ],
+    brand: [
+      '#fce7f3', '#fbcfe8', '#f9a8d4', '#f472b6', '#ec4899',
+      '#d40e76', '#bf0f6c', '#a00e5c', '#830b4b', '#5c0834',
+    ],
+    aqua: [
+      '#ccfbf1', '#a5f3fc', '#67e8f9', '#22d3ee', '#06b6d4',
+      '#13eeef', '#0891b2', '#0e7490', '#155e75', '#164e63',
+    ],
   },
   defaultRadius: 'md',
   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
