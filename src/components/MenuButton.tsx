@@ -15,22 +15,6 @@ export function MenuButton() {
     return () => obs.disconnect();
   }, []);
 
-  useEffect(() => {
-    const el = document.getElementById('menu-btn-glow');
-    if (!el) return;
-    let frame: number;
-    const animate = () => {
-      const t = Date.now() / 1000;
-      const scale = 1 + Math.sin(t * 2) * 0.15;
-      const opacity = 0.3 + Math.sin(t * 2) * 0.2;
-      el.style.transform = `scale(${scale})`;
-      el.style.opacity = String(opacity);
-      frame = requestAnimationFrame(animate);
-    };
-    frame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frame);
-  }, []);
-
   if (hidden) return null;
 
   return (
@@ -44,7 +28,7 @@ export function MenuButton() {
       {/* Outer glow ring */}
       <div
         id="menu-btn-glow"
-        className="absolute inset-[-6px] rounded-full bg-[#EF1187]/20 blur-md pointer-events-none"
+        className="menu-btn-glow absolute inset-[-6px] rounded-full bg-[#EF1187]/20 blur-md pointer-events-none"
       />
       {/* Main circle */}
       <BorderAnimate

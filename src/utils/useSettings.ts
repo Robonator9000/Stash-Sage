@@ -54,9 +54,26 @@ function loadSettings(): Settings {
 type Listener = (s: Settings) => void;
 let _settings: Settings = loadSettings();
 const _listeners = new Set<Listener>();
+let _persistUser: string | undefined;
+let _persistTimer: ReturnType<typeof setTimeout> | undefined;
 
 function notifyListeners() {
   _listeners.forEach((l) => l(_settings));
+}
+
+function persistSettings(s: Settings, user: string | undefined) {
+  _persistUser = user;
+  _settings = s;
+  safeSetItem(SETTINGS_KEY, JSON.stringify(s));
+  if (_persistTimer) clearTimeout(_persistTimer);
+  _persistTimer = setTimeout(() => {
+    if (_persistUser) {
+      supabase.from('settings').upsert(
+        { user_id: _persistUser, data: _settings },
+        { onConflict: 'user_id' }
+      ).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
+    }
+  }, 400);
 }
 
 export function useSettings() {
@@ -65,7 +82,13 @@ export function useSettings() {
 
   useEffect(() => {
     _listeners.add(setSettings);
-    return () => { _listeners.delete(setSettings); };
+    return () => {
+      _listeners.delete(setSettings);
+      if (_listeners.size === 0 && _persistTimer) {
+        clearTimeout(_persistTimer);
+        _persistTimer = undefined;
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -98,16 +121,9 @@ export function useSettings() {
   }, [user?.id]);
 
   const syncSettings = useCallback((s: Settings) => {
-    _settings = s;
-    safeSetItem(SETTINGS_KEY, JSON.stringify(s));
-    if (user) {
-      supabase.from('settings').upsert(
-        { user_id: user.id, data: s },
-        { onConflict: 'user_id' }
-      ).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
-    }
+    persistSettings(s, user?.id);
     notifyListeners();
-  }, [user]);
+  }, [user?.id]);
 
   const updateSettings = useCallback((updates: Partial<Settings>) => {
     const next = { ..._settings, ...updates };

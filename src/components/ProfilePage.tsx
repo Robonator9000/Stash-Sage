@@ -185,7 +185,7 @@ export function ProfilePage({ userId: propUserId, onBack, onOpenChat }: ProfileP
       <Paper withBorder p={0} radius="lg" style={{ overflow: 'hidden', borderColor: isDark ? 'var(--mantine-color-slate-7)' : 'var(--mantine-color-gray-3)' }}>
         <Box style={{ height: isDark ? 112 : 112, position: 'relative', background: bannerBg, border: 'none' }}>
           {profileData.banner_url && (
-            <img src={profileData.banner_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src={profileData.banner_url} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           )}
           <Box style={{ position: 'absolute', bottom: -48, left: 16 }}>
             <Avatar
@@ -305,7 +305,7 @@ export function ProfilePage({ userId: propUserId, onBack, onOpenChat }: ProfileP
             {userProducts.length === 0 && productError ? <Text ta="center" size="sm" p="lg" c={isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-5)'} style={{ gridColumn: '1 / -1' }}>Products not available</Text> : null}
             {userProducts.map((product: Product) => (
               <Paper key={product.id} withBorder p="sm" radius="lg" bg={isDark ? 'var(--mantine-color-slate-9)' : 'var(--mantine-color-white)'}>
-                {product.picture && <img src={product.picture} alt="" style={{ width: '100%', height: 80, borderRadius: 'var(--mantine-radius-md)', objectFit: 'cover', marginBottom: 8 }} />}
+                {product.picture && <img src={product.picture} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: 80, borderRadius: 'var(--mantine-radius-md)', objectFit: 'cover', marginBottom: 8 }} />}
                 <Text size="xs" fw={500} c={isDark ? 'var(--mantine-color-slate-1)' : 'var(--mantine-color-gray-8)'} truncate>{product.name}</Text>
                 <Text fz={10} c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}>{product.strain} · {product.thc}%</Text>
                 <Text size="xs" fw={600} mt={4} c={isDark ? 'var(--mantine-color-emerald-5)' : 'var(--mantine-color-emerald-6)'}>{product.price}</Text>

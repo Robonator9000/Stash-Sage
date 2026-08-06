@@ -50,15 +50,19 @@ export function useConversations(userId: string | undefined) {
     if (!userId) return;
     channelCounter += 1;
     const id = channelCounter;
+    let scheduleTimer: ReturnType<typeof setTimeout> | undefined;
+    const debouncedFetch = () => {
+      if (scheduleTimer) clearTimeout(scheduleTimer);
+      scheduleTimer = setTimeout(() => fetchRef.current(), 150);
+    };
     const channel = supabase.channel(`conversations-${userId}-${id}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
-        fetchRef.current();
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, () => {
-        fetchRef.current();
-      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, debouncedFetch)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, debouncedFetch)
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      if (scheduleTimer) clearTimeout(scheduleTimer);
+      supabase.removeChannel(channel);
+    };
   }, [userId]);
 
   return { conversations, loading, refresh: fetchConversations };

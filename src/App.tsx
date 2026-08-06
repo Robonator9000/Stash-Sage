@@ -14,20 +14,16 @@ import { playSmokeSound, playSellSound } from './utils/sounds';
 import { ToastContainer, showToast } from './components/Toast';
 import { ProductGrid } from './components/ProductGrid';
 import { StatsCard } from './components/StatsCard';
-import { SettingsSheet } from './components/SettingsSheet';
 import { CoachMarks } from './components/CoachMarks';
 import { PinModal } from './components/PinModal';
 import { BackgroundCanvas } from './components/BackgroundCanvas';
 import { WelcomeModal } from './components/WelcomeModal';
 import { Header } from './components/Header';
-import { MarketplaceFeed } from './components/MarketplaceFeed';
-import { CommunityPage } from './components/CommunityPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useAuth } from './contexts/AuthContext';
 import { supabase } from './utils/supabase';
 import { Box, Button, Group, Select, SegmentedControl, Text, Pagination } from '@mantine/core';
 
-import { AdminDashboard } from './components/AdminDashboard';
 import { MenuButton } from './components/MenuButton';
 import { LeftSidebar } from './components/LeftSidebar';
 import { BottomNav } from './components/BottomNav';
@@ -39,6 +35,10 @@ const ProductModal = lazy(() => import('./components/ProductModal').then(m => ({
 const ConsumeModal = lazy(() => import('./components/ConsumeModal').then(m => ({ default: m.ConsumeModal })));
 const SellModal = lazy(() => import('./components/SellModal').then(m => ({ default: m.SellModal })));
 const SessionModal = lazy(() => import('./components/SessionModal').then(m => ({ default: m.SessionModal })));
+const SettingsSheet = lazy(() => import('./components/SettingsSheet').then(m => ({ default: m.SettingsSheet })));
+const MarketplaceFeed = lazy(() => import('./components/MarketplaceFeed').then(m => ({ default: m.MarketplaceFeed })));
+const CommunityPage = lazy(() => import('./components/CommunityPage').then(m => ({ default: m.CommunityPage })));
+const AdminDashboard = lazy(() => import('./components/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 
 export default function App() {
   const { products, addProduct, updateProduct, deleteProduct, toggleFavorite, consumeProduct, replaceAllProducts } = useProducts();
@@ -535,15 +535,17 @@ export default function App() {
           {/* ==================== SETTINGS PAGE (unique page) ==================== */}
         {activeTab === 'settings' && (
           <ErrorBoundary isDark={isDark} lang={lang}>
-            <SettingsSheet
-              products={products}
-              onImport={handleImport}
-              onMergeImport={handleMergeImport}
-              onClose={() => setActiveTab('stash')}
-              isDark={isDark}
-              defaultTab={settingsDefaultTab}
-              onDirtyChange={setSettingsDirty}
-            />
+            <Suspense fallback={<div className="text-center py-16 text-slate-500">Loading...</div>}>
+              <SettingsSheet
+                products={products}
+                onImport={handleImport}
+                onMergeImport={handleMergeImport}
+                onClose={() => setActiveTab('stash')}
+                isDark={isDark}
+                defaultTab={settingsDefaultTab}
+                onDirtyChange={setSettingsDirty}
+              />
+            </Suspense>
           </ErrorBoundary>
         )}
 
@@ -736,7 +738,9 @@ export default function App() {
                 </p>
               </div>
             ) : (
-              <CommunityPage onOpenChat={handleOpenChat} />
+              <Suspense fallback={<div className="text-center py-16 text-slate-500">Loading...</div>}>
+                <CommunityPage onOpenChat={handleOpenChat} />
+              </Suspense>
             )}
           </div>
           </ErrorBoundary>
@@ -763,15 +767,17 @@ export default function App() {
                 </p>
               </div>
             ) : (
-              <MarketplaceFeed
-                isDark={isDark}
-                lang={lang}
-                currentUserId={user?.id || ''}
-                products={products}
-                searchQuery={searchQuery}
-                onViewProfile={handleViewProfile}
-                onOpenChat={handleOpenChat}
-              />
+              <Suspense fallback={<div className="text-center py-16 text-slate-500">Loading...</div>}>
+                <MarketplaceFeed
+                  isDark={isDark}
+                  lang={lang}
+                  currentUserId={user?.id || ''}
+                  products={products}
+                  searchQuery={searchQuery}
+                  onViewProfile={handleViewProfile}
+                  onOpenChat={handleOpenChat}
+                />
+              </Suspense>
             )}
           </div>
           </ErrorBoundary>
@@ -781,11 +787,13 @@ export default function App() {
         {activeTab === 'admin' && isAdmin && (
           <ErrorBoundary isDark={isDark} lang={lang}>
           <div className="space-y-4">
-            <AdminDashboard
-              isDark={isDark}
-              currentUserId={user?.id || ''}
-              onViewProfile={handleViewProfile}
-            />
+            <Suspense fallback={<div className="text-center py-16 text-slate-500">Loading...</div>}>
+              <AdminDashboard
+                isDark={isDark}
+                currentUserId={user?.id || ''}
+                onViewProfile={handleViewProfile}
+              />
+            </Suspense>
           </div>
           </ErrorBoundary>
         )}
@@ -804,25 +812,27 @@ export default function App() {
         {/* ==================== HISTORY TAB ==================== */}
         {activeTab === 'history' && (
           <ErrorBoundary isDark={isDark} lang={lang}>
-            <HistoryTab
-              filteredHistory={filteredHistory}
-              isDark={isDark}
-              lang={lang}
-              settings={settings}
-              historyFilterType={historyFilterType}
-              historyDateFilter={historyDateFilter}
-              expandedNotes={expandedNotes}
-              onFilterTypeChange={setHistoryFilterType}
-              onDateFilterChange={setHistoryDateFilter}
-              onClearHistory={clearActivity}
-              onToggleNote={(id: string) => {
-                setExpandedNotes(prev => {
-                  const next = new Set(prev);
-                  if (next.has(id)) next.delete(id); else next.add(id);
-                  return next;
-                });
-              }}
-            />
+            <Suspense fallback={<div className="text-center py-16 text-slate-500">Loading...</div>}>
+              <HistoryTab
+                filteredHistory={filteredHistory}
+                isDark={isDark}
+                lang={lang}
+                settings={settings}
+                historyFilterType={historyFilterType}
+                historyDateFilter={historyDateFilter}
+                expandedNotes={expandedNotes}
+                onFilterTypeChange={setHistoryFilterType}
+                onDateFilterChange={setHistoryDateFilter}
+                onClearHistory={clearActivity}
+                onToggleNote={(id: string) => {
+                  setExpandedNotes(prev => {
+                    const next = new Set(prev);
+                    if (next.has(id)) next.delete(id); else next.add(id);
+                    return next;
+                  });
+                }}
+              />
+            </Suspense>
           </ErrorBoundary>
         )}
 

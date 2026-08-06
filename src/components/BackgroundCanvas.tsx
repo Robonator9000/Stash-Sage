@@ -20,28 +20,35 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      w = window.innerWidth;
+      h = window.innerHeight;
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     resize();
     window.addEventListener('resize', resize);
+
+    let w = window.innerWidth;
+    let h = window.innerHeight;
 
     const orbCount = 3;
     const orbs: Orb[] = [];
     for (let i = 0; i < orbCount; i++) {
       orbs.push({
-        x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+        x: Math.random() * w, y: Math.random() * h,
         vx: (Math.random() - 0.5) * 0.15, vy: (Math.random() - 0.5) * 0.15,
-        radius: Math.max(canvas.width, canvas.height) * (0.5 + Math.random() * 0.35),
+        radius: Math.max(w, h) * (0.5 + Math.random() * 0.35),
       });
     }
 
-    const particleCount = Math.min(50, Math.floor((canvas.width * canvas.height) / 16000));
+    const particleCount = Math.min(50, Math.floor((w * h) / 16000));
     const particles: Particle[] = [];
     for (let i = 0; i < particleCount; i++) {
       particles.push({
-        x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+        x: Math.random() * w, y: Math.random() * h,
         vx: (Math.random() - 0.5) * 0.2, vy: -(0.15 + Math.random() * 0.35),
         size: 1 + Math.random() * 2.5, alpha: 0.08 + Math.random() * 0.25,
         hue: isDark ? 170 + Math.random() * 50 : 150 + Math.random() * 50,
@@ -68,15 +75,34 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
 
     let frame = 0;
 
+    const drawStatic = () => {
+      ctx.clearRect(0, 0, w, h);
+      for (const orb of orbs) {
+        const grad = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.radius);
+        for (const stop of orbStops) {
+          grad.addColorStop(stop.pos, `rgba(${stop.r},${stop.g},${stop.b},${stop.a})`);
+        }
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+      }
+      for (const p of particles) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = isDark ? `hsla(${p.hue}, 70%, 65%, ${p.alpha})` : `hsla(${p.hue}, 40%, 50%, ${p.alpha * 0.5})`;
+        ctx.fill();
+      }
+    };
+
     const animate = () => {
       frame++;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, w, h);
 
       for (const orb of orbs) {
         orb.x += orb.vx + Math.sin(frame * 0.002 + orb.radius) * 0.3;
         orb.y += orb.vy + Math.cos(frame * 0.003 + orb.radius) * 0.3;
-        orb.x = Math.max(orb.radius * 0.5, Math.min(canvas.width - orb.radius * 0.5, orb.x));
-        orb.y = Math.max(orb.radius * 0.5, Math.min(canvas.height - orb.radius * 0.5, orb.y));
+        orb.x = Math.max(orb.radius * 0.5, Math.min(w - orb.radius * 0.5, orb.x));
+        orb.y = Math.max(orb.radius * 0.5, Math.min(h - orb.radius * 0.5, orb.y));
 
         const grad = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.radius);
         for (const stop of orbStops) {
@@ -84,13 +110,13 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
         }
         grad.addColorStop(1, 'transparent');
         ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, w, h);
       }
 
       const pulse = Math.sin(frame * 0.003) * 0.5 + 0.5;
-      const ex = canvas.width * (0.5 + Math.sin(frame * 0.004) * 0.15);
-      const ey = canvas.height * (0.5 + Math.cos(frame * 0.005) * 0.15);
-      const extraGrad = ctx.createRadialGradient(ex, ey, 0, ex, ey, Math.max(canvas.width, canvas.height) * 0.6);
+      const ex = w * (0.5 + Math.sin(frame * 0.004) * 0.15);
+      const ey = h * (0.5 + Math.cos(frame * 0.005) * 0.15);
+      const extraGrad = ctx.createRadialGradient(ex, ey, 0, ex, ey, Math.max(w, h) * 0.6);
       if (isDark) {
         extraGrad.addColorStop(0, `rgba(56,189,248,${0.025 * pulse})`);
         extraGrad.addColorStop(0.3, `rgba(16,185,129,${0.015 * pulse})`);
@@ -100,15 +126,15 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
       }
       extraGrad.addColorStop(1, 'transparent');
       ctx.fillStyle = extraGrad;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, w, h);
 
       for (const p of particles) {
         p.x += p.vx; p.y += p.vy;
         p.alpha += (Math.random() - 0.5) * 0.003;
         p.alpha = Math.max(0.03, Math.min(0.35, p.alpha));
-        if (p.y < -10) { p.y = canvas.height + 10; p.x = Math.random() * canvas.width; }
-        if (p.x < -10) p.x = canvas.width + 10;
-        if (p.x > canvas.width + 10) p.x = -10;
+        if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
+        if (p.x < -10) p.x = w + 10;
+        if (p.x > w + 10) p.x = -10;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fillStyle = isDark ? `hsla(${p.hue}, 70%, 65%, ${p.alpha})` : `hsla(${p.hue}, 40%, 50%, ${p.alpha * 0.5})`;
@@ -117,10 +143,26 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
 
       rafRef.current = requestAnimationFrame(animate);
     };
-    animate();
+
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) {
+      drawStatic();
+    } else {
+      animate();
+    }
+
+    const onVisibility = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(rafRef.current);
+      } else if (!prefersReduced) {
+        rafRef.current = requestAnimationFrame(animate);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
 
     return () => {
       window.removeEventListener('resize', resize);
+      document.removeEventListener('visibilitychange', onVisibility);
       cancelAnimationFrame(rafRef.current);
     };
   }, [isDark]);
