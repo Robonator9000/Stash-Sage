@@ -20,6 +20,14 @@ const theme = createTheme({
       '#ecfdf5', '#d1fae5', '#a7f3d0', '#6ee7b7', '#34d399',
       '#10b981', '#059669', '#047857', '#065f46', '#064e3b',
     ],
+    slate: [
+      '#f8fafc', '#f1f5f9', '#e2e8f0', '#cbd5e1', '#94a3b8',
+      '#64748b', '#475569', '#334155', '#1e293b', '#0f172a',
+    ],
+    dark: [
+      '#e2e8f0', '#cbd5e1', '#94a3b8', '#64748b', '#475569',
+      '#334155', '#1e293b', '#1a2332', '#111827', '#0b1120',
+    ],
   },
   defaultRadius: 'md',
   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',

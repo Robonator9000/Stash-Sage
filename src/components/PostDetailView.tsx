@@ -5,6 +5,7 @@ import { timeAgo } from '../utils/helpers';
 import { CommentSection } from './CommentSection';
 import { ProductView } from './ProductView';
 import { Text, Group, Avatar, UnstyledButton, ActionIcon, Image, Box, Textarea, Button, Modal } from '@mantine/core';
+import { setFullscreenOpen } from '../utils/fullscreen';
 import { IconX, IconHeart, IconBookmark, IconEdit, IconTrash, IconChevronLeft, IconChevronRight, IconBuildingStore } from '@tabler/icons-react';
 
 interface PostDetailViewProps {
@@ -108,12 +109,14 @@ export const PostDetailView = memo(function PostDetailView({ post, isDark, lang,
   const postImages = (currentPost.images?.filter(Boolean)) || (currentPost.image_url ? [currentPost.image_url] : []);
 
   useEffect(() => {
+    setFullscreenOpen(true);
     function handleKey(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
     }
     document.addEventListener('keydown', handleKey);
     document.body.style.overflow = 'hidden';
     return () => {
+      setFullscreenOpen(false);
       document.removeEventListener('keydown', handleKey);
       document.body.style.overflow = '';
     };
@@ -150,7 +153,7 @@ export const PostDetailView = memo(function PostDetailView({ post, isDark, lang,
   const mutedColor = isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-6)';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/20 backdrop-blur-md overflow-y-auto" onClick={onClose}>
+    <div className="fixed inset-0 z-[100] flex items-start justify-center bg-black/20 backdrop-blur-md overflow-y-auto" onClick={onClose}>
       <div className="relative w-full max-w-5xl mx-auto my-0 sm:my-4 min-h-screen sm:min-h-0" onClick={e => e.stopPropagation()}>
         <div className={`flex flex-col sm:flex-row w-full sm:rounded-xl overflow-hidden min-h-screen sm:min-h-[90vh] backdrop-blur-sm ${isDark ? 'bg-[#111827]' : 'bg-white/80'}`}>
           <div className="flex-1 max-w-full sm:max-w-[55%] flex flex-col border-r-0 sm:border-r overflow-y-auto" style={{ borderColor: 'var(--mantine-color-gray-8)' }}>

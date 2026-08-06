@@ -189,7 +189,7 @@ export const HistoryTab = memo(function HistoryTab({
                         {entry.notes}
                       </Text>
                     ) : (
-                      <Text size="xs" c="dimmed">\u2014</Text>
+                      <Text size="xs">&nbsp;</Text>
                     )}
                   </Table.Td>
                   <Table.Td ta="right">

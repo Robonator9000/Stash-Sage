@@ -238,7 +238,7 @@ export function LeftSidebar({
         align="center"
         px={collapsed ? 'xs' : 'sm'}
         py="sm"
-        style={{ borderBottom: '1px solid var(--mantine-color-gray-3)' }}
+        style={{ borderBottom: '1px solid transparent' }}
       >
         <ActionIcon
           variant="subtle"
@@ -321,7 +321,7 @@ export function LeftSidebar({
           px={collapsed ? 'xs' : 'sm'}
           py="sm"
           style={{
-            borderTop: '1px solid var(--mantine-color-gray-3)',
+            borderTop: '1px solid transparent',
             marginTop: 'auto',
           }}
         >

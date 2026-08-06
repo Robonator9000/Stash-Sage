@@ -4,6 +4,7 @@ import { supabase } from '../utils/supabase';
 import { t } from '../utils/translations';
 import { IconChevronLeft, IconStar, IconScale, IconFlask2, IconNote, IconCalendar, IconTag } from '@tabler/icons-react';
 import { Paper, Group, Stack, Text, Badge, Loader, Box, UnstyledButton } from '@mantine/core';
+import { setFullscreenOpen } from '../utils/fullscreen';
 
 interface ProductViewProps {
   productId: string;
@@ -16,6 +17,11 @@ export function ProductView({ productId, onClose, isDark, lang }: ProductViewPro
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  useEffect(() => {
+    setFullscreenOpen(true);
+    return () => setFullscreenOpen(false);
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -61,7 +67,7 @@ export function ProductView({ productId, onClose, isDark, lang }: ProductViewPro
   const statBg = isDark ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-0)';
 
   return (
-    <Box style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.8)', display: 'flex', flexDirection: 'column' }} onClick={onClose}>
+    <Box style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.8)', display: 'flex', flexDirection: 'column' }} onClick={onClose}>
       <Box onClick={e => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, maxWidth: 768, width: '100%', margin: '0 auto' }}>
         <Group justify="space-between" px="md" py="sm" style={{ flexShrink: 0 }}>
           <UnstyledButton type="button" onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#fff' }}>

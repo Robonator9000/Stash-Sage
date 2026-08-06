@@ -274,7 +274,7 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
                   <Paper
                     onClick={() => setCategoryFilter(cat.id)}
                     style={{
-                      height: 110, display: 'flex', flexDirection: 'column',
+                      height: 110, width: '100%', display: 'flex', flexDirection: 'column',
                       alignItems: 'center', justifyContent: 'center', gap: 4,
                       cursor: 'pointer', userSelect: 'none',
                       background: `linear-gradient(135deg, ${cat.from}, ${cat.to})`,
@@ -294,7 +294,7 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
                 <Paper
                   onClick={() => setCategoryFilter(cat.id)}
                   style={{
-                    height: 110, display: 'flex', flexDirection: 'column',
+                    height: 110, width: '100%', display: 'flex', flexDirection: 'column',
                     alignItems: 'center', justifyContent: 'center', gap: 4,
                     cursor: 'pointer', userSelect: 'none',
                     border: '1px solid transparent',

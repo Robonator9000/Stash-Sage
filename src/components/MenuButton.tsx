@@ -5,6 +5,15 @@ import { BorderAnimate } from '@gfazioli/mantine-border-animate';
 export function MenuButton() {
   const navigate = useNavigate();
   const [hovered, setHovered] = useState(false);
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    const check = () => setHidden(document.documentElement.getAttribute('data-fullscreen') === 'true');
+    check();
+    const obs = new MutationObserver(check);
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-fullscreen'] });
+    return () => obs.disconnect();
+  }, []);
 
   useEffect(() => {
     const el = document.getElementById('menu-btn-glow');
@@ -21,6 +30,8 @@ export function MenuButton() {
     frame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frame);
   }, []);
+
+  if (hidden) return null;
 
   return (
     <button

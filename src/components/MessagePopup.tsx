@@ -45,7 +45,7 @@ export function MessagePopup({ currentUserId, isDark, lang, initialTargetUserId,
       aria-label="Open messages"
       style={{
         position: 'fixed',
-        bottom: 80,
+        bottom: 20,
         right: 16,
         zIndex: 50,
         width: 56,
@@ -99,15 +99,16 @@ export function MessagePopup({ currentUserId, isDark, lang, initialTargetUserId,
       withBorder
       style={{
         position: 'fixed',
-        inset: 0,
-        zIndex: 50,
-        height: '100dvh',
-        width: '100%',
+        bottom: 92,
+        right: 16,
+        zIndex: 70,
+        width: 'min(380px, calc(100vw - 32px))',
+        height: 'min(520px, calc(100dvh - 160px))',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        borderRadius: 0,
         background: isDark ? 'var(--mantine-color-dark-8)' : '#fff',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.35)',
       }}
     >
       <Group px="md" py="sm" justify="space-between" wrap="nowrap" style={{
