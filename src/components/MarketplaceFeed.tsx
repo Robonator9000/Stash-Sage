@@ -376,7 +376,7 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
       )}
 
       <SimpleGrid
-        cols={{ base: 2, xs: 3, sm: 3, md: 4, lg: 5, xl: 6 }}
+        cols={{ base: 1, xs: 2, sm: 3, md: 4, lg: 5, xl: 6 }}
         spacing="md"
         verticalSpacing="md"
       >

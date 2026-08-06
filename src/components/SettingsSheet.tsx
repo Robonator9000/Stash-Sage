@@ -887,7 +887,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               <div>
                 <label className={sectionLabel}><Database className="w-4 h-4" />{t('dataBackup', lang)}</label>
                 <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('dataBackupHint', lang)}</p>
-                <div className="grid grid-cols-4 gap-2 mb-3">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
                   <Button variant="light" onClick={handleExport} className="flex-col h-auto py-2 gap-1">
                     <Download className="w-4 h-4" /><Text size="10" className="leading-tight">{t('exportData', lang)}</Text>
                   </Button>

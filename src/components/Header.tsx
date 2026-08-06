@@ -191,7 +191,6 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
             size="md"
             onClick={() => updateSettings({ theme: isDark ? 'light' : 'dark', themeAuto: false })}
             aria-label="Toggle color scheme"
-            visibleFrom="sm"
           >
             {isDark ? <IconSun size={18} /> : <IconMoon size={18} />}
           </ActionIcon>

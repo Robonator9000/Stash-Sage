@@ -91,7 +91,7 @@ export function ProductView({ productId, onClose, isDark, lang }: ProductViewPro
               style={{ overflow: 'hidden', background: isDark ? '#0a0a0a' : '#fff', border: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : 'var(--mantine-color-gray-2)'}` }}
             >
               {allImages.length > 0 && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 4 }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 4 }}>
                   {allImages.map((img, i) => (
                     <div key={i} style={{ gridColumn: i === 0 && allImages.length === 1 ? '1 / -1' : undefined, aspectRatio: '16/9' }}>
                       <img src={img} alt="" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -117,7 +117,7 @@ export function ProductView({ productId, onClose, isDark, lang }: ProductViewPro
                   )}
                 </Group>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 12 }}>
                   {product.thc > 0 && (
                     <Paper p="md" radius="md" withBorder style={{ background: statBg }}>
                       <Text size="xs" c="dimmed">THC</Text>

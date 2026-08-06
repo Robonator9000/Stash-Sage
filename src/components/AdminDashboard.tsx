@@ -338,9 +338,9 @@ export const AdminDashboard = memo(function AdminDashboard({ isDark, currentUser
               </ActionIcon>
             ) : undefined}
           />
-          <Paper radius="md" withBorder style={{ background: cardBg, overflow: 'hidden' }}>
+          <Paper radius="md" withBorder style={{ background: cardBg, overflowX: 'auto' }}>
             <Group px="md" py="xs" style={{ fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, color: mutedText, background: isDark ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-0)' }} wrap="nowrap">
-              <Text style={{ flex: 1 }}>User</Text>
+              <Text style={{ flex: 1, minWidth: 200 }}>User</Text>
               <Text ta="center" w={90}>Role</Text>
               <Text ta="center" w={80}>Status</Text>
               <Text ta="right" w={110}>Actions</Text>
@@ -354,7 +354,7 @@ export const AdminDashboard = memo(function AdminDashboard({ isDark, currentUser
                 wrap="nowrap"
                 style={{ borderTop: `1px solid ${borderColor}`, fontSize: 14 }}
               >
-                <Group gap="md" style={{ flex: 1, minWidth: 0 }} wrap="nowrap">
+                <Group gap="md" style={{ flex: 1, minWidth: 200 }} wrap="nowrap">
                   <Group gap={8} style={{ minWidth: 0 }} wrap="nowrap">
                     <UnstyledButton onClick={() => handleViewUserByUsername(u.username || u.user_id)} style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: frostText }}>
                       @{u.username || 'unknown'}
