@@ -21,6 +21,8 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
     if (!ctx) return;
 
     const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    let w = window.innerWidth;
+    let h = window.innerHeight;
     const resize = () => {
       w = window.innerWidth;
       h = window.innerHeight;
@@ -30,9 +32,6 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
     };
     resize();
     window.addEventListener('resize', resize);
-
-    let w = window.innerWidth;
-    let h = window.innerHeight;
 
     const orbCount = 3;
     const orbs: Orb[] = [];
