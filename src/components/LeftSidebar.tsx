@@ -29,6 +29,7 @@ import {
   IconChevronDown,
   IconChevronUp,
   IconSearch,
+  IconShield,
 } from '@tabler/icons-react';
 import { getProfile } from '../utils/profileCache';
 
@@ -39,7 +40,8 @@ type TabId =
   | 'history'
   | 'notifications'
   | 'dashboard'
-  | 'settings';
+  | 'settings'
+  | 'admin';
 
 interface NavItem {
   id: TabId;
@@ -48,6 +50,7 @@ interface NavItem {
   section: 'primary' | 'secondary' | 'utility';
   badge?: number;
   requiresAuth?: boolean;
+  adminOnly?: boolean;
 }
 
 interface LeftSidebarProps {
@@ -62,6 +65,7 @@ const allTabs: TabId[] = [
   'stash', 'dashboard', 'history',
   'community', 'marketplace',
   'settings', 'notifications',
+  'admin',
 ];
 
 export function LeftSidebar({
@@ -104,6 +108,7 @@ export function LeftSidebar({
     { id: 'marketplace', label: 'Market', icon: <IconShoppingCart size={20} />, section: 'secondary' },
     { id: 'settings', label: 'Settings', icon: <IconSettings size={20} />, section: 'utility' },
     { id: 'notifications', label: 'Notifications', icon: <IconBell size={20} />, section: 'utility', requiresAuth: true },
+    { id: 'admin', label: 'Admin Panel', icon: <IconShield size={20} />, section: 'utility', adminOnly: true },
   ];
 
   const openCommunityProfile = useCallback((username: string) => {
@@ -173,6 +178,7 @@ export function LeftSidebar({
   };
 
   const renderNavItem = (item: NavItem) => {
+    if (item.adminOnly && !isAdmin) return null;
     if (item.requiresAuth && !currentUserId && !isAdmin) return null;
     const isActive = activeTab === item.id;
     const isDisabled = item.requiresAuth && !currentUserId;
@@ -271,7 +277,8 @@ export function LeftSidebar({
             if (items.length === 0) return null;
 
             const visibleItems = items.filter(
-              i => !(i.requiresAuth && !currentUserId && !isAdmin)
+              i => !(i.adminOnly && !isAdmin) &&
+                   !(i.requiresAuth && !currentUserId && !isAdmin)
             );
             if (visibleItems.length === 0) return null;
 

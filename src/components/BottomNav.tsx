@@ -13,8 +13,8 @@ import {
   IconMessageCircle,
   IconSearch,
   IconLayoutDashboard,
-  IconSettings,
   IconDots,
+  IconShield,
 } from '@tabler/icons-react';
 
 type PrimaryTabId = 'stash' | 'community' | 'marketplace' | 'notifications' | 'profile';
@@ -29,11 +29,11 @@ const primaryTabs: { id: PrimaryTabId; label: string; icon: typeof IconHome }[] 
 ];
 
 const secondaryTabs: { id: SecondaryTabId; label: string; icon: typeof IconHome; requiresAuth?: boolean }[] = [
-  { id: 'history', label: 'History', icon: IconHistory, requiresAuth: true },
-  { id: 'messages', label: 'Messages', icon: IconMessageCircle, requiresAuth: true },
-  { id: 'explore', label: 'Explore', icon: IconSearch },
   { id: 'dashboard', label: 'Dashboard', icon: IconLayoutDashboard, requiresAuth: true },
-  { id: 'admin', label: 'Admin', icon: IconSettings, requiresAuth: true },
+  { id: 'history', label: 'History', icon: IconHistory, requiresAuth: true },
+  { id: 'explore', label: 'Explore', icon: IconSearch },
+  { id: 'messages', label: 'Messages', icon: IconMessageCircle, requiresAuth: true },
+  { id: 'admin', label: 'Admin', icon: IconShield, requiresAuth: true },
 ];
 
 interface BottomNavProps {
