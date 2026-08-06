@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { X, AlertTriangle, Info } from 'lucide-react';
+import { Stack, Paper, Group, Text, ActionIcon, Button } from '@mantine/core';
+import { IconX, IconAlertTriangle, IconInfoCircle } from '@tabler/icons-react';
 
 function playBeep() {
   try {
@@ -64,69 +65,92 @@ export function ToastContainer({ isDark = true }: ToastContainerProps) {
     return () => clearTimeout(timer);
   }, [toasts, removeToast]);
 
+  const isInfo = (toast: ToastMessage) => toast.variant === 'info' || (!toast.variant && toast.action);
+
   return (
-    <div className="fixed top-20 right-4 z-[200] flex flex-col gap-2 pointer-events-none" aria-live="polite">
+    <Stack
+      gap="xs"
+      aria-live="polite"
+      style={{
+        position: 'fixed',
+        top: 80,
+        right: 16,
+        zIndex: 200,
+        pointerEvents: 'none',
+        maxWidth: 448,
+      }}
+    >
       {toasts.map((toast) => {
-        const isInfo = toast.variant === 'info' || (!toast.variant && toast.action);
+        const info = isInfo(toast);
+        const containerBg = info
+          ? isDark ? 'rgba(30, 41, 59, 0.9)' : '#fff'
+          : isDark ? 'rgba(127, 29, 29, 0.9)' : '#fef2f2';
+        const containerBorder = info
+          ? isDark ? 'rgba(71, 85, 105, 0.5)' : 'var(--mantine-color-gray-2)'
+          : isDark ? 'rgba(185, 28, 28, 0.5)' : 'var(--mantine-color-red-2)';
+        const titleColor = info
+          ? isDark ? 'var(--mantine-color-white)' : 'var(--mantine-color-gray-9)'
+          : isDark ? 'var(--mantine-color-red-2)' : 'var(--mantine-color-red-8)';
+        const bodyColor = info
+          ? isDark ? 'var(--mantine-color-gray-4)' : 'var(--mantine-color-gray-6)'
+          : isDark ? 'rgba(254,202,202,0.8)' : 'var(--mantine-color-red-6)';
         return (
-          <div
+          <Paper
             key={toast.id}
-            className={`pointer-events-auto flex items-start gap-3 px-4 py-3 rounded-xl border-2 shadow-2xl max-w-md transition-all duration-300 ${
-              toast.leaving ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'
-            } ${
-              isInfo
-                ? isDark
-                  ? 'bg-slate-800/90 border-slate-700/50 backdrop-blur-md'
-                  : 'bg-white border-gray-200'
-                : isDark
-                  ? 'bg-red-900/90 border-red-700/50 backdrop-blur-md'
-                  : 'bg-red-50 border-red-200'
-            }`}
+            radius="md"
+            p="sm"
+            withBorder
             role="alert"
+            style={{
+              pointerEvents: 'auto',
+              maxWidth: 448,
+              borderColor: containerBorder,
+              borderWidth: 2,
+              background: containerBg,
+              backdropFilter: isDark ? 'blur(12px)' : undefined,
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+              transition: 'opacity 0.3s, transform 0.3s',
+              opacity: toast.leaving ? 0 : 1,
+              transform: toast.leaving ? 'translateX(16px)' : 'translateX(0)',
+            }}
           >
-            {isInfo ? (
-              <Info className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
-                isDark ? 'text-cyan-400' : 'text-cyan-600'
-              }`} />
-            ) : (
-              <AlertTriangle className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
-                isDark ? 'text-red-400' : 'text-red-600'
-              }`} />
-            )}
-            <div className="flex-1 min-w-0">
-              <p className={`text-sm font-bold ${isInfo ? (isDark ? 'text-white' : 'text-gray-900') : (isDark ? 'text-red-200' : 'text-red-800')}`}>
-                {toast.title}
-              </p>
-              <p className={`text-xs mt-0.5 ${isInfo ? (isDark ? 'text-slate-400' : 'text-gray-500') : (isDark ? 'text-red-300/80' : 'text-red-600')}`}>
-                {toast.body}
-              </p>
-              {toast.action && (
-                <button
-                  onClick={() => { toast.action!.onClick(); removeToast(toast.id); }}
-                  className={`mt-2 text-xs font-bold px-3 py-1 rounded-lg transition-colors ${
-                    isDark
-                      ? 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30'
-                      : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'
-                  }`}
-                >
-                  {toast.action.label}
-                </button>
+            <Group align="flex-start" gap="xs" wrap="nowrap">
+              {info ? (
+                <IconInfoCircle size={20} style={{ marginTop: 2, flexShrink: 0, color: isDark ? 'var(--mantine-color-cyan-5)' : 'var(--mantine-color-cyan-6)' }} />
+              ) : (
+                <IconAlertTriangle size={20} style={{ marginTop: 2, flexShrink: 0, color: isDark ? 'var(--mantine-color-red-4)' : 'var(--mantine-color-red-6)' }} />
               )}
-            </div>
-            <button
-              onClick={() => removeToast(toast.id)}
-              aria-label="Close notification"
-              className={`p-1 rounded-lg transition-colors flex-shrink-0 ${
-                isInfo
-                  ? isDark ? 'hover:bg-slate-700 text-slate-400' : 'hover:bg-gray-100 text-gray-400'
-                  : isDark ? 'hover:bg-red-800 text-red-300' : 'hover:bg-red-100 text-red-500'
-              }`}
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {toast.title && (
+                  <Text size="sm" fw={700} style={{ color: titleColor }}>{toast.title}</Text>
+                )}
+                <Text size="xs" mt={2} style={{ color: bodyColor }}>{toast.body}</Text>
+                {toast.action && (
+                  <Button
+                    size="compact-xs"
+                    variant={isDark ? 'subtle' : 'light'}
+                    color="cyan"
+                    mt="xs"
+                    onClick={() => { toast.action!.onClick(); removeToast(toast.id); }}
+                  >
+                    {toast.action.label}
+                  </Button>
+                )}
+              </div>
+              <ActionIcon
+                variant="subtle"
+                radius="md"
+                color={info ? (isDark ? 'gray' : 'gray') : 'red'}
+                onClick={() => removeToast(toast.id)}
+                aria-label="Close notification"
+                style={{ flexShrink: 0 }}
+              >
+                <IconX size={16} />
+              </ActionIcon>
+            </Group>
+          </Paper>
         );
       })}
-    </div>
+    </Stack>
   );
 }

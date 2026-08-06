@@ -3,8 +3,9 @@ import type { Post, Product } from '../types';
 import { supabase } from '../utils/supabase';
 import { PostCard } from './PostCard';
 import { useAuth } from '../contexts/AuthContext';
-import { ArrowLeft, Package, MessageSquare } from 'lucide-react';
 import { t } from '../utils/translations';
+import { Group, Stack, Text, Button, Paper, ActionIcon, Box, Skeleton, Avatar } from '@mantine/core';
+import { IconArrowLeft, IconPackage, IconMessageCircle } from '@tabler/icons-react';
 
 interface UserProfileModalProps {
   userId: string;
@@ -56,77 +57,101 @@ export function UserProfileModal({ userId, isDark, lang, onBack }: UserProfileMo
   const username = profile?.display_name || 'User';
   const initial = username[0]?.toUpperCase() || '?';
 
-  return (
-    <div className="space-y-4">
-      <div className={`flex items-center gap-3 p-3 rounded-xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
-        {onBack && (
-          <button onClick={onBack} aria-label="Go back" className={`p-2 rounded-xl transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`}>
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-        )}
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${profile?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
-          {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt={username} className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-white font-display font-bold text-lg">{initial}</span>
-          )}
-        </div>
-        <div>
-          <h2 className={`font-display font-bold text-lg ${isDark ? 'text-frost' : 'text-gray-800'}`}>{username}</h2>
-          <p className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>{posts.length} {t('posts', lang).toLowerCase()} &middot; {products.length} {t('products', lang).toLowerCase()}</p>
-        </div>
-      </div>
+  const primaryColor = isDark ? 'var(--mantine-color-cyan-6)' : 'var(--mantine-color-cyan-5)';
+  const secondaryColor = 'var(--mantine-color-emerald-5)';
 
-      {/* Section tabs: Posts / Products */}
-      <div role="tablist" className={`flex gap-1 p-1 rounded-xl ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
-        <button
-          onClick={() => setActiveSection('posts')}
+  return (
+    <Stack gap="md">
+      <Paper withBorder p="sm" radius="lg" bg={isDark ? 'var(--mantine-color-slate-9)' : 'var(--mantine-color-white)'}>
+        <Group gap="sm">
+          {onBack && (
+            <ActionIcon
+              variant="subtle"
+              radius="lg"
+              aria-label="Go back"
+              color="gray"
+              onClick={onBack}
+            >
+              <IconArrowLeft size={20} />
+            </ActionIcon>
+          )}
+          <Avatar
+            radius="lg"
+            size={40}
+            src={profile?.avatar_url || undefined}
+            styles={{
+              placeholder: {
+                background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`,
+              },
+            }}
+          >
+            {profile?.avatar_url ? undefined : (
+              <Text fw={700} size="lg" c="var(--mantine-color-white)" style={{ fontFamily: 'inherit' }}>{initial}</Text>
+            )}
+          </Avatar>
+          <Box style={{ minWidth: 0 }}>
+            <Text fw={700} size="lg" c={isDark ? 'var(--mantine-color-slate-1)' : 'var(--mantine-color-gray-8)'} truncate style={{ fontFamily: 'inherit' }}>{username}</Text>
+            <Text size="xs" c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}>
+              {posts.length} {t('posts', lang).toLowerCase()} &middot; {products.length} {t('products', lang).toLowerCase()}
+            </Text>
+          </Box>
+        </Group>
+      </Paper>
+
+      <div role="tablist" className="flex gap-1 p-1 rounded-lg" style={{ background: isDark ? 'var(--mantine-color-slate-8)' : 'var(--mantine-color-gray-1)' }}>
+        <Button
           role="tab"
           aria-selected={activeSection === 'posts'}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg transition-all ${activeSection === 'posts' ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm' : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'}`}
+          variant={activeSection === 'posts' ? 'light' : 'subtle'}
+          color="cyan"
+          fullWidth
+          style={{ flex: 1 }}
+          leftSection={<IconMessageCircle size={16} />}
+          onClick={() => setActiveSection('posts')}
         >
-          <MessageSquare className="w-4 h-4" />
           {t('posts', lang)} ({posts.length})
-        </button>
-        <button
-          onClick={() => setActiveSection('products')}
+        </Button>
+        <Button
           role="tab"
           aria-selected={activeSection === 'products'}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg transition-all ${activeSection === 'products' ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm' : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'}`}
+          variant={activeSection === 'products' ? 'light' : 'subtle'}
+          color="cyan"
+          fullWidth
+          style={{ flex: 1 }}
+          leftSection={<IconPackage size={16} />}
+          onClick={() => setActiveSection('products')}
         >
-          <Package className="w-4 h-4" />
           {t('products', lang)} ({products.length})
-        </button>
+        </Button>
       </div>
 
-      <div className="space-y-4">
-        {loading && (
-          <div className="space-y-4">
+      {loading && (
+          <Stack gap="md">
             {[1, 2, 3].map(i => (
-              <div key={i} className={`p-4 rounded-2xl animate-pulse ${isDark ? 'bg-surface/50' : 'bg-gray-50'}`}>
-                <div className={`h-3 w-24 rounded ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
-                <div className={`h-3 w-full rounded mt-2 ${isDark ? 'bg-midnight' : 'bg-gray-200'}`} />
-              </div>
+              <Paper key={i} withBorder p="md" radius="lg" bg={isDark ? 'var(--mantine-color-slate-9)' : 'var(--mantine-color-gray-0)'}>
+                <Skeleton height={12} width={96} radius="sm" mb="sm" />
+                <Skeleton height={12} radius="sm" />
+              </Paper>
             ))}
-          </div>
+          </Stack>
         )}
 
         {error && (
-          <div className={`p-4 rounded-2xl text-center text-sm ${isDark ? 'bg-red-900/20 text-red-400 border border-red-900/30' : 'bg-red-50 text-red-500 border border-red-200'}`}>
-            {error}
-          </div>
+          <Paper radius="lg" p="md" ta="center" bg={isDark ? 'var(--mantine-color-red-9)' : 'var(--mantine-color-red-0)'} withBorder style={{ borderColor: isDark ? 'var(--mantine-color-red-8)' : 'var(--mantine-color-red-2)' }}>
+            <Text size="sm" c={isDark ? 'var(--mantine-color-red-4)' : 'var(--mantine-color-red-5)'}>{error}</Text>
+          </Paper>
         )}
 
         {!loading && !error && activeSection === 'posts' && posts.length === 0 && (
-          <div className={`p-8 text-center text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+          <Text ta="center" size="sm" p="lg" c={isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-5)'}>
             {t('noPostsYet', lang)}
-          </div>
+          </Text>
         )}
 
         {!loading && !error && activeSection === 'products' && products.length === 0 && (
-          <div className={`p-8 text-center text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+          <Text ta="center" size="sm" p="lg" c={isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-5)'}>
             {t('noProductsYet', lang)}
-          </div>
+          </Text>
         )}
 
         {activeSection === 'posts' && posts.map(post => (
@@ -168,37 +193,36 @@ export function UserProfileModal({ userId, isDark, lang, onBack }: UserProfileMo
         {activeSection === 'products' && (
           <div className="grid grid-cols-1 gap-3">
             {products.map(product => (
-              <div key={product.id} className={`p-4 rounded-2xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
+              <Paper key={product.id} withBorder p="md" radius="lg" bg={isDark ? 'var(--mantine-color-slate-9)' : 'var(--mantine-color-white)'}>
                 <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <h4 className={`font-semibold text-sm truncate ${isDark ? 'text-frost' : 'text-gray-900'}`}>{product.name}</h4>
-                    <p className={`text-xs mt-0.5 ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+                  <Box style={{ flex: 1, minWidth: 0 }}>
+                    <Text fw={600} size="sm" c={isDark ? 'var(--mantine-color-slate-1)' : 'var(--mantine-color-gray-9)'} truncate>{product.name}</Text>
+                    <Text size="xs" mt={2} c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}>
                       {product.type} {product.thc ? `· ${product.thc}% THC` : ''}
-                    </p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <span className={`text-sm font-bold ${isDark ? 'text-emera' : 'text-emerald-600'}`}>{product.amount}g</span>
+                    </Text>
+                  </Box>
+                  <Box style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <Text fw={700} size="sm" c={isDark ? 'var(--mantine-color-emerald-5)' : 'var(--mantine-color-emerald-6)'}>{product.amount}g</Text>
                     {product.price > 0 && (
-                      <p className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>${product.price.toFixed(2)}</p>
+                      <Text size="xs" c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}>${product.price.toFixed(2)}</Text>
                     )}
-                  </div>
+                  </Box>
                 </div>
                 {product.rating > 0 && (
-                  <div className="flex items-center gap-1 mt-2">
+                  <Group gap={4} mt="sm">
                     {Array.from({ length: 5 }, (_, i) => (
-                      <span key={i} className={`text-xs ${i < Math.round(product.rating) ? 'text-amberx' : isDark ? 'text-slate-600' : 'text-gray-300'}`}>&#9733;</span>
+                      <Text key={i} size="xs" c={i < Math.round(product.rating) ? 'var(--mantine-color-yellow-6)' : isDark ? 'var(--mantine-color-slate-7)' : 'var(--mantine-color-gray-3)'}>&#9733;</Text>
                     ))}
-                    <span className={`text-xs ml-1 ${isDark ? 'text-muted' : 'text-gray-400'}`}>{product.rating.toFixed(1)}</span>
-                  </div>
+                    <Text size="xs" ml={4} c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}>{product.rating.toFixed(1)}</Text>
+                  </Group>
                 )}
                 {product.notes && (
-                  <p className={`text-xs mt-2 line-clamp-2 ${isDark ? 'text-mist' : 'text-gray-500'}`}>{product.notes}</p>
+                  <Text size="xs" mt="sm" c={isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-6)'} lineClamp={2}>{product.notes}</Text>
                 )}
-              </div>
+              </Paper>
             ))}
           </div>
         )}
-      </div>
-    </div>
+      </Stack>
   );
 }

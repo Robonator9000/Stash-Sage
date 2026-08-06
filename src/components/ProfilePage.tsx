@@ -6,7 +6,8 @@ import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { FollowButton } from './FollowButton';
 import { PostCard } from './PostCard';
-import { MessageCircle, MapPin, ArrowLeft, Globe, Mail, Phone, Camera } from 'lucide-react';
+import { Group, Stack, Text, Button, Paper, Avatar, Switch, Box, Skeleton } from '@mantine/core';
+import { IconMessageCircle, IconMapPin, IconArrowLeft, IconGlobe, IconMail, IconPhone, IconCamera } from '@tabler/icons-react';
 import type { Post, Product } from '../types';
 
 interface ProfileData {
@@ -124,38 +125,42 @@ export function ProfilePage({ userId: propUserId, onBack, onOpenChat }: ProfileP
   }
 
   function contactIcon(platform: string) {
-  switch (platform) {
-    case 'phone': return <Phone className="w-3.5 h-3.5" />;
-    case 'email': return <Mail className="w-3.5 h-3.5" />;
-    case 'instagram':
-    case 'snapchat': return <Camera className="w-3.5 h-3.5" />;
-    case 'telegram':
-    case 'signal':
-    case 'discord':
-    case 'whatsapp': return <MessageCircle className="w-3.5 h-3.5" />;
-    default: return <Globe className="w-3.5 h-3.5" />;
+    switch (platform) {
+      case 'phone': return <IconPhone size={14} />;
+      case 'email': return <IconMail size={14} />;
+      case 'instagram':
+      case 'snapchat': return <IconCamera size={14} />;
+      case 'telegram':
+      case 'signal':
+      case 'discord':
+      case 'whatsapp': return <IconMessageCircle size={14} />;
+      default: return <IconGlobe size={14} />;
+    }
   }
-}
 
-function parseContacts(raw: string | undefined): { platform: string; value: string }[] {
-  if (!raw) return [];
-  try { return JSON.parse(raw); } catch { return []; }
-}
+  function parseContacts(raw: string | undefined): { platform: string; value: string }[] {
+    if (!raw) return [];
+    try { return JSON.parse(raw); } catch { return []; }
+  }
 
-const isOwnProfile = currentUserId === userId;
+  const isOwnProfile = currentUserId === userId;
+  const primaryColor = 'var(--mantine-color-cyan-6)';
+  const secondaryColor = 'var(--mantine-color-emerald-5)';
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto space-y-4">
-        <div className={`h-40 rounded-2xl animate-pulse ${isDark ? 'bg-surface/50' : 'bg-gray-200'}`} />
-        <div className={`h-16 rounded-2xl animate-pulse ${isDark ? 'bg-surface/50' : 'bg-gray-200'}`} />
+      <div className="max-w-2xl mx-auto flex flex-col gap-4">
+        <Skeleton height={160} radius="lg" />
+        <Skeleton height={64} radius="lg" />
       </div>
     );
   }
 
   if (!profileData) {
     return (
-      <div className="max-w-2xl mx-auto p-8 rounded-2xl text-center"><p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>User not found</p></div>
+      <div className="max-w-2xl mx-auto p-8 text-center">
+        <Text size="sm" c={isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-5)'}>User not found</Text>
+      </div>
     );
   }
 
@@ -163,122 +168,148 @@ const isOwnProfile = currentUserId === userId;
     if (onBack) { onBack(); } else { navigate('/?tab=community'); }
   }
 
+  const bannerBg = profileData.banner_url ? undefined : `linear-gradient(to right, ${primaryColor} 40%, ${secondaryColor} 40%, ${primaryColor} 20%)`;
+
   return (
     <div className="max-w-2xl mx-auto space-y-4">
-      <button onClick={handleBack} className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium bg-gradient-to-r from-cyanx/20 to-emera/20 text-cyanx hover:from-cyanx/30 hover:to-emera/30 transition-all">
-        <ArrowLeft className="w-5 h-5" /> Back
-      </button>
+      <Button
+        variant="light"
+        color="cyan"
+        leftSection={<IconArrowLeft size={20} />}
+        onClick={handleBack}
+        size="sm"
+      >
+        Back
+      </Button>
 
-      {/* Cover + Avatar */}
-      <div className={`rounded-2xl overflow-hidden ${isDark ? 'border border-edge' : 'border border-gray-200'}`}>
-        <div className={`h-28 sm:h-36 relative ${profileData.banner_url ? '' : 'bg-gradient-to-r from-cyanx/40 via-emera/40 to-cyanx/20'}`}>
+      <Paper withBorder p={0} radius="lg" style={{ overflow: 'hidden', borderColor: isDark ? 'var(--mantine-color-slate-7)' : 'var(--mantine-color-gray-3)' }}>
+        <Box style={{ height: isDark ? 112 : 112, position: 'relative', background: bannerBg, border: 'none' }}>
           {profileData.banner_url && (
-            <img src={profileData.banner_url} alt="" className="w-full h-full object-cover" />
+            <img src={profileData.banner_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           )}
-          <div className="absolute -bottom-12 left-4 sm:left-6">
-            <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border-4 ${isDark ? 'border-[#0b1120]' : 'border-white'} overflow-hidden ${profileData.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera flex items-center justify-center'}`}>
-              {profileData.avatar_url ? <img src={profileData.avatar_url} alt="" className="w-full h-full object-cover" /> : <span className="text-white font-display font-bold text-3xl">{(profileData.display_name?.[0] || '?').toUpperCase()}</span>}
-            </div>
-          </div>
-        </div>
+          <Box style={{ position: 'absolute', bottom: -48, left: 16 }}>
+            <Avatar
+              size={96}
+              radius="lg"
+              src={profileData.avatar_url || undefined}
+              styles={{
+                placeholder: { background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` },
+              }}
+              style={{ border: `4px solid ${isDark ? '#0b1120' : '#ffffff'}` }}
+            >
+              {profileData.avatar_url ? undefined : (
+                <Text fw={700} fz={28} c="var(--mantine-color-white)" style={{ fontFamily: 'inherit' }}>{(profileData.display_name?.[0] || '?').toUpperCase()}</Text>
+              )}
+            </Avatar>
+          </Box>
+        </Box>
 
-        <div className={`pt-14 sm:pt-16 pb-4 px-4 sm:px-6 ${isDark ? 'bg-surface/30' : 'bg-white'}`}>
-          <div className="flex items-start justify-between">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className={`text-lg font-bold truncate ${isDark ? 'text-frost' : 'text-gray-900'}`}>{profileData.display_name || 'Unknown'}</h1>
-                {profileData.username && <p className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>@{profileData.username}</p>}
-                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isOnline ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]' : 'bg-gray-500'}`} title={isOnline ? 'Online' : 'Offline'} />
-              </div>
-              {profileData.location && <p className={`flex items-center gap-1 text-xs mt-0.5 ${isDark ? 'text-muted' : 'text-gray-400'}`}><MapPin className="w-3 h-3" />{profileData.location}</p>}
-            </div>
+        <Box p="md" pt={64} style={{ background: isDark ? 'var(--mantine-color-slate-9)' : 'var(--mantine-color-white)' }}>
+          <div className="flex items-start justify-between gap-3">
+            <Box style={{ minWidth: 0 }}>
+              <Group gap="sm" align="center">
+                <Text fw={700} size="lg" c={isDark ? 'var(--mantine-color-slate-1)' : 'var(--mantine-color-gray-9)'} truncate>{profileData.display_name || 'Unknown'}</Text>
+                {profileData.username && <Text size="xs" c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}>@{profileData.username}</Text>}
+                <Box title={isOnline ? 'Online' : 'Offline'} style={{ width: 10, height: 10, borderRadius: '50%', flexShrink: 0, background: isOnline ? 'var(--mantine-color-emerald-4)' : 'var(--mantine-color-gray-5)', boxShadow: isOnline ? '0 0 6px rgba(52,211,153,0.5)' : undefined }} />
+              </Group>
+              {profileData.location && (
+                <Group gap={4} mt={2} align="center">
+                  <IconMapPin size={12} color={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'} />
+                  <Text size="xs" c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}>{profileData.location}</Text>
+                </Group>
+              )}
+            </Box>
             {!isOwnProfile && currentUserId && (
-              <div className="flex items-center gap-2 shrink-0">
-                <button onClick={handleMessage} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${isDark ? 'bg-cyanx/10 text-cyanx hover:bg-cyanx/20' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'}`}>
-                  <MessageCircle className="w-3.5 h-3.5" /> Message
-                </button>
+              <Group gap="sm" wrap="nowrap" style={{ flexShrink: 0 }}>
+                <Button size="xs" variant="light" color="cyan" leftSection={<IconMessageCircle size={14} />} onClick={handleMessage}>
+                  Message
+                </Button>
                 <FollowButton userId={userId!} currentUserId={currentUserId} isFollowing={isFollowing} isDark={isDark} onFollow={handleFollow} onUnfollow={handleUnfollow} />
-              </div>
+              </Group>
             )}
           </div>
 
-          <div className="flex items-center gap-5 mt-3 text-sm">
-            <span className={isDark ? 'text-muted' : 'text-gray-500'}><strong className={isDark ? 'text-frost' : 'text-gray-900'}>{postCount}</strong> {t('posts', lang)}</span>
-            <span className={isDark ? 'text-muted' : 'text-gray-500'}><strong className={isDark ? 'text-frost' : 'text-gray-900'}>{followerCount}</strong> {t('followers', lang)}</span>
-            <span className={isDark ? 'text-muted' : 'text-gray-500'}><strong className={isDark ? 'text-frost' : 'text-gray-900'}>{followingCount}</strong> {t('followedBy', lang)}</span>
-          </div>
+          <Group gap="lg" mt="md" align="center">
+            <Text size="sm" c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}><strong style={{ color: isDark ? 'var(--mantine-color-slate-1)' : 'var(--mantine-color-gray-9)' }}>{postCount}</strong> {t('posts', lang)}</Text>
+            <Text size="sm" c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}><strong style={{ color: isDark ? 'var(--mantine-color-slate-1)' : 'var(--mantine-color-gray-9)' }}>{followerCount}</strong> {t('followers', lang)}</Text>
+            <Text size="sm" c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}><strong style={{ color: isDark ? 'var(--mantine-color-slate-1)' : 'var(--mantine-color-gray-9)' }}>{followingCount}</strong> {t('followedBy', lang)}</Text>
+          </Group>
           {(profileData.bio || isOwnProfile) && (
-            <p className={`text-sm mt-3 ${isDark ? 'text-mist' : 'text-gray-600'}`}>
+            <Text size="sm" mt="md" c={isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-6)'}>
               {profileData.bio || (isOwnProfile ? settings.profile?.bio || '' : '')}
-            </p>
+            </Text>
           )}
           {(parseContacts(profileData.contacts).length > 0 || (isOwnProfile && (settings.profile?.contacts || []).length > 0)) && (
-            <div className="flex flex-wrap gap-2 mt-3">
+            <Group gap="xs" mt="md">
               {(parseContacts(profileData.contacts).length > 0 ? parseContacts(profileData.contacts) : settings.profile?.contacts || []).map((c, i) => (
-                <a key={i} href={c.platform === 'email' ? `mailto:${c.value}` : c.platform === 'phone' ? `tel:${c.value}` : undefined}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${isDark ? 'bg-cyanx/10 text-cyanx hover:bg-cyanx/20' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'}`}>
-                  {contactIcon(c.platform)}
-                  {c.value}
+                <a key={i} href={c.platform === 'email' ? `mailto:${c.value}` : c.platform === 'phone' ? `tel:${c.value}` : undefined}>
+                  <Button size="xs" variant="light" color="cyan" leftSection={contactIcon(c.platform)}>
+                    {c.value}
+                  </Button>
                 </a>
               ))}
-            </div>
+            </Group>
           )}
           {isOwnProfile && (
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-edge">
-              <div className="flex items-center gap-2">
-                <span className={`text-xs font-medium ${isDark ? 'text-muted' : 'text-gray-500'}`}>
-                  {settings.publicProducts ? 'Products visible to everyone' : 'Products hidden from others'}
-                </span>
-              </div>
-              <button onClick={() => {
-                updateSettings({ publicProducts: !settings.publicProducts });
-                supabase.from('profiles').update({ public_products: !settings.publicProducts }).eq('user_id', currentUserId).then(undefined, () => {});
-              }}
-                className={`w-10 h-6 rounded-full transition-colors relative shrink-0 ${settings.publicProducts ? 'bg-gradient-to-r from-cyan-500 to-emerald-500' : isDark ? 'bg-slate-600' : 'bg-gray-300'}`}>
-                <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform shadow ${settings.publicProducts ? 'translate-x-[1.125rem]' : 'translate-x-0.5'}`} />
-              </button>
+            <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: `1px solid ${isDark ? 'var(--mantine-color-slate-8)' : 'var(--mantine-color-gray-2)'}` }}>
+              <Text size="xs" fw={500} c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}>
+                {settings.publicProducts ? 'Products visible to everyone' : 'Products hidden from others'}
+              </Text>
+              <Switch
+                checked={settings.publicProducts}
+                onChange={(e) => {
+                  const next = e.currentTarget.checked;
+                  updateSettings({ publicProducts: next });
+                  supabase.from('profiles').update({ public_products: next }).eq('user_id', currentUserId).then(undefined, () => {});
+                }}
+              />
             </div>
           )}
-        </div>
-      </div>
+        </Box>
+      </Paper>
 
-      {/* Tabs */}
-      <div className={`flex rounded-xl ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
+      <div className="flex rounded-lg" style={{ background: isDark ? 'var(--mantine-color-slate-8)' : 'var(--mantine-color-gray-1)' }}>
         {(['posts', 'products'] as const).map(tab => (
-          <button key={tab} role="tab" aria-selected={activeTab === tab} onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all capitalize ${activeTab === tab ? isDark ? 'bg-surface text-frost shadow-sm' : 'bg-white text-gray-900 shadow-sm' : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'}`}>
+          <Button
+            key={tab}
+            role="tab"
+            aria-selected={activeTab === tab}
+            variant={activeTab === tab ? 'light' : 'subtle'}
+            color="cyan"
+            fullWidth
+            onClick={() => setActiveTab(tab)}
+            styles={{ root: { textTransform: 'capitalize' } }}
+          >
             {tab === 'posts' ? t('posts', lang) : t('products', lang)}
-          </button>
+          </Button>
         ))}
       </div>
 
-      {/* Posts */}
       {activeTab === 'posts' && (
-        <div className="space-y-3">
-          {userPosts.length === 0 ? <p className={`p-8 text-center text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>No posts yet</p> : (
+        <Stack gap="sm">
+          {userPosts.length === 0 ? <Text ta="center" size="sm" p="lg" c={isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-5)'}>No posts yet</Text> : (
             userPosts.map(post => <PostCard key={post.id} post={{ ...post, author: { username: profileData.username || profileData.display_name, display_name: profileData.display_name, avatar_url: profileData.avatar_url } }} isDark={isDark} lang={lang} currentUserId={currentUserId} username={profileData.display_name} onLike={handleLike} onUnlike={handleUnlike} onDelete={isOwnProfile ? handleDelete : undefined} onEdit={isOwnProfile ? handleEdit : undefined} />)
           )}
-        </div>
+        </Stack>
       )}
 
-      {/* Products - compact grid */}
       {activeTab === 'products' && (
         <div>
           {productError && !isOwnProfile && (
-            <p className={`mb-3 p-3 rounded-xl text-xs ${isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>
+            <Text size="xs" c={isDark ? 'var(--mantine-color-amber-4)' : 'var(--mantine-color-amber-6)'} mb="sm" p="sm" style={{ borderRadius: 'var(--mantine-radius-md)', background: isDark ? 'var(--mantine-color-amber-9)' : 'var(--mantine-color-amber-0)' }}>
               This user's products are not publicly visible
-            </p>
+            </Text>
           )}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {userProducts.length === 0 && !productError ? <p className={`col-span-full p-8 text-center text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>No products yet</p> : null}
-            {userProducts.length === 0 && productError ? <p className={`col-span-full p-8 text-center text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>Products not available</p> : null}
+            {userProducts.length === 0 && !productError ? <Text ta="center" size="sm" p="lg" c={isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-5)'} style={{ gridColumn: '1 / -1' }}>No products yet</Text> : null}
+            {userProducts.length === 0 && productError ? <Text ta="center" size="sm" p="lg" c={isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-5)'} style={{ gridColumn: '1 / -1' }}>Products not available</Text> : null}
             {userProducts.map((product: Product) => (
-              <div key={product.id} className={`p-3 rounded-xl ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`}>
-                {product.picture && <img src={product.picture} alt="" className="w-full h-20 rounded-lg object-cover mb-2" />}
-                <p className={`text-xs font-medium truncate ${isDark ? 'text-frost' : 'text-gray-800'}`}>{product.name}</p>
-                <div className={`text-[10px] ${isDark ? 'text-muted' : 'text-gray-400'}`}>{product.strain} · {product.thc}%</div>
-                <div className={`text-xs font-semibold mt-1 ${isDark ? 'text-emera' : 'text-emerald-600'}`}>${product.price}</div>
-              </div>
+              <Paper key={product.id} withBorder p="sm" radius="lg" bg={isDark ? 'var(--mantine-color-slate-9)' : 'var(--mantine-color-white)'}>
+                {product.picture && <img src={product.picture} alt="" style={{ width: '100%', height: 80, borderRadius: 'var(--mantine-radius-md)', objectFit: 'cover', marginBottom: 8 }} />}
+                <Text size="xs" fw={500} c={isDark ? 'var(--mantine-color-slate-1)' : 'var(--mantine-color-gray-8)'} truncate>{product.name}</Text>
+                <Text fz={10} c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}>{product.strain} · {product.thc}%</Text>
+                <Text size="xs" fw={600} mt={4} c={isDark ? 'var(--mantine-color-emerald-5)' : 'var(--mantine-color-emerald-6)'}>{product.price}</Text>
+              </Paper>
             ))}
           </div>
         </div>

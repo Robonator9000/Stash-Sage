@@ -4,6 +4,7 @@ import { CalendarHeatmap } from './CalendarHeatmap';
 import { Product, Session, Settings } from '../types';
 import { t } from '../utils/translations';
 import { formatPrecision, formatCurrency } from '../utils/helpers';
+import { Paper, SimpleGrid, Text, Group, Box, Stack } from '@mantine/core';
 
 const DASHBOARD_COLORS = ['#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
 
@@ -22,15 +23,13 @@ interface DashboardTabProps {
 
 export function DashboardTab({ products, sessions, isDark, lang, settings, typeDistribution, consumptionByMonth, topStrains, spendingByType, totalValue }: DashboardTabProps) {
   return (
-    <div>
-      <div className="mb-6">
-        <StatsCard products={products} sessions={sessions} isDark={isDark} />
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-        <div className={`rounded-2xl p-5 border ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
-          <h3 className={`text-sm font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+    <Stack gap="md">
+      <StatsCard products={products} sessions={sessions} isDark={isDark} />
+      <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="md">
+        <Paper p="lg" radius="md" withBorder style={{ background: isDark ? 'rgba(10, 17, 32, 0.8)' : '#fff' }}>
+          <Text size="sm" fw={600} mb="sm" style={{ color: isDark ? 'var(--mantine-color-white)' : 'var(--mantine-color-gray-9)' }}>
             {t('stockOverview', lang)}
-          </h3>
+          </Text>
           {typeDistribution.length > 0 ? (
             <ResponsiveContainer width="100%" height={260}>
               <PieChart>
@@ -44,21 +43,21 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className={`text-center py-12 ${isDark ? 'text-muted' : 'text-gray-400'}`}>{t('noProductsYet', lang)}</div>
+            <Text ta="center" py="xl" c="dimmed">{t('noProductsYet', lang)}</Text>
           )}
-          <div className="flex flex-wrap gap-3 mt-4">
+          <Group gap="sm" mt="md" wrap="wrap">
             {typeDistribution.map((item, idx) => (
-              <div key={item.name} className="flex items-center gap-1.5 text-xs">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: DASHBOARD_COLORS[idx % DASHBOARD_COLORS.length] }} />
-                <span className={isDark ? 'text-muted' : 'text-gray-500'}>{item.name}</span>
-              </div>
+              <Group key={item.name} gap={6} align="center">
+                <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: DASHBOARD_COLORS[idx % DASHBOARD_COLORS.length] }} />
+                <Text size="xs" c="dimmed">{item.name}</Text>
+              </Group>
             ))}
-          </div>
-        </div>
-        <div className={`rounded-2xl p-5 border ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
-          <h3 className={`text-sm font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          </Group>
+        </Paper>
+        <Paper p="lg" radius="md" withBorder style={{ background: isDark ? 'var(--mantine-color-dark-6)' : '#fff' }}>
+          <Text size="sm" fw={600} mb="sm" style={{ color: isDark ? 'var(--mantine-color-white)' : 'var(--mantine-color-gray-9)' }}>
             {t('consumptionTrend', lang)}
-          </h3>
+          </Text>
           {consumptionByMonth.length > 0 ? (
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={consumptionByMonth}>
@@ -71,13 +70,13 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className={`text-center py-12 ${isDark ? 'text-muted' : 'text-gray-400'}`}>{t('noSessions', lang)}</div>
+            <Text ta="center" py="xl" c="dimmed">{t('noSessions', lang)}</Text>
           )}
-        </div>
-        <div className={`rounded-2xl p-5 border ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
-          <h3 className={`text-sm font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+        </Paper>
+        <Paper p="lg" radius="md" withBorder style={{ background: isDark ? 'var(--mantine-color-dark-6)' : '#fff' }}>
+          <Text size="sm" fw={600} mb="sm" style={{ color: isDark ? 'var(--mantine-color-white)' : 'var(--mantine-color-gray-9)' }}>
             {t('topStrains', lang)}
-          </h3>
+          </Text>
           {topStrains.length > 0 ? (
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={topStrains} layout="vertical" margin={{ left: 80 }}>
@@ -90,13 +89,13 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className={`text-center py-12 ${isDark ? 'text-muted' : 'text-gray-400'}`}>{t('noProductsYet', lang)}</div>
+            <Text ta="center" py="xl" c="dimmed">{t('noProductsYet', lang)}</Text>
           )}
-        </div>
-        <div className={`rounded-2xl p-5 border ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
-          <h3 className={`text-sm font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+        </Paper>
+        <Paper p="lg" radius="md" withBorder style={{ background: isDark ? 'var(--mantine-color-dark-6)' : '#fff' }}>
+          <Text size="sm" fw={600} mb="sm" style={{ color: isDark ? 'var(--mantine-color-white)' : 'var(--mantine-color-gray-9)' }}>
             {t('totalSpent', lang)}
-          </h3>
+          </Text>
           {spendingByType.length > 0 ? (
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={spendingByType}>
@@ -109,25 +108,25 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className={`text-center py-12 ${isDark ? 'text-muted' : 'text-gray-400'}`}>{t('noProductsYet', lang)}</div>
+            <Text ta="center" py="xl" c="dimmed">{t('noProductsYet', lang)}</Text>
           )}
-        </div>
-      </div>
-      <div className="mb-6">
-        <CalendarHeatmap sessions={sessions} isDark={isDark} lang={lang} />
-      </div>
+        </Paper>
+      </SimpleGrid>
+      <CalendarHeatmap sessions={sessions} isDark={isDark} lang={lang} />
       {settings.budgetLimit > 0 && (
-        <div className={`rounded-2xl p-5 border mb-6 ${isDark ? 'bg-midnight/80 border border-edge' : 'bg-white border-gray-200'}`}>
-          <div className="flex items-center justify-between mb-2">
-            <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+        <Paper p="lg" radius="md" withBorder mb="md" style={{ background: isDark ? 'var(--mantine-color-dark-6)' : '#fff' }}>
+          <Group justify="space-between" mb="sm">
+            <Text size="sm" fw={600} style={{ color: isDark ? 'var(--mantine-color-white)' : 'var(--mantine-color-gray-9)' }}>
               {t('budgetLimit', lang)} ({settings.budgetPeriod})
-            </span>
-            <span className={`text-sm ${isDark ? 'text-muted' : 'text-gray-500'}`}>
+            </Text>
+            <Text size="sm" c="dimmed">
               {formatCurrency(totalValue, settings.currency)} / {formatCurrency(settings.budgetLimit, settings.currency)}
-            </span>
-          </div>
-          <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: isDark ? '#1e293b' : '#e5e7eb' }}>
-            <div className="h-full rounded-full transition-all duration-500" style={{
+            </Text>
+          </Group>
+          <Box style={{ width: '100%', height: 8, borderRadius: '9999px', overflow: 'hidden', backgroundColor: isDark ? '#1e293b' : '#e5e7eb' }}>
+            <Box style={{
+              height: '100%',
+              borderRadius: '9999px',
               width: `${Math.min(100, (totalValue / settings.budgetLimit) * 100)}%`,
               background: totalValue > settings.budgetLimit
                 ? 'linear-gradient(90deg, #ef4444, #dc2626)'
@@ -135,9 +134,9 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
                   ? 'linear-gradient(90deg, #f59e0b, #d97706)'
                   : 'linear-gradient(90deg, #10b981, #059669)',
             }} />
-          </div>
-        </div>
+          </Box>
+        </Paper>
       )}
-    </div>
+    </Stack>
   );
 }

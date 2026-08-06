@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { Box, Paper, Text, ActionIcon, Group, Stack } from '@mantine/core';
+import { IconX } from '@tabler/icons-react';
 
 interface MobileSheetProps {
   isOpen: boolean;
@@ -23,39 +24,61 @@ export function MobileSheet({ isOpen, onClose, title, isDark, children }: Mobile
   if (!visible && !isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end" onClick={onClose}>
-      <div
-        className={`absolute inset-0 transition-opacity duration-200 ${
-          visible ? 'bg-black/50' : 'bg-transparent'
-        }`}
+    <Box
+      style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end' }}
+      onClick={onClose}
+    >
+      <Box
+        style={{
+          position: 'absolute',
+          inset: 0,
+          transition: 'opacity 0.2s',
+          background: visible ? 'rgba(0,0,0,0.5)' : 'transparent',
+        }}
         onClick={onClose}
       />
-      <div
-        className={`relative w-full max-h-[90vh] rounded-t-2xl shadow-2xl transition-transform duration-200 ${
-          isDark ? 'bg-slate-900 border-t border-slate-800' : 'bg-white border-t border-gray-200'
-        } ${visible ? 'translate-y-0' : 'translate-y-full'}`}
+      <Paper
+        radius="0"
+        style={{
+          borderTopLeftRadius: 16,
+          borderTopRightRadius: 16,
+          position: 'relative',
+          width: '100%',
+          maxHeight: '90vh',
+          boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+          transition: 'transform 0.2s',
+          transform: visible ? 'translateY(0)' : 'translateY(100%)',
+          background: isDark ? 'var(--mantine-color-dark-8)' : '#fff',
+          borderTop: `1px solid ${isDark ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-2)'}`,
+        }}
         role="dialog"
         aria-modal="true"
       >
-        <div className="flex flex-col h-full max-h-[90vh]">
-          <div className="flex items-center justify-between px-4 py-3 border-b shrink-0">
-            <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+        <Stack gap={0} style={{ height: '100%', maxHeight: '90vh' }}>
+          <Group
+            justify="space-between"
+            px="md"
+            py="sm"
+            style={{ borderBottom: `1px solid ${isDark ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-2)'}` }}
+          >
+            <Text fw={600} size="lg" style={{ color: isDark ? 'var(--mantine-color-white)' : 'var(--mantine-color-gray-9)' }}>
               {title}
-            </h2>
-            <button
+            </Text>
+            <ActionIcon
+              variant="subtle"
+              color={isDark ? 'gray' : 'dark'}
               onClick={onClose}
-              className={`p-2 rounded-xl transition-colors ${
-                isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'
-              }`}
+              radius="xl"
+              aria-label="Close"
             >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4">
+              <IconX size={20} />
+            </ActionIcon>
+          </Group>
+          <Box p="md" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
             {children}
-          </div>
-        </div>
-      </div>
-    </div>
+          </Box>
+        </Stack>
+      </Paper>
+    </Box>
   );
 }

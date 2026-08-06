@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { LogoIcon } from './LogoIcon';
+import { Box, Stack, Text, Button } from '@mantine/core';
+import { IconCheck } from '@tabler/icons-react';
 
 interface WelcomeModalProps {
   onComplete: (language: 'en' | 'es' | 'fr' | 'de' | 'pt') => void;
@@ -34,76 +36,128 @@ const NATIVE_NAMES: Record<string, string> = {
 export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalProps) {
   const [selected, setSelected] = useState<'en' | 'es' | 'fr' | 'de' | 'pt'>('en');
 
+  const surfaceBg = isDark ? 'var(--mantine-color-slate-8)' : 'var(--mantine-color-white)';
+  const borderColor = isDark ? 'var(--mantine-color-slate-7)' : 'var(--mantine-color-gray-3)';
+  const primaryColor = 'var(--mantine-color-cyan-6)';
+  const secondaryColor = 'var(--mantine-color-emerald-5)';
+
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-gradient-to-br from-cyanx/10 via-transparent to-emera/10 pointer-events-none" />
-      <div
-        className={`relative w-full max-w-lg rounded-2xl p-6 shadow-2xl transition-all ${
-          isDark
-            ? 'bg-midnight/80 border border-edge'
-            : 'bg-white border border-gray-200'
-        }`}
+    <Box style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <Box
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: `linear-gradient(135deg, ${primaryColor} 10%, transparent 50%, ${secondaryColor} 90%)`,
+          opacity: 0.1,
+          pointerEvents: 'none',
+        }}
+      />
+
+      <Box
+        style={{
+          position: 'relative',
+          width: '100%',
+          maxWidth: 512,
+          borderRadius: 'var(--mantine-radius-lg)',
+          padding: 24,
+          background: surfaceBg,
+          border: `1px solid ${borderColor}`,
+          boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+        }}
       >
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <div className={`w-20 h-20 rounded-2xl flex items-center justify-center bg-gradient-to-br from-cyanx/20 to-emera/20 ${isDark ? 'border border-edge' : 'border border-gray-200'}`}>
-              <LogoIcon className="w-12 h-12" />
-            </div>
-          </div>
-          <h1 className="text-3xl font-display font-extrabold bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent mb-2 -tracking-2">
-            STASH TRACKER
-          </h1>
-          <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
-            Keep track of your collection, log your sessions, and connect with the community
-          </p>
-        </div>
-
-        <div className="grid gap-3 mb-8">
-          {LANGUAGES.map((lang) => (
-            <button
-              key={lang.code}
-              onClick={() => setSelected(lang.code)}
-              className={`flex items-center gap-4 w-full p-4 rounded-2xl transition-all border-2 ${
-                selected === lang.code
-                  ? isDark
-                    ? 'bg-cyanx/10 border-cyanx text-cyanx'
-                    : 'bg-cyan-50 border-cyan-500 text-cyan-700'
-                  : isDark
-                    ? 'bg-surface border-transparent text-frost hover:bg-surface-light hover:border-edge'
-                    : 'bg-gray-50 border-transparent text-gray-700 hover:bg-gray-100 hover:border-gray-200'
-              }`}
+        <Stack align="center" gap="xl" mb="lg">
+          <Box style={{ position: 'relative', width: 80, height: 80, borderRadius: 'var(--mantine-radius-md)', border: `1px solid ${borderColor}` }}>
+            <Box style={{ position: 'absolute', inset: 0, borderRadius: 'calc(var(--mantine-radius-md) - 1px)', background: `linear-gradient(135deg, ${primaryColor} 20%, ${secondaryColor} 20%)`, opacity: 0.2 }} />
+            <Box style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Box style={{ width: 48, height: 48 }}>
+                <LogoIcon className="w-12 h-12" />
+              </Box>
+            </Box>
+          </Box>
+          <Stack align="center" gap={6}>
+            <Text
+              fw={800}
+              style={{ fontFamily: 'inherit', fontSize: 30, letterSpacing: '-0.025em', background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}
             >
-              <span className="text-3xl">{lang.flag}</span>
-              <div className="text-left">
-                <div className="font-semibold">{NATIVE_NAMES[lang.code]}</div>
-                <div className={`text-xs mt-0.5 ${isDark ? 'text-haze' : 'text-gray-400'}`}>
-                  {LANGUAGE_NAMES[browserLang]?.[lang.code] || LANGUAGE_NAMES.en[lang.code]}
-                </div>
-              </div>
-              {selected === lang.code && (
-                <div className={`ml-auto w-6 h-6 rounded-full flex items-center justify-center ${
-                  isDark ? 'bg-cyanx text-white' : 'bg-cyan-500 text-white'
-                }`}>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-              )}
-            </button>
-          ))}
-        </div>
+              STASH TRACKER
+            </Text>
+            <Text size="sm" c={isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-6)'} ta="center">
+              Keep track of your collection, log your sessions, and connect with the community
+            </Text>
+          </Stack>
+        </Stack>
 
-        <button
+        <Stack gap="md" mb="lg">
+          {LANGUAGES.map((lang) => {
+            const isSelected = selected === lang.code;
+            const borderClr = isSelected
+              ? isDark ? 'var(--mantine-color-cyan-6)' : 'var(--mantine-color-cyan-5)'
+              : isDark ? 'transparent' : 'transparent';
+            const bgClr = isSelected
+              ? isDark ? 'var(--mantine-color-cyan-9)' : 'var(--mantine-color-cyan-0)'
+              : isDark ? 'var(--mantine-color-slate-9)' : 'var(--mantine-color-gray-0)';
+            const textColor = isSelected
+              ? isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-8)'
+              : isDark ? 'var(--mantine-color-slate-2)' : 'var(--mantine-color-gray-8)';
+            return (
+              <Box
+                key={lang.code}
+                onClick={() => setSelected(lang.code)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 16,
+                  width: '100%',
+                  padding: 16,
+                  borderRadius: 'var(--mantine-radius-md)',
+                  cursor: 'pointer',
+                  background: bgClr,
+                  border: `2px solid ${borderClr}`,
+                  transition: 'background 0.2s, border 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSelected) e.currentTarget.style.background = isDark ? 'var(--mantine-color-slate-8)' : 'var(--mantine-color-gray-1)';
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSelected) e.currentTarget.style.background = isDark ? 'var(--mantine-color-slate-9)' : 'var(--mantine-color-gray-0)';
+                }}
+              >
+                <Text style={{ fontSize: 30 }}>{lang.flag}</Text>
+                <Box>
+                  <Text fw={600} size="sm" c={textColor}>{NATIVE_NAMES[lang.code]}</Text>
+                  <Text size="xs" c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'} mt={2}>
+                    {LANGUAGE_NAMES[browserLang]?.[lang.code] || LANGUAGE_NAMES.en[lang.code]}
+                  </Text>
+                </Box>
+                {isSelected && (
+                  <Box ml="auto" style={{ width: 24, height: 24, borderRadius: '50%', background: isDark ? 'var(--mantine-color-cyan-6)' : 'var(--mantine-color-cyan-5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <IconCheck size={14} color="var(--mantine-color-white)" />
+                  </Box>
+                )}
+              </Box>
+            );
+          })}
+        </Stack>
+
+        <Button
+          fullWidth
+          size="lg"
+          radius="md"
           onClick={() => onComplete(selected)}
-          className="w-full py-4 rounded-2xl font-bold text-lg transition-all active:scale-[0.97] bg-gradient-to-r from-cyanx to-emera text-white hover:from-cyanx-dark hover:to-emera-dark shadow-lg shadow-cyanx/20"
+          styles={{
+            root: {
+              background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`,
+              '&:active': { transform: 'scale(0.97)' },
+            },
+          }}
         >
           Get Started
-        </button>
+        </Button>
 
-        <p className={`text-center text-xs mt-4 ${isDark ? 'text-haze' : 'text-gray-400'}`}>
+        <Text ta="center" size="xs" mt="md" c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}>
           You can change language anytime in Settings &middot; No account required
-        </p>
-      </div>
-    </div>
+        </Text>
+      </Box>
+    </Box>
   );
 }

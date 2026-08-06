@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { t } from '../utils/translations';
 import { hashPin } from '../utils/helpers';
-import { Lock } from 'lucide-react';
+import { Modal, Stack, Text, TextInput, Button, Box } from '@mantine/core';
+import { IconLock } from '@tabler/icons-react';
 
 interface PinModalProps {
   pinHash: string;
@@ -43,62 +44,78 @@ export function PinModal({ pinHash, onSuccess, isDark = true, language }: PinMod
   };
 
   return (
-    <div className={`fixed inset-0 flex items-center justify-center z-[200] p-4 transition-all duration-200 ${
-      isVisible ? 'bg-black/10 backdrop-blur-[2px]' : 'bg-black/0'
-    }`}>
-      <div className={`w-full max-w-sm rounded-2xl border-2 shadow-2xl p-6 transition-all duration-200 ${
-        isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
-      } ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-        <div className="text-center mb-6">
-          <div className={`w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center ${
-            isDark ? 'bg-cyan-500/20' : 'bg-cyan-100'
-          }`}>
-            <Lock className={`w-8 h-8 ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`} />
-          </div>
-          <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            {t('pinPrompt', language)}
-          </h2>
-        </div>
-
-        <input
-          ref={inputRef}
-          type="password"
-          inputMode="numeric"
-          maxLength={6}
-          value={pinValue}
-          onChange={(e) => {
-            setPinValue(e.target.value.replace(/\D/g, '').slice(0, 6));
-            setError('');
+    <Modal
+      opened={isVisible}
+      onClose={() => {}}
+      size="sm"
+      centered
+      radius="lg"
+      closeOnEscape={false}
+      closeOnClickOutside={false}
+      withCloseButton={false}
+    >
+      <Stack align="center" gap="sm" mt="md">
+        <Box
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: 'var(--mantine-radius-md)',
+            background: isDark ? 'var(--mantine-color-cyan-9)' : 'var(--mantine-color-cyan-0)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); }}
-          placeholder="• • • • • •"
-          aria-label={t('enterPin', language)}
-          className={`w-full px-4 py-4 rounded-xl border-2 text-center text-2xl tracking-[0.5em] font-mono outline-none mb-4 ${
-            isDark
-              ? 'bg-slate-800 border-slate-700 text-white focus:border-cyan-500 placeholder-slate-600'
-              : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-cyan-500 placeholder-gray-400'
-          }`}
-        />
-
-        {error && (
-          <p className={`text-sm font-medium text-center mb-4 ${isDark ? 'text-red-400' : 'text-red-600'}`}>
-            {error}
-          </p>
-        )}
-
-        <button
-          onClick={handleSubmit}
-          disabled={pinValue.length < 4 || isVerifying}
-          aria-label={t('unlock', language)}
-          className={`w-full py-3 rounded-xl font-bold transition-all ${
-            pinValue.length >= 4 && !isVerifying
-              ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white hover:from-cyan-400 hover:to-emerald-400'
-              : isDark ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-          }`}
         >
-          {isVerifying ? '...' : t('unlock', language)}
-        </button>
-      </div>
-    </div>
+          <IconLock size={32} color={isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)'} />
+        </Box>
+        <Text fw={700} size="xl" c={isDark ? 'var(--mantine-color-white)' : 'var(--mantine-color-gray-9)'}>
+          {t('pinPrompt', language)}
+        </Text>
+      </Stack>
+
+      <TextInput
+        ref={inputRef}
+        type="password"
+        inputMode="numeric"
+        maxLength={6}
+        value={pinValue}
+        onChange={(e) => {
+          setPinValue(e.currentTarget.value.replace(/\D/g, '').slice(0, 6));
+          setError('');
+        }}
+        onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); }}
+        placeholder="\u2022 \u2022 \u2022 \u2022 \u2022 \u2022"
+        aria-label={t('enterPin', language)}
+        mt="md"
+        styles={{ input: { textAlign: 'center', fontSize: 24, fontFamily: 'ui-monospace, monospace', letterSpacing: '0.5em' } }}
+      />
+
+      {error && (
+        <Text size="sm" fw={500} ta="center" mt="md" c={isDark ? 'var(--mantine-color-red-4)' : 'var(--mantine-color-red-6)'}>
+          {error}
+        </Text>
+      )}
+
+      <Button
+        onClick={handleSubmit}
+        disabled={pinValue.length < 4 || isVerifying}
+        aria-label={t('unlock', language)}
+        fullWidth
+        mt="md"
+        mb="sm"
+        loading={isVerifying}
+        styles={{
+          root: {
+            background: pinValue.length >= 4 && !isVerifying
+              ? 'linear-gradient(to right, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))'
+              : isDark ? 'var(--mantine-color-slate-7)' : 'var(--mantine-color-gray-2)',
+            color: pinValue.length >= 4 && !isVerifying ? 'var(--mantine-color-white)' : isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-4)',
+            cursor: pinValue.length >= 4 && !isVerifying ? 'pointer' : 'not-allowed',
+          },
+        }}
+      >
+        {isVerifying ? '...' : t('unlock', language)}
+      </Button>
+    </Modal>
   );
 }

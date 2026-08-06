@@ -3,7 +3,8 @@ import { useChat } from '../hooks/useChat';
 import { ChatBubble } from './ChatBubble';
 import { t } from '../utils/translations';
 import { uploadMessageImage } from '../utils/supabase';
-import { ArrowLeft, Send, Image, X, Ban } from 'lucide-react';
+import { Group, Text, ActionIcon, Avatar, Loader, TextInput, Button, Box, ScrollArea } from '@mantine/core';
+import { IconArrowLeft, IconSend, IconPhoto, IconX, IconBan } from '@tabler/icons-react';
 import type { Conversation } from '../types';
 
 interface ChatThreadProps {
@@ -65,146 +66,167 @@ export const ChatThread = memo(function ChatThread({ conversation, currentUserId
 
   const listingTitle = conversation.listing?.title || 'listing';
 
-  return (
-    <div className="flex flex-col min-h-0 flex-1">
-      {/* Header */}
-      <div className={`flex items-center gap-3 p-3 border-b ${isDark ? 'border-edge bg-surface/50' : 'border-gray-200 bg-gray-50'}`}>
-        <button onClick={onBack} className={`p-1 rounded-lg ${isDark ? 'hover:bg-midnight text-frost' : 'hover:bg-gray-200 text-gray-600'}`}>
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          {conversation.other_user?.avatar_url ? (
-            <img src={conversation.other_user.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyanx to-emera flex items-center justify-center">
-              <span className="text-white text-xs font-bold">{(conversation.other_user?.username?.[0] || '?').toUpperCase()}</span>
-            </div>
-          )}
-          <div className="min-w-0 flex-1">
-            <p className={`text-sm font-display font-bold truncate ${isDark ? 'text-frost' : 'text-gray-800'}`}>
-              {conversation.other_user?.username}
-            </p>
-            <p className={`text-xs truncate ${isDark ? 'text-muted' : 'text-gray-400'}`}>
-              {blockedByOther ? 'Blocked you' : iBlockedOther ? 'Blocked' : t('conversationAbout', lang).replace('{title}', listingTitle)}
-            </p>
-          </div>
-          {!showBlockConfirm ? (
-            <button
-              onClick={() => setShowBlockConfirm(true)}
-              className={`p-1.5 rounded-lg ${isDark ? 'text-muted hover:text-red-400 hover:bg-midnight' : 'text-gray-400 hover:text-red-500 hover:bg-gray-200'}`}
-              title={iBlockedOther ? 'Unblock' : 'Block'}
-            >
-              <Ban className="w-4 h-4" />
-            </button>
-          ) : (
-            <div className="flex items-center gap-1.5">
-              <button onClick={() => { setShowBlockConfirm(false); if (iBlockedOther) unblockUser(); else blockUser(); }} className={`px-2 py-1 rounded-lg text-xs font-medium ${isDark ? 'text-red-400 hover:bg-red-900/20' : 'text-red-600 hover:bg-red-50'}`}>
-                {iBlockedOther ? 'Unblock' : 'Block'}
-              </button>
-              <button onClick={() => setShowBlockConfirm(false)} className={`px-2 py-1 rounded-lg text-xs font-medium ${isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}`}>Cancel</button>
-            </div>
-          )}
-        </div>
-      </div>
+  const headerFg = isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)';
+  const muted = isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-6)';
+  const surfaceBg = isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)';
+  const borderColor = isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)';
+  const inputBg = isDark ? 'var(--mantine-color-dark-7)' : '#fff';
+  const canSend = !!(input.trim() || imageFile) && !sending && !uploading;
 
-      {/* Typing indicator */}
+  return (
+    <Box style={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1 }}>
+      <Group p="sm" gap="sm" align="center" wrap="nowrap" style={{
+        borderBottom: `1px solid ${borderColor}`,
+        background: surfaceBg,
+      }}>
+        <ActionIcon variant="subtle" onClick={onBack} color="gray" aria-label="Back">
+          <IconArrowLeft size={20} />
+        </ActionIcon>
+        <Group gap="sm" align="center" wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
+          {conversation.other_user?.avatar_url ? (
+            <Avatar src={conversation.other_user.avatar_url} radius="xl" size={32} />
+          ) : (
+            <Avatar radius="xl" size={32} color="cyan" style={{ background: 'linear-gradient(135deg, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))' }}>
+              {(conversation.other_user?.username?.[0] || '?').toUpperCase()}
+            </Avatar>
+          )}
+          <Box style={{ flex: 1, minWidth: 0 }}>
+            <Text size="sm" fw={700} truncate style={{ color: headerFg }}>
+              {conversation.other_user?.username}
+            </Text>
+            <Text size="xs" truncate style={{ color: muted }}>
+              {blockedByOther ? 'Blocked you' : iBlockedOther ? 'Blocked' : t('conversationAbout', lang).replace('{title}', listingTitle)}
+            </Text>
+          </Box>
+          {!showBlockConfirm ? (
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              onClick={() => setShowBlockConfirm(true)}
+              title={iBlockedOther ? 'Unblock' : 'Block'}
+              aria-label={iBlockedOther ? 'Unblock' : 'Block'}
+            >
+              <IconBan size={16} />
+            </ActionIcon>
+          ) : (
+            <Group gap={4} wrap="nowrap">
+              <Button size="xs" variant="subtle" color="red" onClick={() => { setShowBlockConfirm(false); if (iBlockedOther) unblockUser(); else blockUser(); }}>
+                {iBlockedOther ? 'Unblock' : 'Block'}
+              </Button>
+              <Button size="xs" variant="subtle" color="gray" onClick={() => setShowBlockConfirm(false)}>Cancel</Button>
+            </Group>
+          )}
+        </Group>
+      </Group>
+
       {otherUserTyping && (
-        <div className={`px-4 py-1.5 text-xs italic ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+        <Box px="md" py={6} style={{ fontSize: 12, fontStyle: 'italic', color: muted }}>
           {conversation.other_user?.username} is typing...
-        </div>
+        </Box>
       )}
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-1">
+      <ScrollArea style={{ flex: 1, minHeight: 0 }} px="md" py="md">
         {loading ? (
-          <div className="flex items-center justify-center h-full">
-            <div className={`w-6 h-6 border-2 rounded-full animate-spin ${isDark ? 'border-cyan-400 border-t-transparent' : 'border-cyan-500 border-t-transparent'}`} />
-          </div>
+          <Group justify="center" h="100%">
+            <Loader size="md" color="cyan" />
+          </Group>
         ) : messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full gap-2">
-            <p className={`text-sm ${isDark ? 'text-muted' : 'text-gray-400'}`}>{t('noMessages', lang)}</p>
-          </div>
+          <Group justify="center" align="center" h="100%" gap="xs">
+            <Text size="sm" c="dimmed">{t('noMessages', lang)}</Text>
+          </Group>
         ) : (
-          messages.map((msg) => (
-            <ChatBubble
-              key={msg.id}
-              message={msg}
-              isDark={isDark}
-              isOwn={msg.user_id === currentUserId}
-              onEdit={msg.user_id === currentUserId ? editMessage : undefined}
-              onDelete={msg.user_id === currentUserId ? deleteMessage : undefined}
-              onReply={() => setReplyingTo({ id: msg.id, content: msg.content.substring(0, 60) })}
-            />
-          ))
+          <Box style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {messages.map((msg) => (
+              <ChatBubble
+                key={msg.id}
+                message={msg}
+                isDark={isDark}
+                isOwn={msg.user_id === currentUserId}
+                onEdit={msg.user_id === currentUserId ? editMessage : undefined}
+                onDelete={msg.user_id === currentUserId ? deleteMessage : undefined}
+                onReply={() => setReplyingTo({ id: msg.id, content: msg.content.substring(0, 60) })}
+              />
+            ))}
+          </Box>
         )}
         <div ref={bottomRef} />
-      </div>
+      </ScrollArea>
 
-      {/* Reply preview */}
       {replyingTo && (
-        <div className={`flex items-center gap-2 px-3 py-1.5 border-t ${isDark ? 'border-edge bg-surface/30' : 'border-gray-200 bg-gray-50'}`}>
-          <div className={`flex-1 text-xs truncate ${isDark ? 'text-muted' : 'text-gray-400'}`}>
-            Replying to: <span className={isDark ? 'text-frost' : 'text-gray-600'}>{replyingTo.content}</span>
-          </div>
-          <button onClick={() => setReplyingTo(null)} className={`p-0.5 rounded ${isDark ? 'hover:bg-midnight text-muted' : 'hover:bg-gray-200 text-gray-400'}`}><X className="w-3 h-3" /></button>
-        </div>
+        <Group px="md" py="sm" gap="sm" align="center" wrap="nowrap" style={{
+          borderTop: `1px solid ${borderColor}`,
+          background: isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)',
+        }}>
+          <Text size="xs" truncate style={{ flex: 1, color: muted }}>
+            Replying to: <span style={{ color: headerFg }}>{replyingTo.content}</span>
+          </Text>
+          <ActionIcon variant="subtle" size="sm" color="gray" onClick={() => setReplyingTo(null)} aria-label="Cancel reply"><IconX size={14} /></ActionIcon>
+        </Group>
       )}
 
-      {/* Image preview */}
       {imagePreview && (
-        <div className={`px-3 py-2 border-t ${isDark ? 'border-edge bg-surface/50' : 'border-gray-200 bg-gray-50'}`}>
-          <div className="relative inline-block">
-            <img src={imagePreview} alt="" className="h-20 rounded-lg object-cover" />
-            <button onClick={() => { setImageFile(null); setImagePreview(null); }} className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center">
-              <X className="w-3 h-3" />
-            </button>
-          </div>
-        </div>
+        <Box px="md" py="sm" style={{
+          borderTop: `1px solid ${borderColor}`,
+          background: isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)',
+        }}>
+          <Box style={{ position: 'relative', display: 'inline-block' }}>
+            <img src={imagePreview} alt="" style={{ height: 80, borderRadius: 8, objectFit: 'cover' }} />
+            <ActionIcon
+              onClick={() => { setImageFile(null); setImagePreview(null); }}
+              aria-label="Remove image"
+              color="red"
+              variant="filled"
+              size={20}
+              style={{ position: 'absolute', top: -6, right: -6, borderRadius: '50%' }}
+            >
+              <IconX size={12} />
+            </ActionIcon>
+          </Box>
+        </Box>
       )}
 
-      {/* Input */}
-      <div className={`p-3 border-t ${isDark ? 'border-edge bg-surface/50' : 'border-gray-200 bg-gray-50'}`}>
+      <Group p="sm" gap="sm" align="center" wrap="nowrap" style={{
+        borderTop: `1px solid ${borderColor}`,
+        background: isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)',
+      }}>
         {blockedByOther || iBlockedOther ? (
-          <p className={`text-center text-xs py-2 ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+          <Text size="xs" ta="center" py="sm" style={{ color: muted, width: '100%' }}>
             {blockedByOther ? conversation.other_user?.username + ' has blocked you' : 'You blocked ' + conversation.other_user?.username}
-          </p>
+          </Text>
         ) : (
           <form
             onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-            className="flex items-center gap-2"
+            style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}
           >
-            <button
-              type="button"
+            <ActionIcon
+              variant="subtle"
+              color="gray"
               onClick={() => fileInputRef.current?.click()}
-              className={`p-2.5 rounded-xl transition-all ${isDark ? 'text-muted hover:text-frost hover:bg-midnight' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200'}`}
+              aria-label="Attach image"
             >
-              <Image className="w-5 h-5" />
-            </button>
-            <input ref={fileInputRef} type="file" accept="image/webp,image/jpeg,image/png" className="hidden" onChange={handleImageSelect} />
-            <input
+              <IconPhoto size={20} />
+            </ActionIcon>
+            <input ref={fileInputRef} type="file" accept="image/webp,image/jpeg,image/png" style={{ display: 'none' }} tabIndex={-1} onChange={handleImageSelect} />
+            <TextInput
               ref={inputRef}
-              type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={t('typeMessage', lang)}
-              className={`flex-1 px-4 py-2.5 rounded-xl text-sm outline-none transition-colors ${
-                isDark ? 'bg-midnight text-frost placeholder:text-muted border border-edge focus:border-cyan-500/50' : 'bg-white text-gray-800 placeholder:text-gray-400 border border-gray-200 focus:border-cyan-400'
-              }`}
+              style={{ flex: 1 }}
+              styles={{ input: { background: inputBg, color: headerFg, border: `1px solid ${borderColor}` } }}
             />
-            <button
+            <Button
               type="submit"
-              disabled={(!input.trim() && !imageFile) || sending || uploading}
-              className={`p-2.5 rounded-xl transition-all ${
-                (input.trim() || imageFile) && !sending && !uploading
-                  ? 'bg-gradient-to-r from-cyanx to-emera text-white shadow-lg shadow-cyan-500/20'
-                  : isDark ? 'bg-midnight text-muted' : 'bg-gray-100 text-gray-400'
-              }`}
+              disabled={!canSend}
+              style={{ padding: 8, borderRadius: 'var(--mantine-radius-md)', height: 'auto' }}
+              variant="filled"
+              color="cyan"
             >
-              <Send className="w-5 h-5" />
-            </button>
+              <IconSend size={20} />
+            </Button>
           </form>
         )}
-      </div>
-    </div>
+      </Group>
+    </Box>
   );
 });

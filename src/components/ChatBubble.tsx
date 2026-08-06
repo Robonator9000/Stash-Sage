@@ -1,7 +1,8 @@
 import { useState, memo } from 'react';
 import type { Message } from '../types';
 import { timeAgo } from '../utils/helpers';
-import { Edit2, Trash2, Reply } from 'lucide-react';
+import { Paper, Group, Text, ActionIcon, Box, TextInput, Button } from '@mantine/core';
+import { IconCornerUpLeft, IconEdit, IconTrash } from '@tabler/icons-react';
 
 interface ChatBubbleProps {
   message: Message;
@@ -20,11 +21,21 @@ export const ChatBubble = memo(function ChatBubble({ message, isDark, isOwn, onE
 
   if (message.deleted_at) {
     return (
-      <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-1`}>
-        <div className={`max-w-[75%] px-3.5 py-2 rounded-2xl ${isDark ? 'bg-surface/30 text-muted' : 'bg-gray-50 text-gray-400'} italic text-xs`}>
+      <Box style={{ display: 'flex', justifyContent: isOwn ? 'flex-end' : 'flex-start', marginBottom: 4 }}>
+        <Paper
+          p="xs"
+          radius="md"
+          style={{
+            maxWidth: '75%',
+            background: isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)',
+            color: isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-5)',
+            fontStyle: 'italic',
+            fontSize: 12,
+          }}
+        >
           Message deleted
-        </div>
-      </div>
+        </Paper>
+      </Box>
     );
   }
 
@@ -35,48 +46,76 @@ export const ChatBubble = memo(function ChatBubble({ message, isDark, isOwn, onE
     setEditing(false);
   }
 
+  const ownBg = isDark
+    ? 'linear-gradient(135deg, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))'
+    : 'var(--mantine-color-cyan-6)';
+  const ownColor = '#fff';
+  const ownRadius = '16px 16px 4px 16px';
+  const otherBg = isDark ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-1)';
+  const otherColor = isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)';
+  const otherRadius = '16px 16px 16px 4px';
+  const metaColor = isOwn
+    ? 'var(--mantine-color-white)'
+    : isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-5)';
+  const replyBorder = isOwn
+    ? 'rgba(255,255,255,0.3)'
+    : isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-3)';
+  const replyColor = isOwn
+    ? 'rgba(255,255,255,0.7)'
+    : isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-5)';
+
   return (
-    <div
-      className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-1 group`}
+    <Box
+      style={{ display: 'flex', justifyContent: isOwn ? 'flex-end' : 'flex-start', marginBottom: 4 }}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
-      <div className={`max-w-[75%] px-3.5 py-2 rounded-2xl ${
-        isOwn
-          ? isDark ? 'bg-gradient-to-br from-cyanx to-emera text-white rounded-br-md' : 'bg-cyan-500 text-white rounded-br-md'
-          : isDark ? 'bg-midnight text-frost rounded-bl-md' : 'bg-gray-100 text-gray-800 rounded-bl-md'
-      }`}>
-        {/* Reply reference */}
+      <Box
+        p="xs"
+        style={{
+          maxWidth: '75%',
+          background: isOwn ? ownBg : otherBg,
+          color: isOwn ? ownColor : otherColor,
+          borderRadius: isOwn ? ownRadius : otherRadius,
+          padding: '8px 14px',
+        }}
+      >
         {message.reply_to && (
-          <div className={`mb-1.5 pl-2 border-l-2 text-xs ${isOwn ? 'border-white/30 text-white/70' : isDark ? 'border-muted text-muted' : 'border-gray-300 text-gray-500'}`}>
+          <Box style={{ marginBottom: 6, paddingLeft: 8, borderLeft: `2px solid ${replyBorder}`, fontSize: 12, color: replyColor }}>
             {message.reply_to.content?.substring(0, 60)}
-          </div>
+          </Box>
         )}
         {message.image_url && (
-          <img src={message.image_url} alt="" className="max-w-full rounded-lg mb-1.5 max-h-60 object-cover" loading="lazy" />
+          <img src={message.image_url} alt="" style={{ maxWidth: '100%', borderRadius: 8, marginBottom: 6, maxHeight: 240, objectFit: 'cover' }} loading="lazy" />
         )}
         {editing ? (
-          <div className="flex gap-1">
-            <input value={editText} onChange={e => setEditText(e.target.value)} className={`flex-1 px-2 py-1 rounded text-sm ${isDark ? 'bg-midnight text-frost' : 'bg-white text-gray-800'}`} autoFocus onKeyDown={e => { if (e.key === 'Enter') handleEditSave(); if (e.key === 'Escape') setEditing(false); }} />
-            <button onClick={handleEditSave} className="text-[10px] px-1.5 py-0.5 rounded bg-white/20">Save</button>
-          </div>
+          <Group gap={4} wrap="nowrap">
+            <TextInput
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              size="xs"
+              autoFocus
+              styles={{ input: { background: isDark ? 'var(--mantine-color-dark-7)' : '#fff', color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)' } }}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleEditSave(); if (e.key === 'Escape') setEditing(false); }}
+            />
+            <Button size="xs" variant="subtle" onClick={handleEditSave} style={{ color: '#fff', background: 'rgba(255,255,255,0.2)' }}>Save</Button>
+          </Group>
         ) : (
-          message.content && <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+          message.content && <Text size="sm" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{message.content}</Text>
         )}
-        <p className={`text-[10px] mt-0.5 flex items-center gap-1 ${isOwn ? 'text-white/60' : isDark ? 'text-muted' : 'text-gray-400'}`}>
+        <Text size="xs" style={{ color: metaColor, display: 'flex', alignItems: 'center', gap: 4, marginTop: 2, fontSize: 10 }}>
           {timeAgo(message.created_at, 'en')}
           {message.edited_at && <span>(edited)</span>}
-          {isOwn && readLabel && <span className="ml-auto">{readLabel}</span>}
-        </p>
-        {/* Actions */}
+          {isOwn && readLabel && <span style={{ marginLeft: 'auto' }}>{readLabel}</span>}
+        </Text>
         {showActions && isOwn && !editing && (
-          <div className={`flex items-center gap-1 mt-1 pt-1 border-t ${isOwn ? 'border-white/15' : isDark ? 'border-midnight' : 'border-gray-200'}`}>
-            {onReply && <button onClick={() => onReply(message.id)} className={`p-0.5 rounded ${isOwn ? 'hover:bg-white/15' : isDark ? 'hover:bg-midnight' : 'hover:bg-gray-200'}`}><Reply className="w-3 h-3" /></button>}
-            {onEdit && <button onClick={() => { setEditText(message.content); setEditing(true); }} className={`p-0.5 rounded ${isOwn ? 'hover:bg-white/15' : isDark ? 'hover:bg-midnight' : 'hover:bg-gray-200'}`}><Edit2 className="w-3 h-3" /></button>}
-            {onDelete && <button onClick={() => onDelete(message.id)} className={`p-0.5 rounded ${isOwn ? 'hover:bg-white/15' : isDark ? 'hover:bg-midnight' : 'hover:bg-gray-200'}`}><Trash2 className="w-3 h-3" /></button>}
-          </div>
+          <Group mt={1} pt={4} gap={2} style={{ marginTop: 4, paddingTop: 4, borderTop: `1px solid ${isOwn ? 'rgba(255,255,255,0.15)' : isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-2)'}` }}>
+            {onReply && <ActionIcon variant="subtle" size="sm" color={isOwn ? 'white' : 'gray'} onClick={() => onReply(message.id)}><IconCornerUpLeft size={12} /></ActionIcon>}
+            {onEdit && <ActionIcon variant="subtle" size="sm" color={isOwn ? 'white' : 'gray'} onClick={() => { setEditText(message.content); setEditing(true); }}><IconEdit size={12} /></ActionIcon>}
+            {onDelete && <ActionIcon variant="subtle" size="sm" color={isOwn ? 'white' : 'gray'} onClick={() => onDelete(message.id)}><IconTrash size={12} /></ActionIcon>}
+          </Group>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 });

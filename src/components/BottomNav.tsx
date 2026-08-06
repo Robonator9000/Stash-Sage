@@ -2,29 +2,38 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { MobileSheet } from './MobileSheet';
-import { 
-  Home, Users, Store, Bell, 
-  Settings, Clock, Grid, MoreHorizontal, 
-  Search, User, MessageSquare
-} from 'lucide-react';
+import { Box, Group, Text, UnstyledButton, Stack } from '@mantine/core';
+import {
+  IconHome,
+  IconUsers,
+  IconShoppingCart,
+  IconBell,
+  IconUser,
+  IconHistory,
+  IconMessageCircle,
+  IconSearch,
+  IconLayoutDashboard,
+  IconSettings,
+  IconDots,
+} from '@tabler/icons-react';
 
 type PrimaryTabId = 'stash' | 'community' | 'marketplace' | 'notifications' | 'profile';
 type SecondaryTabId = 'history' | 'messages' | 'explore' | 'dashboard' | 'admin';
 
-const primaryTabs: { id: PrimaryTabId; label: string; icon: React.ReactNode }[] = [
-  { id: 'stash', label: 'Stash', icon: <Home className="w-6 h-6" /> },
-  { id: 'community', label: 'Community', icon: <Users className="w-6 h-6" /> },
-  { id: 'marketplace', label: 'Market', icon: <Store className="w-6 h-6" /> },
-  { id: 'notifications', label: 'Alerts', icon: <Bell className="w-6 h-6" /> },
-  { id: 'profile', label: 'Profile', icon: <User className="w-6 h-6" /> },
+const primaryTabs: { id: PrimaryTabId; label: string; icon: typeof IconHome }[] = [
+  { id: 'stash', label: 'Stash', icon: IconHome },
+  { id: 'community', label: 'Community', icon: IconUsers },
+  { id: 'marketplace', label: 'Market', icon: IconShoppingCart },
+  { id: 'notifications', label: 'Alerts', icon: IconBell },
+  { id: 'profile', label: 'Profile', icon: IconUser },
 ];
 
-const secondaryTabs: { id: SecondaryTabId; label: string; icon: React.ReactNode; requiresAuth?: boolean }[] = [
-  { id: 'history', label: 'History', icon: <Clock className="w-6 h-6" />, requiresAuth: true },
-  { id: 'messages', label: 'Messages', icon: <MessageSquare className="w-6 h-6" />, requiresAuth: true },
-  { id: 'explore', label: 'Explore', icon: <Search className="w-6 h-6" /> },
-  { id: 'dashboard', label: 'Dashboard', icon: <Grid className="w-6 h-6" />, requiresAuth: true },
-  { id: 'admin', label: 'Admin', icon: <Settings className="w-6 h-6" />, requiresAuth: true },
+const secondaryTabs: { id: SecondaryTabId; label: string; icon: typeof IconHome; requiresAuth?: boolean }[] = [
+  { id: 'history', label: 'History', icon: IconHistory, requiresAuth: true },
+  { id: 'messages', label: 'Messages', icon: IconMessageCircle, requiresAuth: true },
+  { id: 'explore', label: 'Explore', icon: IconSearch },
+  { id: 'dashboard', label: 'Dashboard', icon: IconLayoutDashboard, requiresAuth: true },
+  { id: 'admin', label: 'Admin', icon: IconSettings, requiresAuth: true },
 ];
 
 interface BottomNavProps {
@@ -68,39 +77,49 @@ export function BottomNav({ isDark }: BottomNavProps) {
     setMoreOpen(false);
   };
 
+  const inactiveColor = isDark ? 'var(--mantine-color-gray-6)' : 'var(--mantine-color-gray-6)';
+
   return (
     <>
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-t border-gray-200 dark:border-slate-700/50">
-        <div className="flex items-center justify-around h-16 px-2 safe-area-bottom">
+      <Box
+        hiddenFrom="lg"
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 40,
+          paddingBottom: 'env(safe-area-inset-bottom)',
+          background: isDark ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255,255,255,0.9)',
+          backdropFilter: 'blur(12px)',
+          borderTop: `1px solid ${isDark ? 'rgba(71, 85, 105, 0.5)' : 'var(--mantine-color-gray-2)'}`,
+        }}
+      >
+        <Group justify="space-around" h={64} px="sm" align="center" wrap="nowrap">
           {primaryTabs.map((tab) => {
             const isActive = activeTab === tab.id;
+            const Icon = tab.icon;
             return (
-              <button
+              <UnstyledButton
                 key={tab.id}
                 onClick={() => handleTabClick(tab.id)}
-                className={`flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl text-xs font-medium transition-all ${
-                  isActive
-                    ? isDark ? 'text-cyan-400' : 'text-cyan-600'
-                    : isDark ? 'text-slate-500' : 'text-gray-500'
-                }`}
                 aria-current={isActive ? 'page' : undefined}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 12 }}
               >
-                <span className="block">{tab.icon}</span>
-                <span className="text-[10px] font-medium leading-tight">{tab.label}</span>
-              </button>
+                <Icon size={24} stroke={1.5} style={{ color: isActive ? 'var(--mantine-color-cyan-5)' : inactiveColor }} />
+                <Text size="xs" style={{ color: isActive ? 'var(--mantine-color-cyan-5)' : inactiveColor }}>{tab.label}</Text>
+              </UnstyledButton>
             );
           })}
-          <button
+          <UnstyledButton
             onClick={() => setMoreOpen(true)}
-            className={`flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl text-xs font-medium transition-all ${
-              isDark ? 'text-slate-500' : 'text-gray-500'
-            }`}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 12 }}
           >
-            <MoreHorizontal className="w-6 h-6" />
-            <span className="text-[10px] font-medium leading-tight">More</span>
-          </button>
-        </div>
-      </nav>
+            <IconDots size={24} stroke={1.5} style={{ color: inactiveColor }} />
+            <Text size="xs" style={{ color: inactiveColor }}>More</Text>
+          </UnstyledButton>
+        </Group>
+      </Box>
 
       <MobileSheet
         isOpen={moreOpen}
@@ -108,27 +127,39 @@ export function BottomNav({ isDark }: BottomNavProps) {
         title="More"
         isDark={isDark}
       >
-        <div className="space-y-2">
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 px-2">Other</p>
+        <Stack gap="xs">
+          <Text size="xs" fw={600} c="dimmed" px="xs">Other</Text>
           {secondaryTabs
             .filter(tab => {
               if (tab.requiresAuth && !user) return false;
               if (tab.id === 'admin' && !isAdmin) return false;
               return true;
             })
-            .map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => handleTabClick(tab.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-medium transition-colors ${
-                  isDark ? 'text-slate-300 hover:bg-slate-800' : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <span className="w-6 h-6 flex items-center justify-center">{tab.icon}</span>
-                <span className="font-medium">{tab.label}</span>
-              </button>
-            ))}
-        </div>
+            .map(tab => {
+              const Icon = tab.icon;
+              return (
+                <UnstyledButton
+                  key={tab.id}
+                  onClick={() => handleTabClick(tab.id)}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '12px 16px',
+                    borderRadius: 12,
+                    textAlign: 'left',
+                    color: isDark ? 'var(--mantine-color-gray-3)' : 'var(--mantine-color-gray-7)',
+                    background: isDark ? 'var(--mantine-color-dark-8)' : 'transparent',
+                    ':hover': { background: isDark ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-1)' },
+                  } as any}
+                >
+                  <Icon size={24} stroke={1.5} style={{ display: 'block' }} />
+                  <Text fw={500}>{tab.label}</Text>
+                </UnstyledButton>
+              );
+            })}
+        </Stack>
       </MobileSheet>
     </>
   );

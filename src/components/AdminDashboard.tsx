@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback, memo } from 'react';
 import type { Post, MarketplaceListing } from '../types';
 import { supabase } from '../utils/supabase';
 import { showToast } from './Toast';
-import { Shield, ShieldOff, Ban, CheckCircle, Trash2, Search, X, MessageSquare, Star, BarChart3, AlertTriangle } from 'lucide-react';
+import { Paper, Group, Stack, Text, Button, ActionIcon, Avatar, Badge, TextInput, SimpleGrid, Modal, UnstyledButton, Box } from '@mantine/core';
+import { IconChartBar, IconUsers, IconShoppingCart, IconMessageCircle, IconStar, IconSettings, IconUser, IconLock, IconCheck, IconTrash, IconSearch, IconX, IconAlertTriangle } from '@tabler/icons-react';
 
 interface AdminUser {
   user_id: string;
@@ -230,348 +231,343 @@ export const AdminDashboard = memo(function AdminDashboard({ isDark, currentUser
   interface TabDef {
     id: AdminTab;
     label: string;
-    icon: typeof Shield;
+    icon: typeof IconChartBar;
     count?: number;
   }
   const tabs: TabDef[] = [
-    { id: 'overview', label: 'Overview', icon: BarChart3 },
-    { id: 'users', label: 'Users', icon: Shield, count: users.length },
-    { id: 'listings', label: 'Listings', icon: Trash2, count: listings.length },
-    { id: 'posts', label: 'Posts', icon: MessageSquare, count: posts.length },
-    { id: 'comments', label: 'Comments', icon: MessageSquare, count: comments.length },
-    { id: 'reviews', label: 'Reviews', icon: Star, count: reviews.length },
+    { id: 'overview', label: 'Overview', icon: IconChartBar },
+    { id: 'users', label: 'Users', icon: IconUsers, count: users.length },
+    { id: 'listings', label: 'Listings', icon: IconShoppingCart, count: listings.length },
+    { id: 'posts', label: 'Posts', icon: IconMessageCircle, count: posts.length },
+    { id: 'comments', label: 'Comments', icon: IconMessageCircle, count: comments.length },
+    { id: 'reviews', label: 'Reviews', icon: IconStar, count: reviews.length },
   ];
 
-  const cardClass = isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200';
-  const mutedText = isDark ? 'text-muted' : 'text-gray-400';
-  const bodyText = isDark ? 'text-mist' : 'text-gray-600';
-  const frostText = isDark ? 'text-frost' : 'text-gray-800';
-  const hoverBtn = isDark ? 'text-muted hover:text-red-400 hover:bg-midnight' : 'text-gray-400 hover:text-red-600 hover:bg-gray-100';
+  const cardBg = isDark ? 'var(--mantine-color-dark-6)' : '#fff';
+  const mutedText = isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-6)';
+  const bodyText = isDark ? 'var(--mantine-color-gray-3)' : 'var(--mantine-color-gray-7)';
+  const frostText = isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-9)';
+  const amber = isDark ? 'var(--mantine-color-yellow-4)' : 'var(--mantine-color-yellow-6)';
+  const green = isDark ? 'var(--mantine-color-green-4)' : 'var(--mantine-color-green-6)';
+  const red = isDark ? 'var(--mantine-color-red-4)' : 'var(--mantine-color-red-6)';
+  const borderColor = isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-2)';
 
   return (
-    <div className="space-y-4">
-      <div role="tablist" className="flex flex-wrap items-center gap-1 p-1 rounded-xl" style={{ backgroundColor: isDark ? '#1a1a2e' : '#f3f4f6' }}>
-        {tabs.map(t => (
-          <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => setTab(t.id as AdminTab)}
-            className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-all ${
-              tab === t.id
-                ? isDark ? 'bg-[#0b1120] text-cyan-400' : 'bg-white text-gray-900 shadow-sm'
-                : isDark ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
-            }`}>
-            <t.icon className="w-3.5 h-3.5" />
-            {t.label}
-            {t.count !== undefined && (
-              <span className={`text-xs ml-0.5 ${tab === t.id ? (isDark ? 'text-cyan-400' : 'text-gray-600') : (isDark ? 'text-gray-500' : 'text-gray-400')}`}>
-                ({t.count})
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
+    <Stack gap="md">
+      <Paper p={4} radius="md" style={{ backgroundColor: isDark ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-1)', display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+        {tabs.map(t => {
+          const Icon = t.icon;
+          const active = tab === t.id;
+          return (
+            <UnstyledButton
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              aria-selected={active ? 'true' : 'false'}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '8px 12px',
+                fontSize: 14,
+                fontWeight: 500,
+                borderRadius: 8,
+                background: active ? '#0b1120' : 'transparent',
+                color: active ? 'var(--mantine-color-cyan-4)' : (isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-6)'),
+              }}
+            >
+              <Icon size={14} stroke={1.5} />
+              {t.label}
+              {t.count !== undefined && (
+                <span style={{ fontSize: 12, marginLeft: 2, color: active ? 'var(--mantine-color-cyan-4)' : mutedText }}>
+                  ({t.count})
+                </span>
+              )}
+            </UnstyledButton>
+          );
+        })}
+      </Paper>
 
       {loading && (
-        <div className={`text-center py-12 text-sm ${mutedText}`}>Loading...</div>
+        <Text ta="center" py="xl" size="sm" c="dimmed">Loading...</Text>
       )}
 
       {!loading && tab === 'overview' && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <div className={`rounded-2xl p-4 ${cardClass}`}>
-            <div className={`text-2xl font-bold ${frostText}`}>{users.length}</div>
-            <div className={`text-xs uppercase tracking-wider ${mutedText}`}>Users</div>
-          </div>
-          <div className={`rounded-2xl p-4 ${cardClass}`}>
-            <div className={`text-2xl font-bold ${frostText}`}>{listings.length}</div>
-            <div className={`text-xs uppercase tracking-wider ${mutedText}`}>Listings</div>
-          </div>
-          <div className={`rounded-2xl p-4 ${cardClass}`}>
-            <div className={`text-2xl font-bold ${frostText}`}>{listings.filter(l => l.status === 'sold').length}</div>
-            <div className={`text-xs uppercase tracking-wider ${mutedText}`}>Sold listings</div>
-          </div>
-          <div className={`rounded-2xl p-4 ${cardClass}`}>
-            <div className={`text-2xl font-bold ${frostText}`}>{posts.length}</div>
-            <div className={`text-xs uppercase tracking-wider ${mutedText}`}>Posts</div>
-          </div>
-          <div className={`rounded-2xl p-4 ${cardClass}`}>
-            <div className={`text-2xl font-bold ${frostText}`}>{comments.length}</div>
-            <div className={`text-xs uppercase tracking-wider ${mutedText}`}>Comments</div>
-          </div>
-          <div className={`rounded-2xl p-4 ${cardClass}`}>
-            <div className={`text-2xl font-bold ${frostText}`}>{reviews.length}</div>
-            <div className={`text-xs uppercase tracking-wider ${mutedText}`}>Reviews</div>
-          </div>
-          <div className={`rounded-2xl p-4 col-span-2 sm:col-span-3 ${cardClass}`}>
-            <div className={`text-2xl font-bold ${frostText}`}>${totalListingValue.toLocaleString()}</div>
-            <div className={`text-xs uppercase tracking-wider ${mutedText}`}>Active listing value</div>
-          </div>
-        </div>
+        <SimpleGrid cols={{ base: 2, sm: 3 }} spacing="sm">
+          <Paper p="md" radius="md" withBorder style={{ background: cardBg }}>
+            <Text size="xl" fw={700} style={{ color: frostText }}>{users.length}</Text>
+            <Text size="xs" tt="uppercase" c="dimmed" lts={1}>Users</Text>
+          </Paper>
+          <Paper p="md" radius="md" withBorder style={{ background: cardBg }}>
+            <Text size="xl" fw={700} style={{ color: frostText }}>{listings.length}</Text>
+            <Text size="xs" tt="uppercase" c="dimmed" lts={1}>Listings</Text>
+          </Paper>
+          <Paper p="md" radius="md" withBorder style={{ background: cardBg }}>
+            <Text size="xl" fw={700} style={{ color: frostText }}>{listings.filter(l => l.status === 'sold').length}</Text>
+            <Text size="xs" tt="uppercase" c="dimmed" lts={1}>Sold listings</Text>
+          </Paper>
+          <Paper p="md" radius="md" withBorder style={{ background: cardBg }}>
+            <Text size="xl" fw={700} style={{ color: frostText }}>{posts.length}</Text>
+            <Text size="xs" tt="uppercase" c="dimmed" lts={1}>Posts</Text>
+          </Paper>
+          <Paper p="md" radius="md" withBorder style={{ background: cardBg }}>
+            <Text size="xl" fw={700} style={{ color: frostText }}>{comments.length}</Text>
+            <Text size="xs" tt="uppercase" c="dimmed" lts={1}>Comments</Text>
+          </Paper>
+          <Paper p="md" radius="md" withBorder style={{ background: cardBg }}>
+            <Text size="xl" fw={700} style={{ color: frostText }}>{reviews.length}</Text>
+            <Text size="xs" tt="uppercase" c="dimmed" lts={1}>Reviews</Text>
+          </Paper>
+          <Paper p="md" radius="md" withBorder style={{ background: cardBg, gridColumn: 'span 2 / span 3' }}>
+            <Text size="xl" fw={700} style={{ color: frostText }}>${totalListingValue.toLocaleString()}</Text>
+            <Text size="xs" tt="uppercase" c="dimmed" lts={1}>Active listing value</Text>
+          </Paper>
+        </SimpleGrid>
       )}
 
       {!loading && tab === 'users' && (
-        <div className="space-y-3">
-          <div className="relative">
-            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${mutedText}`} />
-            <input type="text" value={userSearch} onChange={e => setUserSearch(e.target.value)}
-              placeholder="Search by username or display name..." aria-label="Search users"
-              className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none transition-colors ${
-                isDark ? 'bg-midnight text-frost border border-edge focus:border-cyanx/50' : 'bg-gray-50 text-gray-800 border border-gray-200 focus:border-cyan-400'
-              }`} />
-            {userSearch && (
-              <button onClick={() => setUserSearch('')} aria-label="Clear search"
-                className={`absolute right-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}`}>
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-          <div className={`rounded-2xl overflow-hidden ${cardClass}`}>
-            <div className={`grid grid-cols-[1fr_auto_auto_auto] gap-2 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-muted bg-midnight' : 'text-gray-400 bg-gray-50'}`}>
-              <span>User</span>
-              <span className="text-center">Role</span>
-              <span className="text-center">Status</span>
-              <span className="text-right">Actions</span>
-            </div>
+        <Stack gap="sm">
+          <TextInput
+            value={userSearch}
+            onChange={e => setUserSearch(e.target.value)}
+            placeholder="Search by username or display name..."
+            aria-label="Search users"
+            leftSection={<IconSearch size={16} />}
+            rightSection={userSearch ? (
+              <ActionIcon variant="subtle" onClick={() => setUserSearch('')} aria-label="Clear search">
+                <IconX size={16} />
+              </ActionIcon>
+            ) : undefined}
+          />
+          <Paper radius="md" withBorder style={{ background: cardBg, overflow: 'hidden' }}>
+            <Group px="md" py="xs" style={{ fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, color: mutedText, background: isDark ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-0)' }} wrap="nowrap">
+              <Text style={{ flex: 1 }}>User</Text>
+              <Text ta="center" w={90}>Role</Text>
+              <Text ta="center" w={80}>Status</Text>
+              <Text ta="right" w={110}>Actions</Text>
+            </Group>
             {filteredUsers.map(u => (
-              <div key={u.user_id} className={`grid grid-cols-[1fr_auto_auto_auto] gap-2 px-4 py-3 items-center text-sm border-t ${isDark ? 'border-edge' : 'border-gray-100'}`}>
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <button onClick={() => handleViewUserByUsername(u.username || u.user_id)}
-                    className={`font-medium truncate hover:underline ${frostText}`}>
-                    @{u.username || 'unknown'}
-                  </button>
-                  {u.display_name && u.display_name !== u.username && (
-                    <span className={`text-xs truncate ${mutedText}`}>{u.display_name}</span>
-                  )}
-                  {u.user_id === currentUserId && (
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${isDark ? 'bg-cyanx/20 text-cyanx' : 'bg-cyan-100 text-cyan-700'}`}>you</span>
-                  )}
-                </div>
-                <div className="flex items-center gap-1">
+              <Group
+                key={u.user_id}
+                px="sm"
+                py="sm"
+                align="center"
+                wrap="nowrap"
+                style={{ borderTop: `1px solid ${borderColor}`, fontSize: 14 }}
+              >
+                <Group gap="md" style={{ flex: 1, minWidth: 0 }} wrap="nowrap">
+                  <Group gap={8} style={{ minWidth: 0 }} wrap="nowrap">
+                    <UnstyledButton onClick={() => handleViewUserByUsername(u.username || u.user_id)} style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: frostText }}>
+                      @{u.username || 'unknown'}
+                    </UnstyledButton>
+                    {u.display_name && u.display_name !== u.username && (
+                      <Text size="xs" c="dimmed" truncate style={{ maxWidth: 140 }}>{u.display_name}</Text>
+                    )}
+                    {u.user_id === currentUserId && (
+                      <Badge variant="filled" color="cyan" size="xs">you</Badge>
+                    )}
+                  </Group>
+                </Group>
+                <Group gap={4} style={{ width: 90 }} wrap="nowrap">
                   {u.role === 'admin' ? (
-                    <span className={`text-xs font-medium flex items-center gap-1 ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
-                      <Shield className="w-3 h-3" /> Admin
-                    </span>
+                    <span style={{ fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4, color: amber }}>
+                    <IconSettings size={12} /> Admin
+                  </span>
                   ) : (
-                    <span className={`text-xs ${mutedText}`}>User</span>
+                    <Text size="xs" c="dimmed" style={{ fontSize: 12 }}>User</Text>
                   )}
-                </div>
-                <div className="flex justify-center">
+                </Group>
+                <Box style={{ width: 80, display: 'flex', justifyContent: 'center' }}>
                   {u.is_banned ? (
-                    <span className="text-xs font-medium text-red-500 flex items-center gap-1">
-                      <Ban className="w-3 h-3" /> Banned
-                    </span>
-                  ) : (
-                    <span className="text-xs text-emerald-500 flex items-center gap-1">
-                      <CheckCircle className="w-3 h-3" /> Active
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-1 justify-end shrink-0">
-                  {u.user_id !== currentUserId && (
-                    <>
-                      {u.role === 'admin' ? (
-                        <button onClick={() => handleSetRole(u.user_id, 'user')} title="Demote to user"
-                          className={`p-1.5 rounded-lg transition-all ${isDark ? 'text-muted hover:text-amber-400 hover:bg-midnight' : 'text-gray-400 hover:text-amber-600 hover:bg-gray-100'}`}>
-                          <ShieldOff className="w-3.5 h-3.5" />
-                        </button>
-                      ) : (
-                        <button onClick={() => handleSetRole(u.user_id, 'admin')} title="Promote to admin"
-                          className={`p-1.5 rounded-lg transition-all ${isDark ? 'text-muted hover:text-amber-400 hover:bg-midnight' : 'text-gray-400 hover:text-amber-600 hover:bg-gray-100'}`}>
-                          <Shield className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                      {u.is_banned ? (
-                        <button onClick={() => handleSetBan(u.user_id, false)} title="Unban user"
-                          className={`p-1.5 rounded-lg transition-all ${isDark ? 'text-muted hover:text-emerald-400 hover:bg-midnight' : 'text-gray-400 hover:text-emerald-600 hover:bg-gray-100'}`}>
-                          <CheckCircle className="w-3.5 h-3.5" />
-                        </button>
-                      ) : (
-                        <button onClick={() => handleSetBan(u.user_id, true)} title="Ban user"
-                          className={`p-1.5 rounded-lg transition-all ${isDark ? 'text-muted hover:text-red-400 hover:bg-midnight' : 'text-gray-400 hover:text-red-600 hover:bg-gray-100'}`}>
-                          <Ban className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
+                    <span style={{ fontSize: 12, fontWeight: 500, display: 'flex', gap: 4, alignItems: 'center', color: red }}>
+                    <IconLock size={12} /> Banned
+                  </span>
+                ) : (
+                  <span style={{ fontSize: 12, color: green, display: 'flex', gap: 4, alignItems: 'center' }}>
+                    <IconCheck size={12} /> Active
+                  </span>
+                )}
+              </Box>
+              <Group gap={4} justify="flex-end" style={{ width: 110, flexShrink: 0 }} wrap="nowrap">
+                {u.user_id !== currentUserId && (
+                  <>
+                    {u.role === 'admin' ? (
+                      <ActionIcon variant="subtle" color="yellow" title="Demote to user" onClick={() => handleSetRole(u.user_id, 'user')}>
+                        <IconUser size={16} />
+                      </ActionIcon>
+                    ) : (
+                      <ActionIcon variant="subtle" color="yellow" title="Promote to admin" onClick={() => handleSetRole(u.user_id, 'admin')}>
+                        <IconSettings size={16} />
+                      </ActionIcon>
+                    )}
+                    {u.is_banned ? (
+                      <ActionIcon variant="subtle" color="green" title="Unban user" onClick={() => handleSetBan(u.user_id, false)}>
+                        <IconCheck size={16} />
+                      </ActionIcon>
+                    ) : (
+                      <ActionIcon variant="subtle" color="red" title="Ban user" onClick={() => handleSetBan(u.user_id, true)}>
+                        <IconLock size={16} />
+                      </ActionIcon>
+                    )}
+                  </>
+                )}
+              </Group>
+            </Group>
             ))}
             {filteredUsers.length === 0 && (
-              <p className={`text-center py-8 text-sm ${mutedText}`}>
+              <Text ta="center" py="xl" size="sm" c="dimmed">
                 {userSearch ? 'No users found' : 'No users yet'}
-              </p>
+              </Text>
             )}
-          </div>
-        </div>
+          </Paper>
+        </Stack>
       )}
 
       {!loading && tab === 'posts' && (
-        <div className="space-y-2">
+        <Stack gap="md">
           {posts.length === 0 ? (
-            <p className={`text-center py-12 text-sm ${mutedText}`}>No posts yet</p>
+            <Text ta="center" py="xl" size="sm" c="dimmed">No posts yet</Text>
           ) : (
             posts.map(p => (
-              <div key={p.id} className={`flex items-start gap-3 p-4 rounded-2xl ${cardClass}`}>
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold ${isDark ? 'bg-midnight text-mist' : 'bg-gray-100 text-gray-500'}`}>
-                  {(p.author_username || p.author_name)?.[0]?.toUpperCase() || '?'}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <button onClick={() => handleViewUserByUsername(p.author_username || p.user_id)}
-                      className={`text-xs font-semibold hover:underline ${frostText}`}>
+              <Paper key={p.id} p="md" radius="md" withBorder style={{ background: cardBg, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                <Avatar radius="sm" size={32} color="cyan">{(p.author_username || p.author_name)?.[0]?.toUpperCase() || '?'}</Avatar>
+                <Box style={{ flex: 1, minWidth: 0 }}>
+                  <Group gap="xs" mb={4} align="baseline" wrap="nowrap">
+                    <UnstyledButton onClick={() => handleViewUserByUsername(p.author_username || p.user_id)} style={{ fontSize: 12, fontWeight: 600, color: frostText }}>
                       @{p.author_username || p.author_name}
-                    </button>
+                    </UnstyledButton>
                     {p.author_name && p.author_name !== p.author_username && (
-                      <span className={`text-xs ${mutedText}`}>{p.author_name}</span>
+                      <Text size="xs" c="dimmed">{p.author_name}</Text>
                     )}
-                    <span className={`text-xs ${mutedText}`}>
+                    <Text size="xs" c="dimmed">
                       {new Date(p.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <p className={`text-sm line-clamp-2 ${bodyText}`}>{p.content}</p>
-                </div>
-                <button onClick={() => setConfirm({ kind: 'post', id: p.id, label: 'delete this post' })} title="Delete post"
-                  className={`p-1.5 rounded-lg shrink-0 transition-all ${hoverBtn}`}>
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
+                    </Text>
+                  </Group>
+                  <Text size="sm" style={{ color: bodyText, WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.content}</Text>
+                </Box>
+                <ActionIcon variant="subtle" color="red" title="Delete post" onClick={() => setConfirm({ kind: 'post', id: p.id, label: 'delete this post' })} style={{ flexShrink: 0 }}>
+                  <IconTrash size={16} />
+                </ActionIcon>
+              </Paper>
             ))
           )}
-        </div>
+        </Stack>
       )}
 
       {!loading && tab === 'comments' && (
-        <div className="space-y-2">
+        <Stack gap="md">
           {comments.length === 0 ? (
-            <p className={`text-center py-12 text-sm ${mutedText}`}>No comments yet</p>
+            <Text ta="center" py="xl" size="sm" c="dimmed">No comments yet</Text>
           ) : (
             comments.map(c => (
-              <div key={c.id} className={`flex items-start gap-3 p-4 rounded-2xl ${cardClass}`}>
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold ${isDark ? 'bg-midnight text-mist' : 'bg-gray-100 text-gray-500'}`}>
-                  {(c.author_username || c.author_name)?.[0]?.toUpperCase() || '?'}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <button onClick={() => handleViewUserByUsername(c.author_username || c.user_id)}
-                      className={`text-xs font-semibold hover:underline ${frostText}`}>
+              <Paper key={c.id} p="md" radius="md" withBorder style={{ background: cardBg, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                <Avatar radius="sm" size={40} color="gray">{(c.author_username || c.author_name)?.[0]?.toUpperCase() || '?'}</Avatar>
+                <Box style={{ flex: 1, minWidth: 0 }}>
+                  <Group gap="xs" mb={4} align="baseline" wrap="nowrap">
+                    <UnstyledButton onClick={() => handleViewUserByUsername(c.author_username || c.user_id)} style={{ fontSize: 12, fontWeight: 600, color: frostText }}>
                       @{c.author_username || c.author_name}
-                    </button>
+                    </UnstyledButton>
                     {c.author_name && c.author_name !== c.author_username && (
-                      <span className={`text-xs ${mutedText}`}>{c.author_name}</span>
+                      <Text size="xs" c="dimmed">{c.author_name}</Text>
                     )}
-                    <span className={`text-xs ${mutedText}`}>
+                    <Text size="xs" c="dimmed">
                       {new Date(c.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <p className={`text-sm line-clamp-2 ${bodyText}`}>{c.content}</p>
-                </div>
-                <button onClick={() => setConfirm({ kind: 'comment', id: c.id, label: 'delete this comment' })} title="Delete comment"
-                  className={`p-1.5 rounded-lg shrink-0 transition-all ${hoverBtn}`}>
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
+                    </Text>
+                  </Group>
+                  <Text size="sm" style={{ color: bodyText, WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{c.content}</Text>
+                </Box>
+                <ActionIcon variant="subtle" color="red" title="Delete comment" onClick={() => setConfirm({ kind: 'comment', id: c.id, label: 'delete this comment' })} style={{ flexShrink: 0 }}>
+                  <IconTrash size={16} />
+                </ActionIcon>
+              </Paper>
             ))
           )}
-        </div>
+        </Stack>
       )}
 
       {!loading && tab === 'listings' && (
-        <div className="space-y-2">
+        <Stack gap="sm">
           {listings.length === 0 ? (
-            <p className={`text-center py-12 text-sm ${mutedText}`}>No listings yet</p>
+            <Text ta="center" py="xl" size="sm" c="dimmed">No listings yet</Text>
           ) : (
             listings.map(l => (
-              <div key={l.id} className={`flex items-start gap-3 p-4 rounded-2xl ${cardClass}`}>
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold ${isDark ? 'bg-midnight text-mist' : 'bg-gray-100 text-gray-500'}`}>
-                  {(l.author_username || l.author_name)?.[0]?.toUpperCase() || '?'}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <button onClick={() => handleViewUserByUsername(l.author_username || l.user_id)}
-                      className={`text-xs font-semibold hover:underline ${frostText}`}>
+              <Paper key={l.id} p="md" radius="md" withBorder style={{ background: cardBg, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                <Avatar radius="sm" size={40} color="gray">{(l.author_username || l.author_name)?.[0]?.toUpperCase() || '?'}</Avatar>
+                <Box style={{ flex: 1, minWidth: 0 }}>
+                  <Group gap="xs" mb={4} align="baseline" wrap="wrap">
+                    <UnstyledButton onClick={() => handleViewUserByUsername(l.author_username || l.user_id)} style={{ fontSize: 12, fontWeight: 600, color: frostText }}>
                       @{l.author_username || l.author_name}
-                    </button>
+                    </UnstyledButton>
                     {l.author_name && l.author_name !== l.author_username && (
-                      <span className={`text-xs ${mutedText}`}>{l.author_name}</span>
+                      <Text size="xs" c="dimmed">{l.author_name}</Text>
                     )}
-                    <span className={`text-xs font-medium ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
-                      ${l.price}
-                    </span>
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${l.status === 'active'
-                      ? isDark ? 'bg-emerald-900/30 text-emerald-400' : 'bg-emerald-50 text-emerald-600'
-                      : isDark ? 'bg-midnight text-muted' : 'bg-gray-100 text-gray-400'}`}>
+                    <Text size="xs" style={{ fontWeight: 500, color: amber }}>${l.price}</Text>
+                    <Badge size="xs" radius="sm" style={{ background: 'transparent' }} color={l.status === 'active' ? 'green' : 'gray'}>
                       {l.status}
-                    </span>
-                  </div>
-                  <p className={`text-sm font-medium truncate ${frostText}`}>{l.title}</p>
-                  <p className={`text-xs ${mutedText}`}>{new Date(l.created_at).toLocaleDateString()}</p>
-                </div>
-                <button onClick={() => setConfirm({ kind: 'listing', id: l.id, label: 'delete this listing' })} title="Delete listing"
-                  className={`p-1.5 rounded-lg shrink-0 transition-all ${hoverBtn}`}>
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
+                    </Badge>
+                  </Group>
+                  <Text size="sm" fw={500} truncate style={{ color: frostText }}>{l.title}</Text>
+                  <Text size="xs" c="dimmed">{new Date(l.created_at).toLocaleDateString()}</Text>
+                </Box>
+                <ActionIcon variant="subtle" color="red" title="Delete listing" onClick={() => setConfirm({ kind: 'listing', id: l.id, label: 'delete this listing' })} style={{ flexShrink: 0 }}>
+                  <IconTrash size={16} />
+                </ActionIcon>
+              </Paper>
             ))
           )}
-        </div>
+        </Stack>
       )}
 
       {!loading && tab === 'reviews' && (
-        <div className="space-y-2">
+        <Stack gap="sm">
           {reviews.length === 0 ? (
-            <p className={`text-center py-12 text-sm ${mutedText}`}>No reviews yet</p>
+            <Text ta="center" py="xl" size="sm" c="dimmed">No reviews yet</Text>
           ) : (
             reviews.map(r => (
-              <div key={r.id} className={`flex items-start gap-3 p-4 rounded-2xl ${cardClass}`}>
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold ${isDark ? 'bg-midnight text-mist' : 'bg-gray-100 text-gray-500'}`}>
-                  {(r.author_username || r.author_name)?.[0]?.toUpperCase() || '?'}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <button onClick={() => handleViewUserByUsername(r.author_username || r.user_id)}
-                      className={`text-xs font-semibold hover:underline ${frostText}`}>
+              <Paper key={r.id} p="md" radius="md" withBorder style={{ background: cardBg, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                <Avatar radius="sm" size={40} color="gray">{(r.author_username || r.author_name)?.[0]?.toUpperCase() || '?'}</Avatar>
+                <Box style={{ flex: 1, minWidth: 0 }}>
+                  <Group gap="xs" mb={4} align="baseline" wrap="wrap">
+                    <UnstyledButton onClick={() => handleViewUserByUsername(r.author_username || r.user_id)} style={{ fontSize: 12, fontWeight: 600, color: frostText }}>
                       @{r.author_username || r.author_name}
-                    </button>
+                    </UnstyledButton>
                     {r.author_name && r.author_name !== r.author_username && (
-                      <span className={`text-xs ${mutedText}`}>{r.author_name}</span>
+                      <Text size="xs" c="dimmed">{r.author_name}</Text>
                     )}
-                    <span className={`text-xs flex items-center gap-1 ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
-                      <Star className="w-3 h-3 fill-current" /> {r.rating}/5
+                    <span style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 4, color: amber }}>
+                      <IconStar size={12} /> {r.rating}/5
                     </span>
-                    <span className={`text-xs ${mutedText}`}>
-                      on {r.listing_title}
-                    </span>
-                  </div>
-                  <p className={`text-sm line-clamp-2 ${bodyText}`}>{r.comment}</p>
-                </div>
-                <button onClick={() => setConfirm({ kind: 'review', id: r.id, label: 'delete this review' })} title="Delete review"
-                  className={`p-1.5 rounded-lg shrink-0 transition-all ${hoverBtn}`}>
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
+                    <Text size="xs" c="dimmed">on {r.listing_title}</Text>
+                  </Group>
+                  <Text size="sm" style={{ color: bodyText, WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{r.comment}</Text>
+                </Box>
+                <ActionIcon variant="subtle" color="red" title="Delete review" onClick={() => setConfirm({ kind: 'review', id: r.id, label: 'delete this review' })} style={{ flexShrink: 0 }}>
+                  <IconTrash size={16} />
+                </ActionIcon>
+              </Paper>
             ))
           )}
-        </div>
+        </Stack>
       )}
 
-      {confirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setConfirm(null)}>
-          <div className={`w-full max-w-sm rounded-2xl p-5 ${cardClass}`} onClick={e => e.stopPropagation()}>
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="w-5 h-5 text-red-500" />
-              <h3 className={`text-sm font-semibold ${frostText}`}>Confirm action</h3>
-            </div>
-            <p className={`text-sm ${bodyText} mb-4`}>Are you sure you want to {confirm.label}? This cannot be undone.</p>
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setConfirm(null)}
-                className={`px-3 py-1.5 text-sm rounded-lg transition-all ${isDark ? 'text-muted hover:bg-midnight' : 'text-gray-500 hover:bg-gray-100'}`}>
-                Cancel
-              </button>
-              <button onClick={confirmAction}
-                className="px-3 py-1.5 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600 transition-all">
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      <Modal
+        opened={!!confirm}
+        onClose={() => setConfirm(null)}
+        title={(
+          <Group gap="xs" align="center">
+            <IconAlertTriangle size={20} style={{ color: red }} />
+            <Text size="sm" style={{ color: frostText }}>Confirm action</Text>
+          </Group>
+        )}
+        centered
+      >
+        <Stack gap="md">
+          <Text size="sm" style={{ color: bodyText }}>Are you sure you want to {confirm?.label}? This cannot be undone.</Text>
+          <Group justify="flex-end" gap="sm">
+            <Button variant="default" size="sm" onClick={() => setConfirm(null)}>Cancel</Button>
+            <Button size="sm" color="red" onClick={confirmAction}>Delete</Button>
+          </Group>
+        </Stack>
+      </Modal>
+    </Stack>
   );
 });

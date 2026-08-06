@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useNotifications } from '../hooks/useNotifications';
 import { timeAgo } from '../utils/helpers';
 import { useAuth } from '../contexts/AuthContext';
-import { Bell } from 'lucide-react';
+import { Paper, Group, Text, ActionIcon, Avatar, ScrollArea, Loader, UnstyledButton, Box } from '@mantine/core';
+import { IconBell } from '@tabler/icons-react';
 
 interface NotificationBellProps {
   isDark: boolean;
@@ -26,91 +27,140 @@ export function NotificationBell({ isDark, lang, onViewProfile }: NotificationBe
 
   if (!user) return null;
 
+  const headerFg = isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)';
+  const bodyFg = isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)';
+  const muted = isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-6)';
+  const hoverBg = isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-1)';
+  const panelBg = isDark ? 'var(--mantine-color-dark-8)' : '#fff';
+  const borderColor = isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)';
+  const unreadRowBg = isDark ? 'rgba(6,182,212,0.08)' : 'rgba(6,182,212,0.08)';
+
   return (
-    <div ref={ref} className="relative">
-      <button
+    <Box ref={ref} style={{ position: 'relative' }}>
+      <ActionIcon
         onClick={() => setOpen(!open)}
+        variant="subtle"
+        color="gray"
+        size="lg"
+        radius="md"
         aria-label="Notifications"
         aria-expanded={open}
-        className={`relative p-2 rounded-xl transition-all ${isDark ? 'text-mist hover:text-frost hover:bg-surface' : 'text-gray-600 hover:text-gray-900 hover:bg-white'}`}
       >
-        <Bell className="w-5 h-5" />
+        <IconBell size={20} />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 rounded-full bg-gradient-to-r from-cyanx to-emera text-white text-[10px] font-bold flex items-center justify-center">
+          <Paper
+            radius="xl"
+            style={{
+              position: 'absolute',
+              top: -2,
+              right: -2,
+              height: 18,
+              minWidth: 18,
+              padding: '0 3px',
+              background: 'linear-gradient(90deg, var(--mantine-color-cyan-6), var(--mantine-color-emerald-6))',
+              color: '#fff',
+              fontSize: 10,
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              lineHeight: 1,
+            }}
+          >
             {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
+          </Paper>
         )}
-      </button>
+      </ActionIcon>
 
       {open && (
-        <div className={`absolute right-0 top-full mt-2 w-80 max-h-96 rounded-2xl shadow-2xl overflow-hidden z-50 ${
-          isDark ? 'bg-[#0f172a] border border-slate-700' : 'bg-white border border-gray-200'
-        }`}>
-          <div className={`flex items-center justify-between px-4 py-3 border-b ${isDark ? 'border-edge' : 'border-gray-200'}`}>
-            <span className={`text-sm font-bold ${isDark ? 'text-frost' : 'text-gray-800'}`}>Notifications</span>
+        <Paper
+          radius="md"
+          withBorder
+          style={{
+            position: 'absolute',
+            right: 0,
+            top: '100%',
+            marginTop: 8,
+            width: 320,
+            maxWidth: '80vw',
+            maxHeight: 384,
+            overflow: 'hidden',
+            zIndex: 50,
+            background: panelBg,
+            boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+          }}
+        >
+          <Group px="md" py="sm" justify="space-between" wrap="nowrap" style={{ borderBottom: `1px solid ${borderColor}` }}>
+            <Text size="sm" fw={700} style={{ color: headerFg }}>Notifications</Text>
             {unreadCount > 0 && (
-              <button
+              <UnstyledButton
                 onClick={markAllRead}
                 aria-label="Mark all notifications as read"
-                className={`text-xs font-medium ${isDark ? 'text-cyanx hover:text-cyan-400' : 'text-cyan-600 hover:text-cyan-700'}`}
+                style={{ fontSize: 12, fontWeight: 500, color: 'var(--mantine-color-cyan-6)' }}
               >
                 Mark all read
-              </button>
+              </UnstyledButton>
             )}
-          </div>
+          </Group>
 
-          <div className="overflow-y-auto max-h-80">
+          <ScrollArea style={{ height: 320 }} type="auto">
             {loading && (
-              <div className="p-8 text-center">
-                <div className={`w-6 h-6 mx-auto animate-spin rounded-full border-2 border-t-transparent ${isDark ? 'border-edge' : 'border-gray-200'}`} />
-              </div>
+              <Group justify="center" p="xl">
+                <Loader size="sm" color="cyan" />
+              </Group>
             )}
 
             {!loading && notifications.length === 0 && (
-              <div className={`p-8 text-center text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>
+              <Text ta="center" size="sm" p="xl" style={{ color: muted }}>
                 No notifications yet
-              </div>
+              </Text>
             )}
 
             {notifications.map(n => (
-              <button
+              <UnstyledButton
                 key={n.id}
                 onClick={() => { markRead(n.id); onViewProfile?.(n.actor_id); }}
-                className={`w-full text-left px-4 py-3 transition-all flex items-start gap-3 ${
-                  !n.read
-                    ? isDark ? 'bg-cyanx/5' : 'bg-cyan-50/50'
-                    : 'hover:bg-opacity-50'
-                } ${isDark ? 'hover:bg-surface' : 'hover:bg-gray-50'}`}
+                style={{
+                  width: '100%',
+                  textAlign: 'left',
+                  padding: '12px 16px',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 12,
+                  background: !n.read ? unreadRowBg : 'transparent',
+                  color: bodyFg,
+                  borderBottom: `1px solid ${borderColor}`,
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = hoverBg; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = n.read ? 'transparent' : unreadRowBg; }}
               >
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden ${n.actor?.avatar_url ? '' : 'bg-gradient-to-br from-cyanx to-emera'}`}>
-                  {n.actor?.avatar_url ? (
-                    <img src={n.actor.avatar_url} alt={n.actor?.username || 'User'} loading="lazy" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-white font-display font-bold text-xs">
-                      {(n.actor?.username?.[0] || '?').toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm ${isDark ? 'text-frost' : 'text-gray-800'}`}>
-                    {n.type === 'like' && <><span className="font-semibold">{n.actor?.username}</span> liked your post</>}
-                    {n.type === 'comment' && <><span className="font-semibold">{n.actor?.username}</span> commented on your post</>}
-                    {n.type === 'follow' && <><span className="font-semibold">{n.actor?.username}</span> followed you</>}
-                    {n.type === 'new_listing' && <><span className="font-semibold">{n.actor?.username}</span> listed <span className="font-medium">{n.listing_title || 'something'}</span> for sale</>}
-                    {n.type === 'listing_sold' && <><span className="font-semibold">{n.actor?.username}</span> marked <span className="font-medium">{n.listing_title || 'a listing'}</span> as sold</>}
-                  </p>
-                  <p className={`text-xs mt-0.5 ${isDark ? 'text-muted' : 'text-gray-400'}`}>
-                    {timeAgo(n.created_at, lang)}
-                  </p>
-                </div>
-                {!n.read && (
-                  <span className="w-2 h-2 rounded-full bg-cyanx shrink-0 mt-1.5" />
+                {n.actor?.avatar_url ? (
+                  <Avatar src={n.actor.avatar_url} alt={n.actor?.username || 'User'} radius="md" size={32} />
+                ) : (
+                  <Avatar radius="md" size={32} color="cyan" style={{ background: 'linear-gradient(135deg, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))' }}>
+                    {(n.actor?.username?.[0] || '?').toUpperCase()}
+                  </Avatar>
                 )}
-              </button>
+                <Box style={{ flex: 1, minWidth: 0 }}>
+                  <Text size="sm" style={{ color: bodyFg }}>
+                    {n.type === 'like' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> liked your post</>}
+                    {n.type === 'comment' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> commented on your post</>}
+                    {n.type === 'follow' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> followed you</>}
+                    {n.type === 'new_listing' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> listed <span style={{ fontWeight: 500 }}>{n.listing_title || 'something'}</span> for sale</>}
+                    {n.type === 'listing_sold' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> marked <span style={{ fontWeight: 500 }}>{n.listing_title || 'a listing'}</span> as sold</>}
+                  </Text>
+                  <Text size="xs" style={{ marginTop: 2, color: muted }}>
+                    {timeAgo(n.created_at, lang)}
+                  </Text>
+                </Box>
+                {!n.read && (
+                  <Box style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--mantine-color-cyan-6)', flexShrink: 0, marginTop: 6 }} />
+                )}
+              </UnstyledButton>
             ))}
-          </div>
-        </div>
+          </ScrollArea>
+        </Paper>
       )}
-    </div>
+    </Box>
   );
 }

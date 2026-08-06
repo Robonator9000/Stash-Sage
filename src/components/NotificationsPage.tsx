@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase';
 import { timeAgo } from '../utils/helpers';
+import { Paper, Text, Group, Avatar, UnstyledButton, Stack } from '@mantine/core';
 
 interface Notification {
   id: string;
@@ -42,30 +43,39 @@ export function NotificationsPage({ isDark, currentUserId, onViewProfile }: {
     });
   }, [currentUserId]);
 
-  if (loading) return <div className={`text-center py-16 text-sm ${isDark ? 'text-muted' : 'text-gray-400'}`}>Loading...</div>;
-  if (notifications.length === 0) return <div className={`text-center py-16 text-sm ${isDark ? 'text-muted' : 'text-gray-400'}`}>No notifications yet</div>;
+  const muted = isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-6)';
+  const nameFg = isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)';
+  const cardBg = isDark ? 'var(--mantine-color-dark-6)' : 'rgba(255,255,255,0.7)';
+
+  if (loading) return <Text ta="center" style={{ padding: '64px 0', fontSize: 14, color: muted }}>Loading...</Text>;
+  if (notifications.length === 0) return <Text ta="center" style={{ padding: '64px 0', fontSize: 14, color: muted }}>No notifications yet</Text>;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-2">
+    <Stack mx="auto" style={{ maxWidth: 672 }} gap="sm">
       {notifications.map(n => (
-        <div key={n.id} className={`p-4 rounded-2xl backdrop-blur-sm ${isDark ? 'bg-surface/40 border border-edge' : 'bg-white/70 border border-gray-200'}`}>
-          <div className="flex items-start gap-3">
-            <button onClick={() => onViewProfile?.(n.actor_id)}
-              className={`w-9 h-9 rounded-xl shrink-0 overflow-hidden ${n.actor_avatar ? '' : 'bg-gradient-to-br from-cyanx to-emera flex items-center justify-center'}`}>
-              {n.actor_avatar ? <img src={n.actor_avatar} alt="" className="w-full h-full object-cover" /> : <span className="text-white font-bold text-sm">{(n.actor_name[0] || '?').toUpperCase()}</span>}
-            </button>
-            <div className="flex-1 min-w-0">
-              <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-600'}`}>
-                <button onClick={() => onViewProfile?.(n.actor_id)} className={`font-bold hover:underline ${isDark ? 'text-frost' : 'text-gray-800'}`}>{n.actor_name}</button>
+        <Paper key={n.id} p="sm" radius="md" withBorder style={{ background: cardBg, backdropFilter: 'blur(4px)' }}>
+          <Group align="flex-start" gap="sm" wrap="nowrap">
+            <UnstyledButton onClick={() => onViewProfile?.(n.actor_id)}>
+              {n.actor_avatar ? (
+                <Avatar src={n.actor_avatar} radius="md" size={36} />
+              ) : (
+                <Avatar radius="md" size={36} color="cyan" style={{ background: 'linear-gradient(135deg, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))' }}>
+                  {(n.actor_name[0] || '?').toUpperCase()}
+                </Avatar>
+              )}
+            </UnstyledButton>
+            <Group gap={2} style={{ flex: 1, minWidth: 0 }}>
+              <Text size="sm" style={{ color: muted }}>
+                <UnstyledButton onClick={() => onViewProfile?.(n.actor_id)} style={{ fontWeight: 700, color: nameFg }} >{n.actor_name}</UnstyledButton>
                 {n.type === 'follow' && ' followed you'}
                 {n.type === 'like' && ' liked your post'}
                 {n.type === 'comment' && ' commented on your post'}
-              </p>
-              <span className={`text-xs ${isDark ? 'text-muted' : 'text-gray-400'}`}>{timeAgo(n.created_at, 'en')}</span>
-            </div>
-          </div>
-        </div>
+              </Text>
+              <Text size="xs" style={{ color: muted }}>{timeAgo(n.created_at, 'en')}</Text>
+            </Group>
+          </Group>
+        </Paper>
       ))}
-    </div>
+    </Stack>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { t } from '../utils/translations';
-import { Plus, BarChart3, Search, Settings } from 'lucide-react';
+import { Paper, Text, Button, Group, Box } from '@mantine/core';
+import { IconPlus, IconChartBar, IconSearch, IconSettings } from '@tabler/icons-react';
 
 interface CoachMarksProps {
   language: string;
@@ -12,10 +13,10 @@ interface CoachMarksProps {
 }
 
 const STEPS = [
-  { icon: Plus, titleKey: 'coachAddTitle', descKey: 'coachAddDesc', target: '[data-coach="add-btn"]', arrowDir: 'top' as const },
-  { icon: BarChart3, titleKey: 'coachStatsTitle', descKey: 'coachStatsDesc', target: '[data-coach="stats"]', arrowDir: 'top' as const },
-  { icon: Search, titleKey: 'coachSearchTitle', descKey: 'coachSearchDesc', target: '[data-coach="search"]', arrowDir: 'top' as const },
-  { icon: Settings, titleKey: 'coachSettingsTitle', descKey: 'coachSettingsDesc', target: '[data-coach="settings"]', arrowDir: 'top' as const },
+  { icon: IconPlus, titleKey: 'coachAddTitle', descKey: 'coachAddDesc', target: '[data-coach="add-btn"]', arrowDir: 'top' as const },
+  { icon: IconChartBar, titleKey: 'coachStatsTitle', descKey: 'coachStatsDesc', target: '[data-coach="stats"]', arrowDir: 'top' as const },
+  { icon: IconSearch, titleKey: 'coachSearchTitle', descKey: 'coachSearchDesc', target: '[data-coach="search"]', arrowDir: 'top' as const },
+  { icon: IconSettings, titleKey: 'coachSettingsTitle', descKey: 'coachSettingsDesc', target: '[data-coach="settings"]', arrowDir: 'top' as const },
 ];
 
 export function CoachMarks({ language, isDark, onComplete, onSkip, onOpenSettings, onCloseSettings }: CoachMarksProps) {
@@ -63,84 +64,96 @@ export function CoachMarks({ language, isDark, onComplete, onSkip, onOpenSetting
     onSkip();
   };
 
+  const borderColor = isDark ? '#334155' : '#e5e7eb';
+  const cardBg = isDark ? '#0f172a' : '#ffffff';
+
   return (
     <div className="fixed inset-0 z-[150] pointer-events-none">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
 
-      <div
-        className={`pointer-events-auto absolute w-72 p-4 rounded-xl shadow-2xl border-2 transition-all ${
-          isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'
-        }`}
-        style={{ top: pos.top, left: pos.left }}
+      <Paper
+        className="pointer-events-auto"
+        w={288}
+        p="md"
+        radius="lg"
+        withBorder
+        style={{ position: 'absolute', top: pos.top, left: pos.left, background: cardBg, border: `2px solid ${borderColor}`, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}
       >
-        {/* Arrow */}
         <div
-          className="absolute w-0 h-0"
           style={{
-            top: '-6px', left: '50%', marginLeft: '-6px',
+            position: 'absolute',
+            top: -12,
+            left: '50%',
+            marginLeft: -6,
+            width: 0,
+            height: 0,
             borderLeft: '6px solid transparent',
             borderRight: '6px solid transparent',
             borderBottom: '6px solid',
-            borderBottomColor: isDark ? '#334155' : '#e5e7eb',
+            borderBottomColor: borderColor,
           }}
         />
         <div
-          className="absolute w-0 h-0"
           style={{
-            top: '-5px', left: '50%', marginLeft: '-6px',
+            position: 'absolute',
+            top: -10,
+            left: '50%',
+            marginLeft: -6,
+            width: 0,
+            height: 0,
             borderLeft: '6px solid transparent',
             borderRight: '6px solid transparent',
             borderBottom: '6px solid',
-            borderBottomColor: isDark ? '#0f172a' : '#ffffff',
+            borderBottomColor: cardBg,
           }}
         />
 
-        <div className="flex items-start gap-3 mb-3">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-            isDark ? 'bg-cyanx/10' : 'bg-cyan-50'
-          }`}>
-            <Icon className={`w-5 h-5 ${isDark ? 'text-cyanx' : 'text-cyan-600'}`} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className={`font-bold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
+        <Group align="flex-start" gap="md" mb="md">
+          <Paper
+            w={40}
+            h={40}
+            radius="md"
+            bg={isDark ? 'var(--mantine-color-cyan-9)' : 'var(--mantine-color-cyan-0)'}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+          >
+            <Icon size={20} color={isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)'} />
+          </Paper>
+          <Group gap={4} style={{ flex: 1, minWidth: 0 }} wrap="nowrap">
+            <Text fw={700} size="sm" c={isDark ? 'var(--mantine-color-white)' : 'var(--mantine-color-gray-9)'} w="100%">
               {t(current.titleKey, language)}
-            </p>
-            <p className={`text-xs mt-1 leading-relaxed ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+            </Text>
+            <Text size="xs" c={isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-6)'} style={{ lineHeight: 1.6 }}>
               {t(current.descKey, language)}
-            </p>
-          </div>
-        </div>
+            </Text>
+          </Group>
+        </Group>
 
-        <div className="flex items-center justify-center gap-1.5 mb-3">
+        <Group justify="center" gap={6} mb="md">
           {STEPS.map((_, idx) => (
-            <div key={idx} className={`w-1.5 h-1.5 rounded-full transition-all ${
-              idx === step ? 'bg-cyanx w-4' : isDark ? 'bg-slate-700' : 'bg-gray-300'
-            }`} />
+            <Box key={idx} style={{ width: idx === step ? 16 : 6, height: 6, borderRadius: '50%', transition: 'width 0.2s', background: idx === step ? 'var(--mantine-color-cyan-6)' : isDark ? 'var(--mantine-color-slate-7)' : 'var(--mantine-color-gray-3)' }} />
           ))}
-        </div>
+        </Group>
 
-        <div className="flex items-center gap-2">
-          <button
+        <Group gap="sm">
+          <Button
+            variant="subtle"
+            size="compact-sm"
+            c={isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-5)'}
+            styles={{ root: { '&:hover': { background: isDark ? 'var(--mantine-color-slate-8)' : 'var(--mantine-color-gray-1)', color: isDark ? 'var(--mantine-color-white)' : 'var(--mantine-color-gray-9)' } } }}
             onClick={handleSkipAll}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              isDark ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100'
-            }`}
           >
             {t('skip', language)}
-          </button>
-          <div className="flex-1" />
-          <button
+          </Button>
+          <Box style={{ flex: 1 }} />
+          <Button
+            size="compact-sm"
+            styles={{ root: { background: 'linear-gradient(to right, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))' } }}
             onClick={handleNext}
-            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              isDark
-                ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white'
-                : 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white'
-            }`}
           >
             {isLast ? t('done', language) : t('next', language)}
-          </button>
-        </div>
-      </div>
+          </Button>
+        </Group>
+      </Paper>
     </div>
   );
 }
