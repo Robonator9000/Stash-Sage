@@ -7,32 +7,28 @@ import {
   IconHome,
   IconUsers,
   IconShoppingCart,
-  IconBell,
-  IconUser,
   IconHistory,
-  IconMessageCircle,
-  IconSearch,
   IconLayoutDashboard,
-  IconDots,
+  IconBell,
+  IconSettings,
   IconShield,
+  IconDots,
 } from '@tabler/icons-react';
 
-type PrimaryTabId = 'stash' | 'community' | 'marketplace' | 'notifications' | 'profile';
-type SecondaryTabId = 'history' | 'messages' | 'explore' | 'dashboard' | 'admin';
+type PrimaryTabId = 'stash' | 'community' | 'marketplace' | 'dashboard' | 'history';
+type SecondaryTabId = 'notifications' | 'settings' | 'admin';
 
-const primaryTabs: { id: PrimaryTabId; label: string; icon: typeof IconHome }[] = [
+const primaryTabs: { id: PrimaryTabId; label: string; icon: typeof IconHome; requiresAuth?: boolean }[] = [
   { id: 'stash', label: 'Stash', icon: IconHome },
-  { id: 'community', label: 'Community', icon: IconUsers },
+  { id: 'community', label: 'Feed', icon: IconUsers },
   { id: 'marketplace', label: 'Market', icon: IconShoppingCart },
-  { id: 'notifications', label: 'Alerts', icon: IconBell },
-  { id: 'profile', label: 'Profile', icon: IconUser },
+  { id: 'dashboard', label: 'Dashboard', icon: IconLayoutDashboard },
+  { id: 'history', label: 'History', icon: IconHistory, requiresAuth: true },
 ];
 
 const secondaryTabs: { id: SecondaryTabId; label: string; icon: typeof IconHome; requiresAuth?: boolean }[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: IconLayoutDashboard, requiresAuth: true },
-  { id: 'history', label: 'History', icon: IconHistory, requiresAuth: true },
-  { id: 'explore', label: 'Explore', icon: IconSearch },
-  { id: 'messages', label: 'Messages', icon: IconMessageCircle, requiresAuth: true },
+  { id: 'notifications', label: 'Notifications', icon: IconBell, requiresAuth: true },
+  { id: 'settings', label: 'Settings', icon: IconSettings },
   { id: 'admin', label: 'Admin', icon: IconShield, requiresAuth: true },
 ];
 
@@ -48,31 +44,6 @@ export function BottomNav({ isDark }: BottomNavProps) {
   const activeTab = new URLSearchParams(location.search).get('tab') as PrimaryTabId | null;
 
   const handleTabClick = (tabId: PrimaryTabId | SecondaryTabId) => {
-    if (tabId === 'profile') {
-      navigate('/?tab=community');
-      return;
-    }
-    if (tabId === 'dashboard') {
-      navigate('/?tab=dashboard');
-      return;
-    }
-    if (tabId === 'admin') {
-      navigate('/?tab=admin');
-      return;
-    }
-    if (tabId === 'history') {
-      navigate('/?tab=history');
-      return;
-    }
-    if (tabId === 'messages') {
-      // Messages handled by MessagePopup
-      navigate('/?tab=community');
-      return;
-    }
-    if (tabId === 'explore') {
-      navigate('/?tab=community');
-      return;
-    }
     navigate(`/?tab=${tabId}`);
     setMoreOpen(false);
   };
@@ -96,7 +67,7 @@ export function BottomNav({ isDark }: BottomNavProps) {
         }}
       >
         <Group justify="space-around" h={64} px="sm" align="center" wrap="nowrap">
-          {primaryTabs.map((tab) => {
+          {primaryTabs.filter(tab => !tab.requiresAuth || user).map((tab) => {
             const isActive = activeTab === tab.id;
             const Icon = tab.icon;
             return (
@@ -128,7 +99,7 @@ export function BottomNav({ isDark }: BottomNavProps) {
         isDark={isDark}
       >
         <Stack gap="xs">
-          <Text size="xs" fw={600} c="dimmed" px="xs">Other</Text>
+          <Text size="xs" fw={600} c="dimmed" px="xs">Utilities</Text>
           {secondaryTabs
             .filter(tab => {
               if (tab.requiresAuth && !user) return false;
