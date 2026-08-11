@@ -73,27 +73,14 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
         ];
 
     let frame = 0;
+    let paused = false;
 
-    const drawStatic = () => {
-      ctx.clearRect(0, 0, w, h);
-      for (const orb of orbs) {
-        const grad = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.radius);
-        for (const stop of orbStops) {
-          grad.addColorStop(stop.pos, `rgba(${stop.r},${stop.g},${stop.b},${stop.a})`);
-        }
-        grad.addColorStop(1, 'transparent');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, w, h);
-      }
-      for (const p of particles) {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = isDark ? `hsla(${p.hue}, 70%, 65%, ${p.alpha})` : `hsla(${p.hue}, 40%, 50%, ${p.alpha * 0.5})`;
-        ctx.fill();
-      }
-    };
+    const shouldRun = () =>
+      !document.hidden &&
+      !document.querySelector('.mantine-Modal-root, .mantine-Drawer-root, [data-mantine-modal]');
 
     const animate = () => {
+      if (paused) return;
       frame++;
       ctx.clearRect(0, 0, w, h);
 
@@ -144,25 +131,29 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
       rafRef.current = requestAnimationFrame(animate);
     };
 
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReduced) {
-      drawStatic();
-    } else {
-      animate();
-    }
-
-    const onVisibility = () => {
-      if (document.hidden) {
-        cancelAnimationFrame(rafRef.current);
-      } else if (!prefersReduced) {
+    const syncPause = () => {
+      const run = shouldRun();
+      if (run && paused) {
+        paused = false;
         rafRef.current = requestAnimationFrame(animate);
+      } else if (!run && !paused) {
+        paused = true;
+        cancelAnimationFrame(rafRef.current);
       }
     };
+
+    const onVisibility = () => syncPause();
     document.addEventListener('visibilitychange', onVisibility);
+
+    const observer = new MutationObserver(syncPause);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    animate();
 
     return () => {
       window.removeEventListener('resize', resize);
       document.removeEventListener('visibilitychange', onVisibility);
+      observer.disconnect();
       cancelAnimationFrame(rafRef.current);
     };
   }, [isDark]);
