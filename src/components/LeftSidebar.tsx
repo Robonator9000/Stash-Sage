@@ -200,6 +200,7 @@ export function LeftSidebar({
           onClick={() => handleTabClick(item.id)}
           variant="light"
           color="cyan"
+          {...(item.id === 'settings' ? { 'data-coach': 'settings' } : {})}
           rightSection={!collapsed && item.badge ? (
             <Badge size="xs" variant="filled" color="cyan" radius="xl">
               {item.badge}

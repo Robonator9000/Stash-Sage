@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { LogoIcon } from './LogoIcon';
-import { Box, Stack, Text, Button } from '@mantine/core';
-import { IconCheck } from '@tabler/icons-react';
+import { t } from '../utils/translations';
+import { Card, Stack, Text, Button, Group, UnstyledButton, ThemeIcon } from '@mantine/core';
+import { IconCheck, IconGlobe, IconSparkles } from '@tabler/icons-react';
 
 interface WelcomeModalProps {
   onComplete: (language: 'en' | 'es' | 'fr' | 'de' | 'pt') => void;
@@ -36,105 +37,108 @@ const NATIVE_NAMES: Record<string, string> = {
 export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalProps) {
   const [selected, setSelected] = useState<'en' | 'es' | 'fr' | 'de' | 'pt'>('en');
 
-  const surfaceBg = isDark ? 'var(--mantine-color-slate-8)' : 'var(--mantine-color-white)';
   const borderColor = isDark ? 'var(--mantine-color-slate-7)' : 'var(--mantine-color-gray-3)';
-  const primaryColor = 'var(--mantine-color-cyan-6)';
-  const secondaryColor = 'var(--mantine-color-emerald-5)';
+  const cardBg = isDark ? 'var(--mantine-color-slate-8)' : '#fff';
 
   return (
-    <Box style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <Box
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div
         style={{
           position: 'absolute',
           inset: 0,
-          background: `linear-gradient(135deg, ${primaryColor} 10%, transparent 50%, ${secondaryColor} 90%)`,
-          opacity: 0.1,
+          background: 'linear-gradient(135deg, var(--mantine-color-cyan-6) 10%, transparent 50%, var(--mantine-color-emerald-5) 90%)',
+          opacity: 0.12,
           pointerEvents: 'none',
         }}
       />
 
-      <Box
+      <Card
+        radius="lg"
+        p="xl"
         style={{
           position: 'relative',
           width: '100%',
           maxWidth: 512,
-          borderRadius: 'var(--mantine-radius-lg)',
-          padding: 24,
-          background: surfaceBg,
+          background: cardBg,
           border: `1px solid ${borderColor}`,
           boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
         }}
       >
-        <Stack align="center" gap="xl" mb="lg">
-          <Box style={{ position: 'relative', width: 80, height: 80, borderRadius: 'var(--mantine-radius-md)', border: `1px solid ${borderColor}` }}>
-            <Box style={{ position: 'absolute', inset: 0, borderRadius: 'calc(var(--mantine-radius-md) - 1px)', background: `linear-gradient(135deg, ${primaryColor} 20%, ${secondaryColor} 20%)`, opacity: 0.2 }} />
-            <Box style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Box style={{ width: 48, height: 48 }}>
-                <LogoIcon className="w-12 h-12" />
-              </Box>
-            </Box>
-          </Box>
+        <Stack align="center" gap="lg" mb="xl">
+          <LogoBadge borderColor={borderColor} />
           <Stack align="center" gap={6}>
             <Text
               fw={800}
-              style={{ fontFamily: 'inherit', fontSize: 30, letterSpacing: '-0.025em', background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}
+              style={{
+                fontSize: 30,
+                letterSpacing: '-0.025em',
+                background: 'linear-gradient(to right, var(--mantine-color-cyan-6), var(--mantine-color-emerald-5))',
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                color: 'transparent',
+              }}
             >
               STASH SAGE
             </Text>
-            <Text size="sm" c={isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-6)'} ta="center">
-              Keep track of your collection, log your sessions, and connect with the community
+            <Text size="sm" c={isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-6)'} ta="center" maw={420}>
+              {t('welcomeTagline', selected)}
             </Text>
           </Stack>
         </Stack>
 
-        <Stack gap="md" mb="lg">
+        <Group mb="xs" gap={6}>
+          <IconGlobe size={14} color={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'} />
+          <Text size="xs" fw={600} tt="uppercase" style={{ letterSpacing: '0.1em' }} c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}>
+            {t('language', selected)}
+          </Text>
+        </Group>
+
+        <Stack gap="sm" mb="xl">
           {LANGUAGES.map((lang) => {
             const isSelected = selected === lang.code;
-            const borderClr = isSelected
-              ? isDark ? 'var(--mantine-color-cyan-6)' : 'var(--mantine-color-cyan-5)'
-              : isDark ? 'transparent' : 'transparent';
-            const bgClr = isSelected
-              ? isDark ? 'var(--mantine-color-cyan-9)' : 'var(--mantine-color-cyan-0)'
-              : isDark ? 'var(--mantine-color-slate-9)' : 'var(--mantine-color-gray-0)';
-            const textColor = isSelected
-              ? isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-8)'
-              : isDark ? 'var(--mantine-color-slate-2)' : 'var(--mantine-color-gray-8)';
             return (
-              <Box
+              <UnstyledButton
                 key={lang.code}
                 onClick={() => setSelected(lang.code)}
+                aria-pressed={isSelected}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: 16,
                   width: '100%',
-                  padding: 16,
+                  padding: '12px 14px',
                   borderRadius: 'var(--mantine-radius-md)',
                   cursor: 'pointer',
-                  background: bgClr,
-                  border: `2px solid ${borderClr}`,
+                  background: isSelected
+                    ? isDark ? 'var(--mantine-color-cyan-9)' : 'var(--mantine-color-cyan-0)'
+                    : isDark ? 'var(--mantine-color-slate-9)' : 'var(--mantine-color-gray-0)',
+                  border: `2px solid ${isSelected
+                    ? isDark ? 'var(--mantine-color-cyan-6)' : 'var(--mantine-color-cyan-5)'
+                    : 'transparent'}`,
                   transition: 'background 0.2s, border 0.2s',
                 }}
-                onMouseEnter={(e) => {
-                  if (!isSelected) e.currentTarget.style.background = isDark ? 'var(--mantine-color-slate-8)' : 'var(--mantine-color-gray-1)';
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSelected) e.currentTarget.style.background = isDark ? 'var(--mantine-color-slate-9)' : 'var(--mantine-color-gray-0)';
-                }}
               >
-                <Text style={{ fontSize: 30 }}>{lang.flag}</Text>
-                <Box>
-                  <Text fw={600} size="sm" c={textColor}>{NATIVE_NAMES[lang.code]}</Text>
-                  <Text size="xs" c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'} mt={2}>
-                    {LANGUAGE_NAMES[browserLang]?.[lang.code] || LANGUAGE_NAMES.en[lang.code]}
-                  </Text>
-                </Box>
+                <Text style={{ fontSize: 28 }}>{lang.flag}</Text>
+                <LangLabel textColor={isSelected
+                  ? isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-8)'
+                  : isDark ? 'var(--mantine-color-slate-2)' : 'var(--mantine-color-gray-8)'}
+                  native={NATIVE_NAMES[lang.code]}
+                  foreign={LANGUAGE_NAMES[browserLang]?.[lang.code] || LANGUAGE_NAMES.en[lang.code]}
+                  muted={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}
+                />
                 {isSelected && (
-                  <Box ml="auto" style={{ width: 24, height: 24, borderRadius: '50%', background: isDark ? 'var(--mantine-color-cyan-6)' : 'var(--mantine-color-cyan-5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <IconCheck size={14} color="var(--mantine-color-white)" />
-                  </Box>
+                  <ThemeIcon
+                    size={24}
+                    radius="xl"
+                    variant="filled"
+                    color={isDark ? 'cyan.6' : 'cyan.5'}
+                    ml="auto"
+                    style={{ flexShrink: 0 }}
+                  >
+                    <IconCheck size={14} />
+                  </ThemeIcon>
                 )}
-              </Box>
+              </UnstyledButton>
             );
           })}
         </Stack>
@@ -144,20 +148,49 @@ export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalPr
           size="lg"
           radius="md"
           onClick={() => onComplete(selected)}
+          leftSection={<IconSparkles size={18} />}
           styles={{
             root: {
-              background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`,
+              background: 'linear-gradient(to right, var(--mantine-color-cyan-6), var(--mantine-color-emerald-5))',
               '&:active': { transform: 'scale(0.97)' },
             },
           }}
         >
-          Get Started
+          {t('getStarted', selected)}
         </Button>
 
         <Text ta="center" size="xs" mt="md" c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}>
-          You can change language anytime in Settings &middot; No account required
+          {t('welcomeFootnote', selected)}
         </Text>
-      </Box>
-    </Box>
+      </Card>
+    </div>
+  );
+}
+
+function LogoBadge({ borderColor }: { borderColor: string }) {
+  return (
+    <div style={{ position: 'relative', width: 84, height: 84, borderRadius: 'var(--mantine-radius-md)', border: `1px solid ${borderColor}` }}>
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          borderRadius: 'calc(var(--mantine-radius-md) - 1px)',
+          background: 'linear-gradient(135deg, var(--mantine-color-cyan-6) 20%, var(--mantine-color-emerald-5) 20%)',
+          opacity: 0.2,
+        }}
+      />
+      <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <LogoIcon className="w-12 h-12" />
+      </div>
+    </div>
+  );
+}
+
+function LangLabel({ textColor, native, foreign, muted }: { textColor: string; native: string; foreign: string; muted: string }) {
+  return (
+    <div>
+      <Text fw={600} size="sm" c={textColor}>{native}</Text>
+      <Text size="xs" c={muted} mt={2}>{foreign}</Text>
+    </div>
   );
 }

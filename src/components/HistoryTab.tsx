@@ -3,8 +3,8 @@ import { Settings } from '../types';
 import { ActivityEntry } from '../utils/useActivity';
 import { t } from '../utils/translations';
 import { formatPrecision, formatCurrency } from '../utils/helpers';
-import { Table, Badge, ScrollArea, Group, Text, Button, Select, Checkbox, ActionIcon } from '@mantine/core';
-import { IconTrash, IconX } from '@tabler/icons-react';
+import { Card, Badge, Group, Text, Button, Select, Checkbox, ActionIcon, Box, Stack } from '@mantine/core';
+import { IconTrash, IconX, IconPlus, IconEdit, IconFlame, IconCurrencyDollar, IconUsers, IconTimeline, IconChevronDown } from '@tabler/icons-react';
 
 interface HistoryTabProps {
   filteredHistory: ActivityEntry[];
@@ -24,25 +24,27 @@ function formatActivityDate(date: Date, lang: string): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return 'now';
+  if (diffMins < 1) return t('now', lang);
   if (diffMins < 60) return t('minutesAgo', lang).replace('{n}', String(diffMins));
   const diffHrs = Math.floor(diffMins / 60);
   if (diffHrs < 24) return t('hoursAgo', lang).replace('{n}', String(diffHrs));
   const diffDays = Math.floor(diffHrs / 24);
-  if (diffDays === 1) return t('daysAgo', lang).replace('{n}', '1');
+  if (diffDays === 1) return t('yesterday', lang);
   if (diffDays < 30) return t('daysAgo', lang).replace('{n}', String(diffDays));
   if (diffDays < 365) return t('monthsAgo', lang).replace('{n}', String(Math.floor(diffDays / 30)));
-  return t('monthsAgo', lang).replace('{n}', String(Math.floor(diffDays / 365)));
+  return t('yearsAgo', lang).replace('{n}', String(Math.floor(diffDays / 365)));
 }
 
-const typeColors: Record<string, string> = {
-  add: 'green',
-  delete: 'red',
-  edit: 'blue',
-  consume: 'orange',
-  sell: 'violet',
-  session: 'cyan',
+const TYPE_META: Record<string, { icon: typeof IconPlus; color: string; label: string }> = {
+  add: { icon: IconPlus, color: 'green', label: 'add' },
+  delete: { icon: IconTrash, color: 'red', label: 'delete' },
+  edit: { icon: IconEdit, color: 'blue', label: 'edit' },
+  consume: { icon: IconFlame, color: 'orange', label: 'consume' },
+  sell: { icon: IconCurrencyDollar, color: 'violet', label: 'sell' },
+  session: { icon: IconUsers, color: 'cyan', label: 'session' },
 };
+
+const TYPE_OPTIONS = ['consume', 'sell', 'session', 'add', 'delete', 'edit'];
 
 export const HistoryTab = memo(function HistoryTab({
   filteredHistory, isDark, lang, settings, historyFilterType, historyDateFilter,
@@ -73,6 +75,10 @@ export const HistoryTab = memo(function HistoryTab({
     clearSelection();
   }, [selectedIds, onClearHistory, clearSelection]);
 
+  const mutedColor = isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)';
+  const cardBg = isDark ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-white)';
+  const borderColor = isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-2)';
+
   return (
     <div>
       <Group mb="md" gap="sm" wrap="wrap">
@@ -81,15 +87,10 @@ export const HistoryTab = memo(function HistoryTab({
           onChange={(v) => onFilterTypeChange(v || 'all')}
           data={[
             { value: 'all', label: t('allTypes', lang) },
-            { value: 'consume', label: 'Consume' },
-            { value: 'sell', label: 'Sell' },
-            { value: 'session', label: 'Session' },
-            { value: 'add', label: 'Add' },
-            { value: 'delete', label: 'Delete' },
-            { value: 'edit', label: 'Edit' },
+            ...TYPE_OPTIONS.map(type => ({ value: type, label: t(TYPE_META[type].label, lang) })),
           ]}
           size="xs"
-          w={140}
+          w={150}
         />
         <Select
           value={historyDateFilter}
@@ -101,7 +102,7 @@ export const HistoryTab = memo(function HistoryTab({
             { value: '90d', label: t('last90days', lang) },
           ]}
           size="xs"
-          w={140}
+          w={150}
         />
         {filteredHistory.length > 0 && (
           <Button size="xs" color="red" variant="light" onClick={onClearHistory} ml="auto">
@@ -116,9 +117,9 @@ export const HistoryTab = memo(function HistoryTab({
           background: `var(--mantine-color-blue-${isDark ? 9 : 0})`,
           border: `1px solid var(--mantine-color-blue-${isDark ? 8 : 2})`,
         }}>
-          <Text size="sm" fw={500}>{selectedIds.size} selected</Text>
+          <Text size="sm" fw={500}>{t('itemsSelected', lang).replace('{count}', String(selectedIds.size))}</Text>
           <Button size="xs" color="red" variant="light" onClick={handleBulkDelete} leftSection={<IconTrash size={14} />}>
-            Delete selected
+            {t('deleteSelected', lang)}
           </Button>
           <ActionIcon variant="subtle" size="sm" onClick={clearSelection} ml="auto">
             <IconX size={14} />
@@ -127,88 +128,132 @@ export const HistoryTab = memo(function HistoryTab({
       )}
 
       {filteredHistory.length > 0 ? (
-        <ScrollArea type="always">
-          <Table verticalSpacing="sm" striped highlightOnHover>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th w={40}>
+        <Stack gap="sm">
+          <Group justify="space-between" px={2}>
+            <Checkbox
+              checked={selectedIds.size === filteredHistory.length && filteredHistory.length > 0}
+              indeterminate={selectedIds.size > 0 && selectedIds.size < filteredHistory.length}
+              onChange={toggleAll}
+              label={`${filteredHistory.length} ${t('history', lang)}`}
+              size="xs"
+            />
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              onClick={clearSelection}
+              disabled={selectedIds.size === 0}
+              aria-label={t('close', lang)}
+            >
+              <IconX size={14} />
+            </ActionIcon>
+          </Group>
+
+          {filteredHistory.map((entry) => {
+            const meta = TYPE_META[entry.type] || TYPE_META.edit;
+            const TypeIcon = meta.icon;
+            const isSelected = selectedIds.has(entry.id);
+            const isExpanded = expandedNotes.has(entry.id);
+
+            return (
+              <Card
+                key={entry.id}
+                radius="md"
+                withBorder
+                style={{
+                  background: isSelected ? `var(--mantine-color-blue-${isDark ? 9 : 0})` : cardBg,
+                  borderColor: isSelected ? `var(--mantine-color-blue-${isDark ? 7 : 3})` : borderColor,
+                  cursor: 'pointer',
+                  transition: 'background 0.15s',
+                }}
+                onClick={() => toggleRow(entry.id)}
+                padding="sm"
+              >
+                <Group wrap="nowrap" align="flex-start" gap="sm">
                   <Checkbox
-                    checked={selectedIds.size === filteredHistory.length && filteredHistory.length > 0}
-                    indeterminate={selectedIds.size > 0 && selectedIds.size < filteredHistory.length}
-                    onChange={toggleAll}
-                    aria-label="Select all"
+                    checked={isSelected}
+                    onChange={() => toggleRow(entry.id)}
+                    onClick={e => e.stopPropagation()}
+                    aria-label={entry.productName}
+                    mt={2}
                   />
-                </Table.Th>
-                <Table.Th w={90}>{t('strainType', lang)}</Table.Th>
-                <Table.Th>{t('products', lang)}</Table.Th>
-                <Table.Th ta="right">{t('amount', lang)}</Table.Th>
-                <Table.Th ta="right">{t('priceLabel', lang)}</Table.Th>
-                <Table.Th miw={180}>{t('notesLabel', lang)}</Table.Th>
-                <Table.Th ta="right" miw={150}>When</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {filteredHistory.map((entry) => (
-                <Table.Tr
-                  key={entry.id}
-                  style={{
-                    background: selectedIds.has(entry.id) ? `var(--mantine-color-blue-${isDark ? 9 : 0})` : undefined,
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => toggleRow(entry.id)}
-                >
-                  <Table.Td onClick={e => e.stopPropagation()} w={40}>
-                    <Checkbox
-                      checked={selectedIds.has(entry.id)}
-                      onChange={() => toggleRow(entry.id)}
-                      aria-label={`Select ${entry.productName}`}
-                    />
-                  </Table.Td>
-                  <Table.Td>
-                    <Badge color={typeColors[entry.type] || 'gray'} variant="light" size="sm">
-                      {entry.type.charAt(0).toUpperCase() + entry.type.slice(1)}
-                    </Badge>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="sm" fw={500}>{entry.productName}</Text>
-                  </Table.Td>
-                  <Table.Td ta="right">
-                    <Text size="sm">{entry.amount != null ? `${formatPrecision(entry.amount, settings.decimalPrecision)}g` : '\u2014'}</Text>
-                  </Table.Td>
-                  <Table.Td ta="right">
-                    <Text size="sm">{entry.price != null ? formatCurrency(entry.price, settings.currency) : '\u2014'}</Text>
-                  </Table.Td>
-                  <Table.Td>
-                    {entry.notes ? (
-                      <Text
-                        size="xs"
-                        style={{ maxWidth: 200, cursor: 'pointer' }}
-                        onClick={() => onToggleNote(entry.id)}
-                        lineClamp={expandedNotes.has(entry.id) ? undefined : 1}
-                      >
-                        {entry.notes}
+                  <Box
+                    w={34}
+                    h={34}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      borderRadius: 'var(--mantine-radius-md)',
+                      background: `var(--mantine-color-${meta.color}-${isDark ? 9 : 1})`,
+                    }}
+                  >
+                    <TypeIcon size={18} color={`var(--mantine-color-${meta.color}-${isDark ? 4 : 7})`} />
+                  </Box>
+
+                  <Box style={{ flex: 1, minWidth: 0 }}>
+                    <Group justify="space-between" wrap="nowrap" gap="xs">
+                      <Text size="sm" fw={600} truncate style={{ minWidth: 0 }}>
+                        {entry.productName || '\u2014'}
                       </Text>
-                    ) : (
-                      <Text size="xs">&nbsp;</Text>
-                    )}
-                  </Table.Td>
-                  <Table.Td ta="right">
-                    <Group justify="flex-end" gap={6} wrap="nowrap">
-                      <Text size="xs" c="dimmed">{formatActivityDate(entry.timestamp, lang)}</Text>
-                      <Text size="xs" c="dimmed" opacity={0.7} title={entry.timestamp.toLocaleString()}>
-                        {entry.timestamp.toLocaleDateString(lang === 'en' ? 'en-US' : lang, { month: 'short', day: 'numeric', year: 'numeric' })}
+                      <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>
+                        {formatActivityDate(entry.timestamp, lang)}
                       </Text>
                     </Group>
-                  </Table.Td>
-                </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
-        </ScrollArea>
+
+                    <Group justify="space-between" wrap="nowrap" gap="xs" mt={2}>
+                      <Group gap={6} wrap="nowrap" style={{ minWidth: 0 }}>
+                        <Badge color={meta.color} variant="light" size="sm" radius="sm" styles={{ label: { textTransform: 'capitalize' } }}>
+                          {t(meta.label, lang)}
+                        </Badge>
+                        {entry.amount != null && (
+                          <Text size="xs" c={mutedColor} style={{ whiteSpace: 'nowrap' }}>
+                            {formatPrecision(entry.amount, settings.decimalPrecision)}g
+                          </Text>
+                        )}
+                        {entry.price != null && (
+                          <Text size="xs" c={mutedColor} style={{ whiteSpace: 'nowrap' }}>
+                            {formatCurrency(entry.price, settings.currency)}
+                          </Text>
+                        )}
+                      </Group>
+                      <Text size="xs" c="dimmed" style={{ flexShrink: 0 }} title={entry.timestamp.toLocaleString()}>
+                        {entry.timestamp.toLocaleDateString(lang === 'en' ? 'en-US' : lang, { month: 'short', day: 'numeric' })}
+                      </Text>
+                    </Group>
+
+                    {entry.notes && (
+                      <Box mt="xs">
+                        <Group gap={4} align="center">
+                          <IconChevronDown
+                            size={14}
+                            style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', color: mutedColor }}
+                          />
+                          <Text
+                            size="xs"
+                            c={mutedColor}
+                            style={{ cursor: 'pointer' }}
+                            onClick={(e) => { e.stopPropagation(); onToggleNote(entry.id); }}
+                            lineClamp={isExpanded ? undefined : 1}
+                          >
+                            {entry.notes}
+                          </Text>
+                        </Group>
+                      </Box>
+                    )}
+                  </Box>
+                </Group>
+              </Card>
+            );
+          })}
+        </Stack>
       ) : (
-        <Text ta="center" py={40} c="dimmed" size="sm">
-          {t('noActivities', lang)}
-        </Text>
+        <Stack align="center" py={40} gap={8}>
+          <IconTimeline size={36} color={mutedColor} />
+          <Text ta="center" c="dimmed" size="sm">
+            {t('noActivities', lang)}
+          </Text>
+        </Stack>
       )}
     </div>
   );

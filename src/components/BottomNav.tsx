@@ -84,6 +84,7 @@ export function BottomNav({ isDark }: BottomNavProps) {
           })}
           <UnstyledButton
             onClick={() => setMoreOpen(true)}
+            data-coach="settings-mobile"
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 12 }}
           >
             <IconDots size={24} stroke={1.5} style={{ color: inactiveColor }} />

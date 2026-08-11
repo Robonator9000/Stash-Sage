@@ -169,7 +169,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
         </div>
 
         <Group gap="xs" style={{ flexShrink: 0 }}>
-          <ActionIcon variant="subtle" className="sm:hidden" onClick={() => setMobileSearchOpen(s => !s)} aria-label="Search">
+          <ActionIcon variant="subtle" className="sm:hidden" onClick={() => setMobileSearchOpen(s => !s)} aria-label="Search" data-coach="search-mobile">
             <IconSearch size={18} />
           </ActionIcon>
 
@@ -180,6 +180,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
             gradient={{ from: 'cyan', to: 'emerald' }}
             onClick={() => setIsAddModalOpen(true)}
             visibleFrom="sm"
+            data-coach="add-btn"
           >
             {t('addProduct', lang)}
           </Button>
