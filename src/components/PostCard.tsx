@@ -6,6 +6,7 @@ import { CommentSection } from './CommentSection';
 import { FollowButton } from './FollowButton';
 import { showToast } from './Toast';
 import { ProductView } from './ProductView';
+import { NumberTicker } from './magicui';
 import { Paper, Text, Group, Avatar, UnstyledButton, Box, ActionIcon, Image, Textarea, Button, Modal } from '@mantine/core';
 import {
   IconPin,
@@ -285,7 +286,7 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
               style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 500, color: liked ? 'var(--mantine-color-orange-6)' : mutedColor }}
             >
               <IconHeart size={20} fill={liked ? 'currentColor' : 'none'} />
-              {likesCount > 0 && <span>{likesCount}</span>}
+              {likesCount > 0 && <NumberTicker value={likesCount} />}
             </UnstyledButton>
 
             <UnstyledButton
@@ -296,7 +297,7 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
               style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 500, color: showComments ? (isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)') : mutedColor }}
             >
               <IconMessageCircle size={18} />
-              {(post.comments_count ?? 0) > 0 && <span>{post.comments_count}</span>}
+              {(post.comments_count ?? 0) > 0 && <NumberTicker value={post.comments_count ?? 0} />}
             </UnstyledButton>
 
             {onBookmark && (

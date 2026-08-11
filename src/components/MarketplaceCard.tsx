@@ -8,6 +8,7 @@ import { ProductView } from './ProductView';
 import { Card, Image, Badge, Group, Text, ActionIcon, Avatar } from '@mantine/core';
 import { useContextMenu } from 'mantine-contextmenu';
 import { IconEdit, IconChecks, IconTrash, IconPinned, IconBookmark, IconMessageCircle } from '@tabler/icons-react';
+import { NumberTicker } from './magicui';
 
 const CATEGORY_GLOW: Record<string, string> = {
   flower: '16,185,129',
@@ -206,10 +207,14 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
           {listing.price_options && listing.price_options.length > 0 ? (
             <>
               <Text fw={700} size="md">
-                From ${Math.min(...listing.price_options.map(o => o.price)).toFixed(2)}
+                From <NumberTicker value={Math.min(...listing.price_options.map(o => o.price))} decimals={2} prefix="$" />
               </Text>
               <Text c="dimmed" size="xs">{listing.price_options.length} opt.</Text>
             </>
+          ) : Number.isFinite(listing.price) ? (
+            <Text fw={700} size="md">
+              <NumberTicker value={listing.price} decimals={2} prefix="$" />
+            </Text>
           ) : (
             <Text fw={700} size="md">${listing.price.toFixed(2)}</Text>
           )}
@@ -295,6 +300,10 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
                       <Scale className="w-4 h-4" />{opt.amount}g &middot; ${opt.price.toFixed(2)}
                     </span>
                   ))}
+                </div>
+              ) : Number.isFinite(listing.price) ? (
+                <div className={`text-2xl font-bold ${isDark ? 'text-frost' : 'text-gray-900'}`}>
+                  <NumberTicker value={listing.price} decimals={2} prefix="$" />
                 </div>
               ) : (
                 <div className={`text-2xl font-bold ${isDark ? 'text-frost' : 'text-gray-900'}`}>

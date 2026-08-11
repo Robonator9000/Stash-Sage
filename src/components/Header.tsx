@@ -9,7 +9,8 @@ import { t } from '../utils/translations';
 import { LogoIcon } from './LogoIcon';
 import { NotificationBell } from './NotificationBell';
 import { ActionIcon, Button, Group } from '@mantine/core';
-import { IconSun, IconMoon, IconSearch, IconPlus } from '@tabler/icons-react';
+import { IconSearch, IconPlus } from '@tabler/icons-react';
+import { AnimatedGradientText, AnimatedThemeToggle, BorderBeam } from './magicui';
 
 interface UserRow { user_id: string; display_name: string; username?: string; avatar_url: string | null; }
 interface PostRow { id: string; content: string; created_at: string; user_id: string; }
@@ -72,14 +73,20 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
   }
 
   return (
-    <header className={`sticky top-0 z-[60] ${isDark ? 'bg-[#0b1120]/80' : 'bg-[#e2e8f0]/80'} backdrop-blur-xl`}>
+    <header className={`relative sticky top-0 z-[60] ${isDark ? 'bg-[#0b1120]/80' : 'bg-[#e2e8f0]/80'} backdrop-blur-xl`}>
+      <BorderBeam size={260} duration={7} colorFrom="#06b6d4" colorTo="#10b981" className="bottom-0" borderWidth={1.5} />
       <div className="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
         <button
           onClick={() => setActiveTab('stash')}
           className="flex items-center gap-1.5 shrink-0"
         >
           <LogoIcon className="w-7 h-7" />
-          <span className="bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent font-display font-extrabold text-lg tracking-tight">STASH SAGE</span>
+          <AnimatedGradientText
+            className="font-display !py-0 text-lg tracking-tight"
+            colors="linear-gradient(120deg, #06b6d4, #10b981, #13eeef, #06b6d4)"
+          >
+            STASH SAGE
+          </AnimatedGradientText>
         </button>
 
         <div className="relative flex-1 max-w-xl mx-auto hidden sm:block">
@@ -187,14 +194,10 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
 
           {user && <NotificationBell isDark={isDark} lang={lang} onViewProfile={handleViewProfile} />}
 
-          <ActionIcon
-            variant="subtle"
-            size="md"
-            onClick={() => updateSettings({ theme: isDark ? 'light' : 'dark', themeAuto: false })}
-            aria-label="Toggle color scheme"
-          >
-            {isDark ? <IconSun size={18} /> : <IconMoon size={18} />}
-          </ActionIcon>
+          <AnimatedThemeToggle
+            isDark={isDark}
+            onToggle={() => updateSettings({ theme: isDark ? 'light' : 'dark', themeAuto: false })}
+          />
         </Group>
       </div>
       {mobileSearchOpen && (

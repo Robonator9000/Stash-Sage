@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { LogoIcon } from './LogoIcon';
 import { t } from '../utils/translations';
-import { Card, Stack, Text, Button, Group, UnstyledButton, ThemeIcon } from '@mantine/core';
+import { Stack, Text, Button, Group, UnstyledButton, ThemeIcon } from '@mantine/core';
 import { IconCheck, IconGlobe, IconSparkles } from '@tabler/icons-react';
+import { AnimatedGradientText, BlurFade, BorderBeam, NeonGradientCard } from './magicui';
 
 interface WelcomeModalProps {
   onComplete: (language: 'en' | 'es' | 'fr' | 'de' | 'pt') => void;
@@ -38,7 +39,6 @@ export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalPr
   const [selected, setSelected] = useState<'en' | 'es' | 'fr' | 'de' | 'pt'>('en');
 
   const borderColor = isDark ? 'var(--mantine-color-slate-7)' : 'var(--mantine-color-gray-3)';
-  const cardBg = isDark ? 'var(--mantine-color-slate-8)' : '#fff';
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
@@ -52,34 +52,21 @@ export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalPr
         }}
       />
 
-      <Card
-        radius="lg"
-        p="xl"
-        style={{
-          position: 'relative',
-          width: '100%',
-          maxWidth: 512,
-          background: cardBg,
-          border: `1px solid ${borderColor}`,
-          boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
-        }}
+      <NeonGradientCard
+        borderColors={['#06b6d4', '#10b981', '#13eeef']}
+        borderRadius={16}
+        style={{ width: '100%', maxWidth: 512, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}
       >
-        <Stack align="center" gap="lg" mb="xl">
+        <BorderBeam size={220} duration={7} colorFrom="#06b6d4" colorTo="#10b981" className="top-0" borderWidth={1.5} />
+        <Stack align="center" gap="lg" mb="xl" p="lg">
           <LogoBadge borderColor={borderColor} />
           <Stack align="center" gap={6}>
-            <Text
-              fw={800}
-              style={{
-                fontSize: 30,
-                letterSpacing: '-0.025em',
-                background: 'linear-gradient(to right, var(--mantine-color-cyan-6), var(--mantine-color-emerald-5))',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                color: 'transparent',
-              }}
+            <AnimatedGradientText
+              colors="linear-gradient(120deg, #06b6d4, #10b981, #13eeef, #06b6d4)"
+              className="!py-0 text-[30px] font-extrabold tracking-[-0.025em]"
             >
               STASH SAGE
-            </Text>
+            </AnimatedGradientText>
             <Text size="sm" c={isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-6)'} ta="center" maw={420}>
               {t('welcomeTagline', selected)}
             </Text>
@@ -93,6 +80,7 @@ export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalPr
           </Text>
         </Group>
 
+        <BlurFade delay={0.1}>
         <Stack gap="sm" mb="xl">
           {LANGUAGES.map((lang) => {
             const isSelected = selected === lang.code;
@@ -142,16 +130,18 @@ export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalPr
             );
           })}
         </Stack>
+        </BlurFade>
 
         <Button
           fullWidth
           size="lg"
           radius="md"
+          variant="gradient"
+          gradient={{ from: 'cyan', to: 'emerald' }}
           onClick={() => onComplete(selected)}
           leftSection={<IconSparkles size={18} />}
           styles={{
             root: {
-              background: 'linear-gradient(to right, var(--mantine-color-cyan-6), var(--mantine-color-emerald-5))',
               '&:active': { transform: 'scale(0.97)' },
             },
           }}
@@ -162,7 +152,7 @@ export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalPr
         <Text ta="center" size="xs" mt="md" c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}>
           {t('welcomeFootnote', selected)}
         </Text>
-      </Card>
+      </NeonGradientCard>
     </div>
   );
 }

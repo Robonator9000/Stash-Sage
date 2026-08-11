@@ -3,7 +3,7 @@ import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { roundToHundredth, formatPrecision } from '../utils/helpers';
 import { Product, Session } from '../types';
-import { SimpleGrid, Paper, Text, Group } from '@mantine/core';
+import { SimpleGrid, Text, Group } from '@mantine/core';
 import {
   IconPackage,
   IconScale,
@@ -15,6 +15,20 @@ import {
   IconTrendingDown,
   IconCalendarDue,
 } from '@tabler/icons-react';
+import { NeonGradientCard, NumberTicker } from './magicui';
+
+const NEON_BORDER_COLORS: Record<string, string[]> = {
+  blue: ['#06b6d4', '#13eeef'],
+  cyan: ['#06b6d4', '#13eeef'],
+  orange: ['#f59e0b', '#06b6d4'],
+  yellow: ['#f59e0b', '#13eeef'],
+  grape: ['#10b981', '#06b6d4'],
+  teal: ['#10b981', '#13eeef'],
+  green: ['#10b981', '#06b6d4'],
+  gray: ['#06b6d4', '#10b981'],
+  red: ['#f59e0b', '#06b6d4'],
+  violet: ['#10b981', '#06b6d4'],
+};
 
 interface StatsCardProps {
   products: Product[];
@@ -101,6 +115,22 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
     setTimeout(() => setHiddenHint(null), 2000);
   };
 
+  const renderValue = (stat: { value: string; suffix: string }) => {
+    const currency = settings.currency;
+    let prefix = '';
+    let numeric = stat.value;
+    if (currency && numeric.startsWith(currency)) {
+      prefix = currency;
+      numeric = numeric.slice(currency.length);
+    }
+    const num = Number(numeric);
+    if (numeric !== '' && isFinite(num)) {
+      const decimals = numeric.includes('.') ? numeric.split('.')[1].length : 0;
+      return <NumberTicker value={num} decimals={decimals} prefix={prefix} suffix={stat.suffix} />;
+    }
+    return <>{stat.value}{stat.suffix}</>;
+  };
+
   return (
     <div style={{ position: 'relative' }}>
       {hiddenHint && (
@@ -119,17 +149,14 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
         {visibleStats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Paper
+            <div
               key={stat.key}
-              withBorder
-              p="md"
-              radius="md"
+              className="h-full"
               onContextMenu={(e) => handleContextMenu(stat.key, e)}
               title={t('rightClickToHide', settings.language)}
               style={{
                 cursor: 'context-menu',
                 transition: 'transform 0.15s, box-shadow 0.15s',
-                borderTop: `3px solid var(--mantine-color-${stat.color}-${isDark ? 6 : 5})`,
               }}
               onMouseEnter={(e) => {
                 const el = e.currentTarget as HTMLElement;
@@ -142,14 +169,16 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
                 el.style.boxShadow = 'none';
               }}
             >
-              <Group justify="space-between" mb={4}>
-                <Text size="xs" c="dimmed">{stat.label}</Text>
-                <Icon size={18} stroke={1.5} style={{ color: `var(--mantine-color-${stat.color}-${isDark ? 6 : 5})` }} />
-              </Group>
-              <Text fw={700} size="lg" style={{ lineHeight: 1.2 }}>
-                {stat.value}{stat.suffix}
-              </Text>
-            </Paper>
+              <NeonGradientCard borderColors={NEON_BORDER_COLORS[stat.color]} borderRadius={12} className="h-full">
+                <Group justify="space-between" mb={4}>
+                  <Text size="xs" c="dimmed">{stat.label}</Text>
+                  <Icon size={18} stroke={1.5} style={{ color: `var(--mantine-color-${stat.color}-${isDark ? 6 : 5})` }} />
+                </Group>
+                <Text fw={700} size="lg" style={{ lineHeight: 1.2 }}>
+                  {renderValue(stat)}
+                </Text>
+              </NeonGradientCard>
+            </div>
           );
         })}
       </SimpleGrid>

@@ -5,6 +5,7 @@ import { Product, Session, Settings } from '../types';
 import { t } from '../utils/translations';
 import { formatPrecision, formatCurrency } from '../utils/helpers';
 import { Paper, SimpleGrid, Text, Group, Box, Stack } from '@mantine/core';
+import { ShineBorder, NeonGradientCard, BlurFade, AnimatedGradientText } from './magicui';
 
 const DASHBOARD_COLORS = ['#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
 
@@ -23,13 +24,15 @@ interface DashboardTabProps {
 
 export function DashboardTab({ products, sessions, isDark, lang, settings, typeDistribution, consumptionByMonth, topStrains, spendingByType, totalValue }: DashboardTabProps) {
   return (
-    <Stack gap="md">
+    <BlurFade>
+      <Stack gap="md">
       <StatsCard products={products} sessions={sessions} isDark={isDark} />
       <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="md">
+        <ShineBorder borderRadius={12} color={['#06b6d4', '#13eeef', '#10b981']}>
         <Paper p="lg" radius="md" withBorder style={{ background: isDark ? 'rgba(10, 17, 32, 0.8)' : '#fff' }}>
-          <Text size="sm" fw={600} mb="sm" style={{ color: isDark ? 'var(--mantine-color-white)' : 'var(--mantine-color-gray-9)' }}>
+          <AnimatedGradientText colors="linear-gradient(120deg, #06b6d4, #13eeef)" className="mx-0 mb-2 text-sm font-semibold" animationSpeed={8}>
             {t('stockOverview', lang)}
-          </Text>
+          </AnimatedGradientText>
           {typeDistribution.length > 0 ? (
             <ResponsiveContainer width="100%" height={260}>
               <PieChart>
@@ -54,10 +57,12 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
             ))}
           </Group>
         </Paper>
+        </ShineBorder>
+        <ShineBorder borderRadius={12} color={['#06b6d4', '#13eeef']}>
         <Paper p="lg" radius="md" withBorder style={{ background: isDark ? 'var(--mantine-color-dark-6)' : '#fff' }}>
-          <Text size="sm" fw={600} mb="sm" style={{ color: isDark ? 'var(--mantine-color-white)' : 'var(--mantine-color-gray-9)' }}>
+          <AnimatedGradientText colors="linear-gradient(120deg, #06b6d4, #10b981)" className="mx-0 mb-2 text-sm font-semibold" animationSpeed={8}>
             {t('consumptionTrend', lang)}
-          </Text>
+          </AnimatedGradientText>
           {consumptionByMonth.length > 0 ? (
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={consumptionByMonth}>
@@ -73,10 +78,12 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
             <Text ta="center" py="xl" c="dimmed">{t('noSessions', lang)}</Text>
           )}
         </Paper>
+        </ShineBorder>
+        <ShineBorder borderRadius={12} color={['#10b981', '#06b6d4']}>
         <Paper p="lg" radius="md" withBorder style={{ background: isDark ? 'var(--mantine-color-dark-6)' : '#fff' }}>
-          <Text size="sm" fw={600} mb="sm" style={{ color: isDark ? 'var(--mantine-color-white)' : 'var(--mantine-color-gray-9)' }}>
+          <AnimatedGradientText colors="linear-gradient(120deg, #10b981, #06b6d4)" className="mx-0 mb-2 text-sm font-semibold" animationSpeed={8}>
             {t('topStrains', lang)}
-          </Text>
+          </AnimatedGradientText>
           {topStrains.length > 0 ? (
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={topStrains} layout="vertical" margin={{ left: 80 }}>
@@ -92,10 +99,12 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
             <Text ta="center" py="xl" c="dimmed">{t('noProductsYet', lang)}</Text>
           )}
         </Paper>
+        </ShineBorder>
+        <ShineBorder borderRadius={12} color={['#f59e0b', '#13eeef']}>
         <Paper p="lg" radius="md" withBorder style={{ background: isDark ? 'var(--mantine-color-dark-6)' : '#fff' }}>
-          <Text size="sm" fw={600} mb="sm" style={{ color: isDark ? 'var(--mantine-color-white)' : 'var(--mantine-color-gray-9)' }}>
+          <AnimatedGradientText colors="linear-gradient(120deg, #f59e0b, #13eeef)" className="mx-0 mb-2 text-sm font-semibold" animationSpeed={8}>
             {t('totalSpent', lang)}
-          </Text>
+          </AnimatedGradientText>
           {spendingByType.length > 0 ? (
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={spendingByType}>
@@ -111,10 +120,11 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
             <Text ta="center" py="xl" c="dimmed">{t('noProductsYet', lang)}</Text>
           )}
         </Paper>
+        </ShineBorder>
       </SimpleGrid>
       <CalendarHeatmap sessions={sessions} isDark={isDark} lang={lang} />
       {settings.budgetLimit > 0 && (
-        <Paper p="lg" radius="md" withBorder mb="md" style={{ background: isDark ? 'var(--mantine-color-dark-6)' : '#fff' }}>
+        <NeonGradientCard borderColors={['#06b6d4', '#10b981', '#13eeef']} borderRadius={12} className="mb-4">
           <Group justify="space-between" mb="sm">
             <Text size="sm" fw={600} style={{ color: isDark ? 'var(--mantine-color-white)' : 'var(--mantine-color-gray-9)' }}>
               {t('budgetLimit', lang)} ({settings.budgetPeriod})
@@ -135,8 +145,9 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
                   : 'linear-gradient(90deg, #10b981, #059669)',
             }} />
           </Box>
-        </Paper>
+        </NeonGradientCard>
       )}
-    </Stack>
+      </Stack>
+    </BlurFade>
   );
 }

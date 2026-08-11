@@ -9,6 +9,7 @@ import { showToast } from './Toast';
 import { SegmentedControl, Paper, Text, Group, UnstyledButton, ActionIcon, Textarea, Button, Loader, Skeleton, Stack, Box } from '@mantine/core';
 import { IconBookmark, IconX } from '@tabler/icons-react';
 import { getProfiles } from '../utils/profileCache';
+import { BlurFade, ShineBorder, BorderBeam, AnimatedGradientText } from './magicui';
 
 const TRENDING_CACHE_TTL = 60 * 1000;
 let cachedTrendingTags: string[] | null = null;
@@ -506,7 +507,10 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
   const mutedColor = isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-6)';
 
   return (
-    <Stack gap="md">
+    <BlurFade>
+      <Stack gap="md">
+        <AnimatedGradientText className="text-xl font-bold">Community</AnimatedGradientText>
+
       {quotePostId && quotePost && (
         <Paper p="md" radius="md" withBorder style={{ background: isDark ? 'var(--mantine-color-dark-6)' : 'rgba(255,255,255,0.7)', backdropFilter: 'blur(4px)' }}>
           <Group justify="space-between" mb="sm">
@@ -555,16 +559,19 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       )}
 
       {showCreatePostCard && (
-        <CreatePostCard
-          isDark={isDark}
-          lang={lang}
-          displayName={profile?.displayName || username}
-          currentUserId={currentUserId}
-          products={products}
-          avatarUrl={profile?.avatar_url}
-          onSubmit={handleCreatePost}
-          onViewProfile={onViewProfile}
-        />
+        <Box pos="relative" style={{ borderRadius: 'var(--mantine-radius-md)', overflow: 'hidden' }}>
+          <BorderBeam size={140} borderWidth={1} colorFrom="#06b6d4" colorTo="#10b981" />
+          <CreatePostCard
+            isDark={isDark}
+            lang={lang}
+            displayName={profile?.displayName || username}
+            currentUserId={currentUserId}
+            products={products}
+            avatarUrl={profile?.avatar_url}
+            onSubmit={handleCreatePost}
+            onViewProfile={onViewProfile}
+          />
+        </Box>
       )}
 
       <SegmentedControl
@@ -631,28 +638,29 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       )}
 
       {displayedPosts.map(post => (
-        <PostCard
-          key={post.id}
-          post={post}
-          isDark={isDark}
-          lang={lang}
-          currentUserId={currentUserId}
-          username={username}
-          isFollowing={post.is_following}
-          onLike={handleLike}
-          onUnlike={handleUnlike}
-          onDelete={handleDelete}
-          onEdit={handleEditPost}
-          onFollow={handleFollow}
-          onUnfollow={handleUnfollow}
-          onViewProfile={onViewProfile}
-          onComment={handleComment}
-          onHashtagClick={handleHashtagClick}
-          onBookmark={handleBookmark}
-          onUnbookmark={handleUnbookmark}
-          onQuote={handleQuote}
-          onPostClick={handlePostClick}
-        />
+        <ShineBorder key={post.id} borderRadius={8} color={['#06b6d4', '#10b981']}>
+          <PostCard
+            post={post}
+            isDark={isDark}
+            lang={lang}
+            currentUserId={currentUserId}
+            username={username}
+            isFollowing={post.is_following}
+            onLike={handleLike}
+            onUnlike={handleUnlike}
+            onDelete={handleDelete}
+            onEdit={handleEditPost}
+            onFollow={handleFollow}
+            onUnfollow={handleUnfollow}
+            onViewProfile={onViewProfile}
+            onComment={handleComment}
+            onHashtagClick={handleHashtagClick}
+            onBookmark={handleBookmark}
+            onUnbookmark={handleUnbookmark}
+            onQuote={handleQuote}
+            onPostClick={handlePostClick}
+          />
+        </ShineBorder>
       ))}
 
       {loadingMore && (
@@ -684,5 +692,6 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
         />
       )}
     </Stack>
-  );
+  </BlurFade>
+);
 });

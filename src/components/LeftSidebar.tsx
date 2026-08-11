@@ -32,6 +32,7 @@ import {
   IconShield,
 } from '@tabler/icons-react';
 import { getProfile } from '../utils/profileCache';
+import { AnimatedGradientText, BorderBeam, NeonGradientCard } from './magicui';
 
 type TabId =
   | 'stash'
@@ -193,7 +194,13 @@ export function LeftSidebar({
       >
         <NavLink
           id={`nav-${item.id}`}
-          label={!collapsed ? item.label : undefined}
+          label={!collapsed ? (
+            isActive ? (
+              <AnimatedGradientText className="!py-0 !mx-0" colors="linear-gradient(120deg, #06b6d4, #10b981, #13eeef, #06b6d4)" animationSpeed={6}>
+                {item.label}
+              </AnimatedGradientText>
+            ) : item.label
+          ) : undefined}
           leftSection={item.icon}
           active={isActive}
           disabled={isDisabled}
@@ -233,6 +240,7 @@ export function LeftSidebar({
       aria-label="Main navigation"
       onKeyDown={handleKeyDown}
       style={{
+        position: 'relative',
         width: collapsed ? 60 : 240,
         transition: 'width 0.2s ease',
         display: 'flex',
@@ -240,6 +248,7 @@ export function LeftSidebar({
         height: '100%',
       }}
     >
+      <BorderBeam size={200} colorFrom="#06b6d4" colorTo="#10b981" borderWidth={1.5} className="right-0" />
       <Stack
         justify="space-between"
         align="center"
@@ -287,7 +296,11 @@ export function LeftSidebar({
               <Box key={section} mb="xs">
                 {!collapsed && (
                   <NavLink
-                    label={`${sectionLabel[section]} (${visibleItems.length})`}
+                    label={
+                      <AnimatedGradientText className="!py-0 !mx-0" colors="linear-gradient(120deg, #06b6d4, #10b981, #13eeef, #06b6d4)" animationSpeed={6}>
+                        {`${sectionLabel[section]} (${visibleItems.length})`}
+                      </AnimatedGradientText>
+                    }
                     onClick={() => toggleSection(section)}
                     rightSection={
                       expandedSections[section] ? (
@@ -344,29 +357,31 @@ export function LeftSidebar({
               </Tooltip>
             </Group>
           ) : (
-            <Group gap="sm" wrap="nowrap">
-              <Tooltip label="Edit profile" position="right" openDelay={300}>
-                <UnstyledButton onClick={() => onOpenProfileSettings?.()}>
-                  <Avatar src={profileAvatar} alt={profileUsername} size={36} radius="xl" color="cyan">
-                    {profileUsername?.[0]?.toUpperCase()}
-                  </Avatar>
-                </UnstyledButton>
-              </Tooltip>
-              <Box style={{ flex: 1, overflow: 'hidden' }}>
-                <UnstyledButton
-                  onClick={() => openCommunityProfile(profileUsername)}
-                  style={{ width: '100%', borderRadius: 'var(--mantine-radius-md)' }}
-                  aria-label={`View @${profileUsername} profile`}
-                >
-                  <Text size="sm" fw={600} truncate>
-                    {profileDisplayName}
-                  </Text>
-                  <Text size="xs" c="cyan" truncate>
-                    @{profileUsername}
-                  </Text>
-                </UnstyledButton>
-              </Box>
-            </Group>
+            <NeonGradientCard borderColors={['#06b6d4', '#10b981', '#13eeef']} borderRadius={12} className="w-full">
+              <Group gap="sm" wrap="nowrap">
+                <Tooltip label="Edit profile" position="right" openDelay={300}>
+                  <UnstyledButton onClick={() => onOpenProfileSettings?.()}>
+                    <Avatar src={profileAvatar} alt={profileUsername} size={36} radius="xl" color="cyan">
+                      {profileUsername?.[0]?.toUpperCase()}
+                    </Avatar>
+                  </UnstyledButton>
+                </Tooltip>
+                <Box style={{ flex: 1, overflow: 'hidden' }}>
+                  <UnstyledButton
+                    onClick={() => openCommunityProfile(profileUsername)}
+                    style={{ width: '100%', borderRadius: 'var(--mantine-radius-md)' }}
+                    aria-label={`View @${profileUsername} profile`}
+                  >
+                    <Text size="sm" fw={600} truncate style={{ color: isDark ? 'var(--mantine-color-white)' : 'var(--mantine-color-gray-9)' }}>
+                      {profileDisplayName}
+                    </Text>
+                    <Text size="xs" c="cyan" truncate>
+                      @{profileUsername}
+                    </Text>
+                  </UnstyledButton>
+                </Box>
+              </Group>
+            </NeonGradientCard>
           )}
         </Box>
       )}

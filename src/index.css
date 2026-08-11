@@ -388,3 +388,46 @@ textarea:focus:not(:focus-visible) {
     scrollbar-width: none;
   }
 }
+
+/* ===== Magic UI keyframes ===== */
+@keyframes border-beam {
+  0% { offset-distance: 0%; }
+  100% { offset-distance: 100%; }
+}
+
+@property --sb-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes shine-border {
+  0% { --sb-angle: 0deg; }
+  100% { --sb-angle: 360deg; }
+}
+
+@keyframes grid-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(-18px) translateX(10px); }
+}
+
+@property --nc-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes neon-rotate {
+  0% { --nc-angle: 0deg; }
+  100% { --nc-angle: 360deg; }
+}

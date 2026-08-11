@@ -16,7 +16,7 @@ import { ProductGrid } from './components/ProductGrid';
 import { StatsCard } from './components/StatsCard';
 import { CoachMarks } from './components/CoachMarks';
 import { PinModal } from './components/PinModal';
-import { BackgroundCanvas } from './components/BackgroundCanvas';
+import { MagicBackground } from './components/magicui';
 import { WelcomeModal } from './components/WelcomeModal';
 import { Header } from './components/Header';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -471,7 +471,7 @@ export default function App() {
   if (!settings.onboardingDone) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
-      <BackgroundCanvas isDark={isDark} />
+      <MagicBackground isDark={isDark} variant="grid-only" />
 
         <WelcomeModal
           onComplete={(language) => updateSettings({ language, onboardingDone: true })}
@@ -485,7 +485,7 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg)' }} id="main-content">
       <a href="#main-content" className="skip-link">Skip to content</a>
-      <BackgroundCanvas isDark={isDark} />
+      <MagicBackground isDark={isDark} variant="grid-only" />
 
       {!isOnline && (
         <div

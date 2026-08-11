@@ -8,6 +8,7 @@ import { t } from '../utils/translations';
 import { useSettings } from '../utils/useSettings';
 import { showToast } from './Toast';
 import { Card, Group, Text, Center, UnstyledButton } from '@mantine/core';
+import { BlurFade, BorderBeam, NumberTicker } from './magicui';
 
 interface ProductCardProps {
   product: Product;
@@ -277,12 +278,14 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
 
   if (layout === 'list') {
     return (
+      <BlurFade delay={0.05} className="h-full">
       <Card
         p={0}
         radius="lg"
         
-        style={{ cursor: 'pointer', transition: 'all 0.2s', background: cardBg, ...glowStyle, ...favoriteOutline, ...selectedOutline }}
+        style={{ position: 'relative', cursor: 'pointer', transition: 'all 0.2s', background: cardBg, ...glowStyle, ...favoriteOutline, ...selectedOutline }}
       >
+        <BorderBeam size={160} duration={7} borderWidth={1.5} className="rounded-[20px]" />
         <Group gap="md" p="md" wrap="nowrap" onClick={handleCardClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}>
           {isSelectMode && renderSelectRing(20, 12)}
           <Group style={{ position: 'relative', flexShrink: 0 }} align="center">
@@ -335,20 +338,23 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
           </Group>
         </Group>
       </Card>
+      </BlurFade>
     );
   }
 
   if (layout === 'compact') {
     return (
+      <BlurFade delay={0.05} className="h-full">
       <Card
         p={0}
         radius="lg"
         
-        style={{ cursor: 'pointer', transition: 'all 0.2s', background: cardBg, ...glowStyle, ...favoriteOutline, ...selectedOutline }}
+        style={{ position: 'relative', cursor: 'pointer', transition: 'all 0.2s', background: cardBg, ...glowStyle, ...favoriteOutline, ...selectedOutline }}
         onClick={handleCardClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}
         onMouseEnter={() => setCompactHovered(true)}
         onMouseLeave={() => setCompactHovered(false)}
       >
+        <BorderBeam size={160} duration={7} borderWidth={1.5} className="rounded-[20px]" />
         {isSelectMode && renderSelectRing(20, 12, true, 8, 8)}
         <div style={{ aspectRatio: '1/1', position: 'relative', overflow: 'hidden', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
           {(product.pictures?.[0] || product.picture) ? (
@@ -393,15 +399,18 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
           )}
         </div>
       </Card>
+      </BlurFade>
     );
   }
 
   return (
+    <BlurFade delay={0.05} className="h-full">
     <Card
       p={0}
       radius="lg"
       
       style={{
+        position: 'relative',
         cursor: 'pointer',
         transition: 'all 0.2s',
         overflow: 'hidden',
@@ -414,6 +423,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
       }}
       onClick={handleCardClick} onKeyDown={handleKeyDown} role="button" tabIndex={0} aria-label={product.name}
     >
+      <BorderBeam size={160} duration={7} borderWidth={1.5} className="rounded-[20px]" />
       {isSelectMode && renderSelectRing(24, 14, true, 12, 12)}
       <div style={{ position: 'relative', aspectRatio: '16/9', flexShrink: 0 }}>
         {(product.pictures?.[0] || product.picture) ? (
@@ -490,6 +500,11 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
             {product.brand && <Text size="sm" c={secondaryText} truncate style={{ marginTop: 2 }}>{t('from', lang)} {product.brand}</Text>}
           </div>
 
+          <Group gap={6} wrap="nowrap" align="center" style={{ marginBottom: 8 }}>
+            <span className="text-lg font-bold text-cyan-500">$</span>
+            <NumberTicker value={product.price} decimals={precision} duration={700} className="text-lg font-bold text-cyan-500" />
+          </Group>
+
           <Group gap="md" wrap="nowrap" style={{ marginBottom: 12 }}>
             {product.thc > 0 && (
               <Group gap={4} wrap="nowrap">
@@ -558,5 +573,6 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
         </Group>
       </div>
     </Card>
+    </BlurFade>
   );
 });

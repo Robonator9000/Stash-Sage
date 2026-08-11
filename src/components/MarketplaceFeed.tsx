@@ -10,6 +10,7 @@ import { getProfiles } from '../utils/profileCache';
 import { Carousel } from '@mantine/carousel';
 import { Paper, Text, SimpleGrid } from '@mantine/core';
 import { BorderAnimate } from '@gfazioli/mantine-border-animate';
+import { BlurFade, ShineBorder } from './magicui';
 
 interface MarketplaceFeedProps {
   isDark: boolean;
@@ -221,6 +222,7 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
   }, [currentUserId, onOpenChat]);
 
   return (
+    <BlurFade direction="up" duration={0.5}>
     <div className="space-y-5 mx-auto max-w-7xl px-1">
       <>
       {/* Sell button - centered prominent */}
@@ -381,10 +383,12 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
         verticalSpacing="md"
       >
         {sorted.map(listing => (
-          <MarketplaceCard key={listing.id} listing={listing} products={products} isDark={isDark} lang={lang} currentUserId={currentUserId}
-            isPinned={pinnedIds.has(listing.id)} onPinToggle={handlePinToggle}
-            onEdit={handleEditListing} onDelete={handleDelete} onMarkSold={handleMarkSold} onViewProfile={onViewProfile}
-            onSave={handleToggleSave} onStartChat={handleStartChat} />
+          <ShineBorder key={listing.id} borderRadius={12} color={['#06b6d4', '#10b981']}>
+            <MarketplaceCard listing={listing} products={products} isDark={isDark} lang={lang} currentUserId={currentUserId}
+              isPinned={pinnedIds.has(listing.id)} onPinToggle={handlePinToggle}
+              onEdit={handleEditListing} onDelete={handleDelete} onMarkSold={handleMarkSold} onViewProfile={onViewProfile}
+              onSave={handleToggleSave} onStartChat={handleStartChat} />
+          </ShineBorder>
         ))}
       </SimpleGrid>
 
@@ -397,5 +401,6 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
       )}
       </>
     </div>
+    </BlurFade>
   );
 });

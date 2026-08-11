@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Group, Stack, Text, ActionIcon, Button, SimpleGrid, Paper, Divider } from '@mantine/core';
 import { IconChevronLeft } from '@tabler/icons-react';
+import { NumberTicker, BorderBeam, ShineBorder, AnimatedGradientText } from './magicui';
 
 type StrainType = 'indica' | 'sativa' | 'hybrid';
 
@@ -177,7 +178,9 @@ function DisposableCard({ product, visible }: { product: Product; visible: boole
           <span style={{ color: 'rgba(255,255,255,0.3)' }}>·</span>
           <span style={{ fontSize: 14, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: '#13EEEF' }}>2g Disposable</span>
         </Group>
-        <Box style={{ fontSize: 30, fontWeight: 700, color: BRAND_YELLOW, fontFamily: '"Varela Round", sans-serif' }}>${product.price}</Box>
+        <Box style={{ fontSize: 30, fontWeight: 700, color: BRAND_YELLOW, fontFamily: '"Varela Round", sans-serif' }}>
+          <NumberTicker value={product.price} prefix="$" duration={900} />
+        </Box>
       </Box>
     </Box>
   );
@@ -275,14 +278,15 @@ export function MenuPage() {
               <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 18, lineHeight: 1.625 }}>
                 Premium 1g cartridges. Lab tested quality. Unbeatable price.
               </Text>
-              <Group gap="sm" align="baseline" wrap="nowrap">
-                <span style={{ fontSize: 60, fontWeight: 700, fontFamily: '"Varela Round", sans-serif', color: BRAND_YELLOW }}>$15</span>
+<Group gap="sm" align="baseline" wrap="nowrap">
+                <NumberTicker value={15} prefix="$" className="!text-[60px] font-bold tabular-nums !text-[#fabf39]" style={{ fontSize: 60, fontWeight: 700, fontFamily: '"Varela Round", sans-serif', color: BRAND_YELLOW }} />
                 <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 18, textTransform: 'uppercase', letterSpacing: 1 }}>each</span>
               </Group>
             </Box>
             <Box style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-              <Box style={{ position: 'relative' }}>
+<Box style={{ position: 'relative' }}>
                 <Box style={{ width: 192, height: 192, background: `linear-gradient(135deg, ${BRAND_PINK}, ${BRAND_PINK_DARK})`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 72, boxShadow: '0 30px 60px rgba(239,72,135,0.3)' }}>🌿</Box>
+                <BorderBeam size={220} duration={9} borderWidth={2.5} colorFrom={BRAND_CYAN} colorTo={BRAND_PINK} className="rounded-[9999px]" />
                 <Box style={{ position: 'absolute', top: -12, right: -12, width: 80, height: 80, background: BRAND_YELLOW, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 700, color: '#111', fontFamily: '"Varela Round", sans-serif', boxShadow: '0 8px 16px rgba(0,0,0,0.2)' }}>$15</Box>
                 <Box style={{ position: 'absolute', bottom: -8, left: -8, width: 56, height: 56, background: BRAND_CYAN, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, boxShadow: '0 8px 16px rgba(0,0,0,0.2)' }}>🔥</Box>
               </Box>
@@ -375,15 +379,15 @@ export function MenuPage() {
       <Box style={{ padding: '40px 24px', background: '#0b1120' }}>
         <Box style={{ maxWidth: 1000, margin: '0 auto' }}>
           <Box ta="center" mb={32}>
-            <Text style={{ fontSize: 30, fontWeight: 700, marginBottom: 8, fontFamily: '"Varela Round", sans-serif', color: BRAND_CYAN }}>
+<AnimatedGradientText className="!mb-2 !text-[30px] !font-bold font-['Varela_Round']">
               Why Stash Sage?
-            </Text>
+            </AnimatedGradientText>
             <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 18 }}>One app. Your whole collection. Always with you.</Text>
           </Box>
           <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
-            {FEATURES.map((f) => (
+{FEATURES.map((f) => (
+              <ShineBorder key={f.title} color={[BRAND_PINK, BRAND_CYAN]} borderRadius={16} borderWidth={1.5} className="h-full">
               <Paper
-                key={f.title}
                 p={24}
                 radius="lg"
                 withBorder
@@ -401,6 +405,7 @@ export function MenuPage() {
                   <Text size="sm" style={{ color: 'rgba(255,255,255,0.6)', lineHeight: 1.625 }}>{f.desc}</Text>
                 </Stack>
               </Paper>
+              </ShineBorder>
             ))}
           </SimpleGrid>
         </Box>
