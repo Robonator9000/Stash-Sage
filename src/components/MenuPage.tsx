@@ -376,7 +376,7 @@ export function MenuPage() {
         <Box style={{ maxWidth: 1000, margin: '0 auto' }}>
           <Box ta="center" mb={32}>
             <Text style={{ fontSize: 30, fontWeight: 700, marginBottom: 8, fontFamily: '"Varela Round", sans-serif', color: BRAND_CYAN }}>
-              Why Stash Tracker?
+              Why Stash Sage?
             </Text>
             <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 18 }}>One app. Your whole collection. Always with you.</Text>
           </Box>
@@ -408,10 +408,10 @@ export function MenuPage() {
 
       <Box style={{ background: BRAND_CYAN, padding: '40px 24px' }}>
         <Box style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
-          <Text style={{ fontSize: 30, fontWeight: 700, marginBottom: 12, color: '#111', fontFamily: '"Varela Round", sans-serif' }}>Try Stash Tracker</Text>
+          <Text style={{ fontSize: 30, fontWeight: 700, marginBottom: 12, color: '#111', fontFamily: '"Varela Round", sans-serif' }}>Try Stash Sage</Text>
           <Text style={{ color: '#444', fontSize: 18, marginBottom: 24 }}>Free web app. Works offline. No account required.</Text>
           <Button onClick={() => navigate('/')} size="lg" radius="md" style={{ background: BRAND_PINK, boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
-            Launch Stash Tracker →
+            Launch Stash Sage →
           </Button>
         </Box>
       </Box>

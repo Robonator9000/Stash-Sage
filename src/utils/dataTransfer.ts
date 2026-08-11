@@ -61,7 +61,7 @@ export function downloadExport(data: StashExportData): void {
   const date = new Date().toISOString().slice(0, 10);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `stash-tracker-backup-${date}.json`;
+  link.download = `stash-sage-backup-${date}.json`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -73,7 +73,7 @@ export function parseImportData(content: string): ImportResult {
   try {
     parsed = JSON.parse(content);
   } catch {
-    throw new Error('Invalid JSON file. Please select a valid Stash Tracker backup.');
+    throw new Error('Invalid JSON file. Please select a valid Stash Sage backup.');
   }
 
   if (Array.isArray(parsed)) {
@@ -136,7 +136,7 @@ export function downloadCsvExport(products: Product[]): void {
   const date = new Date().toISOString().slice(0, 10);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `stash-tracker-export-${date}.csv`;
+  link.download = `stash-sage-export-${date}.csv`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

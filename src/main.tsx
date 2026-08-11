@@ -54,7 +54,7 @@ const LoadingFallback = (
 registerSW({
   immediate: true,
   onOfflineReady() {
-    console.info('Stash Tracker is ready to work offline.');
+    console.info('Stash Sage is ready to work offline.');
   },
 });
 

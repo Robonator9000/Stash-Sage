@@ -1,7 +1,7 @@
-# Migrating Stash Tracker to Radix UI - Accessible Component Library
+# Migrating Stash Sage to Radix UI - Accessible Component Library
 
 ## Context
-- **Project**: Stash Tracker (Cannabis tracking PWA)
+- **Project**: Stash Sage (Cannabis tracking PWA)
 - **Current Stack**: React 18 + Vite + TypeScript + Tailwind CSS + Supabase
 - **Current State**: 40+ components, inline Tailwind styles, no design system, custom components
 - **Target**: Radix UI primitives with Radix Colors + full WCAG 2.1 AA accessibility
@@ -401,5 +401,5 @@ npm install -D vitest @testing-library/react @testing-library/user-event jsdom @
 ---
 
 *Generated: 2024-12-19*
-*Project: Stash Tracker - Radix UI Migration*
+*Project: Stash Sage - Radix UI Migration*
 *Status: Planning Phase*

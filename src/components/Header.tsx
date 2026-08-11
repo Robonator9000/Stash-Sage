@@ -79,7 +79,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
           className="flex items-center gap-1.5 shrink-0"
         >
           <LogoIcon className="w-7 h-7" />
-          <span className="bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent font-display font-extrabold text-lg tracking-tight">STASH</span>
+          <span className="bg-gradient-to-r from-cyanx to-emera bg-clip-text text-transparent font-display font-extrabold text-lg tracking-tight">STASH SAGE</span>
         </button>
 
         <div className="relative flex-1 max-w-xl mx-auto hidden sm:block">

@@ -13,7 +13,7 @@ export function exportProductsPdf(products: Product[], settings: Settings) {
     return date.toLocaleDateString();
   };
 
-  const title = 'Stash Tracker';
+  const title = 'Stash Sage';
   const subtitle = `${products.length} products`;
 
   doc.setFontSize(18);
@@ -51,5 +51,5 @@ export function exportProductsPdf(products: Product[], settings: Settings) {
     alternateRowStyles: { fillColor: [245, 245, 245] },
   });
 
-  doc.save(`stash-tracker-${new Date().toISOString().slice(0, 10)}.pdf`);
+  doc.save(`stash-sage-${new Date().toISOString().slice(0, 10)}.pdf`);
 }

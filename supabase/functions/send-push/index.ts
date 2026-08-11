@@ -14,7 +14,7 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  webpush.setVapidDetails("mailto:push@stashtracker.app", vapidPublicKey, vapidPrivateKey);
+  webpush.setVapidDetails("mailto:push@stashsage.app", vapidPublicKey, vapidPrivateKey);
 
   const { subscription, title, body } = await req.json();
   if (!subscription?.endpoint || !title) {

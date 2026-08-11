@@ -920,7 +920,7 @@ export default function App() {
       {/* Footer */}
       <footer className="py-6 px-4 text-center">
         <p className={`text-xs font-display font-semibold tracking-widest uppercase ${isDark ? 'text-slate-700' : 'text-gray-300'}`}>
-          STASH TRACKER
+          STASH SAGE
         </p>
       </footer>
 

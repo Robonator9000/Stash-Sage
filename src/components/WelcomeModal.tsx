@@ -79,7 +79,7 @@ export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalPr
               fw={800}
               style={{ fontFamily: 'inherit', fontSize: 30, letterSpacing: '-0.025em', background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}
             >
-              STASH TRACKER
+              STASH SAGE
             </Text>
             <Text size="sm" c={isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-6)'} ta="center">
               Keep track of your collection, log your sessions, and connect with the community

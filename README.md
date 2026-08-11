@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🌿 STASH TRACKER
+# 🌿 STASH SAGE
 
 **A privacy-first stash tracker & community platform. Track your collection, log sessions, and connect — works offline, syncs when you want.**
 
@@ -19,7 +19,7 @@
 
 ## ✦ Overview
 
-Stash Tracker is a progressive web app for tracking your stash, logging consumption, and engaging with a community marketplace — all without forcing an account. Your data lives locally by default; sign up only when you want cloud sync, social, or marketplace features.
+Stash Sage is a progressive web app for tracking your stash, logging consumption, and engaging with a community marketplace — all without forcing an account. Your data lives locally by default; sign up only when you want cloud sync, social, or marketplace features.
 
 Built as a single-page React app with offline-first storage and optional Supabase cloud sync.
 
@@ -145,8 +145,8 @@ End-to-end tests powered by Playwright:
 pip install playwright
 playwright install chromium
 python scripts/with_server.py \
-  --server "cd /path/to/Stash-Tracker && npm run dev" --port 5173 \
-  -- python /path/to/Stash-Tracker/scripts/test_app.py
+  --server "cd /path/to/Stash-Sage && npm run dev" --port 5173 \
+  -- python /path/to/Stash-Sage/scripts/test_app.py
 ```
 
 64+ tests covering onboarding, language selection, CRUD, consume/sell, low stock, settings, filters, search, favorites, and theme switching.

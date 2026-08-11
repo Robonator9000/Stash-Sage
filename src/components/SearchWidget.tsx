@@ -80,7 +80,7 @@ export function SearchWidget({ isDark, onViewProfile, onViewPost }: SearchWidget
       <TextInput
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search Stash Tracker"
+        placeholder="Search Stash Sage"
         onFocus={() => { if (results.length > 0) setOpen(true); }}
         leftSection={<IconSearch size={16} />}
         rightSection={searching ? <Loader size={14} /> : null}
