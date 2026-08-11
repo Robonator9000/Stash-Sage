@@ -6,14 +6,17 @@ import { showToast } from '../components/Toast';
 import { subscribeToPush, unsubscribeFromPush } from '../utils/pushNotifications';
 
 async function upsertProfile(userId: string, displayName: string) {
+  // Create the default profile only on first sign-in. Never overwrite a
+  // user's chosen username/display name on later visits (an upsert without
+  // ignoreDuplicates WOULD clobber it). ignoreDuplicates keeps this insert-only.
   const { error } = await supabase.from('profiles').upsert(
     { user_id: userId, display_name: displayName, username: displayName },
-    { onConflict: 'user_id' }
+    { onConflict: 'user_id', ignoreDuplicates: true }
   );
   if (error) {
     const { error: fbError } = await supabase.from('profiles').upsert(
       { user_id: userId, display_name: displayName },
-      { onConflict: 'user_id' }
+      { onConflict: 'user_id', ignoreDuplicates: true }
     );
     if (fbError) throw fbError;
   }
