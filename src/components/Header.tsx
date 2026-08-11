@@ -101,6 +101,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
               onFocus={() => setShowSearchPreview(true)}
               onBlur={() => setTimeout(() => setShowSearchPreview(false), 200)}
               placeholder={t('searchPlaceholder', lang)}
+              aria-label={t('searchPlaceholder', lang)}
               data-coach="search"
               className={`w-full pl-10 pr-4 py-1.5 rounded-xl text-sm border transition-all outline-none
                 ${isDark
@@ -110,6 +111,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
             {searchQuery && (
               <button
                 onClick={() => { setSearchQuery(''); setShowSearchPreview(false); }}
+                aria-label="Clear search"
                 className={`absolute right-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}`}
               >
                 &times;
@@ -212,6 +214,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
               onChange={(e) => { setSearchQuery(e.target.value); setShowSearchPreview(true); }}
               autoFocus
               placeholder={t('searchPlaceholder', lang)}
+              aria-label={t('searchPlaceholder', lang)}
               className={`w-full pl-10 pr-4 py-2 rounded-xl text-sm border transition-all outline-none
                 ${isDark
                   ? 'bg-midnight/80 border border-edge text-white placeholder-muted focus:border-cyan-500'
@@ -220,6 +223,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
             {searchQuery && (
               <button
                 onClick={() => { setSearchQuery(''); setShowSearchPreview(false); }}
+                aria-label="Clear search"
                 className={`absolute right-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}`}
               >
                 &times;

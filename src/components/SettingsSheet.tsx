@@ -108,7 +108,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   };
 
   const handleThemeChange = (theme: 'dark' | 'light') => {
-    updateSettings({ theme });
+    updateSettings({ theme, themeAuto: false });
   };
 
   const handleExport = () => {

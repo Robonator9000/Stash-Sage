@@ -113,6 +113,12 @@ export function useSettings() {
             statsVisibility: { ...defaultSettings.statsVisibility, ...parsed.statsVisibility },
           };
           if (_settings.onboardingDone) merged.onboardingDone = true;
+          // Preserve the locally chosen theme/auto-theme to avoid mid-session theme jumps
+          // when cloud state arrives after a manual toggle or a page switch.
+          if (_settings.onboardingDone) {
+            merged.theme = _settings.theme;
+            merged.themeAuto = _settings.themeAuto;
+          }
           _settings = { ...merged };
           notifyListeners();
           safeSetItem(SETTINGS_KEY, JSON.stringify(_settings));

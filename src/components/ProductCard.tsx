@@ -61,13 +61,21 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
     }
     switch (product.type.toLowerCase()) {
       case 'indica':
-        return { bg: 'rgba(168,85,247,0.15)', text: '#c084fc', border: 'rgba(168,85,247,0.3)', customHex: '' };
+        return isDark
+          ? { bg: 'rgba(168,85,247,0.15)', text: '#c084fc', border: 'rgba(168,85,247,0.3)', customHex: '' }
+          : { bg: 'rgba(168,85,247,0.12)', text: '#7e22ce', border: 'rgba(168,85,247,0.35)', customHex: '' };
       case 'sativa':
-        return { bg: 'rgba(245,158,11,0.15)', text: '#fbbf24', border: 'rgba(245,158,11,0.3)', customHex: '' };
+        return isDark
+          ? { bg: 'rgba(245,158,11,0.15)', text: '#fbbf24', border: 'rgba(245,158,11,0.3)', customHex: '' }
+          : { bg: 'rgba(245,158,11,0.12)', text: '#b45309', border: 'rgba(245,158,11,0.35)', customHex: '' };
       case 'hybrid':
-        return { bg: 'rgba(16,185,129,0.15)', text: '#34d399', border: 'rgba(16,185,129,0.3)', customHex: '' };
+        return isDark
+          ? { bg: 'rgba(16,185,129,0.15)', text: '#34d399', border: 'rgba(16,185,129,0.3)', customHex: '' }
+          : { bg: 'rgba(16,185,129,0.12)', text: '#047857', border: 'rgba(16,185,129,0.35)', customHex: '' };
       default:
-        return { bg: 'rgba(148,163,184,0.15)', text: '#94a3b8', border: 'rgba(148,163,184,0.3)', customHex: '' };
+        return isDark
+          ? { bg: 'rgba(148,163,184,0.15)', text: '#94a3b8', border: 'rgba(148,163,184,0.3)', customHex: '' }
+          : { bg: 'rgba(148,163,184,0.12)', text: '#475569', border: 'rgba(148,163,184,0.35)', customHex: '' };
     }
   }, [product.type, isDark, settings.customStrainColors]);
 
@@ -278,7 +286,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
 
   if (layout === 'list') {
     return (
-      <BlurFade delay={0.05} className="h-full">
+      <BlurFade delay={0.05} blur="0px" className="h-full">
       <Card
         p={0}
         radius="lg"
@@ -344,7 +352,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
 
   if (layout === 'compact') {
     return (
-      <BlurFade delay={0.05} className="h-full">
+      <BlurFade delay={0.05} blur="0px" className="h-full">
       <Card
         p={0}
         radius="lg"
@@ -404,7 +412,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
   }
 
   return (
-    <BlurFade delay={0.05} className="h-full">
+    <BlurFade delay={0.05} blur="0px" className="h-full">
     <Card
       p={0}
       radius="lg"

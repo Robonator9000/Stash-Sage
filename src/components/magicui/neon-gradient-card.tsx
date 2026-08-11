@@ -67,7 +67,7 @@ export function NeonGradientCard({
       />
       <div className="relative h-full w-full overflow-hidden rounded-[inherit] bg-surface/60 p-px backdrop-blur-sm">
         <div className="absolute inset-0 rounded-[inherit] p-px" style={{ background: `linear-gradient(${borderColors.join(', ')})` }} />
-        <div className="relative h-full w-full rounded-[calc(var(--border-radius)-1px)] bg-[#111827]/95 p-4 dark:bg-[#0d1524]/95">
+        <div className="relative h-full w-full rounded-[calc(var(--border-radius)-1px)] bg-[var(--surface)] p-4 dark:bg-[#111827]">
           {children}
         </div>
       </div>

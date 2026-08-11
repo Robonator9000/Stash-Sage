@@ -1,10 +1,12 @@
 import { memo, useState, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { MarketplaceListing, Product } from '../types';
 import { t } from '../utils/translations';
 import { getContactUrl, copyToClipboard, timeAgo } from '../utils/helpers';
 import { Tag, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, MessageCircle, Star, Scale, FlaskConical, Calendar, StickyNote, Pin } from 'lucide-react';
 import { ReviewSection } from './ReviewSection';
 import { ProductView } from './ProductView';
+import { setFullscreenOpen } from '../utils/fullscreen';
 import { Card, Image, Badge, Group, Text, ActionIcon, Avatar } from '@mantine/core';
 import { useContextMenu } from 'mantine-contextmenu';
 import { IconEdit, IconChecks, IconTrash, IconPinned, IconBookmark, IconMessageCircle } from '@tabler/icons-react';
@@ -110,6 +112,13 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
   }, []);
 
   useEffect(() => { setCurrentImageIndex(0); }, [listing.id]);
+
+  useEffect(() => {
+    const open = !!(showDetailPopup || confirmAction || viewProductId);
+    setFullscreenOpen(open);
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => { setFullscreenOpen(false); document.body.style.overflow = ''; };
+  }, [showDetailPopup, confirmAction, viewProductId]);
 
   useEffect(() => {
     if (!showDetailPopup) return;
@@ -241,7 +250,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
       </Card>
 
       {/* Detail popup — Facebook-style fullscreen split */}
-      {showDetailPopup && (
+      {showDetailPopup && createPortal(
         <div className="fixed inset-0 z-50 bg-black/80 flex flex-col sm:flex-row" onClick={() => setShowDetailPopup(false)}>
           {/* Back button — top-left of full overlay */}
           <div onClick={e => { e.stopPropagation(); setShowDetailPopup(false); }}
@@ -500,9 +509,9 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
             </div>
           </div>
         </div>
-      )}
+        , document.body)}
 
-      {confirmAction && (
+      {confirmAction && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 backdrop-blur-[2px]" onClick={() => setConfirmAction(null)}>
           <div className={`p-6 rounded-2xl max-w-xs w-full mx-4 shadow-xl ${isDark ? 'bg-card border border-edge' : 'bg-white border border-gray-200'}`}
             onClick={e => e.stopPropagation()}>
@@ -531,11 +540,11 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
             </div>
           </div>
         </div>
-      )}
+        , document.body)}
 
-      {viewProductId && (
+      {viewProductId && createPortal(
         <ProductView productId={viewProductId} onClose={() => setViewProductId(null)} isDark={isDark} lang={lang} />
-      )}
+        , document.body)}
     </>
   );
 });

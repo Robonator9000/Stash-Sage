@@ -82,7 +82,14 @@ export default function App() {
 
   useEffect(() => {
     if (settingsDirty && activeTab !== 'settings') {
-      replaceSettings(settingsSnapshot.current);
+      const current = settings;
+      replaceSettings({
+        ...settingsSnapshot.current,
+        // Keep the user's live theme choice (Header toggle applies instantly);
+        // a settings-tab revert should never flip the visible color scheme.
+        theme: current.theme,
+        themeAuto: current.themeAuto,
+      });
       setSettingsDirty(false);
       showToast({ id: 'settings-reverted', title: '', body: t('settingsReverted', settings.language) });
     }
@@ -919,7 +926,7 @@ export default function App() {
 
       {/* Footer */}
       <footer className="py-6 px-4 text-center">
-        <p className={`text-xs font-display font-semibold tracking-widest uppercase ${isDark ? 'text-slate-700' : 'text-gray-300'}`}>
+        <p className={`text-xs font-display font-semibold tracking-widest uppercase ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
           STASH SAGE
         </p>
       </footer>

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { registerSW } from 'virtual:pwa-register';
 import { MantineProvider, createTheme } from '@mantine/core';
+import { MotionConfig } from 'framer-motion';
 import { ContextMenuProvider } from 'mantine-contextmenu';
 import '@mantine/core/styles.css';
 import '@mantine/carousel/styles.css';
@@ -11,6 +12,7 @@ import '@gfazioli/mantine-border-animate/styles.css';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthProvider } from './contexts/AuthContext';
+import { classColorSchemeManager } from './utils/mantineColorScheme';
 import './index.css';
 
 const theme = createTheme({
@@ -58,12 +60,28 @@ registerSW({
   },
 });
 
+// Reload once if a lazily-loaded chunk fails (usually after a stale SW serves old hashes)
+let reloading = false;
+function onDynamicImportError() {
+  if (reloading) return;
+  reloading = true;
+  window.location.reload();
+}
+window.addEventListener('error', (e) => {
+  if (e.message?.includes('Failed to fetch dynamically imported module')) onDynamicImportError();
+});
+window.addEventListener('unhandledrejection', (e) => {
+  const r = e.reason as { message?: string };
+  if (r?.message?.includes('Failed to fetch dynamically imported module')) onDynamicImportError();
+});
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
       <BrowserRouter>
         <AuthProvider>
-          <MantineProvider theme={theme} defaultColorScheme="dark">
+          <MantineProvider theme={theme} colorSchemeManager={classColorSchemeManager} defaultColorScheme="dark">
+            <MotionConfig reducedMotion="user">
             <ContextMenuProvider>
             <Routes>
               <Route path="/menu" element={<Suspense fallback={LoadingFallback}><MenuPage /></Suspense>} />
@@ -72,6 +90,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="*" element={<App />} />
             </Routes>
             </ContextMenuProvider>
+            </MotionConfig>
           </MantineProvider>
         </AuthProvider>
       </BrowserRouter>

@@ -11,6 +11,8 @@ export function AnimatedThemeToggle({ isDark, onToggle, className }: AnimatedThe
   return (
     <button
       type="button"
+      role="switch"
+      aria-checked={isDark}
       aria-label="Toggle theme"
       onClick={onToggle}
       className={cn(

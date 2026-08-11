@@ -53,6 +53,8 @@ export function BottomNav({ isDark }: BottomNavProps) {
   return (
     <>
       <Box
+        role="navigation"
+        aria-label="Primary"
         hiddenFrom="lg"
         style={{
           position: 'fixed',

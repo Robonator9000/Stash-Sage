@@ -9,7 +9,8 @@ import { showToast } from './Toast';
 import { SegmentedControl, Paper, Text, Group, UnstyledButton, ActionIcon, Textarea, Button, Loader, Skeleton, Stack, Box } from '@mantine/core';
 import { IconBookmark, IconX } from '@tabler/icons-react';
 import { getProfiles } from '../utils/profileCache';
-import { BlurFade, ShineBorder, BorderBeam, AnimatedGradientText } from './magicui';
+import { BlurFade, ShineBorder, BorderBeam } from './magicui';
+import { createPortal } from 'react-dom';
 
 const TRENDING_CACHE_TTL = 60 * 1000;
 let cachedTrendingTags: string[] | null = null;
@@ -509,7 +510,6 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
   return (
     <BlurFade>
       <Stack gap="md">
-        <AnimatedGradientText className="text-xl font-bold">Community</AnimatedGradientText>
 
       {quotePostId && quotePost && (
         <Paper p="md" radius="md" withBorder style={{ background: isDark ? 'var(--mantine-color-dark-6)' : 'rgba(255,255,255,0.7)', backdropFilter: 'blur(4px)' }}>
@@ -671,7 +671,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
 
       <div ref={observerRef} style={{ height: 16 }} />
 
-      {focusedPost && (
+      {focusedPost && createPortal(
         <PostDetailView
           post={focusedPost}
           isDark={isDark}
@@ -690,7 +690,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
           onComment={handleComment}
           onPostClick={handlePostClick}
         />
-      )}
+        , document.body)}
     </Stack>
   </BlurFade>
 );
