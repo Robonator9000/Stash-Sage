@@ -43,13 +43,13 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
       });
     }
 
-    const particleCount = Math.min(50, Math.floor((w * h) / 16000));
+    const particleCount = Math.min(70, Math.floor((w * h) / 12000));
     const particles: Particle[] = [];
     for (let i = 0; i < particleCount; i++) {
       particles.push({
         x: Math.random() * w, y: Math.random() * h,
-        vx: (Math.random() - 0.5) * 0.2, vy: -(0.15 + Math.random() * 0.35),
-        size: 1 + Math.random() * 2.5, alpha: 0.08 + Math.random() * 0.25,
+        vx: (Math.random() - 0.5) * 0.2, vy: 0.15 + Math.random() * 0.35,
+        size: 1 + Math.random() * 2.5, alpha: 0.1 + Math.random() * 0.3,
         hue: isDark ? 170 + Math.random() * 50 : 150 + Math.random() * 50,
       });
     }
@@ -128,15 +128,16 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
       ctx.fillRect(0, 0, w, h);
 
       for (const p of particles) {
-        p.x += p.vx; p.y += p.vy;
+        p.x += p.vx + Math.sin(frame * 0.01 + p.size) * 0.15;
+        p.y += p.vy;
         p.alpha += (Math.random() - 0.5) * 0.003;
-        p.alpha = Math.max(0.03, Math.min(0.35, p.alpha));
-        if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
+        p.alpha = Math.max(0.04, Math.min(0.4, p.alpha));
+        if (p.y > h + 10) { p.y = -10; p.x = Math.random() * w; }
         if (p.x < -10) p.x = w + 10;
         if (p.x > w + 10) p.x = -10;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = isDark ? `hsla(${p.hue}, 70%, 65%, ${p.alpha})` : `hsla(${p.hue}, 40%, 50%, ${p.alpha * 0.5})`;
+        ctx.fillStyle = isDark ? `hsla(${p.hue}, 70%, 70%, ${p.alpha})` : `hsla(${p.hue}, 40%, 60%, ${p.alpha * 0.6})`;
         ctx.fill();
       }
 
