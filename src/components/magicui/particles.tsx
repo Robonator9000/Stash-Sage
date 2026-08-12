@@ -117,7 +117,7 @@ export function Particles({
         targetAlpha: Math.random() * 0.55 + 0.15,
         dx: (Math.random() - 0.5) / 2,
         dy: (Math.random() - 0.5) / 2,
-        magnetism: 0.15 + Math.random() * 3.5,
+        magnetism: 0.1 + Math.random() * 1.2,
         color: colors
           ? hexToRgb(colors[Math.floor(Math.random() * colors.length)])
           : hexToRgb(color),

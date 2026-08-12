@@ -128,8 +128,10 @@ export function SessionModal({
     setIsTimerRunning(false);
   };
 
-  const dimColor = isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-6)';
-  const subtleBg = isDark ? 'var(--mantine-color-slate-8)' : 'var(--mantine-color-gray-1)';
+  const dimColor = isDark ? '#cbd5e1' : '#475569';
+  const subtleBg = isDark ? 'rgba(15,23,42,0.6)' : 'rgba(241,245,249,0.8)';
+  const accent = isDark ? '#22d3ee' : '#0891b2';
+  const headerBg = isDark ? 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(16,185,129,0.12))' : 'linear-gradient(135deg, rgba(6,182,212,0.1), rgba(16,185,129,0.08))';
 
   return (
     <Modal
@@ -140,15 +142,32 @@ export function SessionModal({
       radius="lg"
       closeOnEscape={false}
       aria-label={`Session - ${product.name}`}
-      styles={{ content: { display: 'flex', flexDirection: 'column', maxHeight: '90vh' }, body: { padding: 0, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 } }}
+      styles={{
+        content: { display: 'flex', flexDirection: 'column', maxHeight: '90vh', overflow: 'hidden' },
+        body: { padding: 0, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 },
+      }}
     >
-      <Box p="lg" style={{ display: 'flex', flex: 1, flexDirection: 'column', minHeight: 0 }}>
-        <Group justify="space-between" mb="md" align="flex-start">
+      {/* Gradient header band */}
+      <Box p="lg" pb="sm" style={{ background: headerBg, borderBottom: `1px solid ${isDark ? 'rgba(34,211,238,0.2)' : 'rgba(8,145,178,0.15)'}` }}>
+        <Group justify="space-between" align="center">
           <Box>
-            <Text fw={700} size="xl">{t('session', settings.language)}</Text>
-            <Text size="sm" c="dimmed">{product.name}</Text>
+            <Text fw={800} size="xl" style={{ letterSpacing: -0.5 }}>{t('session', settings.language)}</Text>
+            <Text size="sm" c="dimmed" mt={2}>{product.name} · {formatPrecision(amountUsed, settings.decimalPrecision)}g</Text>
+          </Box>
+          <Box
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              minWidth: 56, minHeight: 56, borderRadius: 16,
+              background: isDark ? 'rgba(34,211,238,0.12)' : 'rgba(8,145,178,0.1)',
+              border: `1px solid ${isDark ? 'rgba(34,211,238,0.25)' : 'rgba(8,145,178,0.2)'}`,
+            }}
+          >
+            <IconUsers size={26} style={{ color: accent }} />
           </Box>
         </Group>
+      </Box>
+
+      <Box p="lg" style={{ display: 'flex', flex: 1, flexDirection: 'column', minHeight: 0 }}>
 
         <Stack gap="lg" style={{ overflowY: 'auto', flex: 1, paddingRight: 4, minHeight: 0 }}>
           <ShineBorder borderRadius={14} duration={9} color={['#06b6d4', '#10b981', '#13eeef']} className="w-full">
