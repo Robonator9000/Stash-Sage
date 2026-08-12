@@ -45,6 +45,11 @@ html[data-magicui-theme-vt="active"]::view-transition-group(root) {
     --accent-from: #06b6d4;
     --accent-to: #10b981;
     --accent-glow: rgba(6, 182, 212, 0.2);
+    --mantine-color-dimmed: #b8c5d6;
+  }
+
+  :root {
+    --mantine-color-dimmed: #475569;
   }
 
   body {
