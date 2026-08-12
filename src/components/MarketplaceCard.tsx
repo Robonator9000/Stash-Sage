@@ -143,7 +143,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
           <div className="relative h-44 overflow-hidden">
             {allImages.length > 0 ? (
               <Image src={allImages[currentImageIndex]} alt={listing.title} loading="lazy"
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                className="w-full h-full object-cover" />
             ) : (
               <div className={`w-full h-full flex items-center justify-center ${isDark ? 'bg-surface' : 'bg-gray-100'}`}>
                 <Text size="sm" c="dimmed">No image</Text>

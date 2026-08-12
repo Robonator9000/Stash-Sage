@@ -1,24 +1,5 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, type CSSProperties } from 'react';
 import { cn } from '../../lib/utils';
-
-interface MousePosition {
-  x: number;
-  y: number;
-}
-
-function MousePosition(): MousePosition {
-  const [mousePosition, setMousePosition] = useState<MousePosition>({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const handleMouseMove = (event: MouseEvent) => {
-      setMousePosition({ x: event.clientX, y: event.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  return mousePosition;
-}
 
 interface ParticlesProps {
   className?: string;
@@ -75,17 +56,18 @@ export function Particles({
   const context = useRef<CanvasRenderingContext2D | null>(null);
   const rafId = useRef<number | null>(null);
   const circles = useRef<Array<Circle> | null>(null);
-  const mousePosition = MousePosition();
   const mouse = useRef<{ x: number; y: number }>({ x: -100, y: -100 });
   const sizeRef = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
   const dpr = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1;
 
   useEffect(() => {
-    if (mousePosition.x > 0 && mousePosition.y > 0) {
-      mouse.current.x = mousePosition.x;
-      mouse.current.y = mousePosition.y;
-    }
-  }, [mousePosition]);
+    const handleMouseMove = (event: MouseEvent) => {
+      mouse.current.x = event.clientX;
+      mouse.current.y = event.clientY;
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;

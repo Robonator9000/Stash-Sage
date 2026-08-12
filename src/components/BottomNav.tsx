@@ -16,19 +16,19 @@ import {
   IconMessageCircle,
 } from '@tabler/icons-react';
 
-type PrimaryTabId = 'stash' | 'community' | 'marketplace' | 'dashboard' | 'history';
+type PrimaryTabId = 'stash' | 'community' | 'marketplace' | 'messages' | 'menu';
 
-const primaryTabs: { id: PrimaryTabId; label: string; icon: typeof IconHome; requiresAuth?: boolean }[] = [
+const primaryTabs: { id: PrimaryTabId; label: string; icon: typeof IconHome; requiresAuth?: boolean; action?: 'chat' | 'route' }[] = [
   { id: 'stash', label: 'Stash', icon: IconHome },
   { id: 'community', label: 'Feed', icon: IconUsers },
   { id: 'marketplace', label: 'Market', icon: IconShoppingCart },
-  { id: 'dashboard', label: 'Dashboard', icon: IconLayoutDashboard },
-  { id: 'history', label: 'History', icon: IconHistory, requiresAuth: true },
+  { id: 'messages', label: 'Messages', icon: IconMessageCircle, requiresAuth: true, action: 'chat' },
+  { id: 'menu', label: 'Menu', icon: IconSparkles, action: 'route' },
 ];
 
 const secondaryTabs: { id: string; label: string; icon: typeof IconHome; requiresAuth?: boolean }[] = [
-  { id: 'menu', label: 'Menu', icon: IconSparkles },
-  { id: 'messages', label: 'Messages', icon: IconMessageCircle, requiresAuth: true },
+  { id: 'dashboard', label: 'Dashboard', icon: IconLayoutDashboard },
+  { id: 'history', label: 'History', icon: IconHistory, requiresAuth: true },
   { id: 'settings', label: 'Settings', icon: IconSettings },
   { id: 'admin', label: 'Admin', icon: IconShield, requiresAuth: true },
 ];
@@ -46,20 +46,23 @@ export function BottomNav({ isDark, onOpenChat }: BottomNavProps) {
   const activeTab = new URLSearchParams(location.search).get('tab') as PrimaryTabId | null;
 
   const handleTabClick = (tabId: PrimaryTabId | string) => {
+    const tab = primaryTabs.find(t => t.id === tabId);
+    if (tab?.action === 'chat') {
+      onOpenChat?.();
+      setMoreOpen(false);
+      return;
+    }
+    if (tab?.action === 'route') {
+      navigate('/menu');
+      setMoreOpen(false);
+      return;
+    }
     navigate(`/?tab=${tabId}`);
     setMoreOpen(false);
   };
 
   const handleSecondaryClick = (tabId: string) => {
     setMoreOpen(false);
-    if (tabId === 'menu') {
-      navigate('/menu');
-      return;
-    }
-    if (tabId === 'messages') {
-      onOpenChat?.();
-      return;
-    }
     navigate(`/?tab=${tabId}`);
   };
 

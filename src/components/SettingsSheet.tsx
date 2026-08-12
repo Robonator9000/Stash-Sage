@@ -247,7 +247,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
     { key: 'projectedRunOut' as const, label: t('projectedRunOut', settings.language) },
   ];
 
-  const sectionLabel = `flex items-center gap-2 text-sm font-medium mb-3 ${isDark ? 'text-slate-300' : 'text-gray-700'}`;
+  const sectionLabel = `flex items-center gap-2 text-sm font-medium mb-3 ${isDark ? 'text-white' : 'text-black'}`;
 
   const lang = settings.language;
   const handleSave = () => {
@@ -319,7 +319,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                 <div className="space-y-4">
                   <div className={`p-4 rounded-xl text-center ${isDark ? 'bg-slate-800/50' : 'bg-gray-50'}`}>
                     <User className={`w-8 h-8 mx-auto mb-2 ${isDark ? 'text-slate-500' : 'text-gray-400'}`} />
-                    <h3 className={`text-sm font-semibold mb-1 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+                    <h3 className={`text-sm font-semibold mb-1 ${isDark ? 'text-white' : 'text-black'}`}>
                       {authMode === 'signin' ? 'Welcome Back' : 'Create Account'}
                     </h3>
                     <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'} mb-4`}>
@@ -635,7 +635,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               }} />
 
               <hr className={`my-6 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`} />
-              <h4 className={`text-sm font-semibold ${isDark ? 'text-slate-300' : 'text-gray-700'} flex items-center gap-2`}>
+              <h4 className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-black'} flex items-center gap-2`}>
                 <Lock className="w-4 h-4" />Change Password
               </h4>
               {passwordChangeError && (
@@ -659,7 +659,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               </Button>
 
               <hr className={`my-6 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`} />
-              <h4 className={`text-sm font-semibold ${isDark ? 'text-slate-300' : 'text-gray-700'} flex items-center gap-2`}>
+              <h4 className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-black'} flex items-center gap-2`}>
                 <Mail className="w-4 h-4" />Change Email
               </h4>
               {emailChangeError && (

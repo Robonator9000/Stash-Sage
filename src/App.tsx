@@ -647,7 +647,7 @@ export default function App() {
               )}
 
               <Group gap="xs">
-                <Text size="xs" tt="uppercase" fw={500} c={isDark ? 'gray.5' : 'gray.4'}>Sort</Text>
+                <Text size="xs" tt="uppercase" fw={700} c={isDark ? 'white' : 'black'}>Sort</Text>
                 <Select
                   size="xs"
                   value={sortBy}
@@ -659,7 +659,7 @@ export default function App() {
               </Group>
 
               <Group gap="xs">
-                <Text size="xs" tt="uppercase" fw={500} c={isDark ? 'gray.5' : 'gray.4'}>Filter</Text>
+                <Text size="xs" tt="uppercase" fw={700} c={isDark ? 'white' : 'black'}>Filter</Text>
                 <Select
                   size="xs"
                   value={filterBy}
@@ -679,7 +679,7 @@ export default function App() {
               />
 
               <Group gap="xs">
-                <Text size="xs" tt="uppercase" fw={500} c={isDark ? 'gray.5' : 'gray.4'}>{t('perPage', lang)}</Text>
+                <Text size="xs" tt="uppercase" fw={700} c={isDark ? 'white' : 'black'}>{t('perPage', lang)}</Text>
                 <Select
                   size="xs"
                   value={String(productsPerPage)}

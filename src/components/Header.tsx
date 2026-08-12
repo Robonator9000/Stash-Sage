@@ -137,7 +137,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
             <div className={`absolute top-full mt-1 left-0 right-0 rounded-xl shadow-xl border overflow-hidden z-50 max-h-96 overflow-y-auto ${isDark ? 'bg-midnight border border-edge' : 'bg-white border-gray-200'}`}>
               {searchResults.products.length > 0 && (
                 <div>
-                  <div className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-300 bg-[#0b1120]' : 'text-gray-600 bg-gray-50'}`}>Products</div>
+                  <div className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-white bg-[#0b1120]' : 'text-black bg-gray-50'}`}>Products</div>
                   {searchResults.products.map(p => (
                     <button key={p.id} onMouseDown={() => { setSearchQuery(p.name); handleResultClick(); }}
                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? 'hover:bg-[#0b1120] text-white' : 'hover:bg-gray-50 text-gray-900'}`}>
@@ -150,7 +150,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
               )}
               {searchResults.users.length > 0 && (
                 <div>
-                  <div className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-300 bg-[#0b1120]' : 'text-gray-600 bg-gray-50'}`}>Users</div>
+                  <div className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-white bg-[#0b1120]' : 'text-black bg-gray-50'}`}>Users</div>
                     {searchResults.users.map(u => (
                     <button key={u.user_id} onMouseDown={() => { handleViewProfile(u.user_id); }}
                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? 'hover:bg-[#0b1120] text-white' : 'hover:bg-gray-50 text-gray-900'}`}>
@@ -165,7 +165,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
               )}
               {searchResults.posts.length > 0 && (
                 <div>
-                  <div className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-300 bg-[#0b1120]' : 'text-gray-600 bg-gray-50'}`}>Posts</div>
+                  <div className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-white bg-[#0b1120]' : 'text-black bg-gray-50'}`}>Posts</div>
                   {searchResults.posts.map(p => (
                     <button key={p.id} onMouseDown={() => { setSearchParams(prev => { prev.set('tab', 'community'); return prev; }, { replace: true }); handleResultClick(); }}
                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? 'hover:bg-[#0b1120] text-white' : 'hover:bg-gray-50 text-gray-900'}`}>
@@ -177,7 +177,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
               )}
               {searchResults.listings.length > 0 && (
                 <div>
-                  <div className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-300 bg-[#0b1120]' : 'text-gray-600 bg-gray-50'}`}>Listings</div>
+                  <div className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-white bg-[#0b1120]' : 'text-black bg-gray-50'}`}>Listings</div>
                   {searchResults.listings.map(l => (
                     <button key={l.id} onMouseDown={() => { setSearchParams(prev => { prev.set('tab', 'marketplace'); return prev; }, { replace: true }); handleResultClick(); }}
                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? 'hover:bg-[#0b1120] text-white' : 'hover:bg-gray-50 text-gray-900'}`}>
