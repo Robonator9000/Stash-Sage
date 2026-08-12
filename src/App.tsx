@@ -736,12 +736,12 @@ export default function App() {
                 <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
                   isDark ? 'bg-slate-700/60' : 'bg-gray-200'
                 }`}>
-                  <Lock className={`w-7 h-7 ${isDark ? 'text-slate-400' : 'text-gray-500'}`} />
+                  <Lock className={`w-7 h-7 ${isDark ? 'text-slate-300' : 'text-gray-600'}`} />
                 </div>
                 <h3 className={`text-lg font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {t('wipTitle', lang)}
                 </h3>
-                <p className={`text-sm max-w-xs ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                <p className={`text-sm max-w-xs ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
                   {t('wipCommunityDesc', lang)}
                 </p>
               </div>
@@ -765,12 +765,12 @@ export default function App() {
                 <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
                   isDark ? 'bg-slate-700/60' : 'bg-gray-200'
                 }`}>
-                  <Lock className={`w-7 h-7 ${isDark ? 'text-slate-400' : 'text-gray-500'}`} />
+                  <Lock className={`w-7 h-7 ${isDark ? 'text-slate-300' : 'text-gray-600'}`} />
                 </div>
                 <h3 className={`text-lg font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {t('wipTitle', lang)}
                 </h3>
-                <p className={`text-sm max-w-xs ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                <p className={`text-sm max-w-xs ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
                   {t('wipMarketplaceDesc', lang)}
                 </p>
               </div>
@@ -924,13 +924,6 @@ export default function App() {
 
       {/* Toast */}
       <ToastContainer isDark={isDark} />
-
-      {/* Footer */}
-      <footer className="py-6 px-4 text-center">
-        <p className={`text-xs font-display font-semibold tracking-widest uppercase ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-          STASH SAGE
-        </p>
-      </footer>
 
       {/* Menu shortcut */}
       <MenuButton />

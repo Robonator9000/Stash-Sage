@@ -60,6 +60,24 @@ registerSW({
   },
 });
 
+// Apply theme class BEFORE React renders so Mantine's color scheme is correct on first paint.
+// Must mirror App's `isDark = settings.theme === 'dark'` (useSettings default theme is 'dark').
+try {
+  const raw = localStorage.getItem('weed-settings');
+  let themePreference: string | null = null;
+  if (raw) {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    if (typeof parsed.theme === 'string') themePreference = parsed.theme;
+  }
+  const dark = (themePreference ?? 'dark') === 'dark';
+  const root = document.documentElement;
+  root.classList.toggle('dark', dark);
+  root.setAttribute('data-mantine-color-scheme', dark ? 'dark' : 'light');
+  root.style.colorScheme = dark ? 'dark' : 'light';
+} catch {
+  /* ignore storage/parse errors */
+}
+
 // Reload once if a lazily-loaded chunk fails (usually after a stale SW serves old hashes)
 let reloading = false;
 function onDynamicImportError() {

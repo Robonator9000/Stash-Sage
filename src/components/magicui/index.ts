@@ -7,6 +7,7 @@ export { default as AnimatedGradientText } from './animated-gradient-text';
 export { BlurFade } from './blur-fade';
 export { Marquee } from './marquee';
 export { AnimatedThemeToggle } from './animated-theme-toggle';
+export { AnimatedThemeToggler } from './animated-theme-toggler';
 export { NeonGradientCard } from './neon-gradient-card';
 export { NumberTicker } from './number-ticker';
 export { AnimatedList } from './animated-list';

@@ -237,7 +237,7 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
             </button>
           </BorderAnimate>
         ) : (
-          <div className={`w-full p-4 rounded-2xl text-center text-sm ${isDark ? 'bg-surface/50 border border-edge text-mist' : 'bg-white border border-gray-200 text-gray-500'}`}>
+          <div className={`w-full p-4 rounded-2xl text-center text-sm ${isDark ? 'bg-surface/50 border border-edge text-frost' : 'bg-white border border-gray-200 text-gray-700'}`}>
             Sign in to create a listing.
           </div>
         )}
@@ -334,7 +334,7 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
           { id: 'price_high' as const, label: t('sortPriceHigh', lang) },
         ]).map(s => (
           <button key={s.id} onClick={() => setSortBy(s.id)} aria-pressed={sortBy === s.id}
-            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${sortBy === s.id ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm' : isDark ? 'text-mist hover:text-frost' : 'text-gray-500 hover:text-gray-700'}`}>
+            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${sortBy === s.id ? isDark ? 'bg-surface text-frost' : 'bg-white text-gray-900 shadow-sm' : isDark ? 'text-frost hover:text-white' : 'text-gray-700 hover:text-gray-900'}`}>
             {s.label}
           </button>
         ))}

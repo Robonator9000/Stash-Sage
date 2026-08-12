@@ -3,7 +3,17 @@
 @tailwind utilities;
 
 html {
-  overflow-y: scroll;
+  overflow-y: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html[data-magicui-theme-vt="active"]::view-transition-group(root) {
+  animation-duration: var(--magicui-theme-toggle-vt-duration);
 }
 
 @layer base {
@@ -15,8 +25,8 @@ html {
     --border: #a0aec0;
     --border-light: #cbd5e1;
     --text: #0f172a;
-    --text-secondary: #334155;
-    --text-muted: #64748b;
+    --text-secondary: #1e293b;
+    --text-muted: #475569;
     --accent-from: #0891b2;
     --accent-to: #059669;
     --accent-glow: rgba(6, 182, 212, 0.2);
@@ -30,8 +40,8 @@ html {
     --border: #1e293b;
     --border-light: #334155;
     --text: #e2e8f0;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
     --accent-from: #06b6d4;
     --accent-to: #10b981;
     --accent-glow: rgba(6, 182, 212, 0.2);

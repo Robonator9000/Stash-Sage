@@ -419,7 +419,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
                   <div className="flex gap-2">
                     {onPinToggle && (
                       <button onClick={() => { onPinToggle(listing.id); setShowDetailPopup(false); }} aria-label={isPinned ? 'Unpin listing' : 'Pin listing to top'}
-                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${isDark ? 'bg-midnight text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:text-gray-700'}`}>
+                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${isDark ? 'bg-midnight text-frost hover:text-white' : 'bg-gray-100 text-gray-800 hover:text-gray-900'}`}>
                         <Pin className="w-4 h-4" fill={isPinned ? 'currentColor' : 'none'} />
                         {isPinned ? 'Unpin' : 'Pin'}
                       </button>
@@ -546,7 +546,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
               <button
                 onClick={() => setConfirmAction(null)}
                 className={`flex-1 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                  isDark ? 'bg-surface text-mist hover:text-frost' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  isDark ? 'bg-surface text-frost hover:text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                 }`}
               >
                 Cancel

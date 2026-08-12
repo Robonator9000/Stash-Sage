@@ -83,7 +83,7 @@ export function CommunityPage({ onOpenChat }: { onOpenChat?: (userId: string) =>
   if (!user) {
     return (
       <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/40 border border-edge backdrop-blur-sm' : 'bg-white/70 border border-gray-200 backdrop-blur-sm'}`}>
-        <p className={`text-sm ${isDark ? 'text-mist' : 'text-gray-500'}`}>Sign in to access the community</p>
+        <p className={`text-sm ${isDark ? 'text-frost' : 'text-gray-700'}`}>Sign in to access the community</p>
       </div>
     );
   }
@@ -101,7 +101,7 @@ export function CommunityPage({ onOpenChat }: { onOpenChat?: (userId: string) =>
         <p className={`text-xs mt-1 ${isDark ? 'text-muted' : 'text-gray-400'}`}>No profile exists for @{profileUser}</p>
         <button
           onClick={() => setSearchParams(prev => { prev.delete('user'); return prev; }, { replace: true })}
-          className={`mt-4 px-4 py-2 rounded-lg text-xs font-medium transition-all border ${isDark ? 'border-edge text-mist hover:bg-surface' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+          className={`mt-4 px-4 py-2 rounded-lg text-xs font-medium transition-all border ${isDark ? 'border-edge text-frost hover:bg-surface' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}
         >
           Back to community
         </button>

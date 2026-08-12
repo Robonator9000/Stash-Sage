@@ -48,7 +48,7 @@ export function BottomNav({ isDark }: BottomNavProps) {
     setMoreOpen(false);
   };
 
-  const inactiveColor = isDark ? 'var(--mantine-color-gray-6)' : 'var(--mantine-color-gray-6)';
+  const inactiveColor = isDark ? 'var(--mantine-color-gray-3)' : 'var(--mantine-color-gray-7)';
 
   return (
     <>

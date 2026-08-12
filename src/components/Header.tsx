@@ -10,7 +10,7 @@ import { LogoIcon } from './LogoIcon';
 import { NotificationBell } from './NotificationBell';
 import { ActionIcon, Button, Group } from '@mantine/core';
 import { IconSearch, IconPlus } from '@tabler/icons-react';
-import { AnimatedGradientText, AnimatedThemeToggle, BorderBeam } from './magicui';
+import { AnimatedGradientText, AnimatedThemeToggler, BorderBeam } from './magicui';
 
 interface UserRow { user_id: string; display_name: string; username?: string; avatar_url: string | null; }
 interface PostRow { id: string; content: string; created_at: string; user_id: string; }
@@ -91,7 +91,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
 
         <div className="relative flex-1 max-w-xl mx-auto hidden sm:block">
           <div className="relative">
-            <svg className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-muted' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-slate-300' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
@@ -112,7 +112,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
               <button
                 onClick={() => { setSearchQuery(''); setShowSearchPreview(false); }}
                 aria-label="Clear search"
-                className={`absolute right-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}`}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-slate-300 hover:text-white' : 'text-gray-500 hover:text-gray-700'}`}
               >
                 &times;
               </button>
@@ -122,7 +122,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
             <div className={`absolute top-full mt-1 left-0 right-0 rounded-xl shadow-xl border overflow-hidden z-50 max-h-96 overflow-y-auto ${isDark ? 'bg-midnight border border-edge' : 'bg-white border-gray-200'}`}>
               {searchResults.products.length > 0 && (
                 <div>
-                  <div className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-muted bg-[#0b1120]' : 'text-gray-400 bg-gray-50'}`}>Products</div>
+                  <div className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-300 bg-[#0b1120]' : 'text-gray-600 bg-gray-50'}`}>Products</div>
                   {searchResults.products.map(p => (
                     <button key={p.id} onMouseDown={() => { setSearchQuery(p.name); handleResultClick(); }}
                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? 'hover:bg-[#0b1120] text-white' : 'hover:bg-gray-50 text-gray-900'}`}>
@@ -135,7 +135,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
               )}
               {searchResults.users.length > 0 && (
                 <div>
-                  <div className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-muted bg-[#0b1120]' : 'text-gray-400 bg-gray-50'}`}>Users</div>
+                  <div className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-300 bg-[#0b1120]' : 'text-gray-600 bg-gray-50'}`}>Users</div>
                     {searchResults.users.map(u => (
                     <button key={u.user_id} onMouseDown={() => { handleViewProfile(u.user_id); }}
                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? 'hover:bg-[#0b1120] text-white' : 'hover:bg-gray-50 text-gray-900'}`}>
@@ -150,7 +150,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
               )}
               {searchResults.posts.length > 0 && (
                 <div>
-                  <div className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-muted bg-[#0b1120]' : 'text-gray-400 bg-gray-50'}`}>Posts</div>
+                  <div className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-300 bg-[#0b1120]' : 'text-gray-600 bg-gray-50'}`}>Posts</div>
                   {searchResults.posts.map(p => (
                     <button key={p.id} onMouseDown={() => { setSearchParams(prev => { prev.set('tab', 'community'); return prev; }, { replace: true }); handleResultClick(); }}
                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? 'hover:bg-[#0b1120] text-white' : 'hover:bg-gray-50 text-gray-900'}`}>
@@ -162,7 +162,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
               )}
               {searchResults.listings.length > 0 && (
                 <div>
-                  <div className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-muted bg-[#0b1120]' : 'text-gray-400 bg-gray-50'}`}>Listings</div>
+                  <div className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-300 bg-[#0b1120]' : 'text-gray-600 bg-gray-50'}`}>Listings</div>
                   {searchResults.listings.map(l => (
                     <button key={l.id} onMouseDown={() => { setSearchParams(prev => { prev.set('tab', 'marketplace'); return prev; }, { replace: true }); handleResultClick(); }}
                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? 'hover:bg-[#0b1120] text-white' : 'hover:bg-gray-50 text-gray-900'}`}>
@@ -196,16 +196,16 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
 
           {user && <NotificationBell isDark={isDark} lang={lang} onViewProfile={handleViewProfile} />}
 
-          <AnimatedThemeToggle
-            isDark={isDark}
-            onToggle={() => updateSettings({ theme: isDark ? 'light' : 'dark', themeAuto: false })}
+          <AnimatedThemeToggler
+            theme={isDark ? 'dark' : 'light'}
+            onThemeChange={(t) => updateSettings({ theme: t, themeAuto: false })}
           />
         </Group>
       </div>
       {mobileSearchOpen && (
         <div className="sm:hidden px-4 pb-2">
           <div className="relative">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-slate-300' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
@@ -224,7 +224,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
               <button
                 onClick={() => { setSearchQuery(''); setShowSearchPreview(false); }}
                 aria-label="Clear search"
-                className={`absolute right-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-muted hover:text-frost' : 'text-gray-400 hover:text-gray-600'}`}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-slate-300 hover:text-white' : 'text-gray-500 hover:text-gray-700'}`}
               >
                 &times;
               </button>

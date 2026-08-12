@@ -300,8 +300,8 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all border-2 text-left whitespace-nowrap ${
                   isActive
                     ? isDark ? 'bg-cyan-500/15 border-cyan-500/50 text-cyan-400' : 'bg-cyan-50 border-cyan-200 text-cyan-600'
-                    : isDark ? 'border-transparent text-slate-400 hover:bg-slate-800 hover:text-white'
-                             : 'border-transparent text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+                    : isDark ? 'border-transparent text-slate-200 hover:bg-slate-800 hover:text-white'
+                             : 'border-transparent text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
                 <tab.icon className="w-4 h-4 shrink-0" />

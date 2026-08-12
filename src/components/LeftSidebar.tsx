@@ -219,8 +219,13 @@ export function LeftSidebar({
               marginBottom: 2,
             },
             label: {
-              fontSize: 'var(--mantine-font-size-sm)',
-              fontWeight: 500,
+              fontSize: 'var(--mantine-font-size-md)',
+              fontWeight: 600,
+              color: isActive
+                ? undefined
+                : isDisabled
+                  ? (isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-5)')
+                  : (isDark ? 'var(--mantine-color-gray-2)' : 'var(--mantine-color-gray-8)'),
             },
           }}
           role="menuitem"
@@ -313,11 +318,11 @@ export function LeftSidebar({
                     styles={{
                       root: { marginBottom: 4 },
                       label: {
-                        fontSize: 'var(--mantine-font-size-xs)',
-                        fontWeight: 600,
+                        fontSize: 'var(--mantine-font-size-sm)',
+                        fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
-                        color: isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-6)',
+                        color: isDark ? 'var(--mantine-color-gray-2)' : 'var(--mantine-color-gray-8)',
                       },
                     }}
                     aria-expanded={expandedSections[section]}
