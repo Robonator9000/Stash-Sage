@@ -40,14 +40,7 @@ export function MagicBackground({ isDark, variant = 'full' }: MagicBackgroundPro
       {!paused && variant === 'full' && (
         <Particles quantity={isDark ? 55 : 35} colors={baseColors} className="opacity-70" />
       )}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(to bottom, transparent 40%, ${
-            isDark ? 'rgba(11,17,32,0.55)' : 'rgba(242,244,248,0.55)'
-          })`,
-        }}
-      />
+
     </div>
   );
 }

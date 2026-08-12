@@ -1,5 +1,4 @@
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { useEffect, type CSSProperties } from 'react';
+import { type CSSProperties } from 'react';
 import { cn } from '../../lib/utils';
 
 interface AnimatedCircularProgressBarProps {
@@ -23,16 +22,9 @@ export function AnimatedCircularProgressBar({
   style,
   children,
 }: AnimatedCircularProgressBarProps) {
-  const motionValue = useMotionValue(0);
-  const springValue = useSpring(motionValue, {
-    damping: 30,
-    stiffness: 200,
-  });
-  const rotate = useTransform(springValue, [min, max], [0, 360]);
-
-  useEffect(() => {
-    motionValue.set(((value - min) / (max - min)) * 100);
-  }, [value, min, max, motionValue]);
+  const circumference = 2 * Math.PI * 40;
+  const pct = Math.max(0, Math.min(100, ((value - min) / Math.max(1, max - min)) * 100));
+  const dashOffset = circumference - (pct / 100) * circumference;
 
   return (
     <div
@@ -43,22 +35,22 @@ export function AnimatedCircularProgressBar({
         <circle
           cx="50"
           cy="50"
-          r="44"
+          r="40"
           fill="none"
           strokeWidth="8"
           stroke={gaugeSecondaryColor}
         />
-        <motion.circle
+        <circle
           cx="50"
           cy="50"
-          r="44"
+          r="40"
           fill="none"
           strokeWidth="8"
           stroke={gaugePrimaryColor}
           strokeLinecap="round"
-          strokeDasharray="276.46"
-          style={{ rotate, transformOrigin: '50% 50%' }}
-          pathLength="100"
+          strokeDasharray={circumference}
+          strokeDashoffset={dashOffset}
+          style={{ transition: 'stroke-dashoffset 0.3s linear' }}
         />
       </svg>
       <div className="relative z-10 flex flex-col items-center justify-center">

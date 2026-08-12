@@ -308,15 +308,19 @@ export default function App() {
   }, [consumingProduct, consumeProduct, checkLowStock, addActivityEntry]);
 
   const handleFinishSession = useCallback((_productId: string, _amountUsed: number, session: Session) => {
-    addSession(session);
-    addActivityEntry({
-      id: generateId(), type: 'session', productId: session.productId, productName: session.productName, amount: session.amount, notes: session.notes, timestamp: new Date(),
-    });
     setSessionProduct(null);
     setSessionAmount(0);
     setSessionPeople(2);
     setShowSmoke(true);
     setTimeout(() => setShowSmoke(false), 1200);
+    try {
+      addSession(session);
+      addActivityEntry({
+        id: generateId(), type: 'session', productId: session.productId, productName: session.productName, amount: session.amount, notes: session.notes, timestamp: new Date(),
+      });
+    } catch (err) {
+      console.error('finish session failed', err);
+    }
   }, [addSession, addActivityEntry]);
 
   const handleImport = useCallback((data: ImportResult) => {
@@ -944,20 +948,31 @@ export default function App() {
 
       {/* Animations */}
       {showSmoke && (
-        <div className="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center">
-          <span className="animate-smoke-puff text-7xl">{'\uD83D\uDCA8'}</span>
-          <span className="animate-smoke-puff-2 text-6xl ml-4">{'\uD83D\uDD25'}</span>
-          <span className="animate-smoke-puff text-5xl ml-2" style={{ animationDelay: '0.2s' }}>{'\uD83D\uDCA8'}</span>
+        <div className="fixed inset-0 z-[100] pointer-events-none flex flex-col items-center justify-center gap-2">
+          <div className="flex items-end gap-3">
+            <span className="animate-smoke-puff text-6xl" style={{ animationDelay: '0s' }}>{'\uD83D\uDD25'}</span>
+            <span className="animate-smoke-puff text-7xl" style={{ animationDelay: '0.15s' }}>{'\uD83D\uDCA8'}</span>
+            <span className="animate-smoke-puff text-5xl" style={{ animationDelay: '0.3s' }}>{'\uD83D\uDCA8'}</span>
+          </div>
+          <div className="flex items-end gap-4 mt-2">
+            <span className="animate-smoke-puff text-4xl" style={{ animationDelay: '0.1s' }}>{'\uD83D\uDCA8'}</span>
+            <span className="animate-smoke-puff text-5xl" style={{ animationDelay: '0.25s' }}>{'\uD83D\uDD25'}</span>
+            <span className="animate-smoke-puff text-3xl" style={{ animationDelay: '0.4s' }}>{'\uD83D\uDCA8'}</span>
+          </div>
         </div>
       )}
       {showDollar && (
-        <div className="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center">
-          <span className="animate-dollar-float text-5xl font-bold text-emerald-400">$</span>
-          <span className="animate-dollar-float text-4xl font-bold text-emerald-400 ml-6" style={{ animationDelay: '0.15s' }}>$</span>
-          <span className="animate-dollar-float text-5xl font-bold text-emerald-400 ml-8" style={{ animationDelay: '0.3s' }}>$</span>
-          <span className="animate-dollar-float text-4xl font-bold text-emerald-400 ml-4" style={{ animationDelay: '0.1s' }}>$</span>
-          <span className="animate-dollar-float text-5xl font-bold text-emerald-400 ml-6" style={{ animationDelay: '0.2s' }}>$</span>
-          <span className="animate-dollar-float text-4xl font-bold text-emerald-400 ml-6" style={{ animationDelay: '0.25s' }}>$</span>
+        <div className="fixed inset-0 z-[100] pointer-events-none flex flex-col items-center justify-center gap-1">
+          <div className="flex items-end gap-3">
+            <span className="animate-dollar-float text-4xl" style={{ animationDelay: '0s' }}>{'\uD83D\uDCB0'}</span>
+            <span className="animate-dollar-float text-6xl font-black text-emerald-400" style={{ animationDelay: '0.1s' }}>$</span>
+            <span className="animate-dollar-float text-4xl" style={{ animationDelay: '0.2s' }}>{'\uD83D\uDCB8'}</span>
+          </div>
+          <div className="flex items-end gap-4 mt-1">
+            <span className="animate-dollar-float text-3xl font-bold text-emerald-400" style={{ animationDelay: '0.15s' }}>$</span>
+            <span className="animate-dollar-float text-5xl font-black text-emerald-400" style={{ animationDelay: '0.3s' }}>$</span>
+            <span className="animate-dollar-float text-3xl" style={{ animationDelay: '0.05s' }}>{'\uD83D\uDCB0'}</span>
+          </div>
         </div>
       )}
     </div>

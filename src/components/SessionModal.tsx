@@ -7,7 +7,7 @@ import { playSessionBeep } from '../utils/sounds';
 import { Modal, Group, Stack, Text, Textarea, Button, NumberInput, ActionIcon, Paper, Divider, Box } from '@mantine/core';
 import { IconUsers, IconClock, IconPlayerPlay, IconPlayerPause, IconRefresh, IconCalculator, IconArrowRight } from '@tabler/icons-react';
 import { formatPrecision } from '../utils/helpers';
-import { ShineBorder, NumberTicker, AnimatedCircularProgressBar } from './magicui';
+import { ShineBorder, AnimatedCircularProgressBar } from './magicui';
 
 interface SessionModalProps {
   product: Product;
@@ -170,7 +170,7 @@ export function SessionModal({
                 </Group>
                 <Group gap="xs">
                   <Text size="sm" c="dimmed">{t('hits', settings.language)}:</Text>
-                  <Text fw={700} w={40} ta="center"><NumberTicker value={hitsCount} duration={400} /></Text>
+                  <Text fw={700} w={40} ta="center">{hitsCount}</Text>
                 </Group>
               </Group>
 
