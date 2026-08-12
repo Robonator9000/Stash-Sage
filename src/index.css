@@ -441,3 +441,40 @@ textarea:focus:not(:focus-visible) {
   0% { --nc-angle: 0deg; }
   100% { --nc-angle: 360deg; }
 }
+
+/* ===== Smoke & dollar celebration animations ===== */
+@keyframes smoke-puff {
+  0% { opacity: 0; transform: scale(0.3) translateY(0); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: scale(2.5) translateY(-80px); }
+}
+.animate-smoke-puff {
+  animation: smoke-puff 1.2s ease-out forwards;
+  display: inline-block;
+}
+@keyframes smoke-puff-2 {
+  0% { opacity: 0; transform: scale(0.3) translateY(0); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: scale(2) translateY(-60px) translateX(20px); }
+}
+.animate-smoke-puff-2 {
+  animation: smoke-puff-2 1.2s ease-out forwards;
+  display: inline-block;
+}
+@keyframes dollar-float {
+  0% { opacity: 0; transform: translateY(40px) scale(0.5) rotate(-10deg); }
+  30% { opacity: 1; transform: translateY(0) scale(1.2) rotate(5deg); }
+  100% { opacity: 0; transform: translateY(-80px) scale(0.8) rotate(-5deg); }
+}
+.animate-dollar-float {
+  animation: dollar-float 1.6s ease-out forwards;
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-smoke-puff,
+  .animate-smoke-puff-2,
+  .animate-dollar-float {
+    animation: none;
+  }
+}

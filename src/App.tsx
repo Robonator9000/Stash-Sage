@@ -263,16 +263,22 @@ export default function App() {
   const [showDollar, setShowDollar] = useState(false);
 
   const handleSell = useCallback((amount: number) => {
-    if (sellingProduct) {
-      checkLowStock(sellingProduct, amount);
-      consumeProduct(sellingProduct.id, amount);
+    const product = sellingProduct;
+    if (!product) return;
+    // Close the sell modal and play the dollar animation FIRST,
+    // so the UI always advances even if the data mutation below throws.
+    setSellingProduct(null);
+    setShowDollar(true);
+    playSellSound();
+    setTimeout(() => setShowDollar(false), 1600);
+    try {
+      checkLowStock(product, amount);
+      consumeProduct(product.id, amount);
       addActivityEntry({
-        id: generateId(), type: 'sell', productId: sellingProduct.id, productName: sellingProduct.name, amount, timestamp: new Date(),
+        id: generateId(), type: 'sell', productId: product.id, productName: product.name, amount, timestamp: new Date(),
       });
-      setSellingProduct(null);
-      setShowDollar(true);
-      playSellSound();
-      setTimeout(() => setShowDollar(false), 1600);
+    } catch (err) {
+      console.error('sell failed', err);
     }
   }, [sellingProduct, consumeProduct, checkLowStock, addActivityEntry]);
 
@@ -941,9 +947,9 @@ export default function App() {
       {/* Animations */}
       {showSmoke && (
         <div className="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center">
-          <span className="animate-smoke-puff text-7xl">ðŸ’¨</span>
-          <span className="animate-smoke-puff-2 text-6xl ml-4">ðŸ’¨</span>
-          <span className="animate-smoke-puff text-5xl ml-2" style={{ animationDelay: '0.2s' }}>ðŸ’¨</span>
+          <span className="animate-smoke-puff text-7xl">{'\uD83D\uDCA8'}</span>
+          <span className="animate-smoke-puff-2 text-6xl ml-4">{'\uD83D\uDD25'}</span>
+          <span className="animate-smoke-puff text-5xl ml-2" style={{ animationDelay: '0.2s' }}>{'\uD83D\uDCA8'}</span>
         </div>
       )}
       {showDollar && (
