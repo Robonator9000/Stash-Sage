@@ -277,21 +277,29 @@ export default function App() {
   }, [sellingProduct, consumeProduct, checkLowStock, addActivityEntry]);
 
   const handleConsume = useCallback((amount: number, startSession: boolean, people: number, consumedAt?: Date) => {
-    if (!consumingProduct) return;
-    checkLowStock(consumingProduct, amount);
-    consumeProduct(consumingProduct.id, amount, consumedAt);
-    addActivityEntry({
-      id: generateId(), type: 'consume', productId: consumingProduct.id, productName: consumingProduct.name, amount, timestamp: consumedAt || new Date(),
-    });
+    const product = consumingProduct;
+    if (!product) return;
+    // Close the consume modal and (optionally) open the session modal FIRST,
+    // so the UI always advances even if the data mutation below throws.
     setConsumingProduct(null);
     if (startSession) {
-      setSessionProduct(consumingProduct);
+      setSessionProduct(product);
       setSessionAmount(amount);
       setSessionPeople(people);
     } else {
       setShowSmoke(true);
       playSmokeSound();
       setTimeout(() => setShowSmoke(false), 1200);
+    }
+    // Persist + record in a try/catch so a failure can never block the UI flow.
+    try {
+      checkLowStock(product, amount);
+      consumeProduct(product.id, amount, consumedAt);
+      addActivityEntry({
+        id: generateId(), type: 'consume', productId: product.id, productName: product.name, amount, timestamp: consumedAt || new Date(),
+      });
+    } catch (err) {
+      console.error('consume failed', err);
     }
   }, [consumingProduct, consumeProduct, checkLowStock, addActivityEntry]);
 
