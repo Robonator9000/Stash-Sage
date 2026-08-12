@@ -3,13 +3,13 @@ import { Product } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { useModalAnimation } from '../hooks/useModalAnimation';
 import { roundToHundredth, formatPrecision } from '../utils/helpers';
-import { Modal, Group, Stack, Text, NumberInput, Button, Paper, Divider, ActionIcon, Box } from '@mantine/core';
+import { Modal, Group, Stack, Text, NumberInput, Button, Paper, Divider, ActionIcon, Box, Textarea } from '@mantine/core';
 import { IconCurrencyDollar, IconPackage, IconTrendingUp, IconTrendingDown, IconPlus } from '@tabler/icons-react';
 import { t } from '../utils/translations';
 
 interface SellModalProps {
   product: Product;
-  onSell: (amount: number) => void;
+  onSell: (amount: number, notes?: string) => void;
   onClose: () => void;
   isDark?: boolean;
 }
@@ -42,6 +42,7 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
   const [pricePerPortion, setPricePerPortion] = useState('');
   const [quickSellGrams, setQuickSellGrams] = useState('');
   const [quickSellPortions, setQuickSellPortions] = useState('');
+  const [sellNotes, setSellNotes] = useState('');
 
   const portionGrams = selectedPortion !== null ? selectedPortion : (parseFloat(customPortion) || 0);
   const numberOfPortions = portionGrams > 0 ? Math.floor(product.amount / portionGrams) : 0;
@@ -199,6 +200,17 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
               <Group justify="space-between"><Text size="sm" c="dimmed">{t('totalToSell', lang)}:</Text><Text size="sm" fw={700}>{formatPrecision(quickSellTotal, settings.decimalPrecision)}g</Text></Group>
               <Group justify="space-between" mt={4}><Text size="sm" c="dimmed">{t('remainingAfter', lang)}:</Text><Text size="sm" fw={700}>{formatPrecision(Math.max(0, roundToHundredth(product.amount - quickSellTotal)), settings.decimalPrecision)}g</Text></Group>
             </Paper>
+          </Box>
+          <Box>
+            <Text fw={500} size="sm" mb="xs">{t('sellNotes', lang)}</Text>
+            <Textarea
+              value={sellNotes}
+              onChange={(e) => setSellNotes(e.currentTarget.value)}
+              placeholder={t('sellNotesPlaceholder', lang)}
+              minRows={2}
+              maxLength={500}
+              size="sm"
+            />
           </Box>
         </Stack>
 

@@ -3,13 +3,13 @@ import { Product } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { useModalAnimation } from '../hooks/useModalAnimation';
 import { roundToHundredth, formatPrecision } from '../utils/helpers';
-import { Modal, Group, Stack, Text, NumberInput, Switch, Divider, Button, ActionIcon, Box, Paper } from '@mantine/core';
+import { Modal, Group, Stack, Text, NumberInput, Switch, Divider, Button, ActionIcon, Box, Paper, Textarea } from '@mantine/core';
 import { IconMinus, IconPlus, IconPlayerPlay, IconUsers } from '@tabler/icons-react';
 import { t } from '../utils/translations';
 
 interface ConsumeModalProps {
   product: Product;
-  onConsume: (amount: number, startSession: boolean, people: number, consumedAt?: Date) => void;
+  onConsume: (amount: number, startSession: boolean, people: number, consumedAt?: Date, notes?: string) => void;
   onClose: () => void;
   isDark?: boolean;
 }
@@ -20,6 +20,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
   const [people, setPeople] = useState(settings.sessionDefaults.defaultPeople);
   const [amount, setAmount] = useState(settings.sessionDefaults.defaultAmount);
   const [startSession, setStartSession] = useState(false);
+  const [consumeNotes, setConsumeNotes] = useState('');
   const [consumedAt, setConsumedAt] = useState(() => {
     const now = new Date();
     const offset = now.getTimezoneOffset();
@@ -30,7 +31,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
   const lang = settings.language;
 
   const handleConsume = () => {
-    onConsume(roundToHundredth(amount), startSession, people, new Date(consumedAt));
+    onConsume(roundToHundredth(amount), startSession, people, new Date(consumedAt), consumeNotes.trim() || undefined);
   };
 
   const adjustAmount = (delta: number) => {
@@ -185,6 +186,16 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
             </Group>
           </Paper>
         </Stack>
+
+          <Box>
+            <Text fw={500} size="sm" mb="xs">Notes</Text>
+            <Textarea
+              value={consumeNotes}
+              onChange={(e) => setConsumeNotes(e.currentTarget.value)}
+              placeholder="Add a note about this consumption..."
+              minRows={2}
+            />
+          </Box>
 
         <Divider my="lg" />
 

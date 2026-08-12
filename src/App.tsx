@@ -262,11 +262,9 @@ export default function App() {
 
   const [showDollar, setShowDollar] = useState(false);
 
-  const handleSell = useCallback((amount: number) => {
+  const handleSell = useCallback((amount: number, notes?: string) => {
     const product = sellingProduct;
     if (!product) return;
-    // Close the sell modal and play the dollar animation FIRST,
-    // so the UI always advances even if the data mutation below throws.
     setSellingProduct(null);
     setShowDollar(true);
     playSellSound();
@@ -275,14 +273,14 @@ export default function App() {
       checkLowStock(product, amount);
       consumeProduct(product.id, amount);
       addActivityEntry({
-        id: generateId(), type: 'sell', productId: product.id, productName: product.name, amount, timestamp: new Date(),
+        id: generateId(), type: 'sell', productId: product.id, productName: product.name, amount, notes, timestamp: new Date(),
       });
     } catch (err) {
       console.error('sell failed', err);
     }
   }, [sellingProduct, consumeProduct, checkLowStock, addActivityEntry]);
 
-  const handleConsume = useCallback((amount: number, startSession: boolean, people: number, consumedAt?: Date) => {
+  const handleConsume = useCallback((amount: number, startSession: boolean, people: number, consumedAt?: Date, notes?: string) => {
     const product = consumingProduct;
     if (!product) return;
     // Close the consume modal and (optionally) open the session modal FIRST,
@@ -302,7 +300,7 @@ export default function App() {
       checkLowStock(product, amount);
       consumeProduct(product.id, amount, consumedAt);
       addActivityEntry({
-        id: generateId(), type: 'consume', productId: product.id, productName: product.name, amount, timestamp: consumedAt || new Date(),
+        id: generateId(), type: 'consume', productId: product.id, productName: product.name, amount, notes: notes || undefined, timestamp: consumedAt || new Date(),
       });
     } catch (err) {
       console.error('consume failed', err);
