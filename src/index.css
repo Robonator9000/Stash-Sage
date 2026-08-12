@@ -41,7 +41,7 @@ html[data-magicui-theme-vt="active"]::view-transition-group(root) {
     --border-light: #334155;
     --text: #e2e8f0;
     --text-secondary: #cbd5e1;
-    --text-muted: #94a3b8;
+    --text-muted: #cbd5e1;
     --accent-from: #06b6d4;
     --accent-to: #10b981;
     --accent-glow: rgba(6, 182, 212, 0.2);
