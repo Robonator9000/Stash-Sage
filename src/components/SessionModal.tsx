@@ -7,7 +7,7 @@ import { playSessionBeep } from '../utils/sounds';
 import { Modal, Group, Stack, Text, Textarea, Button, NumberInput, ActionIcon, Paper, Divider, Box } from '@mantine/core';
 import { IconUsers, IconClock, IconPlayerPlay, IconPlayerPause, IconRefresh, IconCalculator, IconArrowRight } from '@tabler/icons-react';
 import { formatPrecision } from '../utils/helpers';
-import { ShineBorder, NumberTicker } from './magicui';
+import { ShineBorder, NumberTicker, AnimatedCircularProgressBar } from './magicui';
 
 interface SessionModalProps {
   product: Product;
@@ -37,7 +37,7 @@ export function SessionModal({
   const [hitsCount, setHitsCount] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(autoStartTimer);
   const [timerSeconds, setTimerSeconds] = useState(defaultHitTimer);
-  const [timerMs, setTimerMs] = useState(0);
+
   const [customTimerDuration, setCustomTimerDuration] = useState(defaultHitTimer);
   const [sessionNotes, setSessionNotes] = useState('');
   const [gramsPerBowl, setGramsPerBowl] = useState(settings.sessionDefaults.defaultGramsPerBowl);
@@ -74,26 +74,18 @@ export function SessionModal({
 
   useEffect(() => {
     if (!isTimerRunning) return;
-    const ms = settings.showTimerMs ? 100 : 1000;
     const interval = setInterval(() => {
-      if (settings.showTimerMs) {
-        setTimerMs((prev) => {
-          const next = prev - ms;
-          return next <= 0 ? next + 1000 : next;
-        });
-      }
       timerSecondsRef.current -= 1;
       setTimerSeconds(timerSecondsRef.current);
       if (timerSecondsRef.current <= 0) {
         timerSecondsRef.current = customTimerDurationRef.current;
         setTimerSeconds(timerSecondsRef.current);
-        setTimerMs(0);
         handleHitRef.current();
         playSessionBeep();
       }
-    }, ms);
+    }, 1000);
     return () => clearInterval(interval);
-  }, [isTimerRunning, settings.showTimerMs]);
+  }, [isTimerRunning]);
 
   const handleFinishSession = () => {
     const session: Session = {
@@ -114,13 +106,11 @@ export function SessionModal({
 
   const resetTimer = () => {
     setTimerSeconds(customTimerDuration);
-    setTimerMs(0);
     setIsTimerRunning(false);
   };
 
   const startTimer = () => {
     setTimerSeconds(customTimerDuration);
-    setTimerMs(0);
     setIsTimerRunning(true);
   };
 
@@ -293,10 +283,14 @@ export function SessionModal({
                     <ActionIcon size="sm" variant={isDark ? 'default' : 'light'} onClick={() => { const next = customTimerDuration + 5; setCustomTimerDuration(next); }}>+</ActionIcon>
                   </Group>
                 )}
-                <Text fw={700} size="xl" ff="monospace" c={timerSeconds <= 3 ? 'red' : undefined}>
-                  {Math.floor(timerSeconds / 60)}:{(timerSeconds % 60).toString().padStart(2, '0')}
-                  {settings.showTimerMs && <Text component="span" size="sm" opacity={0.6}>.{Math.floor(timerMs / 100).toString().padStart(1, '0')}</Text>}
-                </Text>
+                <AnimatedCircularProgressBar
+                  value={Math.max(0, timerSeconds)}
+                  max={Math.max(1, customTimerDuration)}
+                  min={0}
+                  gaugePrimaryColor={timerSeconds <= 3 ? 'rgb(239 68 68)' : 'rgb(34 211 238)'}
+                  gaugeSecondaryColor={isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}
+                  className="!w-16 !h-16"
+                />
               </Group>
             </Group>
 

@@ -15,3 +15,4 @@ export { Lens } from './lens';
 export { TweetCard } from './tweet-card';
 export { AuroraText } from './aurora-text';
 export { InteractiveHoverButton } from './interactive-hover-button';
+export { AnimatedCircularProgressBar } from './animated-circular-progress-bar';
