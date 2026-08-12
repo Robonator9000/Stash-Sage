@@ -7,7 +7,9 @@ import { ProductView } from './ProductView';
 import { Text, Group, Avatar, UnstyledButton, ActionIcon, Image, Box, Textarea, Button, Modal } from '@mantine/core';
 import { setFullscreenOpen } from '../utils/fullscreen';
 import { IconHeart, IconBookmark, IconEdit, IconTrash, IconChevronLeft, IconChevronRight, IconBuildingStore, IconArrowLeft } from '@tabler/icons-react';
-import { Lens, InteractiveHoverButton } from './magicui';
+import { InteractiveHoverButton } from './magicui';
+import { createPortal } from 'react-dom';
+import { IconX } from '@tabler/icons-react';
 
 interface PostDetailViewProps {
   post: Post;
@@ -48,20 +50,30 @@ const avatarGradient = 'linear-gradient(135deg, var(--mantine-color-cyan-5), var
 
 function PostDetailImages({ images }: { images: string[] }) {
   const [currentIdx, setCurrentIdx] = useState(0);
+  const [fullImage, setFullImage] = useState<string | null>(null);
   const count = images.length;
   if (count === 0) return null;
   if (count === 1) {
     return (
-      <Lens lensSize={170} className="w-full rounded-md" largeRadius={160}>
-        <Image src={images[0]} alt="" radius="md" fit="cover" w="100%" mb="md" style={{ maxHeight: 384 }} />
-      </Lens>
+      <>
+        <button type="button" onClick={() => setFullImage(images[0])} aria-label="View full image" className="block w-full p-0 border-0 bg-transparent cursor-zoom-in">
+          <Image src={images[0]} alt="" radius="md" fit="cover" w="100%" mb="md" style={{ maxHeight: 384 }} />
+        </button>
+        {fullImage && createPortal(
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90" onClick={() => setFullImage(null)}>
+            <button type="button" onClick={() => setFullImage(null)} aria-label="Close full image" className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20">
+              <IconX size={24} />
+            </button>
+            <img src={fullImage} alt="" className="max-w-[92vw] max-h-[88vh] object-contain rounded-lg" onClick={e => e.stopPropagation()} />
+          </div>, document.body)}
+      </>
     );
   }
   return (
     <Box pos="relative" mb="md" style={{ overflow: 'hidden', borderRadius: 'var(--mantine-radius-md)' }}>
-      <Lens lensSize={170} className="w-full rounded-md" largeRadius={160}>
+      <button type="button" onClick={() => setFullImage(images[currentIdx])} aria-label="View full image" className="block w-full p-0 border-0 bg-transparent cursor-zoom-in">
         <Image src={images[currentIdx]} alt="" radius="md" fit="cover" w="100%" style={{ maxHeight: 384 }} />
-      </Lens>
+      </button>
       {count > 1 && (
         <>
           <ActionIcon variant="transparent" onClick={(e) => { e.stopPropagation(); setCurrentIdx(prev => prev === 0 ? count - 1 : prev - 1); }} aria-label="Previous image"
@@ -79,6 +91,13 @@ function PostDetailImages({ images }: { images: string[] }) {
           </div>
         </>
       )}
+      {fullImage && createPortal(
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90" onClick={() => setFullImage(null)}>
+          <button type="button" onClick={() => setFullImage(null)} aria-label="Close full image" className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20">
+            <IconX size={24} />
+          </button>
+          <img src={fullImage} alt="" className="max-w-[92vw] max-h-[88vh] object-contain rounded-lg" onClick={e => e.stopPropagation()} />
+        </div>, document.body)}
     </Box>
   );
 }
