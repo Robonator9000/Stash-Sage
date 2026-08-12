@@ -176,38 +176,80 @@ export function SessionModal({
 
               {rotationEnabled && (
                 <>
-                  <Group gap={6}>
-                    {Array.from({ length: people }, (_, i) => (
-                      <Button
-                        key={i}
-                        size="xs"
-                        flex={1}
-                        variant={i === currentPerson ? 'filled' : 'default'}
-                        color="cyan"
-                        onClick={() => setCurrentPerson(i)}
-                        styles={{ root: i === currentPerson ? { boxShadow: '0 4px 12px rgba(0,0,0,0.25)', transform: 'scale(1.05)' } : { background: subtleBg } }}
-                      >
-                        P{i + 1}
-                      </Button>
-                    ))}
-                  </Group>
+                  <Box
+                    p="sm"
+                    style={{
+                      borderRadius: 12,
+                      background: isDark ? 'rgba(15,23,42,0.5)' : 'rgba(241,245,249,0.6)',
+                      border: `1px solid ${isDark ? 'rgba(34,211,238,0.15)' : 'rgba(8,145,178,0.1)'}`,
+                    }}
+                  >
+                    <Group gap={8} justify="center" wrap="nowrap">
+                      {Array.from({ length: people }, (_, i) => {
+                        const isActive = i === currentPerson;
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => setCurrentPerson(i)}
+                            aria-label={`Person ${i + 1}`}
+                            style={{
+                              flex: 1,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              gap: 4,
+                              padding: '10px 6px',
+                              borderRadius: 12,
+                              border: '1px solid transparent',
+                              cursor: 'pointer',
+                              transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                              transform: isActive ? 'translateY(-3px) scale(1.05)' : 'none',
+                              background: isActive
+                                ? (isDark ? 'linear-gradient(135deg, rgba(34,211,238,0.2), rgba(16,185,129,0.15))' : 'linear-gradient(135deg, rgba(6,182,212,0.12), rgba(16,185,129,0.08))')
+                                : 'transparent',
+                              borderColor: isActive
+                                ? (isDark ? 'rgba(34,211,238,0.4)' : 'rgba(8,145,178,0.3)')
+                                : 'transparent',
+                              boxShadow: isActive ? `0 4px 16px ${isDark ? 'rgba(34,211,238,0.2)' : 'rgba(6,182,212,0.12)'}` : 'none',
+                            }}
+                          >
+                            <Box
+                              style={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: 13,
+                                fontWeight: 800,
+                                color: isActive ? '#fff' : (isDark ? '#94a3b8' : '#64748b'),
+                                background: isActive
+                                  ? (isDark ? 'linear-gradient(135deg, #06b6d4, #10b981)' : 'linear-gradient(135deg, #0891b2, #059669)')
+                                  : (isDark ? 'rgba(30,41,59,0.8)' : 'rgba(226,232,240,0.8)'),
+                                transition: 'all 0.25s',
+                              }}
+                            >
+                              P{i + 1}
+                            </Box>
+                            <Text size="xs" fw={isActive ? 800 : 600} c={isActive ? undefined : 'dimmed'} style={{ color: isActive ? (isDark ? '#22d3ee' : '#0891b2') : undefined }}>
+                              {personHits[i] || 0}
+                            </Text>
+                          </button>
+                        );
+                      })}
+                    </Group>
+                  </Box>
 
-                  <Group gap={6}>
-                    {personHits.map((hits, i) => (
-                      <Text
-                        key={i}
-                        flex={1} size="xs" ta="center" p={4}
-                        fw={i === currentPerson ? 700 : 500}
-                        c={i === currentPerson ? (isDark ? 'cyan' : 'cyan') : 'dimmed'}
-                        style={i === currentPerson ? { background: isDark ? 'rgba(34,211,238,0.15)' : 'rgba(34,211,238,0.1)', borderRadius: 6 } : undefined}
-                      >
-                        {hits}
-                      </Text>
-                    ))}
-                  </Group>
-
-                  <Button color="cyan" onClick={handleHit} leftSection={<IconArrowRight size={16} />}>
-                    {t('nextHit', settings.language)} — P{(currentPerson % people) + 1}
+                  <Button
+                    color="cyan"
+                    size="md"
+                    onClick={handleHit}
+                    leftSection={<IconArrowRight size={18} />}
+                    styles={{ root: { background: isDark ? 'linear-gradient(90deg, #06b6d4, #10b981)' : undefined, fontWeight: 700 } }}
+                  >
+                    {t('nextHit', settings.language)} → P{(currentPerson % people) + 1}
                   </Button>
                 </>
               )}
