@@ -9,8 +9,9 @@ import { ProductView } from './ProductView';
 import { setFullscreenOpen } from '../utils/fullscreen';
 import { Card, Image, Badge, Group, Text, ActionIcon, Avatar, Box } from '@mantine/core';
 import { useContextMenu } from 'mantine-contextmenu';
-import { IconEdit, IconChecks, IconTrash, IconPinned, IconBookmark, IconMessageCircle, IconArrowLeft } from '@tabler/icons-react';
-import { NumberTicker, Lens, InteractiveHoverButton } from './magicui';
+import { IconEdit, IconChecks, IconTrash, IconPinned, IconBookmark, 
+IconMessageCircle, IconArrowLeft, IconX } from '@tabler/icons-react';
+import { NumberTicker, InteractiveHoverButton } from './magicui';
 
 const CATEGORY_GLOW: Record<string, string> = {
   flower: '16,185,129',
@@ -72,6 +73,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
   const allImages = listing.images?.filter(Boolean) || (listing.image_url ? [listing.image_url] : []);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showDetailPopup, setShowDetailPopup] = useState(false);
+  const [fullImage, setFullImage] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<{ type: 'delete' | 'sold', listingId: string } | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [showProductDetail, setShowProductDetail] = useState(false);
@@ -134,7 +136,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
   return (
     <>
       <Card p="lg" radius="md" shadow="sm" withBorder
-        className={`relative transition-all duration-300 ${isDark ? 'bg-surface/60' : 'bg-white'} cursor-zoom-in group hover:-translate-y-0.5`}
+        className={`relative ${isDark ? 'bg-surface/60' : 'bg-white'} cursor-pointer group`}
         style={{ boxShadow: `0 0 25px -6px rgba(${glowRgb},0.3)` }}
         onClick={() => setShowDetailPopup(true)} role="article"
         onContextMenu={isOwner ? ownerMenu : viewerMenu}>
@@ -263,11 +265,11 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
                 <Box px="md" pb="sm" style={{ flex: 1 }}>
                   <div className="flex items-center justify-center relative min-w-0 h-[35vh] sm:h-[calc(100%-4rem)] sm:min-h-[55vh] rounded-xl overflow-hidden" style={{ background: 'rgba(0,0,0,0.35)' }} onClick={e => e.stopPropagation()}>
 
-                    {/* Image with lens */}
+                    {/* Image — static, click to view full image */}
                     {allImages.length > 0 ? (
-                      <Lens lensSize={170} className="w-full h-full">
+                      <button type="button" onClick={(e) => { e.stopPropagation(); setFullImage(allImages[currentImageIndex]); }} className="w-full h-full cursor-zoom-in p-0 border-0 bg-transparent" aria-label="View full image">
                         <img src={allImages[currentImageIndex]} alt={listing.title} decoding="async" className="w-full h-full object-contain p-4" />
-                      </Lens>
+                      </button>
                     ) : (
               <div className="flex items-center justify-center text-white/60">
                 <span>No image</span>
@@ -556,6 +558,16 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
 
       {viewProductId && createPortal(
         <ProductView productId={viewProductId} onClose={() => setViewProductId(null)} isDark={isDark} lang={lang} />
+        , document.body)}
+
+      {fullImage && createPortal(
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90" onClick={() => setFullImage(null)}>
+          <button type="button" onClick={() => setFullImage(null)} aria-label="Close full image"
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20">
+            <IconX className="w-6 h-6" />
+          </button>
+          <img src={fullImage} alt={listing.title} className="max-w-[92vw] max-h-[88vh] object-contain rounded-lg" onClick={e => e.stopPropagation()} />
+        </div>
         , document.body)}
     </>
   );

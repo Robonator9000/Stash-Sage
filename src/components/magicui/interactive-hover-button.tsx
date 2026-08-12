@@ -28,7 +28,7 @@ export const InteractiveHoverButton = forwardRef<HTMLButtonElement, InteractiveH
       <button
         ref={ref}
         className={cn(
-          'group relative w-auto cursor-pointer overflow-hidden rounded-full border p-2 pl-6 pr-3 text-center text-sm font-semibold',
+          'group relative w-auto cursor-pointer overflow-hidden rounded-full border p-2 pl-4 pr-3 text-center text-sm font-semibold',
           'border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900',
           textColor,
           darkTextColor,
@@ -42,7 +42,7 @@ export const InteractiveHoverButton = forwardRef<HTMLButtonElement, InteractiveH
           className="pointer-events-none absolute inset-0 origin-left scale-[0.25] rounded-full opacity-0 transition-[transform,opacity] duration-300 ease-out group-hover:scale-100 group-hover:opacity-100"
           style={{ background: gradient, willChange: 'transform, opacity' }}
         />
-        <span className="relative z-10 flex items-center gap-2 transition-[transform,opacity] duration-300 ease-out group-hover:translate-x-10 group-hover:opacity-0" style={{ willChange: 'transform, opacity' }}>
+        <span className="relative z-10 flex items-center gap-2 transition-[transform,opacity] duration-300 ease-out group-hover:translate-x-6 group-hover:opacity-0" style={{ willChange: 'transform, opacity' }}>
           {children}
         </span>
         <span

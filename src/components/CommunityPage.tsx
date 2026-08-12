@@ -4,9 +4,6 @@ import { useSettings } from '../utils/useSettings';
 import { useProducts } from '../utils/useProducts';
 import { SocialFeed } from './SocialFeed';
 import { ProfilePage } from './ProfilePage';
-import { TrendsWidget } from './TrendsWidget';
-import { WhoToFollow } from './WhoToFollow';
-import { SearchWidget } from './SearchWidget';
 import type { Profile } from '../types';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../utils/supabase';
@@ -22,7 +19,6 @@ export function CommunityPage({ onOpenChat }: { onOpenChat?: (userId: string) =>
   const postParam = searchParams.get('post');
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
   const [resolvingProfile, setResolvingProfile] = useState(false);
-  const [activeHashtag, setActiveHashtag] = useState<string | null>(null);
 
   useEffect(() => {
     if (!profileUser) { setProfileUserId(null); return; }
@@ -76,10 +72,6 @@ export function CommunityPage({ onOpenChat }: { onOpenChat?: (userId: string) =>
     setSearchParams(prev => { prev.delete('post'); return prev; }, { replace: true });
   }, [setSearchParams]);
 
-  const handleHashtagClick = useCallback((tag: string) => {
-    setActiveHashtag(prev => prev === tag ? null : tag);
-  }, []);
-
   if (!user) {
     return (
       <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/40 border border-edge backdrop-blur-sm' : 'bg-white/70 border border-gray-200 backdrop-blur-sm'}`}>
@@ -123,8 +115,8 @@ export function CommunityPage({ onOpenChat }: { onOpenChat?: (userId: string) =>
   }
 
   return (
-    <div className="flex gap-4 lg:gap-6 max-w-5xl mx-auto">
-      <div className="flex-1 min-w-0 max-w-2xl">
+    <div className="flex gap-4 lg:gap-6 max-w-2xl mx-auto">
+      <div className="flex-1 min-w-0">
         <SocialFeed
           isDark={isDark}
           lang={settings.language}
@@ -141,19 +133,6 @@ export function CommunityPage({ onOpenChat }: { onOpenChat?: (userId: string) =>
             });
           }}
         />
-      </div>
-      <div className="hidden lg:block w-80 shrink-0 space-y-4">
-        <SearchWidget isDark={isDark} onViewProfile={(uid) => {
-          supabase.from('profiles').select('username').eq('user_id', uid).maybeSingle().then(({ data }) => {
-            setSearchParams(prev => { prev.set('user', data?.username || uid); return prev; }, { replace: true });
-          });
-        }} onViewPost={handleViewPost} />
-        <TrendsWidget isDark={isDark} activeHashtag={activeHashtag} onHashtagClick={handleHashtagClick} />
-        <WhoToFollow isDark={isDark} currentUserId={user.id} onViewProfile={(uid) => {
-          supabase.from('profiles').select('username').eq('user_id', uid).maybeSingle().then(({ data }) => {
-            setSearchParams(prev => { prev.set('user', data?.username || uid); return prev; }, { replace: true });
-          });
-        }} />
       </div>
     </div>
   );

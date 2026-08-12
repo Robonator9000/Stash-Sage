@@ -76,11 +76,24 @@ export function Particles({
 
     context.current = canvas.getContext('2d');
 
-    const initCanvas = () => {
+    const initCanvas = (rescale = false) => {
       if (!canvas || !context.current || !containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
       const w = Math.max(1, rect.width);
       const h = Math.max(1, rect.height);
+      if (rescale && circles.current) {
+        const old = sizeRef.current;
+        if (old.w > 0 && old.h > 0 && w !== old.w && h !== old.h) {
+          const sx = w / old.w;
+          const sy = h / old.h;
+          circles.current.forEach((circle) => {
+            circle.x *= sx;
+            circle.y *= sy;
+            circle.dx *= sx;
+            circle.dy *= sy;
+          });
+        }
+      }
       canvas.width = Math.floor(w * dpr);
       canvas.height = Math.floor(h * dpr);
       canvas.style.width = `${w}px`;
@@ -90,7 +103,7 @@ export function Particles({
     };
     initCanvas();
 
-    const onResize = () => initCanvas();
+    const onResize = () => initCanvas(true);
     window.addEventListener('resize', onResize);
 
     if (circles.current === null || refresh) {

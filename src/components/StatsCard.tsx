@@ -171,7 +171,7 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
             >
               <NeonGradientCard borderColors={NEON_BORDER_COLORS[stat.color]} borderRadius={12} className="h-full">
                 <Group justify="space-between" mb={4}>
-                  <Text size="xs" style={{ color: 'var(--mantine-color-slate-4)' }}>{stat.label}</Text>
+                  <Text size="xs" fw={600} style={{ color: isDark ? '#fff' : '#000' }}>{stat.label}</Text>
                   <Icon size={18} stroke={1.5} style={{ color: `var(--mantine-color-${stat.color}-4)` }} />
                 </Group>
                 <Text fw={700} size="lg" style={{ lineHeight: 1.2, color: 'var(--mantine-color-slate-1)' }}>

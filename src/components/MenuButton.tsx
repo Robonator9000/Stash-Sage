@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BorderAnimate } from '@gfazioli/mantine-border-animate';
-import { AuroraText } from './magicui/aurora-text';
 
 export function MenuButton() {
   const navigate = useNavigate();
@@ -68,7 +67,7 @@ export function MenuButton() {
       }`}>
         <div className="bg-[#29292C] text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-lg border border-white/10 flex items-center gap-2">
           <span className="text-[#13EEEF] font-bold">NEW</span>
-          <AuroraText className="text-[13px] font-bold" colors={['#EF1187', '#13EEEF', '#EF1187']}>Products Menu</AuroraText>
+          <span>Products Menu</span>
         </div>
       </div>
     </button>

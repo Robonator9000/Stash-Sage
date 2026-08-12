@@ -48,7 +48,7 @@ export function MessagePopup({ currentUserId, isDark, lang, initialTargetUserId,
       onClick={() => setOpen(true)}
       radius="xl"
       aria-label="Open messages"
-      className="hidden lg:block"
+      className="hidden lg:flex"
       style={{
         position: 'fixed',
         bottom: 20,
@@ -60,7 +60,6 @@ export function MessagePopup({ currentUserId, isDark, lang, initialTargetUserId,
         borderRadius: '50%',
         background: 'linear-gradient(90deg, var(--mantine-color-cyan-6), var(--mantine-color-emerald-6))',
         color: '#fff',
-        display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         boxShadow: '0 20px 30px -10px rgba(6,182,212,0.3)',
