@@ -274,7 +274,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
           className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border-2 ${
             dirty
               ? isDark ? 'bg-cyan-500/15 border-cyan-400/60 text-cyan-300 hover:bg-cyan-500/25' : 'bg-cyan-50 border-cyan-300 text-cyan-700 hover:bg-cyan-100'
-              : isDark ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-gray-200 text-gray-700 hover:bg-gray-100'
+              : isDark ? 'border-slate-700 text-white hover:bg-slate-800' : 'border-gray-200 text-gray-700 hover:bg-gray-100'
           }`}>
           {t('save', lang)}
         </button>
@@ -353,7 +353,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                     )}
                     {authMode === 'signin' && (
                       <button type="button" onClick={() => setShowResetPassword(true)}
-                        className={`self-start text-xs -mt-2 ${isDark ? 'text-slate-400 hover:text-cyan-400' : 'text-gray-500 hover:text-cyan-600'}`}>
+                        className={`self-start text-xs -mt-2 ${isDark ? 'text-slate-200 hover:text-cyan-300' : 'text-gray-700 hover:text-cyan-600'}`}>
                         Forgot password?
                       </button>
                     )}
@@ -363,7 +363,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                   </form>
 
                   <button onClick={() => { setAuthMode(authMode === 'signin' ? 'signup' : 'signin'); setAuthLocalError(null); setAuthUsername(''); }}
-                    className={`w-full text-sm ${isDark ? 'text-slate-400 hover:text-cyan-400' : 'text-gray-500 hover:text-cyan-600'}`}>
+                    className={`w-full text-sm ${isDark ? 'text-slate-200 hover:text-cyan-300' : 'text-gray-700 hover:text-cyan-600'}`}>
                     {authMode === 'signin' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
                   </button>
                 </div>
@@ -448,7 +448,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                     <button
                       onClick={() => avatarInputRef.current?.click()}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
-                        isDark ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                        isDark ? 'border-slate-700 text-white hover:bg-slate-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
                       }`}
                     >
                       Upload Photo
@@ -490,7 +490,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                     </button>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => bannerInputRef.current?.click()} className={`px-4 py-2 rounded-lg text-xs font-medium transition-all border ${isDark ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                    <button onClick={() => bannerInputRef.current?.click()} className={`px-4 py-2 rounded-lg text-xs font-medium transition-all border ${isDark ? 'border-slate-700 text-white hover:bg-slate-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
                       Upload Banner
                     </button>
                     {bannerPreview && (
@@ -538,7 +538,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                   ))}
                 </div>
                 <button onClick={() => setProfileContacts([...profileContacts, { platform: CONTACT_PLATFORMS[0], value: '' }])}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${isDark ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${isDark ? 'border-slate-700 text-white hover:bg-slate-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
                   + Add Contact
                 </button>
               </div>
