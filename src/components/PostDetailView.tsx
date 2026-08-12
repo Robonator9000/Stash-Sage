@@ -6,8 +6,8 @@ import { CommentSection } from './CommentSection';
 import { ProductView } from './ProductView';
 import { Text, Group, Avatar, UnstyledButton, ActionIcon, Image, Box, Textarea, Button, Modal } from '@mantine/core';
 import { setFullscreenOpen } from '../utils/fullscreen';
-import { IconX, IconHeart, IconBookmark, IconEdit, IconTrash, IconChevronLeft, IconChevronRight, IconBuildingStore } from '@tabler/icons-react';
-import { Lens } from './magicui';
+import { IconHeart, IconBookmark, IconEdit, IconTrash, IconChevronLeft, IconChevronRight, IconBuildingStore, IconArrowLeft } from '@tabler/icons-react';
+import { Lens, InteractiveHoverButton } from './magicui';
 
 interface PostDetailViewProps {
   post: Post;
@@ -163,9 +163,7 @@ export const PostDetailView = memo(function PostDetailView({ post, isDark, lang,
         <div className={`flex flex-col sm:flex-row w-full sm:rounded-xl overflow-hidden min-h-screen sm:min-h-[90vh] backdrop-blur-sm ${isDark ? 'bg-[#111827]' : 'bg-white/80'}`}>
           <div className="flex-1 max-w-full sm:max-w-[55%] flex flex-col border-r-0 sm:border-r overflow-y-auto" style={{ borderColor: 'var(--mantine-color-gray-8)' }}>
             <Group justify="flex-start" gap="sm" p="sm" style={{ position: 'sticky', top: 0, zIndex: 10, background: isDark ? 'rgba(17,24,39,0.95)' : 'rgba(255,255,255,0.95)', backdropFilter: 'blur(4px)' }}>
-              <ActionIcon variant="subtle" onClick={onClose} aria-label="Close">
-                <IconX size={20} />
-              </ActionIcon>
+              <InteractiveHoverButton type="button" onClick={onClose} icon={<IconArrowLeft size={16} />}>Back</InteractiveHoverButton>
               <Text size="sm" fw={700} style={{ color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)' }}>Post</Text>
             </Group>
 

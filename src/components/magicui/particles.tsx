@@ -1,105 +1,194 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { cn } from '../../lib/utils';
+
+interface MousePosition {
+  x: number;
+  y: number;
+}
+
+function MousePosition(): MousePosition {
+  const [mousePosition, setMousePosition] = useState<MousePosition>({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      setMousePosition({ x: event.clientX, y: event.clientY });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  return mousePosition;
+}
 
 interface ParticlesProps {
   className?: string;
   quantity?: number;
+  staticity?: number;
+  ease?: number;
+  size?: number;
+  refresh?: boolean;
   color?: string;
   colors?: string[];
-  size?: [number, number];
-  move?: [number, number];
-  opacity?: [number, number];
-  speed?: number | [number, number];
-  pauseOnHover?: boolean;
+  vx?: number;
+  vy?: number;
+  style?: CSSProperties;
+}
+
+function hexToRgb(hex: string): [number, number, number] {
+  hex = hex.replace('#', '');
+  if (hex.length === 3) {
+    hex = hex.split('').map((char) => char + char).join('');
+  }
+  const int = parseInt(hex, 16);
+  return [(int >> 16) & 255, (int >> 8) & 255, int & 255];
+}
+
+interface Circle {
+  x: number;
+  y: number;
+  translateX: number;
+  translateY: number;
+  size: number;
+  alpha: number;
+  targetAlpha: number;
+  dx: number;
+  dy: number;
+  magnetism: number;
+  color: [number, number, number];
 }
 
 export function Particles({
   className,
-  quantity = 60,
+  quantity = 70,
+  staticity = 55,
+  ease = 60,
+  size = 0.4,
+  refresh = false,
   color = '#06b6d4',
   colors,
-  size = [1, 2],
-  move = [-8, 8],
-  opacity = [0.15, 0.6],
-  speed = [0.5, 2],
-  pauseOnHover = true,
+  vx = 0,
+  vy = 0,
+  style,
 }: ParticlesProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const hoverRef = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const context = useRef<CanvasRenderingContext2D | null>(null);
+  const rafId = useRef<number | null>(null);
+  const circles = useRef<Array<Circle> | null>(null);
+  const mousePosition = MousePosition();
+  const mouse = useRef<{ x: number; y: number }>({ x: -100, y: -100 });
+  const sizeRef = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
+  const dpr = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1;
+
+  useEffect(() => {
+    if (mousePosition.x > 0 && mousePosition.y > 0) {
+      mouse.current.x = mousePosition.x;
+      mouse.current.y = mousePosition.y;
+    }
+  }, [mousePosition]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
 
-    let raf = 0;
-    let w = 0;
-    let h = 0;
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-    const rand = ([min, max]: [number, number]) => min + Math.random() * (max - min);
+    context.current = canvas.getContext('2d');
 
-    const resize = () => {
-      w = window.innerWidth;
-      h = window.innerHeight;
+    const initCanvas = () => {
+      if (!canvas || !context.current || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const w = Math.max(1, rect.width);
+      const h = Math.max(1, rect.height);
       canvas.width = Math.floor(w * dpr);
       canvas.height = Math.floor(h * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+      context.current.setTransform(dpr, 0, 0, dpr, 0, 0);
+      sizeRef.current = { w, h };
     };
-    resize();
-    window.addEventListener('resize', resize);
+    initCanvas();
 
-    const parts = Array.from({ length: quantity }, () => ({
-      x: Math.random() * w,
-      y: Math.random() * h,
-      vx: rand(move as [number, number]),
-      vy: rand(move as [number, number]),
-      size: rand(size as [number, number]),
-      color: colors?.[Math.floor(Math.random() * colors.length)] ?? color,
-      alpha: rand(opacity as [number, number]),
-      speed: typeof speed === 'number' ? speed : rand(speed as [number, number]),
-    }));
+    const onResize = () => initCanvas();
+    window.addEventListener('resize', onResize);
+
+    if (circles.current === null || refresh) {
+      circles.current = Array.from({ length: quantity }, () => ({
+        x: Math.random() * sizeRef.current.w,
+        y: Math.random() * sizeRef.current.h,
+        translateX: 0,
+        translateY: 0,
+        size: Math.random() * 2 + size,
+        alpha: 0,
+        targetAlpha: Math.random() * 0.55 + 0.15,
+        dx: (Math.random() - 0.5) / 2,
+        dy: (Math.random() - 0.5) / 2,
+        magnetism: 0.15 + Math.random() * 3.5,
+        color: colors
+          ? hexToRgb(colors[Math.floor(Math.random() * colors.length)])
+          : hexToRgb(color),
+      }));
+    }
 
     const draw = () => {
-      ctx.clearRect(0, 0, w, h);
-      for (const p of parts) {
-        if (!hoverRef.current) {
-          p.x += p.vx * p.speed;
-          p.y += p.vy * p.speed;
-          if (p.x < -10) p.x = w + 10;
-          if (p.x > w + 10) p.x = -10;
-          if (p.y < -10) p.y = h + 10;
-          if (p.y > h + 10) p.y = -10;
-        }
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.alpha;
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-      raf = requestAnimationFrame(draw);
+      if (!canvas || !context.current) return;
+      const { w, h } = sizeRef.current;
+      context.current.clearRect(0, 0, w, h);
+
+      circles.current!.forEach((circle) => {
+        circle.x += circle.dx + (vx || 0);
+        circle.y += circle.dy + (vy || 0);
+
+        if (circle.x > w + 20) circle.x -= w + 40;
+        if (circle.x < -20) circle.x += w + 40;
+        if (circle.y > h + 20) circle.y -= h + 40;
+        if (circle.y < -20) circle.y += h + 40;
+
+        // Ease the current offset back toward its resting value.
+        circle.translateX *= ease / 100;
+        circle.translateY *= ease / 100;
+
+        // Magnetic interaction with the pointer; strongest when close.
+        const dx = mouse.current.x - circle.x;
+        const dy = mouse.current.y - circle.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const strength = distance < 1 ? 0 : (staticity / Math.max(1, distance * 2)) * circle.magnetism;
+
+        circle.translateX += Math.abs(dx) > 0.01 && distance > 1 ? (dx / distance) * strength : 0;
+        circle.translateY += Math.abs(dy) > 0.01 && distance > 1 ? (dy / distance) * strength : 0;
+
+        // Fade particles in; near the pointer they bloom.
+        circle.alpha += (circle.targetAlpha - circle.alpha) * 0.05;
+        const proximity = Math.max(0, 1 - distance / Math.max(1, 160));
+        const alpha = Math.min(0.95, circle.alpha + proximity * 0.3);
+
+        context.current!.beginPath();
+        context.current!.arc(
+          circle.x + circle.translateX,
+          circle.y + circle.translateY,
+          circle.size,
+          0,
+          2 * Math.PI
+        );
+        context.current!.fillStyle = `rgba(${circle.color[0]}, ${circle.color[1]}, ${circle.color[2]}, ${alpha.toFixed(3)})`;
+        context.current!.fill();
+      });
+
+      rafId.current = requestAnimationFrame(draw);
     };
 
-    const onEnter = () => { hoverRef.current = pauseOnHover; };
-    const onLeave = () => { hoverRef.current = false; };
-    canvas.addEventListener('mouseenter', onEnter);
-    canvas.addEventListener('mouseleave', onLeave);
     draw();
 
     return () => {
-      window.removeEventListener('resize', resize);
-      canvas.removeEventListener('mouseenter', onEnter);
-      canvas.removeEventListener('mouseleave', onLeave);
-      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', onResize);
+      if (rafId.current !== null) cancelAnimationFrame(rafId.current);
     };
-  }, [quantity, color, colors, size, move, opacity, speed, pauseOnHover]);
+  }, [quantity, staticity, ease, size, refresh, color, colors, vx, vy, dpr]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      aria-hidden="true"
-      className={cn('pointer-events-none absolute inset-0', className)}
-    />
+    <div ref={containerRef} className={cn('pointer-events-none absolute inset-0', className)} style={style}>
+      <canvas ref={canvasRef} aria-hidden="true" />
+    </div>
   );
 }
+
+export default Particles;

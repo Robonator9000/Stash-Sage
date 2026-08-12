@@ -8,6 +8,7 @@ import { FollowButton } from './FollowButton';
 import { PostCard } from './PostCard';
 import { Group, Stack, Text, Button, Paper, Avatar, Switch, Box, Skeleton } from '@mantine/core';
 import { IconMessageCircle, IconMapPin, IconArrowLeft, IconGlobe, IconMail, IconPhone, IconCamera } from '@tabler/icons-react';
+import { InteractiveHoverButton } from './magicui';
 import type { Post, Product } from '../types';
 
 interface ProfileData {
@@ -172,15 +173,9 @@ export function ProfilePage({ userId: propUserId, onBack, onOpenChat }: ProfileP
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
-      <Button
-        variant="light"
-        color="cyan"
-        leftSection={<IconArrowLeft size={20} />}
-        onClick={handleBack}
-        size="sm"
-      >
+      <InteractiveHoverButton type="button" onClick={handleBack} icon={<IconArrowLeft size={16} />}>
         Back
-      </Button>
+      </InteractiveHoverButton>
 
       <Paper withBorder p={0} radius="lg" style={{ overflow: 'hidden', borderColor: isDark ? 'var(--mantine-color-slate-7)' : 'var(--mantine-color-gray-3)' }}>
         <Box style={{ height: isDark ? 112 : 112, position: 'relative', background: bannerBg, border: 'none' }}>

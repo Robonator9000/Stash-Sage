@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
+﻿import { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { Lock } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { Product, Session, SortOption, FilterType } from './types';
@@ -479,7 +479,7 @@ export default function App() {
   if (!settings.onboardingDone) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
-      <MagicBackground isDark={isDark} variant="grid-only" />
+      <MagicBackground isDark={isDark} variant="full" />
 
         <WelcomeModal
           onComplete={(language) => updateSettings({ language, onboardingDone: true })}
@@ -493,7 +493,7 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg)' }} id="main-content">
       <a href="#main-content" className="skip-link">Skip to content</a>
-      <MagicBackground isDark={isDark} variant="grid-only" />
+      <MagicBackground isDark={isDark} variant="full" />
 
       {!isOnline && (
         <div
@@ -851,6 +851,7 @@ export default function App() {
       {/* Bottom Nav - mobile only */}
       <BottomNav
         isDark={isDark}
+        onOpenChat={() => setShowChat(true)}
       />
 
       {/* Pin Lock */}
@@ -918,6 +919,7 @@ export default function App() {
           isDark={isDark}
           lang={lang}
           initialTargetUserId={showChat ? (chatTargetUserId || undefined) : undefined}
+          initialOpen={showChat && !chatTargetUserId}
           onClose={() => { setShowChat(false); setChatTargetUserId(null); }}
         />
       )}
@@ -931,9 +933,9 @@ export default function App() {
       {/* Animations */}
       {showSmoke && (
         <div className="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center">
-          <span className="animate-smoke-puff text-7xl">💨</span>
-          <span className="animate-smoke-puff-2 text-6xl ml-4">💨</span>
-          <span className="animate-smoke-puff text-5xl ml-2" style={{ animationDelay: '0.2s' }}>💨</span>
+          <span className="animate-smoke-puff text-7xl">ðŸ’¨</span>
+          <span className="animate-smoke-puff-2 text-6xl ml-4">ðŸ’¨</span>
+          <span className="animate-smoke-puff text-5xl ml-2" style={{ animationDelay: '0.2s' }}>ðŸ’¨</span>
         </div>
       )}
       {showDollar && (

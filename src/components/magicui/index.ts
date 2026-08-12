@@ -13,3 +13,5 @@ export { NumberTicker } from './number-ticker';
 export { AnimatedList } from './animated-list';
 export { Lens } from './lens';
 export { TweetCard } from './tweet-card';
+export { AuroraText } from './aurora-text';
+export { InteractiveHoverButton } from './interactive-hover-button';

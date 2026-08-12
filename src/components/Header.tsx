@@ -10,7 +10,7 @@ import { LogoIcon } from './LogoIcon';
 import { NotificationBell } from './NotificationBell';
 import { ActionIcon, Button, Group } from '@mantine/core';
 import { IconSearch, IconPlus } from '@tabler/icons-react';
-import { AnimatedGradientText, AnimatedThemeToggler, BorderBeam } from './magicui';
+import { AnimatedThemeToggler, AuroraText, BorderBeam } from './magicui';
 
 interface UserRow { user_id: string; display_name: string; username?: string; avatar_url: string | null; }
 interface PostRow { id: string; content: string; created_at: string; user_id: string; }
@@ -39,6 +39,20 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
 
   const isDark = settings.theme === 'dark';
   const lang = settings.language;
+
+  const [headerPaused, setHeaderPaused] = useState(false);
+
+  useEffect(() => {
+    const check = () => setHeaderPaused(
+      document.documentElement.getAttribute('data-fullscreen') === 'true' ||
+      !!document.querySelector('.mantine-Modal-root, .mantine-Drawer-root')
+    );
+    check();
+    const obs = new MutationObserver(check);
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-fullscreen'] });
+    obs.observe(document.body, { childList: true, subtree: true });
+    return () => obs.disconnect();
+  }, []);
 
   const [showSearchPreview, setShowSearchPreview] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -81,12 +95,13 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
           className="flex items-center gap-1.5 shrink-0"
         >
           <LogoIcon className="w-7 h-7" />
-          <AnimatedGradientText
+          <AuroraText
             className="font-display !py-0 text-lg tracking-tight"
-            colors="linear-gradient(120deg, #06b6d4, #10b981, #13eeef, #06b6d4)"
+            colors={['#06b6d4', '#10b981', '#13eeef', '#a855f7', '#06b6d4']}
+            paused={headerPaused}
           >
             STASH SAGE
-          </AnimatedGradientText>
+          </AuroraText>
         </button>
 
         <div className="relative flex-1 max-w-xl mx-auto hidden sm:block">

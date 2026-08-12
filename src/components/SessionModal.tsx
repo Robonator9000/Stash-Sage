@@ -7,6 +7,7 @@ import { playSessionBeep } from '../utils/sounds';
 import { Modal, Group, Stack, Text, Textarea, Button, NumberInput, ActionIcon, Paper, Divider, Box } from '@mantine/core';
 import { IconUsers, IconClock, IconPlayerPlay, IconPlayerPause, IconRefresh, IconCalculator, IconArrowRight } from '@tabler/icons-react';
 import { formatPrecision } from '../utils/helpers';
+import { ShineBorder, NumberTicker } from './magicui';
 
 interface SessionModalProps {
   product: Product;
@@ -150,7 +151,8 @@ export function SessionModal({
         </Group>
 
         <Stack gap="lg" style={{ overflowY: 'auto', flex: 1, paddingRight: 4, minHeight: 0 }}>
-          <Paper withBorder bg="transparent" p="sm">
+          <ShineBorder borderRadius={14} duration={9} color={['#06b6d4', '#10b981', '#13eeef']} className="w-full">
+          <Paper withBorder bg="transparent" p="sm" style={{ background: isDark ? 'rgba(17,24,39,0.6)' : 'rgba(255,255,255,0.7)' }}>
             <Stack gap="sm">
               <Group justify="space-between">
                 <Group gap="sm">
@@ -159,7 +161,7 @@ export function SessionModal({
                 </Group>
                 <Group gap="xs">
                   <Text size="sm" c="dimmed">{t('hits', settings.language)}:</Text>
-                  <Text fw={700} w={32} ta="center">{hitsCount}</Text>
+                  <Text fw={700} w={40} ta="center"><NumberTicker value={hitsCount} duration={400} /></Text>
                 </Group>
               </Group>
 
@@ -209,6 +211,7 @@ export function SessionModal({
               )}
             </Stack>
           </Paper>
+          </ShineBorder>
 
           <Paper withBorder bg="transparent" p={0}>
             <Group justify="space-between" p="md" onClick={() => setShowCalculator(!showCalculator)} style={{ cursor: 'pointer' }}>

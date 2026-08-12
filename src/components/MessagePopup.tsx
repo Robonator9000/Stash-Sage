@@ -11,11 +11,12 @@ interface MessagePopupProps {
   isDark: boolean;
   lang: string;
   initialTargetUserId?: string;
+  initialOpen?: boolean;
   onClose?: () => void;
 }
 
-export function MessagePopup({ currentUserId, isDark, lang, initialTargetUserId, onClose }: MessagePopupProps) {
-  const [open, setOpen] = useState(!!initialTargetUserId);
+export function MessagePopup({ currentUserId, isDark, lang, initialTargetUserId, initialOpen, onClose }: MessagePopupProps) {
+  const [open, setOpen] = useState(!!initialTargetUserId || !!initialOpen);
   const [minimized, setMinimized] = useState(false);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const { conversations } = useConversations(currentUserId);
@@ -31,6 +32,10 @@ export function MessagePopup({ currentUserId, isDark, lang, initialTargetUserId,
   }, [initialTargetUserId, conversations, currentUserId]);
 
   useEffect(() => {
+    if (initialOpen) setOpen(true);
+  }, [initialOpen]);
+
+  useEffect(() => {
     setOpen(!!initialTargetUserId);
   }, [initialTargetUserId]);
 
@@ -43,6 +48,7 @@ export function MessagePopup({ currentUserId, isDark, lang, initialTargetUserId,
       onClick={() => setOpen(true)}
       radius="xl"
       aria-label="Open messages"
+      className="hidden lg:block"
       style={{
         position: 'fixed',
         bottom: 20,

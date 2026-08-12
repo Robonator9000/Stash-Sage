@@ -1,4 +1,4 @@
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+﻿import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { StatsCard } from './StatsCard';
 import { CalendarHeatmap } from './CalendarHeatmap';
 import { Product, Session, Settings } from '../types';
@@ -67,8 +67,8 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={consumptionByMonth}>
                 <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e5e7eb'} />
-                <XAxis dataKey="month" tick={{ fill: isDark ? '#64748b' : '#94a3b8', fontSize: 12 }} />
-                <YAxis tick={{ fill: isDark ? '#64748b' : '#94a3b8', fontSize: 12 }} />
+                <XAxis dataKey="month" tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} />
+                <YAxis tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} />
                 <Tooltip contentStyle={{ backgroundColor: isDark ? '#111827' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#e5e7eb'}`, borderRadius: '12px', color: isDark ? '#e2e8f0' : '#0f172a' }}
                   formatter={(value: any) => [`${formatPrecision(Number(value), 1)}g`, '']} />
                 <Bar dataKey="amount" fill="#06b6d4" radius={[4, 4, 0, 0]} />
@@ -88,8 +88,8 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={topStrains} layout="vertical" margin={{ left: 80 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e5e7eb'} />
-                <XAxis type="number" tick={{ fill: isDark ? '#64748b' : '#94a3b8', fontSize: 12 }} domain={[0, 5]} />
-                <YAxis dataKey="name" type="category" tick={{ fill: isDark ? '#64748b' : '#94a3b8', fontSize: 12 }} width={75} />
+                <XAxis type="number" tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} domain={[0, 5]} />
+                <YAxis dataKey="name" type="category" tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} width={75} />
                 <Tooltip contentStyle={{ backgroundColor: isDark ? '#111827' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#e5e7eb'}`, borderRadius: '12px', color: isDark ? '#e2e8f0' : '#0f172a' }}
                   formatter={(value: any) => [Number(value).toFixed(1), t('rating', lang)]} />
                 <Bar dataKey="rating" fill="#10b981" radius={[0, 4, 4, 0]} />
@@ -109,8 +109,8 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={spendingByType}>
                 <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e5e7eb'} />
-                <XAxis dataKey="name" tick={{ fill: isDark ? '#64748b' : '#94a3b8', fontSize: 12 }} />
-                <YAxis tick={{ fill: isDark ? '#64748b' : '#94a3b8', fontSize: 12 }} />
+                <XAxis dataKey="name" tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} />
+                <YAxis tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} />
                 <Tooltip contentStyle={{ backgroundColor: isDark ? '#111827' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#e5e7eb'}`, borderRadius: '12px', color: isDark ? '#e2e8f0' : '#0f172a' }}
                   formatter={(value: any) => [formatCurrency(Number(value), settings.currency), '']} />
                 <Bar dataKey="value" fill="#f59e0b" radius={[4, 4, 0, 0]} />

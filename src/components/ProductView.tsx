@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import type { Product } from '../types';
 import { supabase } from '../utils/supabase';
 import { t } from '../utils/translations';
-import { IconChevronLeft, IconStar, IconScale, IconFlask2, IconNote, IconCalendar, IconTag } from '@tabler/icons-react';
-import { Paper, Group, Stack, Text, Badge, Loader, Box, UnstyledButton } from '@mantine/core';
+import { IconStar, IconScale, IconFlask2, IconNote, IconCalendar, IconTag, IconArrowLeft } from '@tabler/icons-react';
+import { Paper, Group, Stack, Text, Badge, Loader, Box } from '@mantine/core';
 import { setFullscreenOpen } from '../utils/fullscreen';
+import { InteractiveHoverButton } from './magicui';
 
 interface ProductViewProps {
   productId: string;
@@ -70,10 +71,9 @@ export function ProductView({ productId, onClose, isDark, lang }: ProductViewPro
     <Box style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.8)', display: 'flex', flexDirection: 'column' }} onClick={onClose}>
       <Box onClick={e => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, maxWidth: 768, width: '100%', margin: '0 auto' }}>
         <Group justify="space-between" px="md" py="sm" style={{ flexShrink: 0 }}>
-          <UnstyledButton type="button" onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#fff' }}>
-            <IconChevronLeft size={20} />
-            <Text size="sm" fw={500}>{t('back', lang)}</Text>
-          </UnstyledButton>
+          <InteractiveHoverButton type="button" onClick={onClose} icon={<IconArrowLeft size={16} />} textColor="text-white" darkTextColor="dark:text-white" className="!border-white/25 !bg-white/10">
+            {t('back', lang)}
+          </InteractiveHoverButton>
         </Group>
 
         <Box style={{ flex: 1, overflowY: 'auto', padding: '0 16px 32px' }}>

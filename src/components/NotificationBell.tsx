@@ -4,6 +4,7 @@ import { timeAgo } from '../utils/helpers';
 import { useAuth } from '../contexts/AuthContext';
 import { Paper, Group, Text, ActionIcon, Avatar, ScrollArea, Loader, UnstyledButton, Box } from '@mantine/core';
 import { IconBell } from '@tabler/icons-react';
+import { AnimatedList } from './magicui';
 
 interface NotificationBellProps {
   isDark: boolean;
@@ -116,48 +117,52 @@ export function NotificationBell({ isDark, lang, onViewProfile }: NotificationBe
               </Text>
             )}
 
-            {notifications.map(n => (
-              <UnstyledButton
-                key={n.id}
-                onClick={() => { markRead(n.id); onViewProfile?.(n.actor_id); }}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  padding: '12px 16px',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: 12,
-                  background: !n.read ? unreadRowBg : 'transparent',
-                  color: bodyFg,
-                  borderBottom: `1px solid ${borderColor}`,
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = hoverBg; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = n.read ? 'transparent' : unreadRowBg; }}
-              >
-                {n.actor?.avatar_url ? (
-                  <Avatar src={n.actor.avatar_url} alt={n.actor?.username || 'User'} radius="md" size={32} />
-                ) : (
-                  <Avatar radius="md" size={32} color="cyan" style={{ background: 'linear-gradient(135deg, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))' }}>
-                    {(n.actor?.username?.[0] || '?').toUpperCase()}
-                  </Avatar>
-                )}
-                <Box style={{ flex: 1, minWidth: 0 }}>
-                  <Text size="sm" style={{ color: bodyFg }}>
-                    {n.type === 'like' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> liked your post</>}
-                    {n.type === 'comment' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> commented on your post</>}
-                    {n.type === 'follow' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> followed you</>}
-                    {n.type === 'new_listing' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> listed <span style={{ fontWeight: 500 }}>{n.listing_title || 'something'}</span> for sale</>}
-                    {n.type === 'listing_sold' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> marked <span style={{ fontWeight: 500 }}>{n.listing_title || 'a listing'}</span> as sold</>}
-                  </Text>
-                  <Text size="xs" style={{ marginTop: 2, color: muted }}>
-                    {timeAgo(n.created_at, lang)}
-                  </Text>
-                </Box>
-                {!n.read && (
-                  <Box style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--mantine-color-cyan-6)', flexShrink: 0, marginTop: 6 }} />
-                )}
-              </UnstyledButton>
-            ))}
+            {notifications.length > 0 && (
+              <AnimatedList className="p-0">
+                {notifications.map(n => (
+                  <UnstyledButton
+                    key={n.id}
+                    onClick={() => { markRead(n.id); onViewProfile?.(n.actor_id); }}
+                    style={{
+                      width: '100%',
+                      textAlign: 'left',
+                      padding: '12px 16px',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 12,
+                      background: !n.read ? unreadRowBg : 'transparent',
+                      color: bodyFg,
+                      borderBottom: `1px solid ${borderColor}`,
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = hoverBg; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = n.read ? 'transparent' : unreadRowBg; }}
+                  >
+                    {n.actor?.avatar_url ? (
+                      <Avatar src={n.actor.avatar_url} alt={n.actor?.username || 'User'} radius="md" size={32} />
+                    ) : (
+                      <Avatar radius="md" size={32} color="cyan" style={{ background: 'linear-gradient(135deg, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))' }}>
+                        {(n.actor?.username?.[0] || '?').toUpperCase()}
+                      </Avatar>
+                    )}
+                    <Box style={{ flex: 1, minWidth: 0 }}>
+                      <Text size="sm" style={{ color: bodyFg }}>
+                        {n.type === 'like' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> liked your post</>}
+                        {n.type === 'comment' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> commented on your post</>}
+                        {n.type === 'follow' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> followed you</>}
+                        {n.type === 'new_listing' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> listed <span style={{ fontWeight: 500 }}>{n.listing_title || 'something'}</span> for sale</>}
+                        {n.type === 'listing_sold' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> marked <span style={{ fontWeight: 500 }}>{n.listing_title || 'a listing'}</span> as sold</>}
+                      </Text>
+                      <Text size="xs" style={{ marginTop: 2, color: muted }}>
+                        {timeAgo(n.created_at, lang)}
+                      </Text>
+                    </Box>
+                    {!n.read && (
+                      <Box style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--mantine-color-cyan-6)', flexShrink: 0, marginTop: 6 }} />
+                    )}
+                  </UnstyledButton>
+                ))}
+              </AnimatedList>
+            )}
           </ScrollArea>
         </Paper>
       )}

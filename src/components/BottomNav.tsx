@@ -9,14 +9,14 @@ import {
   IconShoppingCart,
   IconHistory,
   IconLayoutDashboard,
-  IconBell,
   IconSettings,
   IconShield,
   IconDots,
+  IconSparkles,
+  IconMessageCircle,
 } from '@tabler/icons-react';
 
 type PrimaryTabId = 'stash' | 'community' | 'marketplace' | 'dashboard' | 'history';
-type SecondaryTabId = 'notifications' | 'settings' | 'admin';
 
 const primaryTabs: { id: PrimaryTabId; label: string; icon: typeof IconHome; requiresAuth?: boolean }[] = [
   { id: 'stash', label: 'Stash', icon: IconHome },
@@ -26,26 +26,41 @@ const primaryTabs: { id: PrimaryTabId; label: string; icon: typeof IconHome; req
   { id: 'history', label: 'History', icon: IconHistory, requiresAuth: true },
 ];
 
-const secondaryTabs: { id: SecondaryTabId; label: string; icon: typeof IconHome; requiresAuth?: boolean }[] = [
-  { id: 'notifications', label: 'Notifications', icon: IconBell, requiresAuth: true },
+const secondaryTabs: { id: string; label: string; icon: typeof IconHome; requiresAuth?: boolean }[] = [
+  { id: 'menu', label: 'Menu', icon: IconSparkles },
+  { id: 'messages', label: 'Messages', icon: IconMessageCircle, requiresAuth: true },
   { id: 'settings', label: 'Settings', icon: IconSettings },
   { id: 'admin', label: 'Admin', icon: IconShield, requiresAuth: true },
 ];
 
 interface BottomNavProps {
   isDark: boolean;
+  onOpenChat?: () => void;
 }
 
-export function BottomNav({ isDark }: BottomNavProps) {
+export function BottomNav({ isDark, onOpenChat }: BottomNavProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAdmin, user } = useAuth();
   const [moreOpen, setMoreOpen] = useState(false);
   const activeTab = new URLSearchParams(location.search).get('tab') as PrimaryTabId | null;
 
-  const handleTabClick = (tabId: PrimaryTabId | SecondaryTabId) => {
+  const handleTabClick = (tabId: PrimaryTabId | string) => {
     navigate(`/?tab=${tabId}`);
     setMoreOpen(false);
+  };
+
+  const handleSecondaryClick = (tabId: string) => {
+    setMoreOpen(false);
+    if (tabId === 'menu') {
+      navigate('/menu');
+      return;
+    }
+    if (tabId === 'messages') {
+      onOpenChat?.();
+      return;
+    }
+    navigate(`/?tab=${tabId}`);
   };
 
   const inactiveColor = isDark ? 'var(--mantine-color-gray-3)' : 'var(--mantine-color-gray-7)';
@@ -114,7 +129,7 @@ export function BottomNav({ isDark }: BottomNavProps) {
               return (
                 <UnstyledButton
                   key={tab.id}
-                  onClick={() => handleTabClick(tab.id)}
+                  onClick={() => handleSecondaryClick(tab.id)}
                   style={{
                     width: '100%',
                     display: 'flex',

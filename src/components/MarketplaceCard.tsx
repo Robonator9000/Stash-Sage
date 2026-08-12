@@ -9,8 +9,8 @@ import { ProductView } from './ProductView';
 import { setFullscreenOpen } from '../utils/fullscreen';
 import { Card, Image, Badge, Group, Text, ActionIcon, Avatar, Box } from '@mantine/core';
 import { useContextMenu } from 'mantine-contextmenu';
-import { IconEdit, IconChecks, IconTrash, IconPinned, IconBookmark, IconMessageCircle, IconX } from '@tabler/icons-react';
-import { NumberTicker, Lens } from './magicui';
+import { IconEdit, IconChecks, IconTrash, IconPinned, IconBookmark, IconMessageCircle, IconArrowLeft } from '@tabler/icons-react';
+import { NumberTicker, Lens, InteractiveHoverButton } from './magicui';
 
 const CATEGORY_GLOW: Record<string, string> = {
   flower: '16,185,129',
@@ -256,9 +256,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
             <div className={`flex flex-col sm:flex-row w-full sm:rounded-xl overflow-hidden min-h-screen sm:min-h-[90vh] backdrop-blur-sm ${isDark ? 'bg-[#111827]' : 'bg-white/80'}`}>
               <div className="flex-1 max-w-full sm:max-w-[55%] flex flex-col border-r-0 sm:border-r overflow-y-auto" style={{ borderColor: 'var(--mantine-color-gray-8)' }}>
                 <Group justify="flex-start" gap="sm" p="sm" style={{ position: 'sticky', top: 0, zIndex: 10, background: isDark ? 'rgba(17,24,39,0.95)' : 'rgba(255,255,255,0.95)', backdropFilter: 'blur(4px)' }}>
-                  <ActionIcon variant="subtle" onClick={() => setShowDetailPopup(false)} aria-label="Close">
-                    <IconX size={20} />
-                  </ActionIcon>
+                  <InteractiveHoverButton type="button" onClick={() => setShowDetailPopup(false)} icon={<IconArrowLeft size={16} />}>Back</InteractiveHoverButton>
                   <Text size="sm" fw={700} style={{ color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)' }}>Listing</Text>
                 </Group>
 
