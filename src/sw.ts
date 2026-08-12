@@ -2,7 +2,7 @@
 
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
-import { NetworkFirst, CacheFirst, StaleWhileRevalidate } from 'workbox-strategies';
+import { NetworkFirst, CacheFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 
@@ -36,13 +36,16 @@ registerRoute(
   })
 );
 
-// Cache CSS/JS with StaleWhileRevalidate
+// CSS/JS: NetworkFirst so the user always loads the latest app code (avoids stale
+// service-worker bundles that caused the session/consume-modal regression).
 registerRoute(
   ({ request }) => request.destination === 'style' || request.destination === 'script',
-  new StaleWhileRevalidate({
+  new NetworkFirst({
     cacheName: 'static-resources',
+    networkTimeoutSeconds: 5,
     plugins: [
-      new ExpirationPlugin({ maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 7 }),
+      new ExpirationPlugin({ maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 }),
+      new CacheableResponsePlugin({ statuses: [0, 200] }),
     ],
   })
 );
