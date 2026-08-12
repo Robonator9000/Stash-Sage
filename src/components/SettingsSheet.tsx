@@ -317,7 +317,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
             <>
               {!user ? (
                 <div className="space-y-4">
-                  <div className={`p-4 rounded-xl text-center ${isDark ? 'bg-slate-800/50' : 'bg-gray-50'}`}>
+                  <div className={`p-4 rounded-xl text-center ${isDark ? 'bg-slate-800' : 'bg-gray-50'}`}>
                     <User className={`w-8 h-8 mx-auto mb-2 ${isDark ? 'text-slate-500' : 'text-gray-400'}`} />
                     <h3 className={`text-sm font-semibold mb-1 ${isDark ? 'text-white' : 'text-black'}`}>
                       {authMode === 'signin' ? 'Welcome Back' : 'Create Account'}
@@ -379,7 +379,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                 ];
                 const pct = Math.round((filled.filter(Boolean).length / filled.length) * 100);
                 return (
-                  <div className={`mb-4 p-3 rounded-xl ${isDark ? 'bg-slate-800/50 border border-slate-700/50' : 'bg-gray-50 border border-gray-200'}`}>
+                  <div className={`mb-4 p-3 rounded-xl ${isDark ? 'bg-slate-800 border border-slate-700/50' : 'bg-gray-50 border border-gray-200'}`}>
                     <div className="flex items-center justify-between mb-2">
                       <span className={`text-xs font-medium ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>{t('profileCompletion', lang)}</span>
                       <span className={`text-xs font-bold ${pct === 100 ? 'text-emerald-400' : 'text-cyan-400'}`}>{pct}%</span>
@@ -396,7 +396,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
 
               <div>
                 <label className={sectionLabel}><User className="w-4 h-4" />Username <span className="text-red-400">*</span></label>
-                <div className={`px-4 py-3 rounded-xl border-2 text-sm font-medium ${isDark ? 'bg-slate-800/50 border-slate-700 text-slate-400' : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
+                <div className={`px-4 py-3 rounded-xl border-2 text-sm font-medium ${isDark ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
                   @{profileUsername}
                 </div>
                 <p className={`text-[10px] mt-1 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('usernamePermanent', lang)}</p>
@@ -544,7 +544,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               </div>
 
               {/* Visibility toggles */}
-              <div className={`p-3 rounded-xl border-2 space-y-3 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
+              <div className={`p-3 rounded-xl border-2 space-y-3 ${isDark ? 'border-slate-800 bg-slate-800' : 'border-gray-200 bg-gray-50'}`}>
                 <Switch
                   checked={settings.showOnlineStatus !== false}
                   onChange={e => updateSettings({ showOnlineStatus: e.currentTarget.checked })}
@@ -720,7 +720,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               </div>
 
               {/* Show Timer Ms */}
-              <div className={`p-3 rounded-xl border-2 mb-4 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
+              <div className={`p-3 rounded-xl border-2 mb-4 ${isDark ? 'border-slate-800 bg-slate-800' : 'border-gray-200 bg-gray-50'}`}>
                 <Switch
                   checked={settings.showTimerMs}
                   onChange={e => updateSettings({ showTimerMs: e.currentTarget.checked })}
@@ -747,7 +747,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               {/* Notifications Section */}
               <div className="mb-4">
                 <label className={sectionLabel}><Bell className="w-4 h-4" />{t('notifications', lang)}</label>
-                <div className={`p-3 rounded-xl border-2 space-y-3 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
+                <div className={`p-3 rounded-xl border-2 space-y-3 ${isDark ? 'border-slate-800 bg-slate-800' : 'border-gray-200 bg-gray-50'}`}>
                   <Switch
                     checked={settings.notificationsEnabled !== false}
                     onChange={(e) => updateSettings({ notificationsEnabled: e.currentTarget.checked })}
@@ -809,7 +809,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                   min={0.01} step={0.05} decimalScale={2} size="md"
                 />
               </div>
-              <div className={`p-3 rounded-xl border-2 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
+              <div className={`p-3 rounded-xl border-2 ${isDark ? 'border-slate-800 bg-slate-800' : 'border-gray-200 bg-gray-50'}`}>
                 <Switch
                   checked={settings.sessionDefaults.rotationEnabled}
                   onChange={(e) => updateSettings({ sessionDefaults: { ...settings.sessionDefaults, rotationEnabled: e.currentTarget.checked } })}
@@ -817,7 +817,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                   size="md"
                 />
               </div>
-              <div className={`p-3 rounded-xl border-2 ${isDark ? 'border-slate-800 bg-slate-800/50' : 'border-gray-200 bg-gray-50'}`}>
+              <div className={`p-3 rounded-xl border-2 ${isDark ? 'border-slate-800 bg-slate-800' : 'border-gray-200 bg-gray-50'}`}>
                 <Switch
                   checked={settings.publicProducts}
                   onChange={(e) => updateSettings({ publicProducts: e.currentTarget.checked })}
