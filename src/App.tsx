@@ -162,6 +162,7 @@ export default function App() {
     const root = document.documentElement;
     root.lang = settings.language;
     root.classList.toggle('dark', isDark);
+    root.setAttribute('data-mantine-color-scheme', isDark ? 'dark' : 'light');
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute('content', isDark ? '#0b1120' : '#f0f4f8');
   }, [settings.language, isDark]);

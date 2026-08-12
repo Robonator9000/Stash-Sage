@@ -126,14 +126,14 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
       {settings.budgetLimit > 0 && (
         <NeonGradientCard borderColors={['#06b6d4', '#10b981', '#13eeef']} borderRadius={12} className="mb-4">
           <Group justify="space-between" mb="sm">
-            <Text size="sm" fw={600} style={{ color: isDark ? 'var(--mantine-color-white)' : 'var(--mantine-color-gray-9)' }}>
+            <Text size="sm" fw={600} style={{ color: 'var(--mantine-color-white)' }}>
               {t('budgetLimit', lang)} ({settings.budgetPeriod})
             </Text>
-            <Text size="sm" c="dimmed">
+            <Text size="sm" style={{ color: 'var(--mantine-color-slate-4)' }}>
               {formatCurrency(totalValue, settings.currency)} / {formatCurrency(settings.budgetLimit, settings.currency)}
             </Text>
           </Group>
-          <Box style={{ width: '100%', height: 8, borderRadius: '9999px', overflow: 'hidden', backgroundColor: isDark ? '#1e293b' : '#e5e7eb' }}>
+          <Box style={{ width: '100%', height: 8, borderRadius: '9999px', overflow: 'hidden', backgroundColor: '#1e293b' }}>
             <Box style={{
               height: '100%',
               borderRadius: '9999px',

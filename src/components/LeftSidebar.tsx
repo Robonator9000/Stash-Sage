@@ -372,7 +372,7 @@ export function LeftSidebar({
                     style={{ width: '100%', borderRadius: 'var(--mantine-radius-md)' }}
                     aria-label={`View @${profileUsername} profile`}
                   >
-                    <Text size="sm" fw={600} truncate style={{ color: isDark ? 'var(--mantine-color-white)' : 'var(--mantine-color-gray-9)' }}>
+                    <Text size="sm" fw={600} truncate style={{ color: 'var(--mantine-color-white)' }}>
                       {profileDisplayName}
                     </Text>
                     <Text size="xs" c="cyan" truncate>

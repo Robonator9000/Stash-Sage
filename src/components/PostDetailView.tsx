@@ -7,6 +7,7 @@ import { ProductView } from './ProductView';
 import { Text, Group, Avatar, UnstyledButton, ActionIcon, Image, Box, Textarea, Button, Modal } from '@mantine/core';
 import { setFullscreenOpen } from '../utils/fullscreen';
 import { IconX, IconHeart, IconBookmark, IconEdit, IconTrash, IconChevronLeft, IconChevronRight, IconBuildingStore } from '@tabler/icons-react';
+import { Lens } from './magicui';
 
 interface PostDetailViewProps {
   post: Post;
@@ -51,12 +52,16 @@ function PostDetailImages({ images }: { images: string[] }) {
   if (count === 0) return null;
   if (count === 1) {
     return (
-      <Image src={images[0]} alt="" radius="md" fit="cover" w="100%" mb="md" style={{ maxHeight: 384 }} />
+      <Lens lensSize={170} className="w-full rounded-md" largeRadius={160}>
+        <Image src={images[0]} alt="" radius="md" fit="cover" w="100%" mb="md" style={{ maxHeight: 384 }} />
+      </Lens>
     );
   }
   return (
     <Box pos="relative" mb="md" style={{ overflow: 'hidden', borderRadius: 'var(--mantine-radius-md)' }}>
-      <Image src={images[currentIdx]} alt="" radius="md" fit="cover" w="100%" style={{ maxHeight: 384 }} />
+      <Lens lensSize={170} className="w-full rounded-md" largeRadius={160}>
+        <Image src={images[currentIdx]} alt="" radius="md" fit="cover" w="100%" style={{ maxHeight: 384 }} />
+      </Lens>
       {count > 1 && (
         <>
           <ActionIcon variant="transparent" onClick={(e) => { e.stopPropagation(); setCurrentIdx(prev => prev === 0 ? count - 1 : prev - 1); }} aria-label="Previous image"

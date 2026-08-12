@@ -5,41 +5,26 @@ function currentScheme(): MantineColorScheme {
   return dark ? 'dark' : 'light';
 }
 
-const callbacks = new Set<(colorScheme: MantineColorScheme) => void>();
-
-let observer: MutationObserver | null = null;
-
-function ensureObserver() {
-  if (observer) return;
-  observer = new MutationObserver(() => {
-    const scheme = currentScheme();
-    for (const cb of callbacks) cb(scheme);
-  });
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+function applyScheme(value: MantineColorScheme) {
+  const root = document.documentElement;
+  const isDark =
+    value === 'dark' || (value === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  root.classList.toggle('dark', isDark);
+  root.setAttribute('data-mantine-color-scheme', isDark ? 'dark' : 'light');
 }
 
-/** Syncs Mantine's internal color scheme with the app's `.dark` class,
- *  which App.tsx toggles based on the settings.theme value. */
+/** Keeps Mantine's color scheme in sync with the `.dark` class that App.tsx
+ *  toggles based on settings.theme. No MutationObserver is used here: the
+ *  class and the data-mantine-color-scheme attribute are set together in
+ *  App.tsx's theme effect, so Mantine never writes the class back. */
 export const classColorSchemeManager: MantineColorSchemeManager = {
   get: () => currentScheme(),
   set: (value) => {
-    const root = document.documentElement;
-    if (value === 'dark' || (value === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
+    applyScheme(value);
   },
-  subscribe: (onUpdate) => {
-    callbacks.add(onUpdate);
-    ensureObserver();
-  },
-  unsubscribe: () => {
-    callbacks.clear();
-    observer?.disconnect();
-    observer = null;
-  },
+  subscribe: () => () => {},
+  unsubscribe: () => {},
   clear: () => {
-    document.documentElement.classList.remove('dark');
+    applyScheme('light');
   },
 };

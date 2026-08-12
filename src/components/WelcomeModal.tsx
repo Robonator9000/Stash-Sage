@@ -67,15 +67,15 @@ export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalPr
             >
               STASH SAGE
             </AnimatedGradientText>
-            <Text size="sm" c={isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-6)'} ta="center" maw={420}>
+            <Text size="sm" c="var(--mantine-color-slate-4)" ta="center" maw={420}>
               {t('welcomeTagline', selected)}
             </Text>
           </Stack>
         </Stack>
 
         <Group mb="xs" gap={6}>
-          <IconGlobe size={14} color={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'} />
-          <Text size="xs" fw={600} tt="uppercase" style={{ letterSpacing: '0.1em' }} c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}>
+          <IconGlobe size={14} color="var(--mantine-color-slate-5)" />
+          <Text size="xs" fw={600} tt="uppercase" style={{ letterSpacing: '0.1em' }} c="var(--mantine-color-slate-5)">
             {t('language', selected)}
           </Text>
         </Group>
@@ -98,28 +98,28 @@ export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalPr
                   borderRadius: 'var(--mantine-radius-md)',
                   cursor: 'pointer',
                   background: isSelected
-                    ? isDark ? 'var(--mantine-color-cyan-9)' : 'var(--mantine-color-cyan-0)'
-                    : isDark ? 'var(--mantine-color-slate-9)' : 'var(--mantine-color-gray-0)',
+                    ? 'var(--mantine-color-cyan-9)'
+                    : 'var(--mantine-color-slate-9)',
                   border: `2px solid ${isSelected
-                    ? isDark ? 'var(--mantine-color-cyan-6)' : 'var(--mantine-color-cyan-5)'
+                    ? 'var(--mantine-color-cyan-6)'
                     : 'transparent'}`,
                   transition: 'background 0.2s, border 0.2s',
                 }}
               >
                 <Text style={{ fontSize: 28 }}>{lang.flag}</Text>
                 <LangLabel textColor={isSelected
-                  ? isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-8)'
-                  : isDark ? 'var(--mantine-color-slate-2)' : 'var(--mantine-color-gray-8)'}
+                  ? 'var(--mantine-color-cyan-4)'
+                  : 'var(--mantine-color-slate-2)'}
                   native={NATIVE_NAMES[lang.code]}
                   foreign={LANGUAGE_NAMES[browserLang]?.[lang.code] || LANGUAGE_NAMES.en[lang.code]}
-                  muted={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}
+                  muted="var(--mantine-color-slate-5)"
                 />
                 {isSelected && (
                   <ThemeIcon
                     size={24}
                     radius="xl"
                     variant="filled"
-                    color={isDark ? 'cyan.6' : 'cyan.5'}
+                    color="cyan.6"
                     ml="auto"
                     style={{ flexShrink: 0 }}
                   >
@@ -149,7 +149,7 @@ export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalPr
           {t('getStarted', selected)}
         </Button>
 
-        <Text ta="center" size="xs" mt="md" c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}>
+        <Text ta="center" size="xs" mt="md" c="var(--mantine-color-slate-5)">
           {t('welcomeFootnote', selected)}
         </Text>
       </NeonGradientCard>

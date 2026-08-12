@@ -7,10 +7,10 @@ import { Tag, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, M
 import { ReviewSection } from './ReviewSection';
 import { ProductView } from './ProductView';
 import { setFullscreenOpen } from '../utils/fullscreen';
-import { Card, Image, Badge, Group, Text, ActionIcon, Avatar } from '@mantine/core';
+import { Card, Image, Badge, Group, Text, ActionIcon, Avatar, Box } from '@mantine/core';
 import { useContextMenu } from 'mantine-contextmenu';
-import { IconEdit, IconChecks, IconTrash, IconPinned, IconBookmark, IconMessageCircle } from '@tabler/icons-react';
-import { NumberTicker } from './magicui';
+import { IconEdit, IconChecks, IconTrash, IconPinned, IconBookmark, IconMessageCircle, IconX } from '@tabler/icons-react';
+import { NumberTicker, Lens } from './magicui';
 
 const CATEGORY_GLOW: Record<string, string> = {
   flower: '16,185,129',
@@ -249,22 +249,28 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
         </Card.Section>
       </Card>
 
-      {/* Detail popup — Facebook-style fullscreen split */}
+      {/* Detail popup — fullscreen split (matches PostDetailView chrome) */}
       {showDetailPopup && createPortal(
-        <div className="fixed inset-0 z-50 bg-black/80 flex flex-col sm:flex-row" onClick={() => setShowDetailPopup(false)}>
-          {/* Back button — top-left of full overlay */}
-          <div onClick={e => { e.stopPropagation(); setShowDetailPopup(false); }}
-            className="absolute left-8 top-1/2 -translate-y-1/2 z-20 flex items-center gap-2 px-4 py-3 rounded-xl bg-black/40 text-white/90 cursor-pointer
-                       transition-all duration-300 hover:bg-black/60 hover:text-white hover:pl-6 hover:gap-3 group">
-            <ChevronLeft className="w-6 h-6 transition-transform duration-300 group-hover:-translate-x-0.5" />
-            <span className="text-base font-medium transition-all duration-300 max-w-0 overflow-hidden opacity-0 group-hover:max-w-[60px] group-hover:opacity-100">Back</span>
-          </div>
-          <div className="flex items-center justify-center relative min-w-0 h-[35vh] sm:h-auto sm:flex-1" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[100] flex items-start justify-center bg-black/20 backdrop-blur-md overflow-y-auto" onClick={() => setShowDetailPopup(false)}>
+          <div className="relative w-full max-w-5xl mx-auto my-0 sm:my-4 min-h-screen sm:min-h-0" onClick={e => e.stopPropagation()}>
+            <div className={`flex flex-col sm:flex-row w-full sm:rounded-xl overflow-hidden min-h-screen sm:min-h-[90vh] backdrop-blur-sm ${isDark ? 'bg-[#111827]' : 'bg-white/80'}`}>
+              <div className="flex-1 max-w-full sm:max-w-[55%] flex flex-col border-r-0 sm:border-r overflow-y-auto" style={{ borderColor: 'var(--mantine-color-gray-8)' }}>
+                <Group justify="flex-start" gap="sm" p="sm" style={{ position: 'sticky', top: 0, zIndex: 10, background: isDark ? 'rgba(17,24,39,0.95)' : 'rgba(255,255,255,0.95)', backdropFilter: 'blur(4px)' }}>
+                  <ActionIcon variant="subtle" onClick={() => setShowDetailPopup(false)} aria-label="Close">
+                    <IconX size={20} />
+                  </ActionIcon>
+                  <Text size="sm" fw={700} style={{ color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)' }}>Listing</Text>
+                </Group>
 
-            {/* Image */}
-            {allImages.length > 0 ? (
-              <img src={allImages[currentImageIndex]} alt={listing.title} decoding="async" className="max-w-full max-h-full object-contain p-4" />
-            ) : (
+                <Box px="md" pb="sm" style={{ flex: 1 }}>
+                  <div className="flex items-center justify-center relative min-w-0 h-[35vh] sm:h-[calc(100%-4rem)] sm:min-h-[55vh] rounded-xl overflow-hidden" style={{ background: 'rgba(0,0,0,0.35)' }} onClick={e => e.stopPropagation()}>
+
+                    {/* Image with lens */}
+                    {allImages.length > 0 ? (
+                      <Lens lensSize={170} className="w-full h-full">
+                        <img src={allImages[currentImageIndex]} alt={listing.title} decoding="async" className="w-full h-full object-contain p-4" />
+                      </Lens>
+                    ) : (
               <div className="flex items-center justify-center text-white/60">
                 <span>No image</span>
               </div>
@@ -294,13 +300,18 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
                 {t('statusSold', lang)}
               </span>
             )}
-          </div>
+                  </div>
+                </Box>
+              </div>
 
-          {/* Right info panel */}
-          <div className={`w-full sm:w-[420px] max-h-[65vh] sm:max-h-full shrink-0 overflow-y-auto border-t sm:border-t-0 sm:border-l ${isDark ? 'bg-gray-950 border-gray-800' : 'bg-white border-gray-200'}`}
-            onClick={e => e.stopPropagation()}>
+              {/* Right info panel */}
+              <div className="flex-1 max-w-full sm:max-w-[45%] flex flex-col overflow-y-auto">
+                <Box p="sm" style={{ position: 'sticky', top: 0, zIndex: 10, background: isDark ? 'rgba(17,24,39,0.95)' : 'rgba(255,255,255,0.95)', backdropFilter: 'blur(4px)' }}>
+                  <Text size="sm" fw={700} style={{ color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)' }}>Details</Text>
+                </Box>
 
-            <div className="p-6 space-y-5">
+                <Box px="md" pb="md" style={{ flex: 1 }}>
+                  <div className="space-y-5">
               {/* Price */}
               {listing.price_options && listing.price_options.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
@@ -503,8 +514,11 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
               )}
 
               {/* Reviews */}
-              <div className="pt-4 border-t border-edge">
+              <div className="pt-4 border-t" style={{ borderColor: 'var(--mantine-color-gray-8)' }}>
                 <ReviewSection listingId={listing.id} isOwner={isOwner} currentUserId={currentUserId} isDark={isDark} lang={lang} onViewProfile={(uid) => { onViewProfile?.(uid); setShowDetailPopup(false); }} />
+              </div>
+                </div>
+              </Box>
               </div>
             </div>
           </div>
