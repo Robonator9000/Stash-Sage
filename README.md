@@ -1,173 +1,143 @@
 <div align="center">
 
-# 🌿 STASH SAGE
+# Stash Sage
 
-**A privacy-first stash tracker & community platform. Track your collection, log sessions, and connect — works offline, syncs when you want.**
+**Track your stash. Log your sessions. Connect with your community.**
 
-[![Live Site](https://img.shields.io/badge/try%20it%20live-Vercel-222?logo=vercel&logoColor=fff)](https://st-sh.vercel.app)
-[![PWA](https://img.shields.io/badge/works%20offline-ready-5A0FC8?logo=pwa&logoColor=fff)](https://st-sh.vercel.app)
-[![License](https://img.shields.io/badge/license-MIT-3b82f6)](LICENSE)
-[![React](https://img.shields.io/badge/React-18-61dafb?logo=react&logoColor=fff)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=fff)](https://www.typescriptlang.org)
-[![Supabase](https://img.shields.io/badge/Supabase-2-3ecf8e?logo=supabase&logoColor=fff)](https://supabase.com)
+[![Live Site](https://img.shields.io/badge/try%20it%20live-Vercel-22c55e?logo=vercel&logoColor=fff)](https://st-sh.vercel.app)
+[![Works Offline](https://img.shields.io/badge/works%20offline-ready-06b6d4?logo=pwa&logoColor=fff)](https://st-sh.vercel.app)
 
-**[🌐 Try It Live](https://st-sh.vercel.app)**
+**[Try It Live](https://st-sh.vercel.app)**
 
 </div>
 
 ---
 
-## ✦ Overview
+## What is Stash Sage?
 
-Stash Sage is a progressive web app for tracking your stash, logging consumption, and engaging with a community marketplace — all without forcing an account. Your data lives locally by default; sign up only when you want cloud sync, social, or marketplace features.
+Stash Sage is a free app that helps you keep track of your stash — how much you have, how much you've used, and how much you've spent. Think of it like a personal inventory manager built specifically for your collection.
 
-Built as a single-page React app with offline-first storage and optional Supabase cloud sync.
+You can use it right in your browser. No download required. It works offline, so you can use it anywhere. And if you create an account, your data syncs across all your devices.
+
+### Why use it?
+
+- **Never lose track of your inventory** — know exactly how much you have at all times
+- **See your habits** — beautiful charts show your usage patterns over time
+- **Log sessions with friends** — track hits, rotation, and timing with built-in tools
+- **Buy and sell** — browse the community marketplace or list your own products
+- **Share your experience** — post reviews, follow friends, and discover new strains
 
 ---
 
-## ✦ Features
+## Features
 
-### 📦 Inventory Management
-Add strains with name, brand, type, THC/CBD %, rating, price, notes, photos, and purchase dates. Sort, filter, search, and **color-code** your collection. Switch between **grid**, **list**, and **compact** views.
+### Your Stash
+Add your strains with all the details — name, brand, type, THC/CBD levels, price, photos, and notes. Organize with colors, filters, and search. View as a grid, list, or compact layout.
 
-### 🔥 Consumption Logging
-Log 0.1g–2g quick amounts or type custom values. Backdate entries. Stash totals update automatically. Full filterable history.
+### Consumption Tracking
+Log what you use with quick-pick amounts or custom values. Your totals update automatically. See a full history of everything you've logged.
 
-### ⏱️ Session Mode
-Timed sessions with hit timer, bowl calculator, per-person rotation tracking, and auto-saving notes.
+### Session Mode
+Start a session, set a timer, and track hits per person. The app rotates through participants automatically and calculates bowls per person. Perfect for group sessions.
 
-### 📊 Dashboard
-At-a-glance totals — products, grams, sessions, avg rating, THC %, value, last used. Charts for strain breakdown and consumption trends. Toggleable stat tiles.
+### Dashboard
+See all your stats at a glance — total products, grams remaining, sessions logged, average rating, total value, and more. Beautiful charts break down your usage by strain type and over time.
 
-### 👥 Community Feed
-Share posts about your stash, like and comment, and follow other users. **Real-time** feed updates via Supabase channels. Browse **Latest**, **Following**, **Trending**, or **Bookmarked** feeds with pagination.
+### Community
+Share posts about your stash, follow other users, like and comment on posts, and browse feeds by Latest, Following, Trending, or Bookmarked.
 
-### 🏪 Marketplace
-Browse and list products for sale. Filter by category and sort by newest / price-low / price-high. Contact sellers via Discord, Telegram, Signal, WhatsApp, and more. Optionally link a product from your stash to a listing.
+### Marketplace
+Browse and list products for sale. Filter by category, sort by price, and contact sellers directly through your preferred platform.
 
-### ☁️ Cloud Sync (Optional)
-Everything works offline in your browser. Sign up with email to sync across devices via Supabase.
+### Cloud Sync (Optional)
+Everything works offline in your browser. Create a free account to sync across devices, post in the community, and list items in the marketplace.
 
-| Capability | Without Account | With Account |
+| Feature | Without Account | With Account |
 |---|:---:|:---:|
-| Full local features | ✅ | ✅ |
-| Saved on device | ✅ | ✅ |
-| Cloud backup | — | ✅ |
-| Cross-device sync | — | ✅ |
-| Community viewing | ✅ | ✅ |
-| Community posting | — | ✅ |
-| Marketplace browsing | ✅ | ✅ |
-| Marketplace listing | — | ✅ |
+| Track your stash | Yes | Yes |
+| Works offline | Yes | Yes |
+| Cloud backup | — | Yes |
+| Sync across devices | — | Yes |
+| Read community | Yes | Yes |
+| Post in community | — | Yes |
+| Browse marketplace | Yes | Yes |
+| List in marketplace | — | Yes |
 
-### 📸 Color-Coded Strains
-Tap any strain badge to pick from 10 colors. Colors surface on badges, card glows, and edge highlights.
-
-### 💾 Export & Import
-- **JSON** — full backup with merge support
-- **CSV** — open in any spreadsheet
-- **PDF** — printable product list
-- **Clipboard** — quick copy
-- **Manual sync** — push/pull from cloud
-
-### 🔒 PIN Lock
-4–6 digit PIN to lock the app. Private data stays on your device.
-
-### 🌐 Multi-Language
-English · Español · Français · Deutsch · Português. Auto-detects browser language.
-
-### 🎨 Themes
-Dark and light modes. Auto-switch follows system preference. Blur and gradient accents throughout.
-
-### 📱 PWA
-Install on your home screen — works offline like a native app. Phones, tablets, and desktops.
+### More Goodies
+- **Export your data** — JSON, CSV, or PDF backups
+- **PIN lock** — keep your stash private
+- **5 languages** — English, Spanish, French, German, Portuguese
+- **Dark & light themes** — auto-follows your system preference
+- **Installable** — add to your home screen like a native app
 
 ---
 
-## ✦ Tech Stack
+## Getting Started
+
+### For Users
+
+Just visit **[st-sh.vercel.app](https://st-sh.vercel.app)** — that's it. The app works in your browser immediately, no installation needed. You can optionally install it to your home screen for a native-app experience.
+
+### For Developers
+
+```bash
+# Install dependencies
+npm install
+
+# Start the dev server
+npm run dev
+
+# Build for production
+npm run build
+```
+
+The app runs without any backend configuration — all local features work out of the box. To enable cloud sync and community features, copy `.env.example` to `.env` and add your Supabase credentials.
+
+---
+
+## Tech Stack
+
+Built with modern web technologies:
 
 | Layer | Technology |
 |---|---|
-| Framework | React 18 |
-| Language | TypeScript 5 |
-| Bundler | Vite 6 |
-| Styling | Tailwind CSS 3 |
-| Backend | Supabase (Postgres + Auth + Storage + Realtime) |
-| Routing | React Router 7 |
+| Framework | React 18 + TypeScript |
+| Build Tool | Vite 6 |
+| Styling | Tailwind CSS + Mantine UI |
+| Backend | Supabase (Postgres, Auth, Storage, Realtime) |
+| Animations | Framer Motion + Magic UI |
 | Charts | Recharts |
-| Icons | Lucide React |
-| PDF | jsPDF + autotable |
-| Offline | Workbox (via vite-plugin-pwa) |
+| Offline | Workbox (Progressive Web App) |
 
 ---
 
-## ✦ Quick Start
-
-```bash
-npm install
-npm run dev        # → http://localhost:5173
-npm run build      # production build → dist/
-npm run preview    # preview the production build
-```
-
-### Environment
-
-Copy `.env.example` to `.env` and fill in your Supabase project URL and anon key:
-
-```bash
-cp .env.example .env
-```
-
-The app also runs **without** Supabase configured — all local-only features work out of the box.
-
----
-
-## ✦ Project Structure
+## Project Structure
 
 ```
 src/
-├── components/      # UI components (inventory, community, marketplace, admin, …)
-├── contexts/        # React contexts (Auth, Settings, Toast)
-├── types/           # Shared TypeScript interfaces
-├── utils/           # Helpers (supabase client, storage, formatting)
-└── App.tsx          # Root app + routing
-supabase/
-└── migrations/      # SQL migrations (profiles, posts, listings, …)
-scripts/             # Playwright test runner
+  components/     UI components
+  contexts/       React contexts (Auth, Settings)
+  types/          TypeScript definitions
+  utils/          Helpers and utilities
+  App.tsx         Main app entry point
 ```
 
 ---
 
-## ✦ Tests
+## About
 
-End-to-end tests powered by Playwright:
+Stash Sage was built to solve a simple problem: keeping track of your personal collection shouldn't be complicated. Whether you're a casual user who wants to know how much you have left, or an enthusiast who wants detailed tracking with charts and session tools — Stash Sage handles it all without getting in your way.
 
-```bash
-pip install playwright
-playwright install chromium
-python scripts/with_server.py \
-  --server "cd /path/to/Stash-Sage && npm run dev" --port 5173 \
-  -- python /path/to/Stash-Sage/scripts/test_app.py
-```
+The app is open source, privacy-focused, and works entirely offline. Your data stays on your device unless you choose to sync. No ads, no tracking, no nonsense.
 
-64+ tests covering onboarding, language selection, CRUD, consume/sell, low stock, settings, filters, search, favorites, and theme switching.
+Built with care for the community. Contributions welcome.
 
 ---
 
-## ✦ Deployment
+<div align="center">
 
-Auto-deploys to Vercel from the `main` branch via GitHub Actions. Vercel config lives in `vercel.json`.
+**[Try Stash Sage](https://st-sh.vercel.app)**
 
----
+Made with care for the community
 
-## ✦ Roadmap
-
-See [FEATURE_PLAN.md](./FEATURE_PLAN.md) for the full roadmap of optimizations, bug fixes, and planned features, including:
-
-- Post feed performance optimization (N+1 query elimination)
-- Community display-name / username consistency fix
-- Marketplace display improvements
-- Admin panel revamp
-
----
-
-<div align="center">Made with 💚 for the community</div>
+</div>
