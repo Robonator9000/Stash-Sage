@@ -60,7 +60,7 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
     const portions = parseInt(quickSellPortions) || 0;
     const total = grams * portions;
     if (grams > 0 && portions > 0 && total <= product.amount) {
-      onSell(roundToHundredth(total));
+      onSell(roundToHundredth(total), sellNotes.trim() || undefined);
     }
   };
 
