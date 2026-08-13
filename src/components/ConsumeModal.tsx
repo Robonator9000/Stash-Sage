@@ -179,25 +179,30 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
             </Group>
           </Paper>
 
-          <Paper withBorder radius="md" p="md" bg="var(--mantine-color-slate-8)">
+          <Paper withBorder radius="md" p="md" style={{ background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(241,245,249,0.6)' }}>
             <Group justify="space-between">
-              <Text size="sm" c="dimmed">{t('amount', lang)}:</Text>
-              <Text fw={700}>{formatPrecision(Math.max(0, roundToHundredth(product.amount - amount)), settings.decimalPrecision)}g</Text>
+              <Group gap="sm">
+                <Box style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isDark ? 'rgba(34,211,238,0.12)' : 'rgba(8,145,178,0.1)' }}>
+                  <IconMinus size={16} style={{ color: isDark ? '#22d3ee' : '#0891b2' }} />
+                </Box>
+                <Text size="sm" fw={500}>After this consume</Text>
+              </Group>
+              <Text fw={800} size="lg" c={product.amount - amount <= 0 ? 'red' : undefined}>{formatPrecision(Math.max(0, roundToHundredth(product.amount - amount)), settings.decimalPrecision)}g</Text>
             </Group>
           </Paper>
-        </Stack>
 
           <Box>
-            <Text fw={600} size="sm" mb="xs">{t('consumeNotes', lang)}</Text>
+            <Text fw={600} size="sm" mb="xs">Consumption Notes</Text>
             <Textarea
               value={consumeNotes}
               onChange={(e) => setConsumeNotes(e.currentTarget.value)}
-              placeholder={t('consumeNotesPlaceholder', lang)}
+              placeholder="How was it? Note the flavor, effects, or who you shared it with..."
               minRows={2}
               maxLength={500}
               size="sm"
             />
           </Box>
+        </Stack>
 
         <Divider my="lg" />
 
