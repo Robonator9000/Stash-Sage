@@ -69,7 +69,28 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
       }
     }
 
-    return { totalProducts, totalAmount, totalSessions, averageRating, averageTHC, totalValue, pricePerGram, consumptionRate, projectedRunOut };
+    const dailyCost = consumptionRate > 0 ? roundToHundredth(consumptionRate * pricePerGram) : 0;
+    const weeklyCost = roundToHundredth(dailyCost * 7);
+    const monthlyCost = roundToHundredth(dailyCost * 30);
+
+    const lastDate = products.reduce<Date | null>((latest, p) => {
+      if (!p.lastConsumed) return latest;
+      const d = new Date(p.lastConsumed);
+      return !latest || d.getTime() > latest.getTime() ? d : latest;
+    }, null);
+    const cleanStreakDays = lastDate ? Math.floor((Date.now() - lastDate.getTime()) / 86400000) : 0;
+
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400000);
+    const last30Consumed = sessions.filter(s => new Date(s.date) >= thirtyDaysAgo).reduce((sum, s) => sum + Math.max(0, s.amount), 0);
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 86400000);
+    const prev30Consumed = sessions.filter(s => {
+      const d = new Date(s.date);
+      return d >= sixtyDaysAgo && d < thirtyDaysAgo;
+    }).reduce((sum, s) => sum + Math.max(0, s.amount), 0);
+    const trendDir = last30Consumed > prev30Consumed ? 'up' : last30Consumed < prev30Consumed ? 'down' : 'flat';
+
+    return { totalProducts, totalAmount, totalSessions, averageRating, averageTHC, totalValue, pricePerGram, consumptionRate, projectedRunOut, weeklyCost, monthlyCost, cleanStreakDays, last30Consumed, trendDir };
   }, [products, sessions]);
 
   const lastConsumedStr = useMemo(() => {
@@ -102,6 +123,8 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
     { key: 'lastConsumed' as const, visible: stats.lastConsumed, icon: IconClock, label: t('lastConsumed', settings.language), value: lastConsumedStr, suffix: '', color: 'gray' },
     { key: 'consumptionRate' as const, visible: stats.consumptionRate && computed.consumptionRate > 0, icon: IconTrendingDown, label: t('consumptionRate', settings.language), value: formatPrecision(computed.consumptionRate, dp), suffix: t('perDay', settings.language), color: 'red' },
     { key: 'projectedRunOut' as const, visible: stats.projectedRunOut && computed.projectedRunOut !== '\u2014', icon: IconCalendarDue, label: t('projectedRunOut', settings.language), value: computed.projectedRunOut, suffix: t('days', settings.language), color: 'violet' },
+    { key: 'cleanStreak' as const, visible: true, icon: IconCalendarDue, label: 'Clean Streak', value: computed.cleanStreakDays.toString(), suffix: computed.cleanStreakDays === 1 ? 'day' : 'days', color: 'green' },
+    { key: 'weeklyCost' as const, visible: computed.weeklyCost > 0, icon: IconCurrencyDollar, label: 'Est. Weekly Cost', value: settings.currency + formatPrecision(computed.weeklyCost, dp), suffix: '', color: 'orange' },
   ], [computed, stats, dp, lastConsumedStr, settings.language, settings.currency]);
 
   const visibleStats = statItems;
