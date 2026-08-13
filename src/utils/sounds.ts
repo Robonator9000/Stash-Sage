@@ -4,6 +4,9 @@ function getCtx(): AudioContext {
   if (!audioCtx) {
     audioCtx = new AudioContext();
   }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(() => {});
+  }
   return audioCtx;
 }
 

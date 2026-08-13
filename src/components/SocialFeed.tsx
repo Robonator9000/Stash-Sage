@@ -509,8 +509,12 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
 
   return (
     <BlurFade>
-      <div style={{ position: 'relative' }}>
-      <Particles quantity={18} staticity={30} size={0.3} colors={isDark ? ['#06b6d4', '#10b981'] : ['#0891b2', '#059669']} className="opacity-50" style={{ zIndex: 0 }} />
+      {createPortal(
+        <div aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
+          <Particles quantity={14} staticity={25} size={0.3} colors={isDark ? ['#06b6d4', '#10b981'] : ['#0891b2', '#059669']} className="opacity-30" />
+        </div>,
+        document.body
+      )}
       <Stack gap="md" style={{ position: 'relative', zIndex: 1 }}>
 
       {quotePostId && quotePost && (
@@ -694,7 +698,6 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
         />
         , document.body)}
       </Stack>
-      </div>
   </BlurFade>
 );
 });

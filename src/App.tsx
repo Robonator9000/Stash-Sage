@@ -268,7 +268,7 @@ export default function App() {
     setSellingProduct(null);
     setShowDollar(true);
     playSellSound();
-    setTimeout(() => setShowDollar(false), 1600);
+      setTimeout(() => setShowDollar(false), 2200);
     try {
       checkLowStock(product, amount);
       consumeProduct(product.id, amount);
@@ -293,7 +293,7 @@ export default function App() {
     } else {
       setShowSmoke(true);
       playSmokeSound();
-      setTimeout(() => setShowSmoke(false), 1200);
+      setTimeout(() => setShowSmoke(false), 2200);
     }
     // Persist + record in a try/catch so a failure can never block the UI flow.
     try {
@@ -312,7 +312,8 @@ export default function App() {
     setSessionAmount(0);
     setSessionPeople(2);
     setShowSmoke(true);
-    setTimeout(() => setShowSmoke(false), 1200);
+    playSmokeSound();
+    setTimeout(() => setShowSmoke(false), 2200);
     try {
       addSession(session);
       addActivityEntry({

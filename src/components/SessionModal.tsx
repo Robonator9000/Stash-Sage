@@ -75,13 +75,17 @@ export function SessionModal({
 
   useEffect(() => {
     if (!isTimerRunning) return;
-    const ms = settings.showTimerMs ? 100 : 1000;
+    const tickMs = settings.showTimerMs ? 100 : 1000;
+    let subTicks = 0;
     const interval = setInterval(() => {
       if (settings.showTimerMs) {
+        subTicks++;
         setTimerMs((prev) => {
-          const next = prev - ms;
+          const next = prev - tickMs;
           return next <= 0 ? next + 1000 : next;
         });
+        if (subTicks < 10) return;
+        subTicks = 0;
       }
       timerSecondsRef.current -= 1;
       setTimerSeconds(timerSecondsRef.current);
@@ -89,10 +93,11 @@ export function SessionModal({
         timerSecondsRef.current = customTimerDurationRef.current;
         setTimerSeconds(timerSecondsRef.current);
         setTimerMs(0);
+        subTicks = 0;
         handleHitRef.current();
         playSessionBeep();
       }
-    }, ms);
+    }, tickMs);
     return () => clearInterval(interval);
   }, [isTimerRunning, settings.showTimerMs]);
 
@@ -342,7 +347,7 @@ export function SessionModal({
                   min={0}
                   gaugePrimaryColor={timerSeconds <= 3 ? 'rgb(239 68 68)' : 'rgb(34 211 238)'}
                   gaugeSecondaryColor={isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}
-                  className="!w-16 !h-16"
+                  className="!w-24 !h-24"
                 >
                   <Text size="sm" fw={700} ff="monospace" style={{ color: timerSeconds <= 3 ? 'rgb(239 68 68)' : undefined, lineHeight: 1 }}>
                     {Math.floor(timerSeconds / 60)}:{(timerSeconds % 60).toString().padStart(2, '0')}
