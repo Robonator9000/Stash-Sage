@@ -1,143 +1,154 @@
 <div align="center">
 
+<img src="public/icon.svg" width="120" height="120" alt="Stash Sage" />
+
 # Stash Sage
 
-**Track your stash. Log your sessions. Connect with your community.**
+### Track your stash. Log your sessions. Connect with your community.
 
-[![Live Site](https://img.shields.io/badge/try%20it%20live-Vercel-22c55e?logo=vercel&logoColor=fff)](https://st-sh.vercel.app)
-[![Works Offline](https://img.shields.io/badge/works%20offline-ready-06b6d4?logo=pwa&logoColor=fff)](https://st-sh.vercel.app)
+A free, privacy-first stash tracker that works offline. No account required to start.
 
-**[Try It Live](https://st-sh.vercel.app)**
+[![Live Site](https://img.shields.io/badge/Try%20It-Live-22c55e?style=for-the-badge&logo=vercel&logoColor=fff)](https://st-sh.vercel.app)
+[![PWA](https://img.shields.io/badge/Installable-PWA-06b6d4?style=for-the-badge&logo=pwa&logoColor=fff)](https://st-sh.vercel.app)
+
+![React](https://img.shields.io/badge/React-18-61dafb?logo=react&logoColor=fff)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=fff)
+![Vite](https://img.shields.io/badge/Vite-6-646cff?logo=vite&logoColor=fff)
+![Tailwind](https://img.shields.io/badge/Tailwind-3-06b6d4?logo=tailwindcss&logoColor=fff)
+![Supabase](https://img.shields.io/badge/Supabase-2-3ecf8e?logo=supabase&logoColor=fff)
+![License](https://img.shields.io/badge/License-MIT-3b82f6)
 
 </div>
 
 ---
 
-## What is Stash Sage?
+## ✨ What is Stash Sage?
 
-Stash Sage is a free app that helps you keep track of your stash — how much you have, how much you've used, and how much you've spent. Think of it like a personal inventory manager built specifically for your collection.
+Stash Sage is a **free, open-source** stash tracker and community platform. Think of it as your personal inventory manager — built specifically for tracking what you have, what you've used, and what it's all worth.
 
-You can use it right in your browser. No download required. It works offline, so you can use it anywhere. And if you create an account, your data syncs across all your devices.
-
-### Why use it?
-
-- **Never lose track of your inventory** — know exactly how much you have at all times
-- **See your habits** — beautiful charts show your usage patterns over time
-- **Log sessions with friends** — track hits, rotation, and timing with built-in tools
-- **Buy and sell** — browse the community marketplace or list your own products
-- **Share your experience** — post reviews, follow friends, and discover new strains
+🎒 **No download needed** — it runs right in your browser
+📱 **Works offline** — use it anywhere, anytime
+🔒 **Your data stays private** — stored on your device by default
+☁️ **Sync when you want** — create an account to back up and sync across devices
 
 ---
 
-## Features
+## 🚀 Features
 
-### Your Stash
-Add your strains with all the details — name, brand, type, THC/CBD levels, price, photos, and notes. Organize with colors, filters, and search. View as a grid, list, or compact layout.
+### 📦 Stash Tracking
+Add your strains with full details — name, brand, type, THC/CBD %, price, photos, rating, and notes. Organize with **color-coded labels**, filters, and search. Switch between **grid**, **list**, and **compact** views.
 
-### Consumption Tracking
-Log what you use with quick-pick amounts or custom values. Your totals update automatically. See a full history of everything you've logged.
+### 🔥 Consumption Logging
+Log what you use with one-tap quick amounts or custom values. Totals update automatically. Full filterable history with notes.
 
-### Session Mode
-Start a session, set a timer, and track hits per person. The app rotates through participants automatically and calculates bowls per person. Perfect for group sessions.
+### ⏱️ Session Mode
+Start a session with a **circular hit timer**, track hits per person with **rotation switching**, and calculate bowls per person automatically. Perfect for group sessions.
 
-### Dashboard
-See all your stats at a glance — total products, grams remaining, sessions logged, average rating, total value, and more. Beautiful charts break down your usage by strain type and over time.
+### 📊 Dashboard
+Beautiful animated stat tiles and charts showing your usage patterns, spending, strain distribution, and consumption trends over time.
 
-### Community
-Share posts about your stash, follow other users, like and comment on posts, and browse feeds by Latest, Following, Trending, or Bookmarked.
+### 👥 Community Feed
+Share posts, follow friends, like and comment. Browse **Latest**, **Following**, **Trending**, or **Bookmarked** feeds. Real-time updates.
 
-### Marketplace
-Browse and list products for sale. Filter by category, sort by price, and contact sellers directly through your preferred platform.
+### 🏪 Marketplace
+Browse and list products for sale. Filter, sort, and contact sellers through Discord, Telegram, Signal, WhatsApp, and more.
 
-### Cloud Sync (Optional)
-Everything works offline in your browser. Create a free account to sync across devices, post in the community, and list items in the marketplace.
+### 💎 Everything Else
+| Feature | Description |
+|---|---|
+| 💾 **Export** | JSON, CSV, PDF, or clipboard backups |
+| 🔒 **PIN Lock** | 4–6 digit lock to keep your stash private |
+| 🌍 **Multi-Language** | English, Spanish, French, German, Portuguese |
+| 🎨 **Themes** | Dark & light modes with animated transitions |
+| 📱 **PWA** | Install to your home screen — feels native |
 
-| Feature | Without Account | With Account |
+---
+
+## 🆓 Free vs Account
+
+| Feature | 🆓 No Account | ✅ With Account |
 |---|:---:|:---:|
-| Track your stash | Yes | Yes |
-| Works offline | Yes | Yes |
-| Cloud backup | — | Yes |
-| Sync across devices | — | Yes |
-| Read community | Yes | Yes |
-| Post in community | — | Yes |
-| Browse marketplace | Yes | Yes |
-| List in marketplace | — | Yes |
-
-### More Goodies
-- **Export your data** — JSON, CSV, or PDF backups
-- **PIN lock** — keep your stash private
-- **5 languages** — English, Spanish, French, German, Portuguese
-- **Dark & light themes** — auto-follows your system preference
-- **Installable** — add to your home screen like a native app
+| Full stash tracking | ✅ | ✅ |
+| Works offline | ✅ | ✅ |
+| Dashboard & charts | ✅ | ✅ |
+| Cloud backup & sync | — | ✅ |
+| Post in community | — | ✅ |
+| List in marketplace | — | ✅ |
 
 ---
 
-## Getting Started
+## 🛠️ Built With
 
-### For Users
+| Layer | Tech |
+|---|---|
+| ⚛️ Framework | React 18 + TypeScript |
+| ⚡ Build | Vite 6 |
+| 🎨 Styling | Tailwind CSS 3 + Mantine UI 7 |
+| ✨ Animations | Framer Motion + Magic UI |
+| ☁️ Backend | Supabase (Postgres, Auth, Realtime) |
+| 📊 Charts | Recharts |
+| 📱 Offline | Workbox PWA |
 
-Just visit **[st-sh.vercel.app](https://st-sh.vercel.app)** — that's it. The app works in your browser immediately, no installation needed. You can optionally install it to your home screen for a native-app experience.
+---
 
-### For Developers
+## 🔧 Run It Locally
 
 ```bash
+# Clone the repo
+git clone https://github.com/Robonator9000/Stash-Sage.git
+cd Stash-Sage
+
 # Install dependencies
 npm install
 
-# Start the dev server
+# Start developing → http://localhost:5173
 npm run dev
 
 # Build for production
 npm run build
 ```
 
-The app runs without any backend configuration — all local features work out of the box. To enable cloud sync and community features, copy `.env.example` to `.env` and add your Supabase credentials.
+> 💡 **No Supabase needed to start!** All local features work out of the box. To enable cloud sync and community, copy `.env.example` to `.env` and add your credentials.
 
 ---
 
-## Tech Stack
-
-Built with modern web technologies:
-
-| Layer | Technology |
-|---|---|
-| Framework | React 18 + TypeScript |
-| Build Tool | Vite 6 |
-| Styling | Tailwind CSS + Mantine UI |
-| Backend | Supabase (Postgres, Auth, Storage, Realtime) |
-| Animations | Framer Motion + Magic UI |
-| Charts | Recharts |
-| Offline | Workbox (Progressive Web App) |
-
----
-
-## Project Structure
+## 📂 Project Structure
 
 ```
 src/
-  components/     UI components
-  contexts/       React contexts (Auth, Settings)
-  types/          TypeScript definitions
-  utils/          Helpers and utilities
-  App.tsx         Main app entry point
+├── 📁 components/     UI components (modals, feeds, cards, magicui)
+├── 📁 contexts/       React contexts (Auth, Settings)
+├── 📁 hooks/          Custom hooks (modal animations)
+├── 📁 types/          TypeScript definitions
+├── 📁 utils/          Helpers (supabase, storage, formatting)
+└── 📄 App.tsx         Main app entry point
 ```
 
 ---
 
-## About
+## 🤝 Contributing
 
-Stash Sage was built to solve a simple problem: keeping track of your personal collection shouldn't be complicated. Whether you're a casual user who wants to know how much you have left, or an enthusiast who wants detailed tracking with charts and session tools — Stash Sage handles it all without getting in your way.
+Contributions are welcome! Whether it's a bug fix, feature idea, or translation improvement:
 
-The app is open source, privacy-focused, and works entirely offline. Your data stays on your device unless you choose to sync. No ads, no tracking, no nonsense.
+1. Fork the repo
+2. Create a feature branch (`git checkout -b feature/amazing-thing`)
+3. Commit your changes (`git commit -m 'Add amazing thing'`)
+4. Push and open a Pull Request
 
-Built with care for the community. Contributions welcome.
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** — free to use, modify, and distribute.
 
 ---
 
 <div align="center">
 
-**[Try Stash Sage](https://st-sh.vercel.app)**
+**🌿 [Try Stash Sage](https://st-sh.vercel.app)**
 
-Made with care for the community
+⭐ Star this repo if you find it helpful!
+
+Made with 💚 for the community
 
 </div>
