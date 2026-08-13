@@ -8,8 +8,8 @@
 
 A free, privacy-first stash tracker that works offline. No account required to start.
 
-[![Live Site](https://img.shields.io/badge/Try%20It-Live-22c55e?style=for-the-badge&logo=vercel&logoColor=fff)](https://st-sh.vercel.app)
-[![PWA](https://img.shields.io/badge/Installable-PWA-06b6d4?style=for-the-badge&logo=pwa&logoColor=fff)](https://st-sh.vercel.app)
+[![Live Site](https://img.shields.io/badge/Try%20It-Live-22c55e?style=for-the-badge&logo=vercel&logoColor=fff)](https://thestashsage.vercel.app)
+[![PWA](https://img.shields.io/badge/Installable-PWA-06b6d4?style=for-the-badge&logo=pwa&logoColor=fff)](https://thestashsage.vercel.app)
 
 ![React](https://img.shields.io/badge/React-18-61dafb?logo=react&logoColor=fff)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=fff)
@@ -145,7 +145,7 @@ This project is licensed under the **MIT License** — free to use, modify, and 
 
 <div align="center">
 
-**🌿 [Try Stash Sage](https://st-sh.vercel.app)**
+**🌿 [Try Stash Sage](https://thestashsage.vercel.app)**
 
 ⭐ Star this repo if you find it helpful!
 
