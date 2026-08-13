@@ -104,7 +104,7 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
     { key: 'projectedRunOut' as const, visible: stats.projectedRunOut && computed.projectedRunOut !== '\u2014', icon: IconCalendarDue, label: t('projectedRunOut', settings.language), value: computed.projectedRunOut, suffix: t('days', settings.language), color: 'violet' },
   ], [computed, stats, dp, lastConsumedStr, settings.language, settings.currency]);
 
-  const visibleStats = statItems.filter(s => s.visible);
+  const visibleStats = statItems;
 
   if (visibleStats.length === 0) return null;
 

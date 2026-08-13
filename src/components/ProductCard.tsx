@@ -327,7 +327,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
               {product.thc > 0 && <Text size="xs" c={mutedText}>{t('thc', lang)}: {product.thc}%</Text>}
               {product.rating > 0 && (
                 <Group gap={4}>
-                  <IconStar size={12} color="var(--mantine-color-amber-6)" style={{ fill: 'var(--mantine-color-amber-6)' }} />
+                  <IconStar size={12} color="var(--mantine-color-cyan-5)" style={{ fill: 'var(--mantine-color-cyan-5)' }} />
                   <Text size="xs" c={secondaryText}>{product.rating}</Text>
                 </Group>
               )}
@@ -391,7 +391,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
           <Text fw={700} size="sm" c={primaryText} truncate>{product.name}</Text>
           {product.rating > 0 && (
             <Group gap={4} align="center">
-              <IconStar size={12} color="var(--mantine-color-amber-6)" style={{ fill: 'var(--mantine-color-amber-6)' }} />
+              <IconStar size={12} color="var(--mantine-color-cyan-5)" style={{ fill: 'var(--mantine-color-cyan-5)' }} />
               <Text size="xs" c={secondaryText}>{product.rating}</Text>
             </Group>
           )}
@@ -536,7 +536,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
                   <div key={star} style={{ position: 'relative', width: 16, height: 16 }}>
                     <IconStar size={16} style={{ position: 'absolute', inset: 0, color: isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-3)' }} />
                     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', width: `${fillPercent}%` }}>
-                      <IconStar size={16} color="var(--mantine-color-amber-6)" style={{ fill: 'var(--mantine-color-amber-6)' }} />
+                      <IconStar size={16} color="var(--mantine-color-cyan-5)" style={{ fill: 'var(--mantine-color-cyan-5)' }} />
                     </div>
                   </div>
                 );
