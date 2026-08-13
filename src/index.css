@@ -455,7 +455,10 @@ textarea:focus:not(:focus-visible) {
   100% { opacity: 0; transform: scale(2.8) translateY(-120px) translateX(-5px); }
 }
 .animate-smoke-puff {
-  animation: smoke-puff 1.4s ease-out forwards;
+  animation-name: smoke-puff;
+  animation-duration: 1.4s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
   display: inline-block;
 }
 @keyframes smoke-puff-2 {
@@ -465,7 +468,9 @@ textarea:focus:not(:focus-visible) {
   100% { opacity: 0; transform: scale(2.3) translateY(-100px) translateX(25px) rotate(8deg); }
 }
 .animate-smoke-puff-2 {
-  animation: smoke-puff-2 1.4s ease-out forwards;
+  animation-name: smoke-puff-2;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
   display: inline-block;
 }
 @keyframes dollar-float {
@@ -476,7 +481,9 @@ textarea:focus:not(:focus-visible) {
   100% { opacity: 0; transform: translateY(-110px) translateX(8px) scale(0.7) rotate(-8deg); }
 }
 .animate-dollar-float {
-  animation: dollar-float 1.8s ease-out forwards;
+  animation-name: dollar-float;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
   display: inline-block;
 }
 @keyframes smoke-rise {
@@ -486,7 +493,9 @@ textarea:focus:not(:focus-visible) {
   100% { opacity: 0; transform: translateY(-130px) translateX(-10px) scale(2.4); }
 }
 .animate-smoke-rise {
-  animation: smoke-rise 1.5s ease-out forwards;
+  animation-name: smoke-rise;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
   display: inline-block;
 }
 

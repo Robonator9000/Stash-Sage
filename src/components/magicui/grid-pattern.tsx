@@ -114,7 +114,6 @@ export function InteractiveGridBackground({
           '--gy': '50%',
           backgroundImage: [
             `radial-gradient(circle at center, ${colors.map((c) => `${c}22`).join(',')}, transparent 70%)`,
-            `linear-gradient(transparent, var(--bg, #0b1120))`,
           ].join(','),
           ...style,
         } as CSSProperties
