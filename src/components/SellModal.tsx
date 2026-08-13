@@ -77,16 +77,19 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
       aria-label={`${t('sell', lang)} ${product.name}`}
       styles={{ content: { display: 'flex', flexDirection: 'column' }, body: { padding: 0 } }}
     >
-      <Box p="lg" style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
-        <Group justify="space-between" mb="md" align="flex-start" wrap="nowrap">
+      <Box p="lg" pb="sm" style={{ background: isDark ? 'linear-gradient(135deg, rgba(245,158,11,0.12), rgba(16,185,129,0.1))' : 'linear-gradient(135deg, rgba(245,158,11,0.08), rgba(16,185,129,0.06))', borderBottom: `1px solid ${isDark ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.1)'}` }}>
+        <Group justify="space-between" align="center">
           <Box>
-            <Text fw={700} size="lg">{t('sell', lang)} {product.name}</Text>
-            <Group gap="md" mt={4}>
-              <Text size="sm" c="dimmed">{t('amount', lang)}: {formatPrecision(product.amount, settings.decimalPrecision)}g</Text>
-              {product.price > 0 && <Text size="sm" c="dimmed">{t('paid', lang)}: {settings.currency}{formatPrecision(product.price, 2)}</Text>}
-            </Group>
+            <Text fw={800} size="xl" style={{ letterSpacing: -0.5 }}>{t('sell', lang)}</Text>
+            <Text size="sm" c="dimmed" mt={2}>{product.name} · {formatPrecision(product.amount, settings.decimalPrecision)}g{product.price > 0 ? ` · ${t('paid', lang)}: ${settings.currency}${formatPrecision(product.price, 2)}` : ''}</Text>
+          </Box>
+          <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 48, minHeight: 48, borderRadius: 14, background: isDark ? 'rgba(245,158,11,0.12)' : 'rgba(245,158,11,0.08)', border: `1px solid ${isDark ? 'rgba(245,158,11,0.2)' : 'rgba(245,158,11,0.15)'}` }}>
+            <IconCurrencyDollar size={24} style={{ color: isDark ? 'var(--mantine-color-yellow-4)' : 'var(--mantine-color-yellow-6)' }} />
           </Box>
         </Group>
+      </Box>
+
+      <Box p="lg" style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
 
         <Stack gap="lg">
           <Box>
@@ -202,11 +205,11 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
             </Paper>
           </Box>
           <Box>
-            <Text fw={500} size="sm" mb="xs">{t('sellNotes', lang)}</Text>
+            <Text fw={500} size="sm" mb="xs">Sale Notes</Text>
             <Textarea
               value={sellNotes}
               onChange={(e) => setSellNotes(e.currentTarget.value)}
-              placeholder={t('sellNotesPlaceholder', lang)}
+              placeholder="Record buyer info, price agreed, or any sale details..."
               minRows={2}
               maxLength={500}
               size="sm"

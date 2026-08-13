@@ -41,6 +41,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
   const quickAmounts = [0.1, 0.25, 0.5, 1, 2];
 
   const dimColor = isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-6)';
+  const headerBg = isDark ? 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(16,185,129,0.12))' : 'linear-gradient(135deg, rgba(6,182,212,0.1), rgba(16,185,129,0.08))';
 
   return (
     <Modal
@@ -56,14 +57,13 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
         body: { padding: 0 },
       }}
     >
-      <Box p="lg" style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
-        <Group justify="space-between" mb="md" align="flex-start">
-          <Stack gap={2}>
-            <Text fw={700} size="lg">{t('consume', lang)} {product.name}</Text>
-            <Text size="sm" c="dimmed">{t('amount', lang)}: {formatPrecision(product.amount, settings.decimalPrecision)}g</Text>
-          </Stack>
-        </Group>
+      {/* Gradient header band */}
+      <Box p="lg" pb="sm" style={{ background: headerBg, borderBottom: `1px solid ${isDark ? 'rgba(34,211,238,0.2)' : 'rgba(8,145,178,0.15)'}` }}>
+        <Text fw={800} size="xl" style={{ letterSpacing: -0.5 }}>{t('consume', lang)}</Text>
+        <Text size="sm" c="dimmed" mt={2}>{product.name} · {formatPrecision(product.amount, settings.decimalPrecision)}g available</Text>
+      </Box>
 
+      <Box p="lg" style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
         <Stack gap="md">
           <Box>
             <Text fw={500} size="sm" mb="xs">{t('amount', lang)} ({t('grams', lang)})</Text>
@@ -188,12 +188,14 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
         </Stack>
 
           <Box>
-            <Text fw={500} size="sm" mb="xs">Notes</Text>
+            <Text fw={600} size="sm" mb="xs">{t('consumeNotes', lang)}</Text>
             <Textarea
               value={consumeNotes}
               onChange={(e) => setConsumeNotes(e.currentTarget.value)}
-              placeholder="Add a note about this consumption..."
+              placeholder={t('consumeNotesPlaceholder', lang)}
               minRows={2}
+              maxLength={500}
+              size="sm"
             />
           </Box>
 
