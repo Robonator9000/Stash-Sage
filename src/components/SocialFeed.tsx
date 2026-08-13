@@ -9,7 +9,7 @@ import { showToast } from './Toast';
 import { SegmentedControl, Paper, Text, Group, UnstyledButton, ActionIcon, Textarea, Button, Loader, Skeleton, Stack, Box } from '@mantine/core';
 import { IconBookmark, IconX } from '@tabler/icons-react';
 import { getProfiles } from '../utils/profileCache';
-import { BlurFade, ShineBorder, BorderBeam, Particles } from './magicui';
+import { BlurFade, ShineBorder, BorderBeam } from './magicui';
 import { createPortal } from 'react-dom';
 
 const TRENDING_CACHE_TTL = 60 * 1000;
@@ -509,11 +509,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
 
   return (
     <BlurFade>
-      <Stack gap="md" style={{ position: 'relative', minHeight: '50vh' }}>
-        <div aria-hidden="true" style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-          <Particles quantity={14} staticity={25} size={0.3} colors={isDark ? ['#06b6d4', '#10b981'] : ['#0891b2', '#059669']} className="opacity-30" />
-        </div>
-        <div style={{ position: 'relative', zIndex: 1 }}>
+      <Stack gap="md">
 
       {quotePostId && quotePost && (
         <Paper p="md" radius="md" withBorder style={{ background: isDark ? 'var(--mantine-color-dark-6)' : 'rgba(255,255,255,0.7)', backdropFilter: 'blur(4px)' }}>
@@ -695,7 +691,6 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
           onPostClick={handlePostClick}
         />
         , document.body)}
-        </div>
       </Stack>
   </BlurFade>
 );
