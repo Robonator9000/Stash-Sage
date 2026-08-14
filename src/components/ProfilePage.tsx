@@ -169,7 +169,8 @@ export function ProfilePage({ userId: propUserId, onBack, onOpenChat }: ProfileP
     if (onBack) { onBack(); } else { navigate('/?tab=community'); }
   }
 
-  const bannerBg = profileData.banner_url ? undefined : `linear-gradient(to right, ${primaryColor} 40%, ${secondaryColor} 40%, ${primaryColor} 20%)`;
+  const effectiveBannerUrl = profileData.banner_url || (userId === currentUserId ? settings.profile?.banner_url : undefined);
+  const bannerBg = effectiveBannerUrl ? undefined : `linear-gradient(to right, ${primaryColor} 40%, ${secondaryColor} 40%, ${primaryColor} 20%)`;
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
