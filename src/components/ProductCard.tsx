@@ -160,9 +160,29 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
     </span>
   );
 
-  const vibrantStrainColor = isDark
-    ? { bg: 'rgba(6,182,212,0.3)', text: '#67e8f9', border: 'rgba(34,211,238,0.6)' }
-    : { bg: 'rgba(165,243,252,0.6)', text: '#0e7490', border: 'rgba(6,182,212,0.6)' };
+  const vibrantStrainColor = useMemo(() => {
+    if (strainColors.customHex) {
+      return { bg: strainColors.customHex + '30', text: strainColors.customHex, border: strainColors.customHex + '80' };
+    }
+    switch (product.type.toLowerCase()) {
+      case 'indica':
+        return isDark
+          ? { bg: 'rgba(168,85,247,0.3)', text: '#d8b4fe', border: 'rgba(192,132,252,0.6)' }
+          : { bg: 'rgba(233,213,255,0.7)', text: '#7e22ce', border: 'rgba(168,85,247,0.6)' };
+      case 'sativa':
+        return isDark
+          ? { bg: 'rgba(245,158,11,0.3)', text: '#fde68a', border: 'rgba(251,191,36,0.6)' }
+          : { bg: 'rgba(254,243,199,0.7)', text: '#b45309', border: 'rgba(245,158,11,0.6)' };
+      case 'hybrid':
+        return isDark
+          ? { bg: 'rgba(16,185,129,0.3)', text: '#6ee7b7', border: 'rgba(52,211,153,0.6)' }
+          : { bg: 'rgba(209,250,229,0.7)', text: '#047857', border: 'rgba(16,185,129,0.6)' };
+      default:
+        return isDark
+          ? { bg: 'rgba(148,163,184,0.3)', text: '#cbd5e1', border: 'rgba(148,163,184,0.6)' }
+          : { bg: 'rgba(241,245,249,0.7)', text: '#475569', border: 'rgba(148,163,184,0.6)' };
+    }
+  }, [product.type, isDark, strainColors.customHex]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
