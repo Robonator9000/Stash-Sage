@@ -3,7 +3,7 @@ import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { roundToHundredth, formatPrecision } from '../utils/helpers';
 import { Product, Session } from '../types';
-import { SimpleGrid, Text, Group } from '@mantine/core';
+import { SimpleGrid, Text, Group, Stack, Box, Paper, UnstyledButton } from '@mantine/core';
 import {
   IconPackage,
   IconScale,
@@ -14,6 +14,7 @@ import {
   IconClock,
   IconTrendingDown,
   IconCalendarDue,
+  IconChevronDown,
 } from '@tabler/icons-react';
 import { NeonGradientCard, NumberTicker } from './magicui';
 
@@ -37,9 +38,7 @@ interface StatsCardProps {
 }
 
 export const StatsCard = memo(function StatsCard({ products, sessions, isDark = true }: StatsCardProps) {
-  const { settings, toggleStatVisibility } = useSettings();
-  const stats = settings.statsVisibility;
-  const [hiddenHint, setHiddenHint] = useState<string | null>(null);
+  const { settings } = useSettings();
 
   const computed = useMemo(() => {
     const totalProducts = products.length;
@@ -112,31 +111,40 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
   }, [products, settings.language]);
 
   const dp = settings.decimalPrecision;
-  const statItems = useMemo(() => [
-    { key: 'totalProducts' as const, visible: stats.totalProducts, icon: IconPackage, label: t('totalProducts', settings.language), value: computed.totalProducts.toString(), suffix: '', color: 'blue' },
-    { key: 'totalAmount' as const, visible: stats.totalAmount, icon: IconScale, label: t('totalAmount', settings.language), value: formatPrecision(computed.totalAmount, dp), suffix: 'g', color: 'cyan' },
-    { key: 'totalSessions' as const, visible: stats.totalSessions, icon: IconFlame, label: t('totalSessions', settings.language), value: computed.totalSessions.toString(), suffix: '', color: 'orange' },
-    { key: 'averageRating' as const, visible: stats.averageRating, icon: IconStar, label: t('averageRating', settings.language), value: formatPrecision(computed.averageRating, dp), suffix: '/5', color: 'yellow' },
-    { key: 'averageTHC' as const, visible: stats.averageTHC, icon: IconPercentage, label: t('averageTHC', settings.language), value: formatPrecision(computed.averageTHC, dp), suffix: '%', color: 'grape' },
-    { key: 'totalValue' as const, visible: stats.totalValue, icon: IconCurrencyDollar, label: t('totalValue', settings.language), value: settings.currency + formatPrecision(computed.totalValue, dp), suffix: '', color: 'teal' },
-    { key: 'pricePerGram' as const, visible: stats.pricePerGram && computed.totalAmount > 0, icon: IconCurrencyDollar, label: t('pricePerGram', settings.language), value: settings.currency + formatPrecision(computed.pricePerGram, dp), suffix: '/g', color: 'green' },
-    { key: 'lastConsumed' as const, visible: stats.lastConsumed, icon: IconClock, label: t('lastConsumed', settings.language), value: lastConsumedStr, suffix: '', color: 'gray' },
-    { key: 'consumptionRate' as const, visible: stats.consumptionRate && computed.consumptionRate > 0, icon: IconTrendingDown, label: t('consumptionRate', settings.language), value: formatPrecision(computed.consumptionRate, dp), suffix: t('perDay', settings.language), color: 'red' },
-    { key: 'projectedRunOut' as const, visible: stats.projectedRunOut && computed.projectedRunOut !== '\u2014', icon: IconCalendarDue, label: t('projectedRunOut', settings.language), value: computed.projectedRunOut, suffix: t('days', settings.language), color: 'violet' },
-    { key: 'cleanStreak' as const, visible: true, icon: IconCalendarDue, label: 'Clean Streak', value: computed.cleanStreakDays.toString(), suffix: computed.cleanStreakDays === 1 ? 'day' : 'days', color: 'green' },
-    { key: 'weeklyCost' as const, visible: computed.weeklyCost > 0, icon: IconCurrencyDollar, label: 'Est. Weekly Cost', value: settings.currency + formatPrecision(computed.weeklyCost, dp), suffix: '', color: 'orange' },
-  ], [computed, stats, dp, lastConsumedStr, settings.language, settings.currency]);
 
-  const visibleStats = statItems;
+  interface StatItem {
+    key: string;
+    icon: typeof IconPackage;
+    label: string;
+    value: string;
+    suffix: string;
+    color: string;
+  }
 
-  if (visibleStats.length === 0) return null;
+  const primaryStats: StatItem[] = useMemo(() => [
+    { key: 'cleanStreak', icon: IconCalendarDue, label: 'Clean Streak', value: computed.cleanStreakDays.toString(), suffix: computed.cleanStreakDays === 1 ? 'day' : 'days', color: 'green' },
+    { key: 'consumptionRate', icon: IconTrendingDown, label: t('consumptionRate', settings.language), value: formatPrecision(computed.consumptionRate, dp), suffix: t('perDay', settings.language), color: 'red' },
+    { key: 'weeklyCost', icon: IconCurrencyDollar, label: 'Est. Weekly Cost', value: settings.currency + formatPrecision(computed.weeklyCost, dp), suffix: '', color: 'orange' },
+  ].filter(s => s.value !== '0' && s.value !== settings.currency + '0' && !(s.key === 'cleanStreak' && s.value === '0')), [computed, dp, settings.language, settings.currency]);
 
-  const handleContextMenu = (statKey: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    toggleStatVisibility(statKey as keyof typeof stats);
-    setHiddenHint(statKey);
-    setTimeout(() => setHiddenHint(null), 2000);
-  };
+  const secondaryStats: StatItem[] = useMemo(() => [
+    { key: 'totalAmount', icon: IconScale, label: t('totalAmount', settings.language), value: formatPrecision(computed.totalAmount, dp), suffix: 'g', color: 'cyan' },
+    { key: 'totalSessions', icon: IconFlame, label: t('totalSessions', settings.language), value: computed.totalSessions.toString(), suffix: '', color: 'orange' },
+    { key: 'lastConsumed', icon: IconClock, label: t('lastConsumed', settings.language), value: lastConsumedStr, suffix: '', color: 'gray' },
+    { key: 'projectedRunOut', icon: IconCalendarDue, label: t('projectedRunOut', settings.language), value: computed.projectedRunOut, suffix: t('days', settings.language), color: 'violet' },
+  ].filter(s => s.value !== '\u2014'), [computed, dp, lastConsumedStr, settings.language]);
+
+  const tertiaryStats: StatItem[] = useMemo(() => [
+    { key: 'totalProducts', icon: IconPackage, label: t('totalProducts', settings.language), value: computed.totalProducts.toString(), suffix: '', color: 'blue' },
+    { key: 'averageRating', icon: IconStar, label: t('averageRating', settings.language), value: formatPrecision(computed.averageRating, dp), suffix: '/5', color: 'yellow' },
+    { key: 'averageTHC', icon: IconPercentage, label: t('averageTHC', settings.language), value: formatPrecision(computed.averageTHC, dp), suffix: '%', color: 'grape' },
+    { key: 'totalValue', icon: IconCurrencyDollar, label: t('totalValue', settings.language), value: settings.currency + formatPrecision(computed.totalValue, dp), suffix: '', color: 'teal' },
+    { key: 'pricePerGram', icon: IconCurrencyDollar, label: t('pricePerGram', settings.language), value: computed.totalAmount > 0 ? settings.currency + formatPrecision(computed.pricePerGram, dp) : '', suffix: '/g', color: 'green' },
+  ].filter(s => s.value !== '' && s.value !== '0' && s.value !== settings.currency + '0' && s.value !== '0.00/5'), [computed, dp, settings.language, settings.currency]);
+
+  const [showMore, setShowMore] = useState(false);
+
+  if (primaryStats.length === 0 && secondaryStats.length === 0) return null;
 
   const renderValue = (stat: { value: string; suffix: string }) => {
     const currency = settings.currency;
@@ -154,57 +162,84 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
     return <>{stat.value}{stat.suffix}</>;
   };
 
+  const primaryColors: Record<string, string[]> = {
+    green: ['#10b981', '#06b6d4'],
+    red: ['#ef4444', '#f59e0b'],
+    orange: ['#f59e0b', '#06b6d4'],
+  };
+
   return (
-    <div style={{ position: 'relative' }}>
-      {hiddenHint && (
-        <Text size="xs" style={{
-          position: 'absolute', top: -32, left: '50%', transform: 'translateX(-50%)',
-          zIndex: 10, padding: '4px 12px', borderRadius: 8,
-          background: isDark ? '#1e293b' : '#fff',
-          color: isDark ? '#22d3ee' : '#0891b2',
-          border: `1px solid ${isDark ? '#334155' : '#e5e7eb'}`,
-          whiteSpace: 'nowrap',
-        }}>
-          {t('statHiddenHint', settings.language)}
-        </Text>
+    <Stack gap="sm">
+      {/* Primary — large health stats */}
+      {primaryStats.length > 0 && (
+        <SimpleGrid cols={{ base: 1, xs: 3 }} spacing="sm">
+          {primaryStats.map((stat) => {
+            const Icon = stat.icon;
+            const isCleanStreak = stat.key === 'cleanStreak';
+            return (
+              <NeonGradientCard key={stat.key} borderColors={primaryColors[stat.color] || NEON_BORDER_COLORS[stat.color]} borderRadius={16} className="h-full">
+                <Box p="md" style={{ minHeight: 80, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <Group gap={6} mb={6}>
+                    <Icon size={20} stroke={1.5} style={{ color: `var(--mantine-color-${stat.color}-4)` }} />
+                    <Text size="xs" fw={700} tt="uppercase" style={{ color: isDark ? '#fff' : '#000', letterSpacing: 0.5 }}>{stat.label}</Text>
+                  </Group>
+                  <Text fw={800} size="28px" style={{ lineHeight: 1.1, color: isCleanStreak && computed.cleanStreakDays > 0 ? 'var(--mantine-color-green-5)' : 'inherit' }}>
+                    {renderValue(stat)}
+                  </Text>
+                </Box>
+              </NeonGradientCard>
+            );
+          })}
+        </SimpleGrid>
       )}
-      <SimpleGrid cols={{ base: 2, xs: 3, sm: 4, md: 5 }} spacing="sm">
-        {visibleStats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <div
-              key={stat.key}
-              className="h-full"
-              onContextMenu={(e) => handleContextMenu(stat.key, e)}
-              title={t('rightClickToHide', settings.language)}
-              style={{
-                cursor: 'context-menu',
-                transition: 'transform 0.15s, box-shadow 0.15s',
-              }}
-              onMouseEnter={(e) => {
-                const el = e.currentTarget as HTMLElement;
-                el.style.transform = 'scale(1.02)';
-                el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-              }}
-              onMouseLeave={(e) => {
-                const el = e.currentTarget as HTMLElement;
-                el.style.transform = 'scale(1)';
-                el.style.boxShadow = 'none';
-              }}
-            >
-              <NeonGradientCard borderColors={NEON_BORDER_COLORS[stat.color]} borderRadius={12} className="h-full">
-                <Group justify="space-between" mb={4}>
-                  <Text size="xs" fw={600} style={{ color: isDark ? '#fff' : '#000' }}>{stat.label}</Text>
-                  <Icon size={18} stroke={1.5} style={{ color: `var(--mantine-color-${stat.color}-4)` }} />
+
+      {/* Secondary — medium stats */}
+      {secondaryStats.length > 0 && (
+        <SimpleGrid cols={{ base: 2, xs: 4 }} spacing="sm">
+          {secondaryStats.map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <Paper key={stat.key} radius="md" withBorder p="sm" style={{ background: isDark ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-white)' }}>
+                <Group gap={4} mb={4}>
+                  <Icon size={14} stroke={1.5} style={{ color: `var(--mantine-color-${stat.color}-4)` }} />
+                  <Text size="xs" fw={600} style={{ color: isDark ? '#cbd5e1' : '#475569' }}>{stat.label}</Text>
                 </Group>
-                <Text fw={700} size="lg" style={{ lineHeight: 1.2, color: 'var(--mantine-color-slate-1)' }}>
+                <Text fw={700} size="md" style={{ lineHeight: 1.2, color: isDark ? '#fff' : '#000' }}>
                   {renderValue(stat)}
                 </Text>
-              </NeonGradientCard>
-            </div>
-          );
-        })}
-      </SimpleGrid>
-    </div>
+              </Paper>
+            );
+          })}
+        </SimpleGrid>
+      )}
+
+      {/* Tertiary — collapsible less-important stats */}
+      {tertiaryStats.length > 0 && (
+        <>
+          <UnstyledButton onClick={() => setShowMore(!showMore)} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: isDark ? '#cbd5e1' : '#475569', padding: '2px 4px' }}>
+            <IconChevronDown size={14} style={{ transform: showMore ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+            {showMore ? 'Show Less' : 'Show More Stats'}
+          </UnstyledButton>
+          {showMore && (
+            <SimpleGrid cols={{ base: 3, xs: 5 }} spacing="xs">
+              {tertiaryStats.map((stat) => {
+                const Icon = stat.icon;
+                return (
+                  <Paper key={stat.key} radius="sm" withBorder p="xs" style={{ background: isDark ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-0)' }}>
+                    <Group gap={4} mb={2}>
+                      <Icon size={12} stroke={1.5} style={{ color: `var(--mantine-color-${stat.color}-4)`, opacity: 0.7 }} />
+                      <Text size="10px" fw={600} style={{ color: isDark ? '#94a3b8' : '#64748b' }}>{stat.label}</Text>
+                    </Group>
+                    <Text fw={600} size="sm" style={{ color: isDark ? '#e2e8f0' : '#1e293b' }}>
+                      {renderValue(stat)}
+                    </Text>
+                  </Paper>
+                );
+              })}
+            </SimpleGrid>
+          )}
+        </>
+      )}
+    </Stack>
   );
 });
