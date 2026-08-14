@@ -508,7 +508,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg)' }} id="main-content">
+    <div className="min-h-screen flex flex-col" id="main-content">
       <a href="#main-content" className="skip-link">Skip to content</a>
       <MagicBackground isDark={isDark} variant="full" />
 
