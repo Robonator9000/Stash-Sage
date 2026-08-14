@@ -3,7 +3,7 @@ import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { roundToHundredth, formatPrecision } from '../utils/helpers';
 import { Product, Session } from '../types';
-import { SimpleGrid, Text, Group, Box } from '@mantine/core';
+import { SimpleGrid, Text, Group, Paper } from '@mantine/core';
 import {
   IconPackage,
   IconScale,
@@ -15,20 +15,7 @@ import {
   IconTrendingDown,
   IconCalendarDue,
 } from '@tabler/icons-react';
-import { NeonGradientCard, NumberTicker } from './magicui';
-
-const NEON_BORDER_COLORS: Record<string, string[]> = {
-  blue: ['#06b6d4', '#13eeef'],
-  cyan: ['#06b6d4', '#13eeef'],
-  orange: ['#f59e0b', '#06b6d4'],
-  yellow: ['#f59e0b', '#13eeef'],
-  grape: ['#10b981', '#06b6d4'],
-  teal: ['#10b981', '#13eeef'],
-  green: ['#10b981', '#06b6d4'],
-  gray: ['#06b6d4', '#10b981'],
-  red: ['#f59e0b', '#06b6d4'],
-  violet: ['#10b981', '#06b6d4'],
-};
+import { NumberTicker } from './magicui';
 
 interface StatsCardProps {
   products: Product[];
@@ -168,18 +155,27 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
       {allStats.map((stat) => {
         const Icon = stat.icon;
         const isCleanStreak = stat.key === 'cleanStreak';
+        const accentColor = isCleanStreak && computed.cleanStreakDays > 0
+          ? 'var(--mantine-color-emerald-5)'
+          : 'var(--mantine-color-cyan-5)';
         return (
-          <NeonGradientCard key={stat.key} borderColors={NEON_BORDER_COLORS[stat.color] || NEON_BORDER_COLORS.cyan} borderRadius={12} className="h-full">
-            <Box p="sm" style={{ minHeight: 72, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <Group gap={4} mb={4}>
-                <Icon size={16} stroke={1.5} style={{ color: `var(--mantine-color-${stat.color}-4)` }} />
-                <Text size="xs" fw={600} style={{ color: isDark ? '#fff' : '#000' }}>{stat.label}</Text>
-              </Group>
-              <Text fw={700} size="lg" style={{ lineHeight: 1.2, color: isCleanStreak && computed.cleanStreakDays > 0 ? 'var(--mantine-color-green-5)' : isDark ? 'var(--mantine-color-slate-1)' : 'var(--mantine-color-slate-9)' }}>
-                {renderValue(stat)}
-              </Text>
-            </Box>
-          </NeonGradientCard>
+          <Paper key={stat.key} radius="md" withBorder p="sm" className="h-full" style={{
+            background: isDark ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-white)',
+            borderColor: isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-3)',
+            minHeight: 72,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            transition: 'border-color 0.15s',
+          }}>
+            <Group gap={4} mb={4}>
+              <Icon size={16} stroke={1.5} style={{ color: accentColor }} />
+              <Text size="xs" fw={600} style={{ color: isDark ? '#fff' : '#000' }}>{stat.label}</Text>
+            </Group>
+            <Text fw={700} size="lg" style={{ lineHeight: 1.2, color: isCleanStreak && computed.cleanStreakDays > 0 ? 'var(--mantine-color-emerald-5)' : isDark ? 'var(--mantine-color-slate-1)' : 'var(--mantine-color-slate-9)' }}>
+              {renderValue(stat)}
+            </Text>
+          </Paper>
         );
       })}
     </SimpleGrid>
