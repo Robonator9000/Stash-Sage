@@ -140,7 +140,7 @@ Contributions are welcome! Whether it's a bug fix, feature idea, or translation 
 ## 📊 Activity
 
 <!-- Contribution grid inspired by GitHub & Petals -->
-<img src="https://ghchart.rshah.org/06b6d4/Robonator9000/Stash-Sage" alt="Contribution graph" width="100%" />
+<img src="https://ghchart.rshah.org/06b6d4/Robonator9000" alt="Contribution graph" width="100%" />
 
 <sub>🎨 Each square represents a day of development. Cyan = active days.</sub>
 
