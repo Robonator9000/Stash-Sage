@@ -38,7 +38,7 @@ export function MagicBackground({ isDark, variant = 'full' }: MagicBackgroundPro
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0">
       <InteractiveGridBackground colors={baseColors} baseOpacity={isDark ? 0.14 : 0.1} />
       {!paused && variant === 'full' && (
-        <Particles quantity={isDark ? 55 : 35} colors={baseColors} className="opacity-70" />
+        <Particles quantity={isDark ? 80 : 50} colors={baseColors} className="opacity-90" />
       )}
 
     </div>

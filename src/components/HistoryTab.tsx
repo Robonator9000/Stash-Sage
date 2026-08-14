@@ -216,12 +216,19 @@ export const HistoryTab = memo(function HistoryTab({
                 <Divider style={{ flex: 1 }} opacity={0.3} />
               </Group>
 
-              <Stack gap="xs" pl="sm" style={{ borderLeft: `2px solid ${isDark ? 'rgba(6,182,212,0.2)' : 'rgba(6,182,212,0.12)'}` }}>
+              <div
+                className="grid gap-3"
+                style={{
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                  gridAutoFlow: 'dense',
+                }}
+              >
                 {entries.map((entry) => {
                   const meta = TYPE_META[entry.type] || TYPE_META.edit;
                   const TypeIcon = meta.icon;
                   const isSelected = selectedIds.has(entry.id);
                   const isExpanded = expandedNotes.has(entry.id);
+                  const isWide = Boolean(entry.notes) || entry.type === 'session';
 
                   return (
                     <Paper
@@ -229,13 +236,18 @@ export const HistoryTab = memo(function HistoryTab({
                       radius="md"
                       withBorder
                       p="sm"
+                      className={isWide ? 'md:col-span-2' : undefined}
                       style={{
+                        minWidth: 0,
                         background: isSelected
                           ? (isDark ? 'rgba(6,182,212,0.12)' : 'rgba(6,182,212,0.06)')
                           : (isDark ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-white)'),
                         borderColor: isSelected ? 'rgba(6,182,212,0.4)' : 'var(--mantine-color-dark-5)',
                         cursor: 'pointer',
                         transition: 'border-color 0.15s, background 0.15s',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 8,
                       }}
                       onClick={() => toggleRow(entry.id)}
                     >
@@ -287,24 +299,23 @@ export const HistoryTab = memo(function HistoryTab({
                               </Text>
                             )}
                           </Group>
-
-                          {entry.notes && (
-                            <Text
-                              size="xs"
-                              mt={4}
-                              style={{ cursor: 'pointer', color: mutedColor }}
-                              onClick={(e) => { e.stopPropagation(); onToggleNote(entry.id); }}
-                              lineClamp={isExpanded ? undefined : 1}
-                            >
-                              {entry.notes}
-                            </Text>
-                          )}
                         </Box>
                       </Group>
+
+                      {entry.notes && (
+                        <Text
+                          size="xs"
+                          style={{ cursor: 'pointer', color: mutedColor }}
+                          onClick={(e) => { e.stopPropagation(); onToggleNote(entry.id); }}
+                          lineClamp={isExpanded ? undefined : 1}
+                        >
+                          {entry.notes}
+                        </Text>
+                      )}
                     </Paper>
                   );
                 })}
-              </Stack>
+              </div>
             </Box>
           ))}
         </Stack>

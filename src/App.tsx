@@ -13,6 +13,7 @@ import { t } from './utils/translations';
 import { playSmokeSound, playSellSound } from './utils/sounds';
 import { ToastContainer, showToast } from './components/Toast';
 import { ProductGrid } from './components/ProductGrid';
+import { QuickConsumeSelect } from './components/QuickConsumeSelect';
 import { StatsCard } from './components/StatsCard';
 import { CoachMarks } from './components/CoachMarks';
 import { PinModal } from './components/PinModal';
@@ -329,6 +330,28 @@ export default function App() {
       console.error('quick consume failed', err);
     }
   }, [consumeProduct, checkLowStock, addActivityEntry, settings.sessionDefaults, settings.decimalPrecision, settings.language]);
+
+  const handleQuickLog = useCallback((product: Product, amount: number) => {
+    if (!product || amount <= 0 || product.amount <= 0) return;
+    setShowSmoke(true);
+    playSmokeSound();
+    setTimeout(() => setShowSmoke(false), 2200);
+    try {
+      checkLowStock(product, amount);
+      consumeProduct(product.id, amount);
+      addActivityEntry({
+        id: generateId(), type: 'consume', productId: product.id, productName: product.name, amount, timestamp: new Date(),
+      });
+      const lng = settings.language;
+      showToast({
+        id: 'quick-log-' + product.id + '-' + Date.now(),
+        title: `${formatPrecision(amount, settings.decimalPrecision)}g ${t('consume', lng)}`,
+        body: product.name,
+      });
+    } catch (err) {
+      console.error('quick log failed', err);
+    }
+  }, [consumeProduct, checkLowStock, addActivityEntry, settings.language, settings.decimalPrecision]);
 
   const handleFinishSession = useCallback((_productId: string, _amountUsed: number, session: Session) => {
     setSessionProduct(null);
@@ -685,6 +708,15 @@ export default function App() {
                   </Button>
                 </Group>
               )}
+
+              <QuickConsumeSelect
+                products={products}
+                isDark={isDark}
+                lang={lang}
+                precision={settings.decimalPrecision}
+                defaultAmount={settings.sessionDefaults?.defaultAmount || 0.5}
+                onQuickConsume={handleQuickLog}
+              />
 
               <Group gap="xs">
                 <Text size="xs" tt="uppercase" fw={700} c={isDark ? 'white' : 'black'}>Sort</Text>

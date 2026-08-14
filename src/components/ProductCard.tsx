@@ -431,7 +431,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
             {renderIconButton((e) => buttonAction(e, () => onSell(product)), 'Sell', 'amber', <IconCurrencyDollar size={14} />)}
             {renderIconButton(
               (e) => buttonAction(e, () => onToggleFavorite(product.id)),
-              product.favorite ? t('filterFavorites', lang) : 'Add to favourites',
+              product.favorite ? t('filterFavorites', lang) : t('addToFavorites', lang),
               'plain',
               <IconHeart size={14} style={product.favorite ? { fill: 'currentColor' } : undefined} />
             )}
@@ -615,7 +615,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
           </UnstyledButton>
           <UnstyledButton
             onClick={(e) => buttonAction(e, () => onToggleFavorite(product.id))}
-            aria-label={product.favorite ? t('filterFavorites', lang) : 'Add to favourites'}
+            aria-label={product.favorite ? t('filterFavorites', lang) : t('addToFavorites', lang)}
             style={{ padding: 8, borderRadius: 12, transition: 'all 0.2s', color: product.favorite ? 'var(--mantine-color-amber-6)' : (isDark ? 'var(--mantine-color-dark-2)' : 'var(--mantine-color-gray-4)'), background: isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-1)' }}
           >
             <IconHeart size={20} style={product.favorite ? { fill: 'currentColor' } : undefined} />

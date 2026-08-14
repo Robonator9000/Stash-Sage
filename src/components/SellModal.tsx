@@ -52,10 +52,16 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
 
   const quickSellTotal = (parseFloat(quickSellGrams) || 0) * (parseInt(quickSellPortions) || 0);
   const canQuickSell = (parseFloat(quickSellGrams) || 0) > 0 && (parseInt(quickSellPortions) || 0) > 0 && quickSellTotal <= product.amount;
+  const canSellPortions = portionGrams > 0 && numberOfPortions > 0;
+  const canSell = canSellPortions || canQuickSell;
 
   const baseGrams = useMemo(() => product.amount, [product.amount]);
 
   const handleSell = () => {
+    if (canSellPortions) {
+      onSell(roundToHundredth(numberOfPortions * portionGrams), sellNotes.trim() || undefined);
+      return;
+    }
     const grams = parseFloat(quickSellGrams);
     const portions = parseInt(quickSellPortions) || 0;
     const total = grams * portions;
@@ -221,7 +227,7 @@ export function SellModal({ product, onSell, onClose, isDark = true }: SellModal
 
         <Group gap="sm">
           <Button flex={1} size="md" variant="default" onClick={handleClose} styles={{ root: { color: dimColor } }}>{t('cancel', lang)}</Button>
-          <Button flex={1} size="md" color="orange" leftSection={<IconCurrencyDollar size={16} />} disabled={!canQuickSell} onClick={handleSell} aria-label={t('sell', lang)}>
+          <Button flex={1} size="md" color="orange" leftSection={<IconCurrencyDollar size={16} />} disabled={!canSell} onClick={handleSell} aria-label={t('sell', lang)}>
             {t('sell', lang)}
           </Button>
         </Group>

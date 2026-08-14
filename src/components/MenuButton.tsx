@@ -22,7 +22,7 @@ export function MenuButton() {
       onClick={() => navigate('/menu')}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="fixed bottom-6 right-4 z-50 group hidden md:block lg:bottom-8 lg:right-6"
+      className="fixed bottom-6 right-4 z-50 group hidden md:block lg:bottom-24 lg:right-6"
       title="New Products Menu"
     >
       {/* Outer glow ring */}

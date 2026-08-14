@@ -65,9 +65,11 @@ export function NeonGradientCard({
           opacity: hovered ? glowIntensity : 0,
         }}
       />
-      <div className="relative h-full w-full overflow-hidden rounded-[inherit] bg-surface/60 p-px backdrop-blur-sm">
+      <div className="relative h-full w-full overflow-hidden rounded-[inherit] p-px backdrop-blur-sm"
+        style={{ background: 'var(--surface-alt)' }}
+      >
         <div className="absolute inset-0 rounded-[inherit] p-px" style={{ background: `linear-gradient(${borderColors.join(', ')})` }} />
-        <div className="relative h-full w-full rounded-[calc(var(--border-radius)-1px)] bg-[#111827] p-4">
+        <div className="relative h-full w-full rounded-[calc(var(--border-radius)-1px)] p-4" style={{ background: 'var(--surface)' }}>
           {children}
         </div>
       </div>
