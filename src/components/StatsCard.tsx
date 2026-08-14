@@ -1,9 +1,9 @@
-import { useState, useMemo, memo } from 'react';
+import { useMemo, memo } from 'react';
 import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { roundToHundredth, formatPrecision } from '../utils/helpers';
 import { Product, Session } from '../types';
-import { SimpleGrid, Text, Group, Stack, Box, Paper, UnstyledButton } from '@mantine/core';
+import { SimpleGrid, Text, Group, Box } from '@mantine/core';
 import {
   IconPackage,
   IconScale,
@@ -14,7 +14,6 @@ import {
   IconClock,
   IconTrendingDown,
   IconCalendarDue,
-  IconChevronDown,
 } from '@tabler/icons-react';
 import { NeonGradientCard, NumberTicker } from './magicui';
 
@@ -142,8 +141,6 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
     { key: 'pricePerGram', icon: IconCurrencyDollar, label: t('pricePerGram', settings.language), value: computed.totalAmount > 0 ? settings.currency + formatPrecision(computed.pricePerGram, dp) : '', suffix: '/g', color: 'green' },
   ].filter(s => s.value !== '' && s.value !== '0' && s.value !== settings.currency + '0' && s.value !== '0.00/5'), [computed, dp, settings.language, settings.currency]);
 
-  const [showMore, setShowMore] = useState(false);
-
   if (primaryStats.length === 0 && secondaryStats.length === 0) return null;
 
   const renderValue = (stat: { value: string; suffix: string }) => {
@@ -162,84 +159,29 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
     return <>{stat.value}{stat.suffix}</>;
   };
 
-  const primaryColors: Record<string, string[]> = {
-    green: ['#10b981', '#06b6d4'],
-    red: ['#ef4444', '#f59e0b'],
-    orange: ['#f59e0b', '#06b6d4'],
-  };
+  const allStats = [...primaryStats, ...secondaryStats, ...tertiaryStats];
+
+  if (allStats.length === 0) return null;
 
   return (
-    <Stack gap="sm">
-      {/* Primary — large health stats */}
-      {primaryStats.length > 0 && (
-        <SimpleGrid cols={{ base: 1, xs: 3 }} spacing="sm">
-          {primaryStats.map((stat) => {
-            const Icon = stat.icon;
-            const isCleanStreak = stat.key === 'cleanStreak';
-            return (
-              <NeonGradientCard key={stat.key} borderColors={primaryColors[stat.color] || NEON_BORDER_COLORS[stat.color]} borderRadius={16} className="h-full">
-                <Box p="md" style={{ minHeight: 80, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <Group gap={6} mb={6}>
-                    <Icon size={20} stroke={1.5} style={{ color: `var(--mantine-color-${stat.color}-4)` }} />
-                    <Text size="xs" fw={700} tt="uppercase" style={{ color: isDark ? '#fff' : '#000', letterSpacing: 0.5 }}>{stat.label}</Text>
-                  </Group>
-                  <Text fw={800} size="28px" style={{ lineHeight: 1.1, color: isCleanStreak && computed.cleanStreakDays > 0 ? 'var(--mantine-color-green-5)' : 'inherit' }}>
-                    {renderValue(stat)}
-                  </Text>
-                </Box>
-              </NeonGradientCard>
-            );
-          })}
-        </SimpleGrid>
-      )}
-
-      {/* Secondary — medium stats */}
-      {secondaryStats.length > 0 && (
-        <SimpleGrid cols={{ base: 2, xs: 4 }} spacing="sm">
-          {secondaryStats.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <Paper key={stat.key} radius="md" withBorder p="sm" style={{ background: isDark ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-white)' }}>
-                <Group gap={4} mb={4}>
-                  <Icon size={14} stroke={1.5} style={{ color: `var(--mantine-color-${stat.color}-4)` }} />
-                  <Text size="xs" fw={600} style={{ color: isDark ? '#cbd5e1' : '#475569' }}>{stat.label}</Text>
-                </Group>
-                <Text fw={700} size="md" style={{ lineHeight: 1.2, color: isDark ? '#fff' : '#000' }}>
-                  {renderValue(stat)}
-                </Text>
-              </Paper>
-            );
-          })}
-        </SimpleGrid>
-      )}
-
-      {/* Tertiary — collapsible less-important stats */}
-      {tertiaryStats.length > 0 && (
-        <>
-          <UnstyledButton onClick={() => setShowMore(!showMore)} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: isDark ? '#cbd5e1' : '#475569', padding: '2px 4px' }}>
-            <IconChevronDown size={14} style={{ transform: showMore ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
-            {showMore ? 'Show Less' : 'Show More Stats'}
-          </UnstyledButton>
-          {showMore && (
-            <SimpleGrid cols={{ base: 3, xs: 5 }} spacing="xs">
-              {tertiaryStats.map((stat) => {
-                const Icon = stat.icon;
-                return (
-                  <Paper key={stat.key} radius="sm" withBorder p="xs" style={{ background: isDark ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-0)' }}>
-                    <Group gap={4} mb={2}>
-                      <Icon size={12} stroke={1.5} style={{ color: `var(--mantine-color-${stat.color}-4)`, opacity: 0.7 }} />
-                      <Text size="10px" fw={600} style={{ color: isDark ? '#94a3b8' : '#64748b' }}>{stat.label}</Text>
-                    </Group>
-                    <Text fw={600} size="sm" style={{ color: isDark ? '#e2e8f0' : '#1e293b' }}>
-                      {renderValue(stat)}
-                    </Text>
-                  </Paper>
-                );
-              })}
-            </SimpleGrid>
-          )}
-        </>
-      )}
-    </Stack>
+    <SimpleGrid cols={{ base: 2, xs: 3, sm: 4, md: 5, lg: 6 }} spacing="sm" style={{ justifyItems: 'stretch' }}>
+      {allStats.map((stat) => {
+        const Icon = stat.icon;
+        const isCleanStreak = stat.key === 'cleanStreak';
+        return (
+          <NeonGradientCard key={stat.key} borderColors={NEON_BORDER_COLORS[stat.color] || NEON_BORDER_COLORS.cyan} borderRadius={12} className="h-full">
+            <Box p="sm" style={{ minHeight: 72, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <Group gap={4} mb={4}>
+                <Icon size={16} stroke={1.5} style={{ color: `var(--mantine-color-${stat.color}-4)` }} />
+                <Text size="xs" fw={600} style={{ color: isDark ? '#fff' : '#000' }}>{stat.label}</Text>
+              </Group>
+              <Text fw={700} size="lg" style={{ lineHeight: 1.2, color: isCleanStreak && computed.cleanStreakDays > 0 ? 'var(--mantine-color-green-5)' : isDark ? 'var(--mantine-color-slate-1)' : 'var(--mantine-color-slate-9)' }}>
+                {renderValue(stat)}
+              </Text>
+            </Box>
+          </NeonGradientCard>
+        );
+      })}
+    </SimpleGrid>
   );
 });
