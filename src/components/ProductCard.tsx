@@ -87,6 +87,11 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
     }
   }, [product.type, isDark, settings.customStrainColors]);
 
+  const imageStrain = useMemo(() => {
+    if (strainColors.customHex) return strainColors;
+    return { ...strainColors, bg: 'rgba(8,11,20,0.72)' };
+  }, [strainColors]);
+
   const highlight = useMemo(() => {
     const hex = settings.customStrainColors?.[product.type];
     if (hex && /^#[0-9a-f]{6}$/i.test(hex)) {
@@ -144,7 +149,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
     document.body
   );
 
-  const renderStrainBadge = (inner: { padding: string; bg?: string; color?: string; border?: string; transform?: string }) => (
+  const renderStrainBadge = (inner: { padding: string; bg?: string; color?: string; border?: string; transform?: string; overImage?: boolean }) => (
     <span
       style={{
         display: 'inline-flex',
@@ -159,8 +164,12 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
         color: inner.color || undefined,
         transform: inner.transform,
         cursor: 'pointer',
+        backdropFilter: inner.overImage ? 'blur(6px)' : undefined,
+        boxShadow: inner.overImage ? '0 1px 4px rgba(0,0,0,0.35)' : undefined,
         ...(strainColors.customHex
-          ? { background: strainColors.customHex + '20', color: strainColors.customHex, border: `1px solid ${strainColors.customHex + '40'}` }
+          ? inner.overImage
+            ? { background: 'rgba(8,11,20,0.72)', color: strainColors.customHex, border: `1px solid ${strainColors.customHex + '80'}` }
+            : { background: strainColors.customHex + '20', color: strainColors.customHex, border: `1px solid ${strainColors.customHex + '40'}` }
           : {}),
       }}
     >
@@ -405,7 +414,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
           )}
           <div style={{ position: 'absolute', top: 8, left: 8 }}>
             <span onClick={(e) => { e.stopPropagation(); setPickingStrain(product.type); }}>
-              {renderStrainBadge({ padding: '4px 8px', bg: strainColors.bg || undefined, color: strainColors.text || undefined, border: strainColors.border || undefined })}
+              {renderStrainBadge({ padding: '4px 8px', bg: imageStrain.bg || undefined, color: imageStrain.text || undefined, border: imageStrain.border || undefined, overImage: true })}
             </span>
             {renderColorPicker()}
           </div>
@@ -417,6 +426,16 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '6px 8px', backdropFilter: 'blur(4px)', background: isDark ? 'rgba(10,10,10,0.8)' : 'rgba(255,255,255,0.9)' }}>
             {renderAmountText('0.875rem')}
           </div>
+          <div style={{ position: 'absolute', bottom: 34, right: 8, display: 'flex', gap: 4, padding: 4, borderRadius: 10, opacity: compactHovered ? 1 : 0, transition: 'all 0.2s', pointerEvents: compactHovered ? 'auto' : 'none', background: isDark ? 'rgba(8,11,20,0.6)' : 'rgba(255,255,255,0.85)', backdropFilter: 'blur(6px)' }}>
+            {renderIconButton(undefined, t('consume', lang), 'cyan', <IconFlame size={14} />, quickConsume.handlers, t('quickConsumeHint', lang))}
+            {renderIconButton((e) => buttonAction(e, () => onSell(product)), 'Sell', 'amber', <IconCurrencyDollar size={14} />)}
+            {renderIconButton(
+              (e) => buttonAction(e, () => onToggleFavorite(product.id)),
+              product.favorite ? t('filterFavorites', lang) : 'Add to favourites',
+              'plain',
+              <IconHeart size={14} style={product.favorite ? { fill: 'currentColor' } : undefined} />
+            )}
+          </div>
         </div>
         <div style={{ padding: 8 }}>
           <Text fw={700} size="sm" c={primaryText} truncate>{product.name}</Text>
@@ -425,16 +444,6 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
               <IconStar size={12} color="var(--mantine-color-cyan-5)" style={{ fill: 'var(--mantine-color-cyan-5)' }} />
               <Text size="xs" c={secondaryText}>{product.rating}</Text>
             </Group>
-          )}
-        </div>
-        <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 4, opacity: compactHovered ? 1 : 0, transition: 'all 0.2s' }}>
-          {renderIconButton(undefined, t('consume', lang), 'cyan', <IconFlame size={14} />, quickConsume.handlers, t('quickConsumeHint', lang))}
-          {renderIconButton((e) => buttonAction(e, () => onSell(product)), 'Sell', 'amber', <IconCurrencyDollar size={14} />)}
-          {renderIconButton(
-            (e) => buttonAction(e, () => onToggleFavorite(product.id)),
-            product.favorite ? t('filterFavorites', lang) : 'Add to favourites',
-            'plain',
-            <IconHeart size={14} style={product.favorite ? { fill: 'currentColor' } : undefined} />
           )}
         </div>
       </Card>
@@ -488,10 +497,11 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
           <span onClick={(e) => { e.stopPropagation(); setPickingStrain(product.type); }}>
             {renderStrainBadge({
               padding: '4px 12px',
-              bg: (strainHovered && !strainColors.customHex) ? vibrantStrainColor.bg : (strainColors.bg || undefined),
-              color: (strainHovered && !strainColors.customHex) ? vibrantStrainColor.text : (strainColors.text || undefined),
-              border: (strainHovered && !strainColors.customHex) ? vibrantStrainColor.border : (strainColors.border || undefined),
+              bg: (strainHovered && !strainColors.customHex) ? vibrantStrainColor.bg : (imageStrain.bg || undefined),
+              color: (strainHovered && !strainColors.customHex) ? vibrantStrainColor.text : (imageStrain.text || undefined),
+              border: (strainHovered && !strainColors.customHex) ? vibrantStrainColor.border : (imageStrain.border || undefined),
               transform: (strainHovered && !strainColors.customHex) ? 'scale(1.1)' : undefined,
+              overImage: true,
             })}
           </span>
           {renderColorPicker()}

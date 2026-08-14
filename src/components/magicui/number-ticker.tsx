@@ -22,23 +22,26 @@ export function NumberTicker({
 }: NumberTickerProps) {
   const ref = useRef<HTMLSpanElement>(null);
 
+  const format = (v: number) =>
+    `${prefix}${v.toLocaleString('en-US', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    })}${suffix}`;
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    el.textContent = format(value);
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) return;
         observer.disconnect();
         const start = performance.now();
-        const from = 0;
         const tick = (now: number) => {
           const t = Math.min((now - start) / duration, 1);
           const eased = 1 - Math.pow(1 - t, 3);
-          const v = from + (value - from) * eased;
-          el.textContent = `${prefix}${v.toLocaleString('en-US', {
-            minimumFractionDigits: decimals,
-            maximumFractionDigits: decimals,
-          })}${suffix}`;
+          const v = value * eased;
+          el.textContent = format(v);
           if (t < 1) requestAnimationFrame(tick);
         };
         requestAnimationFrame(tick);
@@ -51,7 +54,7 @@ export function NumberTicker({
 
   return (
     <span ref={ref} className={cn('tabular-nums', className)} style={style}>
-      {`${prefix}0${suffix}`}
+      {format(value)}
     </span>
   );
 }

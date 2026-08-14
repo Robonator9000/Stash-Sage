@@ -44,9 +44,9 @@ const DISPOSABLES: Product[] = [
 ];
 
 const STRAIN_COLORS: Record<StrainType, { accent: string; label: string }> = {
-  indica: { accent: '#6366f1', label: 'Indica' },
-  sativa: { accent: '#f59e0b', label: 'Sativa' },
-  hybrid: { accent: '#10b981', label: 'Hybrid' },
+  indica: { accent: '#4f46e5', label: 'Indica' },
+  sativa: { accent: '#d97706', label: 'Sativa' },
+  hybrid: { accent: '#059669', label: 'Hybrid' },
 };
 
 const FEATURES = [

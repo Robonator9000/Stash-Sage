@@ -55,6 +55,7 @@ export function useLongPress({ threshold = 500, onClick, onLongPress }: LongPres
       onTouchStart: start,
       onTouchEnd: finish,
       onTouchCancel: cancel,
+      onClick: (e: React.SyntheticEvent) => { e.stopPropagation(); },
       onContextMenu: (e: React.SyntheticEvent) => { e.preventDefault(); e.stopPropagation(); },
     },
   };
