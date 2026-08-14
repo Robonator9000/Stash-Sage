@@ -139,10 +139,12 @@ Contributions are welcome! Whether it's a bug fix, feature idea, or translation 
 
 ## 📊 Activity
 
-<!-- Contribution grid inspired by GitHub & Petals -->
-<img src="https://ghchart.rshah.org/06b6d4/Robonator9000" alt="Contribution graph" width="100%" />
+<div align="center">
 
-<sub>🎨 Each square represents a day of development. Cyan = active days.</sub>
+<img src="https://github-readme-stats.vercel.app/api?username=Robonator9000&show_icons=true&hide_border=true&theme=transparent&bg_color=00000000&title_color=06b6d4&icon_color=22d3ee&text_color=94a3b8&ring_color=06b6d4" height="165" alt="GitHub stats" />
+<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=Robonator9000&layout=compact&hide_border=true&theme=transparent&bg_color=00000000&title_color=06b6d4&text_color=94a3b8" height="165" alt="Top languages" />
+
+</div>
 
 ---
 

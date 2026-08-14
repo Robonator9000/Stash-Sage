@@ -14,6 +14,7 @@ interface ProductGridProps {
   onConsumeProduct: (product: Product) => void;
   onSellProduct: (product: Product) => void;
   onToggleFavorite: (id: string) => void;
+  onQuickConsumeProduct?: (product: Product) => void;
   onAddProduct: () => void;
   isSelectMode?: boolean;
   selectedIds?: Set<string>;
@@ -30,6 +31,7 @@ export const ProductGrid = memo(function ProductGrid({
   onConsumeProduct,
   onSellProduct,
   onToggleFavorite,
+  onQuickConsumeProduct,
   onAddProduct,
   isSelectMode = false,
   selectedIds,
@@ -53,6 +55,7 @@ export const ProductGrid = memo(function ProductGrid({
               onConsume={onConsumeProduct}
               onSell={onSellProduct}
               onToggleFavorite={onToggleFavorite}
+              onQuickConsume={onQuickConsumeProduct}
               isDark={isDark}
               layout={layout}
               precision={precision}
@@ -75,6 +78,7 @@ export const ProductGrid = memo(function ProductGrid({
               onConsume={onConsumeProduct}
               onSell={onSellProduct}
               onToggleFavorite={onToggleFavorite}
+              onQuickConsume={onQuickConsumeProduct}
               isDark={isDark}
               layout={layout}
               precision={precision}

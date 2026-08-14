@@ -307,6 +307,29 @@ export default function App() {
     }
   }, [consumingProduct, consumeProduct, checkLowStock, addActivityEntry]);
 
+  const handleQuickConsume = useCallback((product: Product) => {
+    if (!product || product.amount <= 0) return;
+    const amount = settings.sessionDefaults?.defaultAmount > 0 ? Math.min(settings.sessionDefaults.defaultAmount, product.amount) : 0.25;
+    setShowSmoke(true);
+    playSmokeSound();
+    setTimeout(() => setShowSmoke(false), 2200);
+    try {
+      checkLowStock(product, amount);
+      consumeProduct(product.id, amount);
+      addActivityEntry({
+        id: generateId(), type: 'consume', productId: product.id, productName: product.name, amount, timestamp: new Date(),
+      });
+      const lng = settings.language;
+      showToast({
+        id: 'quick-consume-' + product.id + '-' + Date.now(),
+        title: `${formatPrecision(amount, settings.decimalPrecision)}g ${t('consume', lng)}`,
+        body: product.name,
+      });
+    } catch (err) {
+      console.error('quick consume failed', err);
+    }
+  }, [consumeProduct, checkLowStock, addActivityEntry, settings.sessionDefaults, settings.decimalPrecision, settings.language]);
+
   const handleFinishSession = useCallback((_productId: string, _amountUsed: number, session: Session) => {
     setSessionProduct(null);
     setSessionAmount(0);
@@ -719,6 +742,7 @@ export default function App() {
               onConsumeProduct={setConsumingProduct}
               onSellProduct={setSellingProduct}
               onToggleFavorite={toggleFavorite}
+              onQuickConsumeProduct={handleQuickConsume}
               onAddProduct={() => setIsAddModalOpen(true)}
               isSelectMode={isSelectMode}
               selectedIds={selectedIds}

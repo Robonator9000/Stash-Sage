@@ -1,6 +1,8 @@
 ﻿import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { StatsCard } from './StatsCard';
 import { CalendarHeatmap } from './CalendarHeatmap';
+import { TBreakTracker } from './TBreakTracker';
+import { MonthlyTrendsChart } from './MonthlyTrendsChart';
 import { Product, Session, Settings } from '../types';
 import { t } from '../utils/translations';
 import { formatPrecision, formatCurrency } from '../utils/helpers';
@@ -27,6 +29,7 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
     <BlurFade>
       <Stack gap="md">
       <StatsCard products={products} sessions={sessions} isDark={isDark} />
+      <TBreakTracker products={products} sessions={sessions} isDark={isDark} />
       <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="md">
         <ShineBorder borderRadius={12} color={['#06b6d4', '#13eeef', '#10b981']}>
         <Paper p="lg" radius="md" withBorder style={{ background: isDark ? 'rgba(10, 17, 32, 0.8)' : '#fff' }}>
@@ -56,27 +59,6 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
               </Group>
             ))}
           </Group>
-        </Paper>
-        </ShineBorder>
-        <ShineBorder borderRadius={12} color={['#06b6d4', '#13eeef']}>
-        <Paper p="lg" radius="md" withBorder style={{ background: isDark ? 'var(--mantine-color-dark-6)' : '#fff' }}>
-          <AnimatedGradientText colors="linear-gradient(120deg, #06b6d4, #10b981)" className="mx-0 mb-2 text-sm font-semibold" animationSpeed={8}>
-            {t('consumptionTrend', lang)}
-          </AnimatedGradientText>
-          {consumptionByMonth.length > 0 ? (
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={consumptionByMonth}>
-                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e5e7eb'} />
-                <XAxis dataKey="month" tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} />
-                <YAxis tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} />
-                <Tooltip contentStyle={{ backgroundColor: isDark ? '#111827' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#e5e7eb'}`, borderRadius: '12px', color: isDark ? '#e2e8f0' : '#0f172a' }}
-                  formatter={(value: any) => [`${formatPrecision(Number(value), 1)}g`, '']} />
-                <Bar dataKey="amount" fill="#06b6d4" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <Text ta="center" py="xl" c="dimmed">{t('noSessions', lang)}</Text>
-          )}
         </Paper>
         </ShineBorder>
         <ShineBorder borderRadius={12} color={['#10b981', '#06b6d4']}>
@@ -122,6 +104,7 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
         </Paper>
         </ShineBorder>
       </SimpleGrid>
+      <MonthlyTrendsChart consumptionByMonth={consumptionByMonth} isDark={isDark} lang={lang} />
       <CalendarHeatmap sessions={sessions} isDark={isDark} lang={lang} />
       {settings.budgetLimit > 0 && (
         <NeonGradientCard borderColors={['#06b6d4', '#10b981', '#13eeef']} borderRadius={12} className="mb-4">

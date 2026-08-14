@@ -9,6 +9,7 @@ import { useSettings } from '../utils/useSettings';
 import { showToast } from './Toast';
 import { Card, Group, Text, Center, UnstyledButton } from '@mantine/core';
 import { BlurFade, BorderBeam, NumberTicker } from './magicui';
+import { useLongPress } from '../hooks/useLongPress';
 
 interface ProductCardProps {
   product: Product;
@@ -16,6 +17,7 @@ interface ProductCardProps {
   onConsume: (product: Product) => void;
   onSell: (product: Product) => void;
   onToggleFavorite: (id: string) => void;
+  onQuickConsume?: (product: Product) => void;
   isDark?: boolean;
   layout?: 'grid' | 'list' | 'compact';
   precision?: number;
@@ -26,10 +28,16 @@ interface ProductCardProps {
 
 const COLOR_PRESETS = ['#a855f7', '#f59e0b', '#10b981', '#ef4444', '#3b82f6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16'];
 
-export const ProductCard = memo(function ProductCard({ product, onClick, onConsume, onSell, onToggleFavorite, isDark = true, layout = 'grid', precision = 2, isSelectMode = false, selected = false, onToggleSelect }: ProductCardProps) {
+export const ProductCard = memo(function ProductCard({ product, onClick, onConsume, onSell, onToggleFavorite, onQuickConsume, isDark = true, layout = 'grid', precision = 2, isSelectMode = false, selected = false, onToggleSelect }: ProductCardProps) {
   const { settings, updateSettings } = useSettings();
   const amountString = useMemo(() => `${formatPrecision(product.amount, precision)}g`, [product.amount, precision]);
   const lang = settings.language;
+
+  const quickConsume = useLongPress({
+    threshold: 500,
+    onClick: () => onConsume(product),
+    onLongPress: () => onQuickConsume?.(product),
+  });
 
   const [strainHovered, setStrainHovered] = useState(false);
   const [amountHovered, setAmountHovered] = useState(false);
@@ -273,14 +281,17 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
   );
 
   const renderIconButton = (
-    onClick: (e: React.MouseEvent) => void,
+    onClick: ((e: React.MouseEvent) => void) | undefined,
     aria: string,
     variant: 'cyan' | 'amber' | 'plain',
-    children: React.ReactNode
+    children: React.ReactNode,
+    handlers?: Record<string, (e: React.SyntheticEvent) => void>,
+    title?: string
   ) => (
     <UnstyledButton
-      onClick={onClick}
+      {...(handlers || { onClick: onClick as (e: React.MouseEvent) => void })}
       aria-label={aria}
+      title={title || aria}
       style={{
         padding: 8,
         borderRadius: 8,
@@ -355,7 +366,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
           </div>
 
           <Group gap={6} wrap="nowrap" style={{ flexShrink: 0 }}>
-            {renderIconButton((e) => buttonAction(e, () => onConsume(product)), t('consume', lang), 'cyan', <IconFlame size={16} />)}
+            {renderIconButton(undefined, t('consume', lang), 'cyan', <IconFlame size={16} />, quickConsume.handlers, t('quickConsumeHint', lang))}
             {renderIconButton((e) => buttonAction(e, () => onSell(product)), t('sell', lang), 'amber', <IconCurrencyDollar size={16} />)}
             {renderIconButton(
               (e) => buttonAction(e, () => onToggleFavorite(product.id)),
@@ -417,7 +428,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
           )}
         </div>
         <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 4, opacity: compactHovered ? 1 : 0, transition: 'all 0.2s' }}>
-          {renderIconButton((e) => buttonAction(e, () => onConsume(product)), t('consume', lang), 'cyan', <IconFlame size={14} />)}
+          {renderIconButton(undefined, t('consume', lang), 'cyan', <IconFlame size={14} />, quickConsume.handlers, t('quickConsumeHint', lang))}
           {renderIconButton((e) => buttonAction(e, () => onSell(product)), 'Sell', 'amber', <IconCurrencyDollar size={14} />)}
           {renderIconButton(
             (e) => buttonAction(e, () => onToggleFavorite(product.id)),
@@ -576,8 +587,9 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
 
         <Group gap={8} style={{ marginTop: 'auto', paddingTop: 16, borderTop: `1px dashed ${borderColor}` }} align="stretch">
           <UnstyledButton
-            onClick={(e) => buttonAction(e, () => onConsume(product))}
+            {...quickConsume.handlers}
             aria-label={t('consume', lang)}
+            title={t('quickConsumeHint', lang)}
             style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '8px 0', borderRadius: 12, fontWeight: 500, transition: 'all 0.2s', color: 'var(--mantine-color-cyan-6)', background: isDark ? 'linear-gradient(to right, rgba(6,182,212,0.1), rgba(16,185,129,0.1))' : 'linear-gradient(to right, var(--mantine-color-cyan-1), var(--mantine-color-emerald-1))' }}
           >
             <IconFlame size={16} />
