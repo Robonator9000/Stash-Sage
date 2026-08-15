@@ -53,10 +53,35 @@ const LoadingFallback = (
   </div>
 );
 
-registerSW({
+// Reload once instead of looping: shared by the SW controllerchange handler
+// below and the dynamic-import error recovery at the bottom of this file.
+let reloading = false;
+
+// Reload all tabs as soon as a NEW service worker takes control, so users
+// can never get stuck on a stale build after a deploy. Guarded so the very
+// first install (no previous controller) doesn't cause an extra reload.
+let hadController = false;
+if (navigator.serviceWorker?.controller) hadController = true;
+navigator.serviceWorker?.addEventListener('controllerchange', () => {
+  if (reloading) return;
+  if (!hadController) {
+    hadController = true;
+    return;
+  }
+  reloading = true;
+  console.info('New app version detected — reloading.');
+  window.location.reload();
+});
+
+const updateServiceWorker = registerSW({
   immediate: true,
   onOfflineReady() {
     console.info('Stash Sage is ready to work offline.');
+  },
+  onNeedRefresh() {
+    // autoUpdate-style: apply the new SW immediately; controllerchange reloads.
+    console.info('New version available — updating.');
+    updateServiceWorker(true);
   },
 });
 
@@ -79,7 +104,6 @@ try {
 }
 
 // Reload once if a lazily-loaded chunk fails (usually after a stale SW serves old hashes)
-let reloading = false;
 function onDynamicImportError() {
   if (reloading) return;
   reloading = true;
