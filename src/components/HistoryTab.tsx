@@ -217,9 +217,9 @@ export const HistoryTab = memo(function HistoryTab({
               </Group>
 
               <div
-                className="grid gap-3"
+                className="grid gap-2"
                 style={{
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
                   gridAutoFlow: 'dense',
                 }}
               >
@@ -228,7 +228,6 @@ export const HistoryTab = memo(function HistoryTab({
                   const TypeIcon = meta.icon;
                   const isSelected = selectedIds.has(entry.id);
                   const isExpanded = expandedNotes.has(entry.id);
-                  const isWide = Boolean(entry.notes) || entry.type === 'session';
 
                   return (
                     <Paper
@@ -236,7 +235,6 @@ export const HistoryTab = memo(function HistoryTab({
                       radius="md"
                       withBorder
                       p="sm"
-                      className={isWide ? 'md:col-span-2' : undefined}
                       style={{
                         minWidth: 0,
                         background: isSelected

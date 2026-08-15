@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo, memo } from 'react';
 import { Product, Session } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { useModalAnimation } from '../hooks/useModalAnimation';
-import { generateId, roundToHundredth } from '../utils/helpers';
+import { generateId, roundToHundredth, formatPrecision } from '../utils/helpers';
 import { gramsToOz } from '../utils/convert';
 import { Modal, Group, Stack, Text, TextInput, NumberInput, Textarea, Button, ActionIcon, Paper, Divider, Box, SimpleGrid, ScrollArea, Image } from '@mantine/core';
 import { IconX, IconStar, IconCamera, IconHeart, IconPlus, IconChevronDown, IconHistory } from '@tabler/icons-react';
@@ -199,6 +199,7 @@ export const ProductModal = memo(function ProductModal({ product, onSave, onDele
 
   const inputBg = isDark ? 'var(--mantine-color-slate-8)' : 'var(--mantine-color-gray-0)';
   const dimColor = isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-6)';
+  const headerBg = isDark ? 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(16,185,129,0.12))' : 'linear-gradient(135deg, rgba(6,182,212,0.1), rgba(16,185,129,0.08))';
 
   return (
     <Modal
@@ -211,8 +212,13 @@ export const ProductModal = memo(function ProductModal({ product, onSave, onDele
       aria-label={product ? `${t('editProduct', lang)} ${product.name}` : t('addProduct', lang)}
       styles={{ content: { display: 'flex', flexDirection: 'column', maxHeight: '90vh' }, body: { padding: 0, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 } }}
     >
-      <Box p="lg" pb="sm">
-        <Text fw={700} size="xl">{product ? t('editProduct', lang) : t('addProduct', lang)}</Text>
+      <Box p="lg" pb="sm" style={{ background: headerBg, borderBottom: `1px solid ${isDark ? 'rgba(34,211,238,0.2)' : 'rgba(8,145,178,0.15)'}` }}>
+        <Text fw={800} size="xl" style={{ letterSpacing: -0.5 }}>{product ? t('editProduct', lang) : t('addProduct', lang)}</Text>
+        {product && (
+          <Text size="sm" c="dimmed" mt={2}>
+            {product.name} · {formatPrecision(product.amount, settings.decimalPrecision)}g available
+          </Text>
+        )}
       </Box>
 
       <Box style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
@@ -380,7 +386,7 @@ export const ProductModal = memo(function ProductModal({ product, onSave, onDele
                 />
                 {type && !['indica', 'sativa', 'hybrid'].includes(type.toLowerCase()) && (
                   <Box mt="xs">
-                    <Text fw={500} size="xs" mb={6} c="dimmed">Highlight Color</Text>
+                    <Text fw={500} size="xs" mb={6} c="dimmed">{t('highlightColor', lang)}</Text>
                     <Group gap={6}>
                       {STRAIN_COLORS.map(c => (
                         <ActionIcon
@@ -448,7 +454,7 @@ export const ProductModal = memo(function ProductModal({ product, onSave, onDele
           </SimpleGrid>
 
           <Box>
-            <Text fw={500} size="sm" mb="xs">Purchase Date</Text>
+            <Text fw={500} size="sm" mb="xs">{t('purchaseDate', lang)}</Text>
             <input
               id="purchase-date"
               name="purchase-date"

@@ -498,11 +498,3 @@ textarea:focus:not(:focus-visible) {
   animation-fill-mode: forwards;
   display: inline-block;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-smoke-puff,
-  .animate-smoke-puff-2,
-  .animate-dollar-float {
-    animation: none;
-  }
-}
