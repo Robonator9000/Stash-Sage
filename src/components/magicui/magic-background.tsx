@@ -14,18 +14,29 @@ export function MagicBackground({ isDark, variant = 'full' }: MagicBackgroundPro
   const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    const check = () => {
-      const blocked =
-        document.hidden ||
-        !!document.querySelector('.mantine-Modal-root, .mantine-Drawer-root, [data-mantine-modal]');
-      setPaused(blocked);
+    // Mantine keeps closed modal/drawer roots mounted in the DOM (display:none),
+    // so a plain querySelector would pause the particles forever after the
+    // first modal open. Check actual visibility instead.
+    const isOverlayBlocking = () => {
+      const nodes = document.querySelectorAll<HTMLElement>(
+        '.mantine-Modal-root, .mantine-Drawer-root, [data-mantine-modal]'
+      );
+      for (const node of nodes) {
+        const style = window.getComputedStyle(node);
+        if (style.display !== 'none' && style.visibility !== 'hidden') return true;
+      }
+      return false;
     };
+    const check = () => setPaused(document.hidden || isOverlayBlocking());
     check();
     const observer = new MutationObserver(check);
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
     document.addEventListener('visibilitychange', check);
+    // Safety net: attributes observer can miss portal swaps; poll cheaply.
+    const interval = window.setInterval(check, 750);
     return () => {
       observer.disconnect();
+      window.clearInterval(interval);
       document.removeEventListener('visibilitychange', check);
     };
   }, []);

@@ -43,7 +43,7 @@ function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <Paper p="sm" radius="md" withBorder style={{ background: isDark ? 'var(--mantine-color-dark-6)' : '#fff' }}>
+    <Paper p="sm" radius="md" withBorder h="100%" style={{ background: isDark ? 'var(--mantine-color-dark-6)' : '#fff' }}>
       <AnimatedGradientText colors={gradient} className="mx-0 mb-1 text-sm font-semibold" animationSpeed={8}>
         {title}
       </AnimatedGradientText>
@@ -130,12 +130,12 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
           </ChartCard>
         </ShineBorder>
 
-        <div className="col-span-1 sm:col-span-2 lg:col-span-3">
-          <MonthlyTrendsChart consumptionByMonth={consumptionByMonth} isDark={isDark} lang={lang} />
-        </div>
-
         <div className="col-span-1 sm:col-span-2 lg:col-span-2">
           <CalendarHeatmap sessions={sessions} isDark={isDark} lang={lang} />
+        </div>
+
+        <div className="col-span-1 sm:col-span-2 lg:col-span-3">
+          <MonthlyTrendsChart consumptionByMonth={consumptionByMonth} isDark={isDark} lang={lang} />
         </div>
 
         {settings.budgetLimit > 0 && (

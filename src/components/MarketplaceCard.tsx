@@ -367,7 +367,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
                     {listing.author?.username || 'User'}
                   </button>
                   {listing.author?.display_name && listing.author.display_name !== listing.author.username && (
-                    <div className={`text-xs truncate ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+                    <div className={`text-xs truncate ${isDark ? 'text-muted' : 'text-gray-600'}`}>
                       {listing.author.display_name}
                     </div>
                   )}
@@ -458,12 +458,12 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
                             </span>
                           )}
                           {linkedProduct.brand && (
-                            <span className={`text-sm ${isDark ? 'text-muted' : 'text-gray-400'}`}>{linkedProduct.brand}</span>
+                            <span className={`text-sm ${isDark ? 'text-muted' : 'text-gray-600'}`}>{linkedProduct.brand}</span>
                           )}
                         </div>
                       </button>
                       <button type="button" onClick={(e) => { e.stopPropagation(); setShowProductDetail(s => !s); }}
-                        className={`p-1 rounded-lg shrink-0 mt-0.5 transition-all ${isDark ? 'hover:bg-surface text-muted' : 'hover:bg-gray-200 text-gray-400'}`}>
+                        className={`p-1 rounded-lg shrink-0 mt-0.5 transition-all ${isDark ? 'hover:bg-surface text-muted' : 'hover:bg-gray-200 text-gray-600'}`}>
                         {showProductDetail ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                       </button>
                     </div>
@@ -471,13 +471,13 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
                       <div className={`mt-3 pt-3 space-y-3 border-t ${isDark ? 'border-edge' : 'border-gray-200'}`}>
                         {linkedProduct.strain && (
                           <div>
-                            <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Strain</div>
+                            <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${isDark ? 'text-muted' : 'text-gray-600'}`}>Strain</div>
                             <div className={`text-sm font-medium ${isDark ? 'text-frost' : 'text-gray-800'}`}>{linkedProduct.strain}</div>
                           </div>
                         )}
                         {linkedProduct.purchasedAt && (
                           <div className="flex items-center gap-2">
-                            <Calendar className={`w-4 h-4 shrink-0 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
+                            <Calendar className={`w-4 h-4 shrink-0 ${isDark ? 'text-muted' : 'text-gray-600'}`} />
                             <span className={`text-sm ${isDark ? 'text-mist' : 'text-gray-600'}`}>
                               Purchased {new Date(linkedProduct.purchasedAt).toLocaleDateString()}
                             </span>
@@ -485,7 +485,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
                         )}
                         {linkedProduct.tags && (
                           <div>
-                            <div className={`text-xs font-semibold uppercase tracking-wider mb-1.5 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Tags</div>
+                            <div className={`text-xs font-semibold uppercase tracking-wider mb-1.5 ${isDark ? 'text-muted' : 'text-gray-600'}`}>Tags</div>
                             <div className="flex flex-wrap gap-1.5">
                               {linkedProduct.tags.split(',').map(t => t.trim()).filter(Boolean).map(tag => (
                                 <span key={tag} className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${isDark ? 'bg-surface text-cyanx' : 'bg-cyan-50 text-cyan-600'}`}>{tag}</span>
@@ -495,13 +495,13 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
                         )}
                         {linkedProduct.effects && (
                           <div className="flex items-start gap-2">
-                            <FlaskConical className={`w-4 h-4 mt-0.5 shrink-0 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
+                            <FlaskConical className={`w-4 h-4 mt-0.5 shrink-0 ${isDark ? 'text-muted' : 'text-gray-600'}`} />
                             <span className={`text-sm ${isDark ? 'text-mist' : 'text-gray-600'}`}>{linkedProduct.effects}</span>
                           </div>
                         )}
                         {linkedProduct.notes && (
                           <div className="flex items-start gap-2">
-                            <StickyNote className={`w-4 h-4 mt-0.5 shrink-0 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
+                            <StickyNote className={`w-4 h-4 mt-0.5 shrink-0 ${isDark ? 'text-muted' : 'text-gray-600'}`} />
                             <span className={`text-sm ${isDark ? 'text-mist' : 'text-gray-600'}`}>{linkedProduct.notes}</span>
                           </div>
                         )}

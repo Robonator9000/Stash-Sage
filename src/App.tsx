@@ -606,7 +606,7 @@ export default function App() {
           {/* ==================== SETTINGS PAGE (unique page) ==================== */}
         {activeTab === 'settings' && (
           <ErrorBoundary isDark={isDark} lang={lang}>
-            <Suspense fallback={<div className="text-center py-16 text-slate-500">Loading...</div>}>
+            <Suspense fallback={<div className={`text-center py-16 ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>Loading...</div>}>
               <SettingsSheet
                 products={products}
                 onImport={handleImport}
@@ -623,7 +623,7 @@ export default function App() {
           {/* ==================== DASHBOARD TAB (unique page) ==================== */}
         {activeTab === 'dashboard' && (
           <Suspense fallback={
-            <div className={`text-center py-16 ${isDark ? 'text-muted' : 'text-gray-400'}`}>Loading dashboard...</div>
+            <div className={`text-center py-16 ${isDark ? 'text-muted' : 'text-gray-600'}`}>Loading dashboard...</div>
           }>
             <ErrorBoundary isDark={isDark} lang={lang}>
               <DashboardTab
@@ -819,7 +819,7 @@ export default function App() {
                 </p>
               </div>
             ) : (
-              <Suspense fallback={<div className="text-center py-16 text-slate-500">Loading...</div>}>
+              <Suspense fallback={<div className={`text-center py-16 ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>Loading...</div>}>
                 <CommunityPage onOpenChat={handleOpenChat} />
               </Suspense>
             )}
@@ -848,7 +848,7 @@ export default function App() {
                 </p>
               </div>
             ) : (
-              <Suspense fallback={<div className="text-center py-16 text-slate-500">Loading...</div>}>
+              <Suspense fallback={<div className={`text-center py-16 ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>Loading...</div>}>
                 <MarketplaceFeed
                   isDark={isDark}
                   lang={lang}
@@ -868,7 +868,7 @@ export default function App() {
         {activeTab === 'admin' && isAdmin && (
           <ErrorBoundary isDark={isDark} lang={lang}>
           <div className="space-y-4">
-            <Suspense fallback={<div className="text-center py-16 text-slate-500">Loading...</div>}>
+            <Suspense fallback={<div className={`text-center py-16 ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>Loading...</div>}>
               <AdminDashboard
                 isDark={isDark}
                 currentUserId={user?.id || ''}
@@ -893,7 +893,7 @@ export default function App() {
         {/* ==================== HISTORY TAB ==================== */}
         {activeTab === 'history' && (
           <ErrorBoundary isDark={isDark} lang={lang}>
-            <Suspense fallback={<div className="text-center py-16 text-slate-500">Loading...</div>}>
+            <Suspense fallback={<div className={`text-center py-16 ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>Loading...</div>}>
               <HistoryTab
                 filteredHistory={filteredHistory}
                 isDark={isDark}

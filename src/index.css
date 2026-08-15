@@ -35,8 +35,8 @@ html[data-magicui-theme-vt="active"]::view-transition-group(root) {
   .dark {
     --bg: #0b1120;
     --bg-alt: #0f172a;
-    --surface: #111827;
-    --surface-alt: #1a2332;
+    --surface: rgba(10, 17, 32, 0.8);
+    --surface-alt: #0a1120;
     --border: #1e293b;
     --border-light: #334155;
     --text: #e2e8f0;

@@ -46,7 +46,7 @@ export function MonthlyTrendsChart({ consumptionByMonth, isDark, lang }: Monthly
 
   return (
     <ShineBorder borderRadius={12} color={['#06b6d4', '#13eeef', '#8b5cf6']}>
-      <Paper p="lg" radius="md" withBorder style={{ background: isDark ? 'rgba(10, 17, 32, 0.8)' : '#fff' }}>
+      <Paper p="lg" radius="md" withBorder h="100%" style={{ background: isDark ? 'rgba(10, 17, 32, 0.8)' : '#fff' }}>
         <Group justify="space-between" align="flex-start" mb="sm">
           <Stack gap={2}>
             <AnimatedGradientText colors="linear-gradient(120deg, #06b6d4, #8b5cf6)" className="text-sm font-semibold" animationSpeed={8}>

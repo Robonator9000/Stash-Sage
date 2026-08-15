@@ -143,7 +143,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? 'hover:bg-[#0b1120] text-white' : 'hover:bg-gray-50 text-gray-900'}`}>
                       <span className={`w-2 h-2 rounded-full shrink-0 ${p.amount > 0 ? 'bg-emerald-400' : 'bg-red-400'}`} />
                       <span className="font-medium truncate">{p.name}</span>
-                      {p.strain && <span className={`text-xs ml-auto shrink-0 ${isDark ? 'text-muted' : 'text-gray-400'}`}>{p.strain}</span>}
+                      {p.strain && <span className={`text-xs ml-auto shrink-0 ${isDark ? 'text-muted' : 'text-gray-600'}`}>{p.strain}</span>}
                     </button>
                   ))}
                 </div>
@@ -157,7 +157,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
                       {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover" /> : <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyanx to-emera flex items-center justify-center"><span className="text-white text-[10px] font-bold">{(u.display_name?.[0] || '?').toUpperCase()}</span></div>}
                       <div className="min-w-0">
                         <span className="truncate block">{u.display_name}</span>
-                        {u.username && <span className={`text-[10px] ${isDark ? 'text-muted' : 'text-gray-400'}`}>@{u.username}</span>}
+                        {u.username && <span className={`text-[10px] ${isDark ? 'text-muted' : 'text-gray-600'}`}>@{u.username}</span>}
                       </div>
                     </button>
                   ))}
@@ -170,7 +170,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
                     <button key={p.id} onMouseDown={() => { setSearchParams(prev => { prev.set('tab', 'community'); return prev; }, { replace: true }); handleResultClick(); }}
                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? 'hover:bg-[#0b1120] text-white' : 'hover:bg-gray-50 text-gray-900'}`}>
                       <span className="truncate text-xs">{p.content?.slice(0, 80)}</span>
-                      <span className={`text-[10px] shrink-0 ml-auto ${isDark ? 'text-muted' : 'text-gray-400'}`}>{timeAgo(p.created_at, lang)}</span>
+                      <span className={`text-[10px] shrink-0 ml-auto ${isDark ? 'text-muted' : 'text-gray-600'}`}>{timeAgo(p.created_at, lang)}</span>
                     </button>
                   ))}
                 </div>

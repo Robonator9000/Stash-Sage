@@ -107,9 +107,10 @@ export function CalendarHeatmap({ sessions, isDark = true, lang = 'en' }: Calend
     <Paper
       p="lg"
       pos="relative"
+      h="100%"
       style={{
         border: `1px solid ${isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-2)'}`,
-        background: isDark ? 'rgba(18, 18, 24, 0.8)' : '#fff',
+        background: isDark ? 'rgba(10, 17, 32, 0.8)' : '#fff',
       }}
     >
       <Stack gap="md">

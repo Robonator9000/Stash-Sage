@@ -318,11 +318,11 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               {!user ? (
                 <div className="space-y-4">
                   <div className={`p-4 rounded-xl text-center ${isDark ? 'bg-slate-800' : 'bg-gray-50'}`}>
-                    <User className={`w-8 h-8 mx-auto mb-2 ${isDark ? 'text-slate-500' : 'text-gray-400'}`} />
+                    <User className={`w-8 h-8 mx-auto mb-2 ${isDark ? 'text-slate-500' : 'text-gray-600'}`} />
                     <h3 className={`text-sm font-semibold mb-1 ${isDark ? 'text-white' : 'text-black'}`}>
                       {authMode === 'signin' ? 'Welcome Back' : 'Create Account'}
                     </h3>
-                    <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'} mb-4`}>
+                    <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-600'} mb-4`}>
                       {authMode === 'signin' ? 'Sign in to manage your profile' : 'Create an account to set up your profile'}
                     </p>
                   </div>
@@ -388,7 +388,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                       <div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500 transition-all duration-500" style={{ width: `${pct}%` }} />
                     </div>
                     {pct < 100 && (
-                      <p className={`text-[10px] mt-1.5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('profileSetupHint', lang)}</p>
+                      <p className={`text-[10px] mt-1.5 ${isDark ? 'text-slate-500' : 'text-gray-600'}`}>{t('profileSetupHint', lang)}</p>
                     )}
                   </div>
                 );
@@ -399,7 +399,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                 <div className={`px-4 py-3 rounded-xl border-2 text-sm font-medium ${isDark ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
                   @{profileUsername}
                 </div>
-                <p className={`text-[10px] mt-1 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('usernamePermanent', lang)}</p>
+                <p className={`text-[10px] mt-1 ${isDark ? 'text-slate-500' : 'text-gray-600'}`}>{t('usernamePermanent', lang)}</p>
               </div>
 
               <div>
@@ -469,7 +469,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                         Remove
                       </button>
                     )}
-                    <span className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>Max 2MB, square</span>
+                    <span className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-gray-600'}`}>Max 2MB, square</span>
                   </div>
                 </div>
               </div>
@@ -498,7 +498,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                         Remove
                       </button>
                     )}
-                    <span className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>Max 5MB, 3:1 ratio</span>
+                    <span className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-gray-600'}`}>Max 5MB, 3:1 ratio</span>
                   </div>
                 </div>
               </div>
@@ -866,7 +866,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               {/* Stat Visibility */}
               <div>
                 <label className={sectionLabel}><BarChart3 className="w-4 h-4" />{t('showStats', lang)}</label>
-                <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('statTogglesHint', lang)}</p>
+                <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-600'}`}>{t('statTogglesHint', lang)}</p>
                 <div className="grid grid-cols-2 gap-2">
                   {statOptions.map((stat) => (
                     <button key={stat.key} onClick={() => handleStatToggle(stat.key)}
@@ -886,7 +886,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
             <>
               <div>
                 <label className={sectionLabel}><Database className="w-4 h-4" />{t('dataBackup', lang)}</label>
-                <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('dataBackupHint', lang)}</p>
+                <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-600'}`}>{t('dataBackupHint', lang)}</p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
                   <Button variant="light" onClick={handleExport} className="flex-col h-auto py-2 gap-1">
                     <Download className="w-4 h-4" /><Text size="10" className="leading-tight">{t('exportData', lang)}</Text>
@@ -909,7 +909,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                     <Merge className="w-4 h-4" />{t('importMerge', lang)}
                   </Button>
                 </div>
-                <p className={`text-xs mt-2 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('importMergeHint', lang)}</p>
+                <p className={`text-xs mt-2 ${isDark ? 'text-slate-500' : 'text-gray-600'}`}>{t('importMergeHint', lang)}</p>
                 <input ref={fileInputRef} type="file" accept=".json,application/json" onChange={(e) => handleImportFile(e, false)} className="hidden" />
                 <input ref={mergeFileInputRef} type="file" accept=".json,application/json" onChange={(e) => handleImportFile(e, true)} className="hidden" />
                 {feedback && (
@@ -924,7 +924,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
           {activeTab === 'security' && (
             <div>
               <label className={sectionLabel}><Lock className="w-4 h-4" />{t('pinLock', lang)}</label>
-              <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{t('pinLockHint', lang)}</p>
+              <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-gray-600'}`}>{t('pinLockHint', lang)}</p>
               {!settings.pinEnabled ? (
                 <>
                   {!showPinSetup ? (

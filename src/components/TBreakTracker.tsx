@@ -101,7 +101,7 @@ export function TBreakTracker({ products, sessions, isDark }: TBreakTrackerProps
 
   if (!tbreak) {
     return (
-      <Paper radius="lg" p="lg" withBorder style={{ background: bg, borderColor: border }}>
+      <Paper radius="lg" p="lg" withBorder h="100%" style={{ background: bg, borderColor: border }}>
         <Group align="flex-start" gap="md">
           <RingProgress
             size={64}
@@ -154,8 +154,7 @@ export function TBreakTracker({ products, sessions, isDark }: TBreakTrackerProps
   }
 
   return (
-    <Paper radius="lg" p="lg" withBorder style={{
-      background: isDark ? 'rgba(10, 17, 32, 0.8)' : '#fff',
+    <Paper radius="lg" p="lg" withBorder h="100%" style={{      background: isDark ? 'rgba(10, 17, 32, 0.8)' : '#fff',
       borderColor: isComplete ? '#10b981' : border,
       boxShadow: isComplete ? '0 0 20px rgba(16, 185, 129, 0.15)' : undefined,
     }}>

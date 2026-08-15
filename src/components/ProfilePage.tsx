@@ -180,8 +180,8 @@ export function ProfilePage({ userId: propUserId, onBack, onOpenChat }: ProfileP
 
       <Paper withBorder p={0} radius="lg" style={{ overflow: 'hidden', borderColor: isDark ? 'var(--mantine-color-slate-7)' : 'var(--mantine-color-gray-3)' }}>
         <Box style={{ height: isDark ? 112 : 112, position: 'relative', background: bannerBg, border: 'none' }}>
-          {profileData.banner_url && (
-            <img src={profileData.banner_url} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          {effectiveBannerUrl && (
+            <img src={effectiveBannerUrl} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           )}
           <Box style={{ position: 'absolute', bottom: -48, left: 16 }}>
             <Avatar

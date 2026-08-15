@@ -327,7 +327,7 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
 
       {/* Compact sort */}
       <div className={`flex items-center gap-1 p-1 rounded-xl w-fit ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
-        <ArrowUpDown className={`w-3.5 h-3.5 ml-1.5 ${isDark ? 'text-muted' : 'text-gray-400'}`} />
+        <ArrowUpDown className={`w-3.5 h-3.5 ml-1.5 ${isDark ? 'text-muted' : 'text-gray-600'}`} />
         {([
           { id: 'newest' as const, label: t('sortNewest', lang) },
           { id: 'price_low' as const, label: t('sortPriceLow', lang) },
@@ -365,7 +365,7 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
         <div className={`p-10 rounded-2xl text-center ${isDark ? 'bg-surface/50 border border-edge' : 'bg-white border border-gray-200'}`} role="status">
           <div className="text-4xl mb-3 opacity-60">&#128270;</div>
           <p className={`text-sm font-medium mb-2 ${isDark ? 'text-frost' : 'text-gray-800'}`}>No listings found</p>
-          <p className={`text-xs max-w-sm mx-auto leading-relaxed ${isDark ? 'text-muted' : 'text-gray-400'}`}>
+          <p className={`text-xs max-w-sm mx-auto leading-relaxed ${isDark ? 'text-muted' : 'text-gray-600'}`}>
             Try browsing a different category or adjust your search terms.
           </p>
           {categoryFilter !== 'all' && (

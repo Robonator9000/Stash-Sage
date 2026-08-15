@@ -90,7 +90,7 @@ export function CommunityPage({ onOpenChat }: { onOpenChat?: (userId: string) =>
     return (
       <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/40 border border-edge backdrop-blur-sm' : 'bg-white/70 border border-gray-200 backdrop-blur-sm'}`}>
         <p className={`text-sm font-medium ${isDark ? 'text-mist' : 'text-gray-500'}`}>User not found</p>
-        <p className={`text-xs mt-1 ${isDark ? 'text-muted' : 'text-gray-400'}`}>No profile exists for @{profileUser}</p>
+        <p className={`text-xs mt-1 ${isDark ? 'text-muted' : 'text-gray-600'}`}>No profile exists for @{profileUser}</p>
         <button
           onClick={() => setSearchParams(prev => { prev.delete('user'); return prev; }, { replace: true })}
           className={`mt-4 px-4 py-2 rounded-lg text-xs font-medium transition-all border ${isDark ? 'border-edge text-frost hover:bg-surface' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}
@@ -105,7 +105,7 @@ export function CommunityPage({ onOpenChat }: { onOpenChat?: (userId: string) =>
     return (
       <div className={`p-8 rounded-2xl text-center ${isDark ? 'bg-surface/40 border border-edge backdrop-blur-sm' : 'bg-white/70 border border-gray-200 backdrop-blur-sm'}`}>
         <div className="flex justify-center">
-          <svg className={`w-6 h-6 animate-spin ${isDark ? 'text-muted' : 'text-gray-400'}`} viewBox="0 0 24 24" fill="none">
+          <svg className={`w-6 h-6 animate-spin ${isDark ? 'text-muted' : 'text-gray-600'}`} viewBox="0 0 24 24" fill="none">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
