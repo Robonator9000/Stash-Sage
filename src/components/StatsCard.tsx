@@ -21,9 +21,10 @@ interface StatsCardProps {
   products: Product[];
   sessions: Session[];
   isDark?: boolean;
+  rangeLabel?: string;
 }
 
-export const StatsCard = memo(function StatsCard({ products, sessions, isDark = true }: StatsCardProps) {
+export const StatsCard = memo(function StatsCard({ products, sessions, isDark = true, rangeLabel }: StatsCardProps) {
   const { settings } = useSettings();
 
   const computed = useMemo(() => {
@@ -151,7 +152,13 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
   if (allStats.length === 0) return null;
 
   return (
-    <SimpleGrid cols={{ base: 2, xs: 3, sm: 4, md: 5, lg: 6 }} spacing="sm" style={{ justifyItems: 'stretch' }}>
+    <div>
+      {rangeLabel && (
+        <Text size="xs" fw={600} tt="uppercase" mb={6} c={isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-slate-6)'}>
+          {rangeLabel}
+        </Text>
+      )}
+      <SimpleGrid cols={{ base: 2, xs: 3, sm: 4, md: 5, lg: 6 }} spacing="sm" style={{ justifyItems: 'stretch' }}>
       {allStats.map((stat) => {
         const Icon = stat.icon;
         const isCleanStreak = stat.key === 'cleanStreak';
@@ -179,5 +186,6 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
         );
       })}
     </SimpleGrid>
+    </div>
   );
 });

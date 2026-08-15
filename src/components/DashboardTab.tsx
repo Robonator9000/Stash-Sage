@@ -1,4 +1,5 @@
-﻿import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+﻿import { useMemo, useState } from 'react';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { StatsCard } from './StatsCard';
 import { CalendarHeatmap } from './CalendarHeatmap';
 import { TBreakTracker } from './TBreakTracker';
@@ -6,10 +7,13 @@ import { MonthlyTrendsChart } from './MonthlyTrendsChart';
 import { Product, Session, Settings } from '../types';
 import { t } from '../utils/translations';
 import { formatPrecision, formatCurrency } from '../utils/helpers';
-import { Paper, Text, Group, Box } from '@mantine/core';
+import { Paper, Text, Group, Box, SegmentedControl, Badge } from '@mantine/core';
 import { ShineBorder, NeonGradientCard, BlurFade, AnimatedGradientText } from './magicui';
+import { IconArrowUpRight, IconArrowDownRight, IconMinus } from '@tabler/icons-react';
 
 const DASHBOARD_COLORS = ['#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
+
+type RangeKey = 'all' | '30d' | '7d' | 'today';
 
 interface DashboardTabProps {
   products: Product[];
@@ -52,12 +56,126 @@ function ChartCard({
   );
 }
 
+function inRange(date: Date, range: RangeKey, now: Date): boolean {
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  if (range === 'today') return date >= start;
+  if (range === '7d') {
+    start.setDate(start.getDate() - 6);
+    return date >= start;
+  }
+  if (range === '30d') {
+    start.setDate(start.getDate() - 29);
+    return date >= start;
+  }
+  return true;
+}
+
 export function DashboardTab({ products, sessions, isDark, lang, settings, typeDistribution, consumptionByMonth, topStrains, spendingByType, totalValue }: DashboardTabProps) {
+  const [range, setRange] = useState<RangeKey>('all');
+  const now = new Date();
+
+  const filteredSessions = useMemo(() => {
+    if (range === 'all') return sessions;
+    return sessions.filter((s) => inRange(new Date(s.date), range, now));
+  }, [sessions, range]);
+
+  const rangeLabel = useMemo(() => {
+    if (range === 'today') return t('rangeToday', lang);
+    if (range === '7d') return t('range7d', lang);
+    if (range === '30d') return t('range30d', lang);
+    return t('rangeAll', lang);
+  }, [range, lang]);
+
+  const periodComparison = useMemo(() => {
+    if (range === 'all') return null;
+    const current = filteredSessions.reduce((sum, s) => sum + s.amount, 0);
+    const start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+    if (range === '7d') start.setDate(start.getDate() - 6);
+    else if (range === '30d') start.setDate(start.getDate() - 29);
+    const windowMs = now.getTime() - start.getTime();
+    const prevEnd = new Date(start.getTime() - 1);
+    const prevStart = new Date(prevEnd.getTime() - windowMs);
+    const previous = sessions
+      .filter((s) => {
+        const d = new Date(s.date);
+        return d >= prevStart && d <= prevEnd;
+      })
+      .reduce((sum, s) => sum + s.amount, 0);
+    if (previous === 0) return current > 0 ? { pct: null, up: true } : null;
+    const pct = ((current - previous) / previous) * 100;
+    return { pct, up: pct >= 0 };
+  }, [filteredSessions, sessions, range, now]);
+
+  const rangeConsumption = useMemo(() => filteredSessions.reduce((sum, s) => sum + s.amount, 0), [filteredSessions]);
+
+  const rangeByMonth = useMemo(() => {
+    if (range === 'all') return consumptionByMonth;
+    const map = new Map<string, number>();
+    filteredSessions.forEach((s) => {
+      const d = new Date(s.date);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      map.set(key, (map.get(key) || 0) + s.amount);
+    });
+    const labels: Record<string, string> = {
+      '01': 'Jan', '02': 'Feb', '03': 'Mar', '04': 'Apr', '05': 'May', '06': 'Jun',
+      '07': 'Jul', '08': 'Aug', '09': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Dec',
+    };
+    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([key, amount]) => {
+      const [, m] = key.split('-');
+      return { month: labels[m] || m, amount };
+    });
+  }, [filteredSessions, range, consumptionByMonth]);
+
   return (
     <BlurFade>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+        {/* Range selector row */}
         <div className="col-span-1 sm:col-span-2 lg:col-span-5">
-          <StatsCard products={products} sessions={sessions} isDark={isDark} />
+          <Group justify="space-between" align="center" gap="sm" wrap="wrap">
+            <SegmentedControl
+              size="xs"
+              value={range}
+              onChange={(v) => setRange(v as RangeKey)}
+              color="cyan"
+              data={[
+                { value: 'all', label: t('rangeAll', lang) },
+                { value: '30d', label: t('range30d', lang) },
+                { value: '7d', label: t('range7d', lang) },
+                { value: 'today', label: t('rangeToday', lang) },
+              ]}
+            />
+            <Group gap="xs" align="center">
+              {periodComparison && (
+                <Badge
+                  size="sm"
+                  radius="md"
+                  color={periodComparison.pct === null ? 'gray' : periodComparison.up ? 'orange' : 'green'}
+                  leftSection={
+                    periodComparison.pct === null ? (
+                      <IconMinus size={12} />
+                    ) : periodComparison.up ? (
+                      <IconArrowUpRight size={12} />
+                    ) : (
+                      <IconArrowDownRight size={12} />
+                    )
+                  }
+                >
+                  {periodComparison.pct === null
+                    ? t('rangeVsPrev', lang).replace('{pct}', '—')
+                    : t('rangeVsPrev', lang).replace('{pct}', `${Math.abs(periodComparison.pct).toFixed(0)}%`)}
+                </Badge>
+              )}
+              <Badge size="sm" radius="md" variant="light" color="cyan">
+                {t('rangeConsumed', lang)}: {formatPrecision(rangeConsumption, settings.decimalPrecision)}g
+              </Badge>
+            </Group>
+          </Group>
+        </div>
+
+        <div className="col-span-1 sm:col-span-2 lg:col-span-5">
+          <StatsCard products={products} sessions={filteredSessions} isDark={isDark} rangeLabel={rangeLabel} />
         </div>
 
         <div className="col-span-1 lg:col-span-2">
@@ -131,11 +249,11 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
         </ShineBorder>
 
         <div className="col-span-1 sm:col-span-2 lg:col-span-2">
-          <CalendarHeatmap sessions={sessions} isDark={isDark} lang={lang} />
+          <CalendarHeatmap sessions={filteredSessions} isDark={isDark} lang={lang} />
         </div>
 
         <div className="col-span-1 sm:col-span-2 lg:col-span-3">
-          <MonthlyTrendsChart consumptionByMonth={consumptionByMonth} isDark={isDark} lang={lang} />
+          <MonthlyTrendsChart consumptionByMonth={rangeByMonth} isDark={isDark} lang={lang} />
         </div>
 
         {settings.budgetLimit > 0 && (

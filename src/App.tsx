@@ -878,6 +878,15 @@ export default function App() {
           </div>
           </ErrorBoundary>
         )}
+        {activeTab === 'admin' && !isAdmin && (
+          <div className="flex flex-col items-center justify-center py-24 text-center px-4">
+            <div className={`flex items-center justify-center w-16 h-16 rounded-2xl mb-4 ${isDark ? 'bg-white/5' : 'bg-gray-100'}`}>
+              <Lock size={28} className={isDark ? 'text-slate-400' : 'text-gray-500'} />
+            </div>
+            <Text fw={700} size="lg" c={isDark ? 'white' : 'black'}>{t('adminOnly', lang)}</Text>
+            <Text size="sm" mt={6} c={isDark ? 'gray.4' : 'gray.6'}>{t('adminOnlyHint', lang)}</Text>
+          </div>
+        )}
 
         {/* ==================== NOTIFICATIONS TAB ==================== */}
         {activeTab === 'notifications' && user && (

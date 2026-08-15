@@ -194,7 +194,7 @@ export const HistoryTab = memo(function HistoryTab({
       )}
 
       {filteredHistory.length > 0 ? (
-        <Stack gap="lg">
+        <Stack gap="md">
           <Group justify="space-between" px={2}>
             <Checkbox
               checked={selectedIds.size === filteredHistory.length && filteredHistory.length > 0}

@@ -184,8 +184,8 @@ export function timeAgo(dateStr: string, lang: string): string {
   if (mins < 60) return t('minutesAgo', lang).replace('{n}', String(mins));
   const hours = Math.floor(mins / 60);
   if (hours < 24) return t('hoursAgo', lang).replace('{n}', String(hours));
-  const days = Math.floor(hours / 24);
-  if (days < 30) return t('daysAgo', lang).replace('{n}', String(days));
-  const months = Math.floor(days / 30);
-  return t('monthsAgo', lang).replace('{n}', String(months));
+  const d = new Date(dateStr);
+  const now = new Date();
+  const sameYear = d.getFullYear() === now.getFullYear();
+  return d.toLocaleDateString(lang, sameYear ? { month: 'short', day: 'numeric' } : { month: 'short', day: 'numeric', year: 'numeric' });
 }

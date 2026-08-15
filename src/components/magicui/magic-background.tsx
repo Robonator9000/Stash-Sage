@@ -14,16 +14,23 @@ export function MagicBackground({ isDark, variant = 'full' }: MagicBackgroundPro
   const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    // Mantine keeps closed modal/drawer roots mounted in the DOM (display:none),
-    // so a plain querySelector would pause the particles forever after the
-    // first modal open. Check actual visibility instead.
+    // Mantine keeps closed modal/drawer roots mounted in the DOM as empty
+    // shells (display:block but zero height, no overlay/content), so neither
+    // querySelector nor getComputedStyle alone can tell open from closed.
+    // An OPEN root always lays out its overlay+content, so require actual
+    // rendered size + a visible overlay/content child to count as blocking.
     const isOverlayBlocking = () => {
       const nodes = document.querySelectorAll<HTMLElement>(
         '.mantine-Modal-root, .mantine-Drawer-root, [data-mantine-modal]'
       );
       for (const node of nodes) {
         const style = window.getComputedStyle(node);
-        if (style.display !== 'none' && style.visibility !== 'hidden') return true;
+        if (style.display === 'none' || style.visibility === 'hidden') continue;
+        // Closed shells have no layout; open overlays fill the viewport.
+        if (node.offsetHeight === 0 && node.offsetWidth === 0) continue;
+        if (node.querySelector('.mantine-Modal-overlay, .mantine-Drawer-overlay, .mantine-Modal-content, .mantine-Drawer-content')) {
+          return true;
+        }
       }
       return false;
     };

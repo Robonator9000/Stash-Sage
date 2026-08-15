@@ -19,6 +19,7 @@ interface ProfileData {
   bio?: string;
   contacts?: string;
   location?: string;
+  created_at?: string;
 }
 
 interface ProfilePageProps {
@@ -53,7 +54,7 @@ export function ProfilePage({ userId: propUserId, onBack, onOpenChat }: ProfileP
     if (!userId) return;
     setLoading(true);
     Promise.all([
-      supabase.from('profiles').select('display_name, username, avatar_url, banner_url, bio, contacts, location').eq('user_id', userId).maybeSingle(),
+      supabase.from('profiles').select('display_name, username, avatar_url, banner_url, bio, contacts, location, created_at').eq('user_id', userId).maybeSingle(),
       supabase.from('posts').select('*', { count: 'exact' }).eq('user_id', userId).order('created_at', { ascending: false }).limit(50),
       supabase.from('products').select('*').eq('user_id', userId).order('createdat', { ascending: false }).limit(50),
       currentUserId ? supabase.from('follows').select('following_id').eq('follower_id', currentUserId).eq('following_id', userId).maybeSingle() : { data: null },
@@ -213,6 +214,11 @@ export function ProfilePage({ userId: propUserId, onBack, onOpenChat }: ProfileP
                   <IconMapPin size={12} color={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'} />
                   <Text size="xs" c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}>{profileData.location}</Text>
                 </Group>
+              )}
+              {profileData.created_at && (
+                <Text size="xs" mt={2} c={isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-5)'}>
+                  {t('joinedOn', lang).replace('{date}', new Date(profileData.created_at).toLocaleDateString(lang, { month: 'short', year: 'numeric' }))}
+                </Text>
               )}
             </Box>
             {!isOwnProfile && currentUserId && (

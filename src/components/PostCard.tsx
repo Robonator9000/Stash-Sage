@@ -102,7 +102,7 @@ function PostImages({ images }: { images: string[] }) {
   );
 }
 
-function QuotedPost({ post, isDark, onHashtagClick }: { post: Post; isDark: boolean; onHashtagClick?: (tag: string) => void }) {
+function QuotedPost({ post, isDark, lang, onHashtagClick }: { post: Post; isDark: boolean; lang: string; onHashtagClick?: (tag: string) => void }) {
   const avatarGradient = 'linear-gradient(135deg, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))';
   return (
     <Paper p="sm" mt="sm" radius="md" withBorder
@@ -113,7 +113,7 @@ function QuotedPost({ post, isDark, onHashtagClick }: { post: Post; isDark: bool
         </Avatar>
         <Text size="xs" fw={700}>{post.author?.display_name || post.author?.username || 'Unknown'}</Text>
         <Text size="xs" c="dimmed">@{post.author?.username || 'user'}</Text>
-        <Text size="xs" c="dimmed" style={{ marginLeft: 'auto' }}>{timeAgo(post.created_at, 'en')}</Text>
+        <Text size="xs" c="dimmed" style={{ marginLeft: 'auto' }}>{timeAgo(post.created_at, lang)}</Text>
       </Group>
       <Text size="xs" style={{ whiteSpace: 'pre-wrap', color: isDark ? 'var(--mantine-color-gray-2)' : 'var(--mantine-color-gray-7)' }}>
         {renderContent(post.content, isDark, onHashtagClick)}
@@ -257,7 +257,7 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
                 {renderContent(post.content, isDark, onHashtagClick)}
               </Text>
               {postImages.length > 0 && <Box onClick={() => onPostClick?.(post.id)}><PostImages images={postImages} /></Box>}
-              {post.quoted_post && <Box onClick={(e) => { e.stopPropagation(); onPostClick?.(post.quoted_post!.id); }}><QuotedPost post={post.quoted_post} isDark={isDark} onHashtagClick={onHashtagClick} /></Box>}
+              {post.quoted_post && <Box onClick={(e) => { e.stopPropagation(); onPostClick?.(post.quoted_post!.id); }}><QuotedPost post={post.quoted_post} isDark={isDark} lang={lang} onHashtagClick={onHashtagClick} /></Box>}
             </>
           )}
 
@@ -283,7 +283,14 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
               onClick={handleToggleLike}
               disabled={liking}
               aria-label={liked ? 'Unlike post' : 'Like post'}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 500, color: liked ? 'var(--mantine-color-orange-6)' : mutedColor }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                fontSize: 14, fontWeight: 700,
+                color: liked ? 'var(--mantine-color-orange-6)' : mutedColor,
+                padding: '4px 10px',
+                borderRadius: 9999,
+                background: liked ? 'rgba(251,146,60,0.12)' : 'transparent',
+              }}
             >
               <IconHeart size={20} fill={liked ? 'currentColor' : 'none'} />
               {likesCount > 0 && likesCount}
@@ -294,7 +301,7 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
               aria-label="Toggle comments"
               aria-expanded={showComments}
               aria-controls={`comment-section-${post.id}`}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 500, color: showComments ? (isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)') : mutedColor }}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 600, color: showComments ? (isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)') : mutedColor }}
             >
               <IconMessageCircle size={18} />
               {(post.comments_count ?? 0) > 0 && post.comments_count}
