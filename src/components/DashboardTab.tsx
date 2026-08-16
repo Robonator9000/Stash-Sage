@@ -7,7 +7,7 @@ import { MonthlyTrendsChart } from './MonthlyTrendsChart';
 import { Product, Session, Settings } from '../types';
 import { t } from '../utils/translations';
 import { formatPrecision, formatCurrency } from '../utils/helpers';
-import { Paper, Text, Group, Box, SegmentedControl, Badge } from '@mantine/core';
+import { Paper, Text, Group, Box, SegmentedControl } from '@mantine/core';
 import { ShineBorder, NeonGradientCard, BlurFade, AnimatedGradientText } from './magicui';
 import { IconArrowUpRight, IconArrowDownRight, IconMinus } from '@tabler/icons-react';
 
@@ -71,6 +71,20 @@ function inRange(date: Date, range: RangeKey, now: Date): boolean {
     return date >= start;
   }
   return true;
+}
+
+function StatTile({ isDark, label, value, icon, accent }: {
+  isDark: boolean; label: string; value: string; icon: React.ReactNode; accent: string;
+}) {
+  return (
+    <Paper p="sm" radius="md" withBorder h="100%" className="flex flex-col items-center justify-center text-center" style={{ background: isDark ? 'var(--mantine-color-dark-6)' : '#fff' }}>
+      <Group gap={4} mb={6}>
+        {icon}
+        <Text size="xs" fw={600} c="dimmed">{label}</Text>
+      </Group>
+      <Text fw={800} size="xl" style={{ lineHeight: 1.2, color: accent }}>{value}</Text>
+    </Paper>
+  );
 }
 
 export function DashboardTab({ products, sessions, isDark, lang, settings, typeDistribution, consumptionByMonth, topStrains, spendingByType, totalValue }: DashboardTabProps) {
@@ -147,38 +161,12 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
               { value: 'today', label: t('rangeToday', lang) },
             ]}
           />
-          <Group gap="xs" align="center">
-            {periodComparison && (
-              <Badge
-                size="sm"
-                radius="md"
-                color={periodComparison.pct === null ? 'gray' : periodComparison.up ? 'orange' : 'green'}
-                leftSection={
-                  periodComparison.pct === null ? (
-                    <IconMinus size={12} />
-                  ) : periodComparison.up ? (
-                    <IconArrowUpRight size={12} />
-                  ) : (
-                    <IconArrowDownRight size={12} />
-                  )
-                }
-              >
-                {periodComparison.pct === null
-                  ? t('rangeVsPrev', lang).replace('{pct}', '—')
-                  : t('rangeVsPrev', lang).replace('{pct}', `${Math.abs(periodComparison.pct).toFixed(0)}%`)}
-              </Badge>
-            )}
-            <Badge size="sm" radius="md" variant="light" color="cyan">
-              {t('rangeConsumed', lang)}: {formatPrecision(rangeConsumption, settings.decimalPrecision)}g
-            </Badge>
-          </Group>
         </Group>
 
         <StatsCard products={products} sessions={filteredSessions} isDark={isDark} rangeLabel={rangeLabel} />
 
-        {/* Bento grid: 1×1 and 2×2 square tiles anchor row heights (aspect-square),
-            wide tiles stretch or take a 2.06:1 aspect, so every row packs with no
-            gaps at 2 and 4 columns. Mobile rows are full-width tiles. */}
+        {/* Bento grid: one row of 1×1 squares (T-break, stock, consumed, vs-prev)
+            anchors the layout; every chart below spans the full grid width. */}
         <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
           <div className="col-span-2 lg:col-span-1 aspect-[2.06/1] lg:aspect-square">
             <TBreakTracker products={products} sessions={sessions} isDark={isDark} />
@@ -190,7 +178,7 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
                 <div className="flex-1 min-h-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={typeDistribution} cx="50%" cy="50%" innerRadius="55%" outerRadius="82%" paddingAngle={3} dataKey="value">
+                      <Pie data={typeDistribution} cx="50%" cy="45%" innerRadius="55%" outerRadius="80%" paddingAngle={3} dataKey="value">
                         {typeDistribution.map((_, idx) => (
                           <Cell key={idx} fill={DASHBOARD_COLORS[idx % DASHBOARD_COLORS.length]} />
                         ))}
@@ -214,7 +202,29 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
             </ChartCard>
           </ShineBorder>
 
-          <ShineBorder borderRadius={12} color={['#10b981', '#06b6d4']} className="col-span-2 lg:col-span-2 lg:row-span-2 aspect-square lg:aspect-square">
+          <div className="col-span-2 lg:col-span-1 aspect-[2.06/1] lg:aspect-square">
+            <StatTile
+              isDark={isDark}
+              label={t('rangeConsumed', lang)}
+              value={`${formatPrecision(rangeConsumption, settings.decimalPrecision)}g`}
+              icon={<IconMinus size={14} />}
+              accent={isDark ? '#67e8f9' : '#0e7490'}
+            />
+          </div>
+
+          <div className="col-span-2 lg:col-span-1 aspect-[2.06/1] lg:aspect-square">
+            <StatTile
+              isDark={isDark}
+              label={t('rangeVsPrev', lang).replace('{pct}', '')}
+              value={periodComparison
+                ? (periodComparison.pct === null ? '—' : `${periodComparison.up ? '+' : '-'}${Math.abs(periodComparison.pct).toFixed(0)}%`)
+                : '—'}
+              icon={periodComparison?.pct == null ? <IconMinus size={14} /> : periodComparison.up ? <IconArrowUpRight size={14} /> : <IconArrowDownRight size={14} />}
+              accent={periodComparison?.pct == null ? 'var(--mantine-color-gray-5)' : periodComparison.up ? '#fb923c' : '#34d399'}
+            />
+          </div>
+
+          <ShineBorder borderRadius={12} color={['#10b981', '#06b6d4']} className="col-span-2 lg:col-span-4 aspect-square lg:aspect-[4.15/1]">
             <ChartCard isDark={isDark} title={t('topStrains', lang)} gradient="linear-gradient(120deg, #10b981, #06b6d4)">
               {topStrains.length > 0 ? (
                 <div className="flex-1 min-h-0">
@@ -235,7 +245,7 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
             </ChartCard>
           </ShineBorder>
 
-          <ShineBorder borderRadius={12} color={['#f59e0b', '#13eeef']} className="col-span-2 lg:col-span-2 aspect-[2.06/1]">
+          <ShineBorder borderRadius={12} color={['#f59e0b', '#13eeef']} className="col-span-2 lg:col-span-4 aspect-[2.06/1] lg:aspect-[4.15/1]">
             <ChartCard isDark={isDark} title={t('totalSpent', lang)} gradient="linear-gradient(120deg, #f59e0b, #13eeef)">
               {spendingByType.length > 0 ? (
                 <div className="flex-1 min-h-0">
@@ -256,11 +266,11 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
             </ChartCard>
           </ShineBorder>
 
-          <div className="col-span-2 lg:col-span-2 aspect-[2.06/1]">
+          <div className="col-span-2 lg:col-span-4 aspect-[2.06/1] lg:aspect-[4.15/1]">
             <CalendarHeatmap sessions={filteredSessions} isDark={isDark} lang={lang} />
           </div>
 
-          <div className="col-span-2 lg:col-span-2 aspect-[2.06/1]">
+          <div className="col-span-2 lg:col-span-4 aspect-[2.06/1] lg:aspect-[4.15/1]">
             <MonthlyTrendsChart consumptionByMonth={rangeByMonth} isDark={isDark} lang={lang} />
           </div>
         </div>

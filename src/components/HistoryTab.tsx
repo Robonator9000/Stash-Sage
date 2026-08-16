@@ -1,4 +1,4 @@
-import { memo, useState, useMemo, useCallback } from 'react';
+import { memo, useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Settings } from '../types';
 import { ActivityEntry } from '../utils/useActivity';
 import { t } from '../utils/translations';
@@ -107,7 +107,56 @@ export const HistoryTab = memo(function HistoryTab({
       (groups[g] = groups[g] || []).push(e);
     }
     return Object.entries(groups);
-  }, [filteredHistory]);
+  }, [filteredHistory, lang]);
+
+  // Column count of the entry grid, live from a ResizeObserver, so the
+  // "> 2 rows" grouping threshold adapts as the viewport changes.
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [cols, setCols] = useState(3);
+  useEffect(() => {
+    const el = gridRef.current;
+    if (!el) return;
+    const measure = () => setCols(Math.max(1, Math.floor(el.clientWidth / 210)));
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [grouped.length]);
+
+  interface DisplayEntry {
+    key: string;
+    type: string;
+    productName: string;
+    count: number;
+    amount?: number;
+    price?: number;
+    timestamp: Date;
+    notes?: string;
+  }
+
+  const toDisplayEntries = useCallback((entries: ActivityEntry[]): DisplayEntry[] => {
+    if (entries.length <= cols * 2) {
+      return entries.map(e => ({ key: e.id, type: e.type, productName: e.productName || '—', count: 1, amount: e.amount, price: e.price, timestamp: e.timestamp, notes: e.notes }));
+    }
+    // Too many rows: collapse same product+type entries into one card each.
+    const map = new Map<string, DisplayEntry>();
+    for (const e of entries) {
+      const key = `${e.type}|${e.productName || '—'}`;
+      const existing = map.get(key);
+      if (existing) {
+        existing.count += 1;
+        if (e.amount != null) existing.amount = (existing.amount ?? 0) + e.amount;
+        if (e.price != null) existing.price = (existing.price ?? 0) + e.price;
+        if (e.timestamp > existing.timestamp) {
+          existing.timestamp = e.timestamp;
+          existing.notes = e.notes || existing.notes;
+        }
+      } else {
+        map.set(key, { key, type: e.type, productName: e.productName || '—', count: 1, amount: e.amount, price: e.price, timestamp: e.timestamp, notes: e.notes });
+      }
+    }
+    return [...map.values()];
+  }, [cols]);
 
   const mutedColor = isDark ? 'var(--mantine-color-slate-4)' : 'var(--mantine-color-gray-6)';
 
@@ -217,21 +266,22 @@ export const HistoryTab = memo(function HistoryTab({
               </Group>
 
               <div
+                ref={gridRef}
                 className="grid gap-2"
                 style={{
                   gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
                   gridAutoFlow: 'dense',
                 }}
               >
-                {entries.map((entry) => {
+                {toDisplayEntries(entries).map((entry) => {
                   const meta = TYPE_META[entry.type] || TYPE_META.edit;
                   const TypeIcon = meta.icon;
-                  const isSelected = selectedIds.has(entry.id);
-                  const isExpanded = expandedNotes.has(entry.id);
+                  const isSelected = selectedIds.has(entry.key);
+                  const isExpanded = expandedNotes.has(entry.key);
 
                   return (
                     <Paper
-                      key={entry.id}
+                      key={entry.key}
                       radius="md"
                       withBorder
                       p="sm"
@@ -247,12 +297,12 @@ export const HistoryTab = memo(function HistoryTab({
                         flexDirection: 'column',
                         gap: 8,
                       }}
-                      onClick={() => toggleRow(entry.id)}
+                      onClick={() => toggleRow(entry.key)}
                     >
                       <Group wrap="nowrap" align="flex-start" gap="sm">
                         <Checkbox
                           checked={isSelected}
-                          onChange={() => toggleRow(entry.id)}
+                          onChange={() => toggleRow(entry.key)}
                           onClick={e => e.stopPropagation()}
                           aria-label={entry.productName}
                           mt={2}
@@ -275,7 +325,7 @@ export const HistoryTab = memo(function HistoryTab({
                         <Box style={{ flex: 1, minWidth: 0 }}>
                           <Group justify="space-between" wrap="nowrap" gap="xs">
                             <Text size="sm" fw={600} truncate style={{ minWidth: 0, color: isDark ? '#fff' : '#000' }}>
-                              {entry.productName || '\u2014'}
+                              {entry.productName}
                             </Text>
                             <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>
                               {formatActivityDate(entry.timestamp, lang)}
@@ -286,9 +336,14 @@ export const HistoryTab = memo(function HistoryTab({
                             <Badge color={meta.color} variant="light" size="sm" radius="sm" styles={{ label: { textTransform: 'capitalize' } }}>
                               {t(meta.label, lang)}
                             </Badge>
+                            {entry.count > 1 && (
+                              <Badge color="cyan" variant="light" size="sm" radius="sm">
+                                ×{entry.count}
+                              </Badge>
+                            )}
                             {entry.amount != null && (
                               <Text size="xs" style={{ color: mutedColor, whiteSpace: 'nowrap' }}>
-                                {formatPrecision(entry.amount, settings.decimalPrecision)}g
+                                {formatPrecision(entry.amount, settings.decimalPrecision)}g{entry.count > 1 ? ` ${t('totalLabel', lang)}` : ''}
                               </Text>
                             )}
                             {entry.price != null && (
@@ -304,7 +359,7 @@ export const HistoryTab = memo(function HistoryTab({
                         <Text
                           size="xs"
                           style={{ cursor: 'pointer', color: mutedColor }}
-                          onClick={(e) => { e.stopPropagation(); onToggleNote(entry.id); }}
+                          onClick={(e) => { e.stopPropagation(); onToggleNote(entry.key); }}
                           lineClamp={isExpanded ? undefined : 1}
                         >
                           {entry.notes}

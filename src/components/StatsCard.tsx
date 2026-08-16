@@ -1,9 +1,9 @@
-import { useMemo, memo } from 'react';
+import { useMemo, memo, useRef, useEffect, useState } from 'react';
 import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { roundToHundredth, formatPrecision } from '../utils/helpers';
-import { Product, Session } from '../types';
-import { SimpleGrid, Text, Group, Paper, Box } from '@mantine/core';
+import { Product, Session, Settings } from '../types';
+import { Text, Group, Paper, Box } from '@mantine/core';
 import {
   IconPackage,
   IconScale,
@@ -149,7 +149,38 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
 
   const allStats = [...primaryStats, ...secondaryStats, ...tertiaryStats];
 
-  if (allStats.length === 0) return null;
+  // cleanStreak/weeklyCost have no visibility toggle — always shown.
+  const visibleStats = allStats.filter(s =>
+    s.key === 'cleanStreak' || s.key === 'weeklyCost' || settings.statsVisibility[s.key as keyof Settings['statsVisibility']] !== false
+  );
+
+  if (visibleStats.length === 0) return null;
+
+  // Column count adapts to width and stat count: prefer a divisor of the tile
+  // count (rows always pack full), otherwise the widest option with the
+  // smallest remainder, stretching last-row tiles when the maths allows.
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(0);
+  useEffect(() => {
+    const el = gridRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setWidth(el.clientWidth));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const n = visibleStats.length;
+  const maxCols = Math.max(1, Math.min(8, Math.floor((width || 1024) / 150)));
+  let cols = Math.min(n, maxCols);
+  for (let c = Math.min(n, maxCols); c >= 2; c--) {
+    if (n % c === 0) { cols = c; break; }
+  }
+  if (n % cols !== 0) {
+    for (let c = Math.min(n, maxCols); c >= 2; c--) {
+      if (n % c < n % cols) { cols = c; break; }
+    }
+  }
+  const remainder = n % cols;
+  const lastSpan = remainder === 0 ? 1 : (cols % remainder === 0 ? cols / remainder : (remainder === 1 ? cols : 1));
 
   return (
     <div>
@@ -158,17 +189,19 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
           {rangeLabel}
         </Text>
       )}
-      <SimpleGrid cols={{ base: 2, xs: 3, sm: 4, md: 5, lg: 6 }} spacing="sm" style={{ justifyItems: 'stretch' }}>
-      {allStats.map((stat) => {
+      <div ref={gridRef} style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: 12 }}>
+      {visibleStats.map((stat, idx) => {
         const Icon = stat.icon;
         const isCleanStreak = stat.key === 'cleanStreak';
         const accentColor = isCleanStreak && computed.cleanStreakDays > 0
           ? 'var(--mantine-color-emerald-5)'
           : 'var(--mantine-color-cyan-5)';
+        const inLastRow = remainder > 0 && idx >= n - remainder;
         return (
           <Paper key={stat.key} radius="md" withBorder p="sm" className="h-full" style={{
-            background: isDark ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-white)',
-            borderColor: isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-3)',
+            gridColumn: inLastRow ? `span ${lastSpan}` : undefined,
+            background: isDark ? 'var(--mantine-color-dark-6)' : 'rgba(255,255,255,0.7)',
+            borderColor: isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)',
             minHeight: 72,
             display: 'flex',
             flexDirection: 'column',
@@ -182,7 +215,7 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = '';
-            e.currentTarget.style.borderColor = isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-3)';
+            e.currentTarget.style.borderColor = isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)';
           }}>
             <Group gap={6} mb={4}>
               <Box
@@ -204,7 +237,7 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
           </Paper>
         );
       })}
-    </SimpleGrid>
+    </div>
     </div>
   );
 });

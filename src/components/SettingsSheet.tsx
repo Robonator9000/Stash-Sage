@@ -266,7 +266,64 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const sectionLabel = `flex items-center gap-2 text-sm font-medium mb-3 ${isDark ? 'text-white' : 'text-black'}`;
 
   const lang = settings.language;
-  const handleSave = () => {
+
+  // Profile edits live in draft state; the header Save button commits them
+  // (localStorage settings + cloud upsert) alongside everything else.
+  const draftsKey = JSON.stringify([profileUsername, profileDisplayName, profileBio, profileLocation, profileContacts, avatarPreview, bannerPreview]);
+  const profileRef = useRef(draftsKey);
+  const profileDirty = !!user && draftsKey !== profileRef.current;
+
+  const commitProfile = async () => {
+    if (!profileUsername.trim() || !user) return false;
+    let avatarUrl = settings.profile?.avatar_url;
+    if (avatarPreview && avatarPreview.startsWith('data:')) {
+      const blob = await (await fetch(avatarPreview)).blob();
+      const file = new File([blob], 'avatar.webp', { type: blob.type || 'image/webp' });
+      const uploaded = await uploadProfileImage(user.id, file, 'profile-images');
+      if (uploaded) {
+        if (avatarUrl && !avatarUrl.startsWith('data:')) await deleteProfileImage(avatarUrl, 'profile-images');
+        avatarUrl = uploaded;
+      }
+    }
+    let bannerUrl = settings.profile?.banner_url;
+    if (bannerPreview && bannerPreview.startsWith('data:')) {
+      const blob = await (await fetch(bannerPreview)).blob();
+      const file = new File([blob], 'banner.webp', { type: blob.type || 'image/webp' });
+      const uploaded = await uploadProfileImage(user.id, file, 'profile-banners');
+      if (uploaded) {
+        if (bannerUrl && !bannerUrl.startsWith('data:')) await deleteProfileImage(bannerUrl, 'profile-banners');
+        bannerUrl = uploaded;
+      }
+    }
+    const p = {
+      username: profileUsername.trim() || 'User',
+      displayName: profileDisplayName.trim() || profileUsername.trim() || 'User',
+      bio: profileBio.trim(),
+      joinedAt: settings.profile?.joinedAt || new Date().toISOString(),
+      avatar_url: avatarUrl,
+      banner_url: bannerUrl,
+      contacts: profileContacts.filter(c => c.value.trim()),
+      location: profileLocation.trim() || undefined,
+    };
+    updateSettings({ profile: p });
+    supabase.from('profiles').upsert({
+      user_id: user.id,
+      username: p.username,
+      display_name: p.displayName,
+      avatar_url: p.avatar_url || null,
+      banner_url: p.banner_url || null,
+      bio: p.bio,
+      contacts: JSON.stringify(p.contacts),
+      location: p.location || null,
+      public_products: settings.publicProducts || false,
+    }, { onConflict: 'user_id' }).then(undefined, () => {});
+    profileRef.current = JSON.stringify([p.username, p.displayName, p.bio, p.location, p.contacts, p.avatar_url, p.banner_url]);
+    showToast({ id: 'profile-saved', title: '', body: t('profileSaved', lang) });
+    return true;
+  };
+
+  const handleSave = async () => {
+    if (profileDirty) await commitProfile();
     settingsSnapshot.current = settings;
     setDirty(false);
     onDirtyChange?.(false);
@@ -286,9 +343,9 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
             {t('settingsSubtitle', lang)}
           </p>
         </div>
-        <button onClick={handleSave} disabled={!dirty}
+        <button onClick={handleSave} disabled={!dirty && !profileDirty} title={!dirty && !profileDirty ? t('saveDisabledHint', lang) : undefined}
           className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border-2 ${
-            dirty
+            dirty || profileDirty
               ? isDark ? 'bg-cyan-500/15 border-cyan-400/60 text-cyan-300 hover:bg-cyan-500/25' : 'bg-cyan-50 border-cyan-300 text-cyan-700 hover:bg-cyan-100'
               : isDark ? 'border-slate-700 text-slate-500 cursor-not-allowed' : 'border-gray-200 text-gray-400 cursor-not-allowed'
           }`}>
@@ -300,12 +357,12 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
         {/* Vertical nav */}
         <nav className="sm:w-56 shrink-0 flex sm:flex-col gap-1 overflow-x-auto sm:sticky sm:top-0 sm:self-start">
           {([
-            { id: 'profile', icon: User, label: t('profileSetup', lang) },
+            { id: 'profile', icon: User, label: t('profile', lang) },
             { id: 'preferences', icon: Palette, label: t('preferences', lang) },
             { id: 'session', icon: Clock, label: t('sessionDefaults', lang) },
             { id: 'budget', icon: BarChart3, label: t('budgetAndStats', lang) },
             { id: 'data', icon: Database, label: t('dataBackup', lang) },
-            { id: 'security', icon: Lock, label: t('pinLock', lang) },
+            { id: 'security', icon: Lock, label: t('security', lang) },
           ] as const).map(tab => {
             const isActive = activeTab === tab.id;
             return (
@@ -585,64 +642,11 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                 />
               </div>
 
-              <Button
-                onClick={async () => {
-                  if (!profileUsername.trim() || !user) return;
-                  let avatarUrl = settings.profile?.avatar_url;
-                  if (avatarPreview && avatarPreview.startsWith('data:')) {
-                    const blob = await (await fetch(avatarPreview)).blob();
-                    const file = new File([blob], 'avatar.webp', { type: blob.type || 'image/webp' });
-                    const uploaded = await uploadProfileImage(user.id, file, 'profile-images');
-                    if (uploaded) {
-                      if (avatarUrl && !avatarUrl.startsWith('data:')) await deleteProfileImage(avatarUrl, 'profile-images');
-                      avatarUrl = uploaded;
-                    }
-                  }
-                  let bannerUrl = settings.profile?.banner_url;
-                  if (bannerPreview && bannerPreview.startsWith('data:')) {
-                    const blob = await (await fetch(bannerPreview)).blob();
-                    const file = new File([blob], 'banner.webp', { type: blob.type || 'image/webp' });
-                    const uploaded = await uploadProfileImage(user.id, file, 'profile-banners');
-                    if (uploaded) {
-                      if (bannerUrl && !bannerUrl.startsWith('data:')) await deleteProfileImage(bannerUrl, 'profile-banners');
-                      bannerUrl = uploaded;
-                    }
-                  }
-                  const p = {
-                    username: profileUsername.trim() || 'User',
-                    displayName: profileDisplayName.trim() || profileUsername.trim() || 'User',
-                    bio: profileBio.trim(),
-                    joinedAt: settings.profile?.joinedAt || new Date().toISOString(),
-                    avatar_url: avatarUrl,
-                    banner_url: bannerUrl,
-                    contacts: profileContacts.filter(c => c.value.trim()),
-                    location: profileLocation.trim() || undefined,
-                  };
-                  updateSettings({ profile: p });
-                  supabase.from('profiles').upsert({
-                    user_id: user.id,
-                    username: p.username,
-                    display_name: p.displayName,
-                    avatar_url: p.avatar_url || null,
-                    banner_url: p.banner_url || null,
-                    bio: p.bio,
-                    contacts: JSON.stringify(p.contacts),
-                    location: p.location || null,
-                    public_products: settings.publicProducts || false,
-                  }, { onConflict: 'user_id' }).then(undefined, () => {});
-                  showToast({ id: 'profile-saved', title: '', body: t('profileSaved', lang) });
-                }}
-                disabled={!profileUsername.trim()}
-                className="w-full bg-gradient-to-r from-cyan-700 to-emerald-700"
-              >
-                {t('save', lang)} {t('profileSetup', lang)}
-              </Button>
-
               <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={e => {
                 const file = e.target.files?.[0];
                 e.target.value = '';
                 if (!file) return;
-                if (file.size > 2 * 1024 * 1024) { alert('Image must be under 2MB'); return; }
+                if (file.size > 2 * 1024 * 1024) { alert(t('imageTooLarge', lang).replace('{n}', '2')); return; }
                 const reader = new FileReader();
                 reader.onload = () => { const url = reader.result as string; setAvatarPreview(url); };
                 reader.readAsDataURL(file);
@@ -652,7 +656,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                 const file = e.target.files?.[0];
                 e.target.value = '';
                 if (!file) return;
-                if (file.size > 5 * 1024 * 1024) { alert('Banner must be under 5MB'); return; }
+                if (file.size > 5 * 1024 * 1024) { alert(t('imageTooLarge', lang).replace('{n}', '5')); return; }
                 const reader = new FileReader();
                 reader.onload = () => { const url = reader.result as string; setBannerPreview(url); };
                 reader.readAsDataURL(file);
