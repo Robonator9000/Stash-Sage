@@ -8,3 +8,6 @@ dist
 tsconfig.tsbuildinfo
 .next
 server.log
+
+# supabase CLI link artifacts
+supabase/.temp/
