@@ -39,14 +39,25 @@ export function MonthlyTrendsChart({ consumptionByMonth, isDark, lang }: Monthly
 
   const totalThisYear = chartData.reduce((s, d) => s + d.amount, 0);
 
-  if (chartData.length === 0) return null;
+  if (chartData.length === 0) {
+    return (
+      <ShineBorder borderRadius={12} color={['#06b6d4', '#13eeef', '#8b5cf6']}>
+        <Paper p="lg" radius="md" withBorder h="100%" className="flex flex-col" style={{ background: isDark ? 'rgba(10, 17, 32, 0.8)' : '#fff' }}>
+          <AnimatedGradientText colors="linear-gradient(120deg, #06b6d4, #8b5cf6)" className="text-sm font-semibold" animationSpeed={8}>
+            {t('monthlyUsage', lang)}
+          </AnimatedGradientText>
+          <Text size="sm" c="dimmed" className="flex-1 flex items-center justify-center">{t('noDataYet', lang)}</Text>
+        </Paper>
+      </ShineBorder>
+    );
+  }
 
   const trendColor = trendStats.direction === 'down' ? '#10b981' : trendStats.direction === 'up' ? '#f59e0b' : '#94a3b8';
   const trendIcon = trendStats.direction === 'down' ? '↓' : trendStats.direction === 'up' ? '↑' : '→';
 
   return (
     <ShineBorder borderRadius={12} color={['#06b6d4', '#13eeef', '#8b5cf6']}>
-      <Paper p="lg" radius="md" withBorder h="100%" style={{ background: isDark ? 'rgba(10, 17, 32, 0.8)' : '#fff' }}>
+      <Paper p="lg" radius="md" withBorder h="100%" className="flex flex-col" style={{ background: isDark ? 'rgba(10, 17, 32, 0.8)' : '#fff' }}>
         <Group justify="space-between" align="flex-start" mb="sm">
           <Stack gap={2}>
             <AnimatedGradientText colors="linear-gradient(120deg, #06b6d4, #8b5cf6)" className="text-sm font-semibold" animationSpeed={8}>
@@ -64,8 +75,9 @@ export function MonthlyTrendsChart({ consumptionByMonth, isDark, lang }: Monthly
           </Badge>
         </Group>
 
-        <ResponsiveContainer width="100%" height={240}>
-          <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+        <div className="flex-1 min-h-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
             <defs>
               <linearGradient id="usageGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.5} />
@@ -110,7 +122,8 @@ export function MonthlyTrendsChart({ consumptionByMonth, isDark, lang }: Monthly
               dot={false}
             />
           </ComposedChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        </div>
 
         <Group justify="space-between" mt="xs" gap="xs">
           <Group gap={4}>

@@ -590,7 +590,7 @@ export const ProductModal = memo(function ProductModal({ product, onSave, onDele
             onClick={handleSubmit}
             disabled={!name.trim()}
             aria-label={product ? t('save', lang) : t('addProduct', lang)}
-            className="bg-gradient-to-r from-cyan-500 to-emerald-500"
+            className="bg-gradient-to-r from-cyan-700 to-emerald-700"
           >
             {product ? t('save', lang) : t('addProduct', lang)}
           </Button>

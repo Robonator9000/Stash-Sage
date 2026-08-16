@@ -203,7 +203,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
             leftSection={<IconPlus size={16} />}
             size="sm"
             variant="gradient"
-            gradient={{ from: 'cyan', to: 'emerald' }}
+            gradient={{ from: 'cyan.7', to: 'emerald.7' }}
             onClick={() => setIsAddModalOpen(true)}
             visibleFrom="sm"
             data-coach="add-btn"

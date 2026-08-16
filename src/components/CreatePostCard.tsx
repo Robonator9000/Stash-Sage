@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import type { Product } from '../types';
 import { t } from '../utils/translations';
+import { MAX_UPLOAD_MB } from '../utils/supabase';
+import { showToast } from './Toast';
 import { Paper, Text, Group, Textarea, Button, Avatar, ActionIcon, Loader, UnstyledButton, Box } from '@mantine/core';
 import { IconPhoto, IconLink, IconBuildingStore, IconX } from '@tabler/icons-react';
 
@@ -57,8 +59,18 @@ export function CreatePostCard({ isDark, lang, displayName, currentUserId, produ
     const remaining = MAX_IMAGES - imageFiles.length;
     const toAdd = files.slice(0, remaining);
     if (toAdd.length === 0) return;
-    const newFiles = [...imageFiles, ...toAdd];
-    const newPreviews = [...imagePreviews, ...toAdd.map(f => URL.createObjectURL(f))];
+    const accepted = toAdd.filter(f => {
+      if (f.type.startsWith('image/')) return true;
+      showToast({ id: 'img-type', title: '', body: t('invalidImageType', lang) });
+      return false;
+    }).filter(f => {
+      if (f.size <= MAX_UPLOAD_MB * 1024 * 1024) return true;
+      showToast({ id: 'img-size', title: '', body: t('fileTooLarge', lang).replace('{n}', String(MAX_UPLOAD_MB)) });
+      return false;
+    });
+    if (accepted.length === 0) { if (fileInputRef.current) fileInputRef.current.value = ''; return; }
+    const newFiles = [...imageFiles, ...accepted];
+    const newPreviews = [...imagePreviews, ...accepted.map(f => URL.createObjectURL(f))];
     setImageFiles(newFiles);
     setImagePreviews(newPreviews);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -221,7 +233,7 @@ export function CreatePostCard({ isDark, lang, displayName, currentUserId, produ
               </Text>
               <Button
                 variant="gradient"
-                gradient={{ from: 'cyan', to: 'emerald' }}
+                gradient={{ from: 'cyan.7', to: 'emerald.7' }}
                 onClick={handleSubmit}
                 disabled={!isValid || submitting}
               >

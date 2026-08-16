@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { t } from '../utils/translations';
-import { hashPin } from '../utils/helpers';
+import { hashPin, generateId, rateLimit } from '../utils/helpers';
+import { useSettings } from '../utils/useSettings';
 import { Modal, Stack, Text, TextInput, Button, Box } from '@mantine/core';
 import { IconLock } from '@tabler/icons-react';
 
@@ -17,6 +18,7 @@ export function PinModal({ pinHash, onSuccess, isDark = true, language }: PinMod
   const [isVisible, setIsVisible] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { settings, updateSettings } = useSettings();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 10);
@@ -26,10 +28,25 @@ export function PinModal({ pinHash, onSuccess, isDark = true, language }: PinMod
 
   const handleSubmit = async () => {
     if (isVerifying) return;
+    if (!rateLimit('pin-attempt', 5, 15_000)) {
+      setError(t('tooManyAttempts', language));
+      setPinValue('');
+      return;
+    }
     setIsVerifying(true);
     try {
-      const hash = await hashPin(pinValue);
-      if (hash === pinHash) {
+      const salted = await hashPin(pinValue, settings.pinSalt || undefined);
+      let ok = salted === pinHash;
+      let legacy = false;
+      if (!ok && !settings.pinSalt) {
+        // Pins armed before salting stored an unsalted digest; validate then upgrade.
+        if (await hashPin(pinValue) === pinHash) { ok = true; legacy = true; }
+      }
+      if (ok) {
+        if (legacy) {
+          const salt = generateId();
+          updateSettings({ pinSalt: salt, pinHash: await hashPin(pinValue, salt) });
+        }
         onSuccess();
       } else {
         setError(t('pinMismatch', language));
@@ -107,7 +124,7 @@ export function PinModal({ pinHash, onSuccess, isDark = true, language }: PinMod
         styles={{
           root: {
             background: pinValue.length >= 4 && !isVerifying
-              ? 'linear-gradient(to right, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))'
+              ? 'linear-gradient(to right, var(--mantine-color-cyan-7), var(--mantine-color-emerald-7))'
               : isDark ? 'var(--mantine-color-slate-7)' : 'var(--mantine-color-gray-2)',
             color: pinValue.length >= 4 && !isVerifying ? 'var(--mantine-color-white)' : isDark ? 'var(--mantine-color-slate-5)' : 'var(--mantine-color-gray-4)',
             cursor: pinValue.length >= 4 && !isVerifying ? 'pointer' : 'not-allowed',

@@ -221,7 +221,7 @@ export const PostDetailView = memo(function PostDetailView({ post, isDark, lang,
                 <Box mb="md">
                   <Textarea value={editContent} onChange={e => setEditContent(e.target.value.slice(0, 500))} autoFocus minRows={3} maxLength={500} />
                   <Group gap="sm" mt="xs">
-                    <Button variant="gradient" gradient={{ from: 'cyan', to: 'emerald' }} onClick={handleEdit} disabled={!editContent.trim() || editSubmitting} size="xs">
+                    <Button variant="gradient" gradient={{ from: 'cyan.7', to: 'emerald.7' }} onClick={handleEdit} disabled={!editContent.trim() || editSubmitting} size="xs">
                       {editSubmitting ? 'Saving...' : 'Save'}
                     </Button>
                     <Button variant="default" size="xs" onClick={() => { setEditing(false); setEditContent(post.content); }}>Cancel</Button>

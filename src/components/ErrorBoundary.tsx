@@ -64,7 +64,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <Button
               mt="xs"
               variant="gradient"
-              gradient={{ from: 'cyan', to: 'emerald' }}
+              gradient={{ from: 'cyan.7', to: 'emerald.7' }}
               size="sm"
               onClick={() => this.setState({ hasError: false, error: null })}
             >

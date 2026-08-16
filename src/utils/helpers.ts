@@ -20,13 +20,29 @@ export function generateId(): string {
   return crypto.randomUUID();
 }
 
-// Hash a PIN using SHA-256 (replaces insecure btoa)
-export async function hashPin(pin: string): Promise<string> {
+// Hash a PIN with salted SHA-256. A missing salt hashes the PIN alone so
+// legacy unsalted locks keep validating until they are re-armed salted.
+export async function hashPin(pin: string, salt?: string): Promise<string> {
   const encoder = new TextEncoder();
-  const data = encoder.encode(pin);
+  const data = encoder.encode(salt ? `${salt}:${pin}` : pin);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Client-side sliding-window throttle. Abuse friction for accidental hammering
+// and scripted clients sharing this bundle — real enforcement lives server-side.
+const rateBuckets = new Map<string, number[]>();
+export function rateLimit(key: string, max: number, windowMs: number): boolean {
+  const now = Date.now();
+  const bucket = (rateBuckets.get(key) || []).filter(ts => now - ts < windowMs);
+  if (bucket.length >= max) {
+    rateBuckets.set(key, bucket);
+    return false;
+  }
+  bucket.push(now);
+  rateBuckets.set(key, bucket);
+  return true;
 }
 
 // Round to hundredths
@@ -180,12 +196,14 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 export function timeAgo(dateStr: string, lang: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'now';
+  if (mins < 1) return t('timeNow', lang);
   if (mins < 60) return t('minutesAgo', lang).replace('{n}', String(mins));
   const hours = Math.floor(mins / 60);
   if (hours < 24) return t('hoursAgo', lang).replace('{n}', String(hours));
   const d = new Date(dateStr);
   const now = new Date();
   const sameYear = d.getFullYear() === now.getFullYear();
-  return d.toLocaleDateString(lang, sameYear ? { month: 'short', day: 'numeric' } : { month: 'short', day: 'numeric', year: 'numeric' });
+  const date = d.toLocaleDateString(lang, sameYear ? { month: 'short', day: 'numeric' } : { month: 'short', day: 'numeric', year: 'numeric' });
+  const time = d.toLocaleTimeString(lang, { hour: 'numeric', minute: '2-digit' });
+  return `${date}, ${time}`;
 }

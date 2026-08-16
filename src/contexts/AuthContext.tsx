@@ -4,6 +4,29 @@ import type { User } from '@supabase/supabase-js';
 import { AuthError } from '@supabase/supabase-js';
 import { showToast } from '../components/Toast';
 import { subscribeToPush, unsubscribeFromPush } from '../utils/pushNotifications';
+import { t } from '../utils/translations';
+
+// Brute-force friction for the password form: 5 failed attempts buy a 60s
+// cooldown. Server-side limits remain the real boundary; this stops a script
+// (or an impatient user) from hammering the grant from this device.
+const AUTH_FAIL_KEY = 'weed-auth-fails';
+const AUTH_FAIL_MAX = 5;
+const AUTH_FAIL_COOLDOWN_MS = 60_000;
+
+function authFailState(): { count: number; until: number } {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(AUTH_FAIL_KEY) || 'null');
+    if (parsed && typeof parsed.count === 'number') return parsed;
+  } catch { /* corrupt state counts as none */ }
+  return { count: 0, until: 0 };
+}
+
+function authLang(): string {
+  try {
+    const lang = JSON.parse(localStorage.getItem('weed-settings') || '{}').language;
+    return ['en', 'es', 'fr', 'de', 'pt'].includes(lang) ? lang : 'en';
+  } catch { return 'en'; }
+}
 
 async function upsertProfile(userId: string, displayName: string) {
   // Create the default profile only on first sign-in. Never overwrite a
@@ -112,20 +135,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = useCallback(async (email: string, password: string) => {
     setError(null);
     if (!isConfigured) { setError('Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your .env file.'); throw new Error('Auth not configured'); }
+    const fails = authFailState();
+    if (fails.until > Date.now()) {
+      const msg = t('tooManyAttempts', authLang());
+      setError(msg);
+      throw new Error(msg);
+    }
+    let failed = false;
     try {
       const { error: err } = await supabase.auth.signInWithPassword({ email, password });
       if (err) {
+        failed = true;
         setError(handleAuthError(err));
         throw err;
       }
-      subscribeToPush();
-      showToast({ id: 'auth-signin', title: 'Signed in', body: 'Welcome back!' });
     } catch (err: any) {
+      failed = true;
       if (!(err instanceof AuthError)) {
         setError(handleAuthError(err));
-        throw err;
+      }
+      throw err;
+    } finally {
+      if (failed) {
+        const f = authFailState();
+        const next = { count: f.count + 1, until: 0 };
+        if (next.count >= AUTH_FAIL_MAX) {
+          next.until = Date.now() + AUTH_FAIL_COOLDOWN_MS;
+          next.count = 0;
+        }
+        try { localStorage.setItem(AUTH_FAIL_KEY, JSON.stringify(next)); } catch { /* storage may be blocked */ }
+      } else {
+        try { localStorage.removeItem(AUTH_FAIL_KEY); } catch { /* ignore */ }
       }
     }
+    subscribeToPush();
+    showToast({ id: 'auth-signin', title: 'Signed in', body: 'Welcome back!' });
   }, [handleAuthError]);
 
   const signUp = useCallback(async (email: string, password: string, username?: string) => {

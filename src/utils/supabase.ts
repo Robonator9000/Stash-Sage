@@ -49,10 +49,18 @@ function buildClient(): SupabaseClient {
 
 export const supabase = buildClient();
 
+// Upload guard: images only, hard 5MB ceiling. Client-side friction on top of
+// whatever the storage bucket policies enforce server-side.
+export const MAX_UPLOAD_MB = 5;
+export function validImageUpload(file: File): boolean {
+  return file.type.startsWith('image/') && file.size <= MAX_UPLOAD_MB * 1024 * 1024;
+}
+
 export async function uploadListingImages(userId: string, files: File[]): Promise<string[]> {
   if (!isConfigured || files.length === 0) return [];
   const urls: string[] = [];
   for (const file of files) {
+    if (!validImageUpload(file)) continue;
     const ext = file.name.split('.').pop() || 'webp';
     const fileName = `${crypto.randomUUID()}.${ext}`;
     const filePath = `${userId}/${fileName}`;
@@ -82,6 +90,7 @@ export async function uploadPostImages(userId: string, files: File[]): Promise<s
   if (!isConfigured || files.length === 0) return [];
   const urls: string[] = [];
   for (const file of files) {
+    if (!validImageUpload(file)) continue;
     const ext = file.name.split('.').pop() || 'webp';
     const fileName = `${crypto.randomUUID()}.${ext}`;
     const filePath = `${userId}/${fileName}`;
@@ -97,7 +106,7 @@ export async function uploadPostImages(userId: string, files: File[]): Promise<s
 }
 
 export async function uploadMessageImage(userId: string, file: File): Promise<string | null> {
-  if (!isConfigured) return null;
+  if (!isConfigured || !validImageUpload(file)) return null;
   const ext = file.name.split('.').pop() || 'webp';
   const fileName = `${crypto.randomUUID()}.${ext}`;
   const filePath = `${userId}/${fileName}`;
@@ -122,7 +131,7 @@ export async function deletePostImages(urls: string[]): Promise<void> {
 }
 
 export async function uploadProfileImage(userId: string, file: File, bucket: 'profile-images' | 'profile-banners'): Promise<string | null> {
-  if (!isConfigured) return null;
+  if (!isConfigured || !validImageUpload(file)) return null;
   const ext = file.name.split('.').pop() || 'webp';
   const fileName = `${crypto.randomUUID()}.${ext}`;
   const filePath = `${userId}/${fileName}`;

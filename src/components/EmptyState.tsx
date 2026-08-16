@@ -44,7 +44,7 @@ export function EmptyState({ isDark = true, hasProducts, onAddProduct, onClearFi
             leftSection={<IconPlus size={20} />}
             size="md"
             variant="gradient"
-            gradient={{ from: 'cyan.6', to: 'emerald.6', deg: 90 }}
+            gradient={{ from: 'cyan.7', to: 'emerald.7', deg: 90 }}
             data-coach="add-empty"
           >
             {t('addProduct', lang)}

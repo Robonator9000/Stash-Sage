@@ -125,9 +125,10 @@ export function TBreakTracker({ products, sessions, isDark }: TBreakTrackerProps
             </Text>
           </Stack>
         </Group>
-        <Text size="xs" fw={600} c="dimmed" mt="sm" mb={6}>
-          <Group gap={4}><IconTarget size={14} /> Start a Tolerance Break</Group>
-        </Text>
+        <Group gap={4} mt="sm" mb={6}>
+          <IconTarget size={14} />
+          <Text size="xs" fw={600} c="dimmed">Start a Tolerance Break</Text>
+        </Group>
         <Group gap="xs" wrap="wrap">
           {[
             { label: '7 days', value: 7, desc: 'Quick reset' },

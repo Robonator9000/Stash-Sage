@@ -234,7 +234,7 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
               <Group gap="sm" mt="xs">
                 <Button
                   variant="gradient"
-                  gradient={{ from: 'cyan', to: 'emerald' }}
+                  gradient={{ from: 'cyan.7', to: 'emerald.7' }}
                   size="xs"
                   onClick={handleEdit}
                   loading={editSubmitting}

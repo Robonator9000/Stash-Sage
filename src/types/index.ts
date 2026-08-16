@@ -45,6 +45,7 @@ export interface Settings {
   showTimerMs: boolean;
   pinEnabled: boolean;
   pinHash: string;
+  pinSalt?: string;
   favoriteBrands: string[];
   recentBrands: string[];
   sessionDefaults: {
@@ -62,6 +63,13 @@ export interface Settings {
   profile?: Profile;
   notificationsSound?: boolean;
   notificationsEnabled?: boolean;
+  notificationTypes?: {
+    likes: boolean;
+    comments: boolean;
+    follows: boolean;
+    listings: boolean;
+    mentions: boolean;
+  };
   defaultFeedFilter?: 'latest' | 'following' | 'trending';
   showOnlineStatus?: boolean;
   showLocation?: boolean;

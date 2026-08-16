@@ -352,7 +352,7 @@ export function CreateListingModal({ isDark, lang, products, currentUserId, init
               size="md"
               loading={submitting}
               disabled={!canSubmit}
-              className="bg-gradient-to-r from-cyan-500 to-emerald-500"
+              className="bg-gradient-to-r from-cyan-700 to-emerald-700"
               styles={{ root: { boxShadow: '0 10px 20px rgba(0,0,0,0.35)' } }}
             >
               {submitting ? '...' : initial ? t('editListing', lang) : t('createListing', lang)}

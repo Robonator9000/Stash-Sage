@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Message } from '../types';
 import { supabase } from '../utils/supabase';
+import { rateLimit } from '../utils/helpers';
 
 let chatChannelCounter = 0;
 
@@ -95,6 +96,7 @@ export function useChat(conversationId: string | null, userId: string | undefine
 
   const sendMessage = useCallback(async (content?: string, image_url?: string, reply_to_id?: string): Promise<boolean> => {
     if (!conversationId || !userId || (!content?.trim() && !image_url) || sending || blockedByOther) return false;
+    if (!rateLimit(`chat-send-${conversationId}`, 1, 1500)) return false;
     setSending(true);
     try {
       const { error } = await supabase.from('messages').insert({

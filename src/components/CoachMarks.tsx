@@ -235,7 +235,7 @@ export function CoachMarks({ language, isDark, onComplete, onSkip, onOpenSetting
           <Button
             size="compact-sm"
             variant="gradient"
-            gradient={{ from: 'cyan', to: 'emerald' }}
+            gradient={{ from: 'cyan.7', to: 'emerald.7' }}
             onClick={handleNext}
           >
             {isLast ? t('done', language) : t('next', language)}

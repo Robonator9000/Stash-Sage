@@ -17,7 +17,7 @@ export const InteractiveHoverButton = forwardRef<HTMLButtonElement, InteractiveH
       children,
       className,
       icon,
-      gradient = 'linear-gradient(90deg, var(--mantine-color-cyan-6), var(--mantine-color-emerald-6))',
+      gradient = 'linear-gradient(90deg, var(--mantine-color-cyan-7), var(--mantine-color-emerald-7))',
       textColor = 'text-slate-700',
       darkTextColor = 'dark:text-slate-100',
       ...props

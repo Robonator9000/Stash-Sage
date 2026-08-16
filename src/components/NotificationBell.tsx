@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNotifications } from '../hooks/useNotifications';
 import { timeAgo } from '../utils/helpers';
+import { t } from '../utils/translations';
 import { useAuth } from '../contexts/AuthContext';
 import { Paper, Group, Text, ActionIcon, Avatar, ScrollArea, Loader, UnstyledButton, Box } from '@mantine/core';
 import { IconBell } from '@tabler/icons-react';
@@ -58,7 +59,7 @@ export function NotificationBell({ isDark, lang, onViewProfile }: NotificationBe
               height: 18,
               minWidth: 18,
               padding: '0 3px',
-              background: 'linear-gradient(90deg, var(--mantine-color-cyan-6), var(--mantine-color-emerald-6))',
+              background: 'linear-gradient(90deg, var(--mantine-color-cyan-7), var(--mantine-color-emerald-7))',
               color: '#fff',
               fontSize: 10,
               fontWeight: 700,
@@ -92,14 +93,14 @@ export function NotificationBell({ isDark, lang, onViewProfile }: NotificationBe
           }}
         >
           <Group px="md" py="sm" justify="space-between" wrap="nowrap" style={{ borderBottom: `1px solid ${borderColor}` }}>
-            <Text size="sm" fw={700} style={{ color: headerFg }}>Notifications</Text>
+            <Text size="sm" fw={700} style={{ color: headerFg }}>{t('notifications', lang)}</Text>
             {unreadCount > 0 && (
               <UnstyledButton
                 onClick={markAllRead}
-                aria-label="Mark all notifications as read"
+                aria-label={t('markAllRead', lang)}
                 style={{ fontSize: 12, fontWeight: 500, color: 'var(--mantine-color-cyan-6)' }}
               >
-                Mark all read
+                {t('markAllRead', lang)}
               </UnstyledButton>
             )}
           </Group>
@@ -113,7 +114,7 @@ export function NotificationBell({ isDark, lang, onViewProfile }: NotificationBe
 
             {!loading && notifications.length === 0 && (
               <Text ta="center" size="sm" p="xl" style={{ color: muted }}>
-                No notifications yet
+                {t('noNotificationsYet', lang)}
               </Text>
             )}
 
@@ -146,11 +147,11 @@ export function NotificationBell({ isDark, lang, onViewProfile }: NotificationBe
                     )}
                     <Box style={{ flex: 1, minWidth: 0 }}>
                       <Text size="sm" style={{ color: bodyFg }}>
-                        {n.type === 'like' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> liked your post</>}
-                        {n.type === 'comment' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> commented on your post</>}
-                        {n.type === 'follow' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> followed you</>}
-                        {n.type === 'new_listing' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> listed <span style={{ fontWeight: 500 }}>{n.listing_title || 'something'}</span> for sale</>}
-                        {n.type === 'listing_sold' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> marked <span style={{ fontWeight: 500 }}>{n.listing_title || 'a listing'}</span> as sold</>}
+                        {n.type === 'like' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> {t('notifLiked', lang)}</>}
+                        {n.type === 'comment' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> {t('notifCommented', lang)}</>}
+                        {n.type === 'follow' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> {t('notifFollowed', lang)}</>}
+                        {n.type === 'new_listing' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> {t('notifListed', lang).replace('{title}', n.listing_title || t('notifSomething', lang))}</>}
+                        {n.type === 'listing_sold' && <><span style={{ fontWeight: 600 }}>{n.actor?.username}</span> {t('notifListingSold', lang).replace('{title}', n.listing_title || t('notifAListing', lang))}</>}
                       </Text>
                       <Text size="xs" style={{ marginTop: 2, color: muted }}>
                         {timeAgo(n.created_at, lang)}

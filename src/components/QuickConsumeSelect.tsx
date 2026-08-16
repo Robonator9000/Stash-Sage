@@ -43,7 +43,7 @@ export function QuickConsumeSelect({
         <Button
           size="compact-sm"
           variant={opened ? 'gradient' : 'subtle'}
-          gradient={{ from: 'cyan', to: 'teal', deg: 135 }}
+          gradient={{ from: 'cyan.7', to: 'teal.7', deg: 135 }}
           leftSection={<IconFlame size={14} />}
           onClick={() => setOpened((o) => !o)}
         >
@@ -83,7 +83,7 @@ export function QuickConsumeSelect({
           <Button
             size="xs"
             variant="gradient"
-            gradient={{ from: 'cyan', to: 'emerald', deg: 135 }}
+            gradient={{ from: 'cyan.7', to: 'emerald.7', deg: 135 }}
             fullWidth
             disabled={!selected || Number(amount) <= 0 || Number(amount) > selected.amount}
             leftSection={<IconFlame size={14} />}

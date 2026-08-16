@@ -137,7 +137,7 @@ export function WelcomeModal({ onComplete, isDark, browserLang }: WelcomeModalPr
           size="lg"
           radius="md"
           variant="gradient"
-          gradient={{ from: 'cyan', to: 'emerald' }}
+          gradient={{ from: 'cyan.7', to: 'emerald.7' }}
           onClick={() => onComplete(selected)}
           leftSection={<IconSparkles size={18} />}
           styles={{

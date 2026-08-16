@@ -279,7 +279,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
       style={{
         fontSize,
         fontWeight: 500,
-        background: 'linear-gradient(to right, var(--mantine-color-cyan-6), var(--mantine-color-emerald-6))',
+        background: 'linear-gradient(to right, var(--mantine-color-cyan-7), var(--mantine-color-emerald-7))',
         WebkitBackgroundClip: 'text',
         backgroundClip: 'text',
         color: 'transparent',

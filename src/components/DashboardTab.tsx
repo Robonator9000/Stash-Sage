@@ -47,11 +47,13 @@ function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <Paper p="sm" radius="md" withBorder h="100%" style={{ background: isDark ? 'var(--mantine-color-dark-6)' : '#fff' }}>
+    <Paper p="sm" radius="md" withBorder h="100%" className="flex flex-col" style={{ background: isDark ? 'var(--mantine-color-dark-6)' : '#fff' }}>
       <AnimatedGradientText colors={gradient} className="mx-0 mb-1 text-sm font-semibold" animationSpeed={8}>
         {title}
       </AnimatedGradientText>
-      {children}
+      <div className="flex-1 min-h-0 flex flex-col">
+        {children}
+      </div>
     </Paper>
   );
 }
@@ -130,157 +132,162 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
 
   return (
     <BlurFade>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
-        {/* Range selector row */}
-        <div className="col-span-1 sm:col-span-2 lg:col-span-5">
-          <Group justify="space-between" align="center" gap="sm" wrap="wrap">
-            <SegmentedControl
-              size="xs"
-              value={range}
-              onChange={(v) => setRange(v as RangeKey)}
-              color="cyan"
-              data={[
-                { value: 'all', label: t('rangeAll', lang) },
-                { value: '30d', label: t('range30d', lang) },
-                { value: '7d', label: t('range7d', lang) },
-                { value: 'today', label: t('rangeToday', lang) },
-              ]}
-            />
-            <Group gap="xs" align="center">
-              {periodComparison && (
-                <Badge
-                  size="sm"
-                  radius="md"
-                  color={periodComparison.pct === null ? 'gray' : periodComparison.up ? 'orange' : 'green'}
-                  leftSection={
-                    periodComparison.pct === null ? (
-                      <IconMinus size={12} />
-                    ) : periodComparison.up ? (
-                      <IconArrowUpRight size={12} />
-                    ) : (
-                      <IconArrowDownRight size={12} />
-                    )
-                  }
-                >
-                  {periodComparison.pct === null
-                    ? t('rangeVsPrev', lang).replace('{pct}', '—')
-                    : t('rangeVsPrev', lang).replace('{pct}', `${Math.abs(periodComparison.pct).toFixed(0)}%`)}
-                </Badge>
-              )}
-              <Badge size="sm" radius="md" variant="light" color="cyan">
-                {t('rangeConsumed', lang)}: {formatPrecision(rangeConsumption, settings.decimalPrecision)}g
+      <div className="space-y-2">
+        {/* Range selector row — kept outside the grid so it never takes a tile slot */}
+        <Group justify="space-between" align="center" gap="sm" wrap="wrap">
+          <SegmentedControl
+            size="xs"
+            value={range}
+            onChange={(v) => setRange(v as RangeKey)}
+            color="cyan"
+            data={[
+              { value: 'all', label: t('rangeAll', lang) },
+              { value: '30d', label: t('range30d', lang) },
+              { value: '7d', label: t('range7d', lang) },
+              { value: 'today', label: t('rangeToday', lang) },
+            ]}
+          />
+          <Group gap="xs" align="center">
+            {periodComparison && (
+              <Badge
+                size="sm"
+                radius="md"
+                color={periodComparison.pct === null ? 'gray' : periodComparison.up ? 'orange' : 'green'}
+                leftSection={
+                  periodComparison.pct === null ? (
+                    <IconMinus size={12} />
+                  ) : periodComparison.up ? (
+                    <IconArrowUpRight size={12} />
+                  ) : (
+                    <IconArrowDownRight size={12} />
+                  )
+                }
+              >
+                {periodComparison.pct === null
+                  ? t('rangeVsPrev', lang).replace('{pct}', '—')
+                  : t('rangeVsPrev', lang).replace('{pct}', `${Math.abs(periodComparison.pct).toFixed(0)}%`)}
               </Badge>
-            </Group>
+            )}
+            <Badge size="sm" radius="md" variant="light" color="cyan">
+              {t('rangeConsumed', lang)}: {formatPrecision(rangeConsumption, settings.decimalPrecision)}g
+            </Badge>
           </Group>
-        </div>
+        </Group>
 
-        <div className="col-span-1 sm:col-span-2 lg:col-span-5">
-          <StatsCard products={products} sessions={filteredSessions} isDark={isDark} rangeLabel={rangeLabel} />
-        </div>
+        <StatsCard products={products} sessions={filteredSessions} isDark={isDark} rangeLabel={rangeLabel} />
 
-        <div className="col-span-1 lg:col-span-2">
-          <TBreakTracker products={products} sessions={sessions} isDark={isDark} />
-        </div>
+        {/* Bento grid: 1×1 and 2×2 square tiles anchor row heights (aspect-square),
+            wide tiles stretch to match, so every row packs with no gaps at 2 cols
+            and 4 cols. Mobile rows are uniform full-width 2.06:1 tiles. */}
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+          <div className="col-span-2 lg:col-span-1 aspect-[2.06/1] lg:aspect-square">
+            <TBreakTracker products={products} sessions={sessions} isDark={isDark} />
+          </div>
 
-        <ShineBorder borderRadius={12} color={['#06b6d4', '#13eeef', '#10b981']} className="col-span-1 sm:col-span-1 lg:col-span-3">
-          <ChartCard isDark={isDark} title={t('stockOverview', lang)} gradient="linear-gradient(120deg, #06b6d4, #13eeef)">
-            {typeDistribution.length > 0 ? (
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie data={typeDistribution} cx="50%" cy="50%" innerRadius={50} outerRadius={85} paddingAngle={3} dataKey="value">
-                    {typeDistribution.map((_, idx) => (
-                      <Cell key={idx} fill={DASHBOARD_COLORS[idx % DASHBOARD_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip contentStyle={tooltipStyle(isDark)}
-                    formatter={(value: any) => [`${formatPrecision(Number(value), 1)}g`, '']} />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <Text ta="center" py="xl" c="dimmed">{t('noProductsYet', lang)}</Text>
-            )}
-            <Group gap="sm" mt="xs" wrap="wrap" justify="center">
-              {typeDistribution.map((item, idx) => (
-                <Group key={item.name} gap={6} align="center">
-                  <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: DASHBOARD_COLORS[idx % DASHBOARD_COLORS.length] }} />
-                  <Text size="xs" c="dimmed">{item.name}</Text>
-                </Group>
-              ))}
-            </Group>
-          </ChartCard>
-        </ShineBorder>
+          <ShineBorder borderRadius={12} color={['#10b981', '#06b6d4']} className="col-span-2 lg:col-span-1 aspect-[2.06/1] lg:aspect-square">
+            <ChartCard isDark={isDark} title={t('topStrains', lang)} gradient="linear-gradient(120deg, #10b981, #06b6d4)">
+              {topStrains.length > 0 ? (
+                <div className="flex-1 min-h-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={topStrains} layout="vertical" margin={{ left: 80 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e5e7eb'} />
+                      <XAxis type="number" tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} domain={[0, 5]} />
+                      <YAxis dataKey="name" type="category" tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} width={75} />
+                      <Tooltip contentStyle={tooltipStyle(isDark)}
+                        formatter={(value: any) => [Number(value).toFixed(1), t('rating', lang)]} />
+                      <Bar dataKey="rating" fill="#10b981" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <Text ta="center" c="dimmed" className="flex-1 flex items-center justify-center">{t('noProductsYet', lang)}</Text>
+              )}
+            </ChartCard>
+          </ShineBorder>
 
-        <ShineBorder borderRadius={12} color={['#10b981', '#06b6d4']} className="col-span-1 sm:col-span-1 lg:col-span-2">
-          <ChartCard isDark={isDark} title={t('topStrains', lang)} gradient="linear-gradient(120deg, #10b981, #06b6d4)">
-            {topStrains.length > 0 ? (
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={topStrains} layout="vertical" margin={{ left: 80 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e5e7eb'} />
-                  <XAxis type="number" tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} domain={[0, 5]} />
-                  <YAxis dataKey="name" type="category" tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} width={75} />
-                  <Tooltip contentStyle={tooltipStyle(isDark)}
-                    formatter={(value: any) => [Number(value).toFixed(1), t('rating', lang)]} />
-                  <Bar dataKey="rating" fill="#10b981" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <Text ta="center" py="xl" c="dimmed">{t('noProductsYet', lang)}</Text>
-            )}
-          </ChartCard>
-        </ShineBorder>
+          <ShineBorder borderRadius={12} color={['#06b6d4', '#13eeef', '#10b981']} className="col-span-2 lg:col-span-2 lg:row-span-2 aspect-[2.06/1] lg:aspect-square">
+            <ChartCard isDark={isDark} title={t('stockOverview', lang)} gradient="linear-gradient(120deg, #06b6d4, #13eeef)">
+              {typeDistribution.length > 0 ? (
+                <div className="flex-1 min-h-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={typeDistribution} cx="50%" cy="50%" innerRadius="55%" outerRadius="85%" paddingAngle={3} dataKey="value">
+                        {typeDistribution.map((_, idx) => (
+                          <Cell key={idx} fill={DASHBOARD_COLORS[idx % DASHBOARD_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={tooltipStyle(isDark)}
+                        formatter={(value: any) => [`${formatPrecision(Number(value), 1)}g`, '']} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <Text ta="center" c="dimmed" className="flex-1 flex items-center justify-center">{t('noProductsYet', lang)}</Text>
+              )}
+              <Group gap="sm" mt="auto" pt="xs" wrap="wrap" justify="center">
+                {typeDistribution.map((item, idx) => (
+                  <Group key={item.name} gap={6} align="center">
+                    <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: DASHBOARD_COLORS[idx % DASHBOARD_COLORS.length] }} />
+                    <Text size="xs" c="dimmed">{item.name}</Text>
+                  </Group>
+                ))}
+              </Group>
+            </ChartCard>
+          </ShineBorder>
 
-        <ShineBorder borderRadius={12} color={['#f59e0b', '#13eeef']} className="col-span-1 sm:col-span-2 lg:col-span-3">
-          <ChartCard isDark={isDark} title={t('totalSpent', lang)} gradient="linear-gradient(120deg, #f59e0b, #13eeef)">
-            {spendingByType.length > 0 ? (
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={spendingByType}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e5e7eb'} />
-                  <XAxis dataKey="name" tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} />
-                  <YAxis tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} />
-                  <Tooltip contentStyle={tooltipStyle(isDark)}
-                    formatter={(value: any) => [formatCurrency(Number(value), settings.currency), '']} />
-                  <Bar dataKey="value" fill="#f59e0b" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <Text ta="center" py="xl" c="dimmed">{t('noProductsYet', lang)}</Text>
-            )}
-          </ChartCard>
-        </ShineBorder>
+          <ShineBorder borderRadius={12} color={['#f59e0b', '#13eeef']} className="col-span-2 lg:col-span-2 lg:row-span-2 aspect-[2.06/1] lg:aspect-square">
+            <ChartCard isDark={isDark} title={t('totalSpent', lang)} gradient="linear-gradient(120deg, #f59e0b, #13eeef)">
+              {spendingByType.length > 0 ? (
+                <div className="flex-1 min-h-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={spendingByType}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e5e7eb'} />
+                      <XAxis dataKey="name" tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} />
+                      <YAxis tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} />
+                      <Tooltip contentStyle={tooltipStyle(isDark)}
+                        formatter={(value: any) => [formatCurrency(Number(value), settings.currency), '']} />
+                      <Bar dataKey="value" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <Text ta="center" c="dimmed" className="flex-1 flex items-center justify-center">{t('noProductsYet', lang)}</Text>
+              )}
+            </ChartCard>
+          </ShineBorder>
 
-        <div className="col-span-1 sm:col-span-2 lg:col-span-2">
-          <CalendarHeatmap sessions={filteredSessions} isDark={isDark} lang={lang} />
-        </div>
+          <div className="col-span-2 lg:col-span-2 aspect-[2.06/1] lg:aspect-auto lg:h-full">
+            <CalendarHeatmap sessions={filteredSessions} isDark={isDark} lang={lang} />
+          </div>
 
-        <div className="col-span-1 sm:col-span-2 lg:col-span-3">
-          <MonthlyTrendsChart consumptionByMonth={rangeByMonth} isDark={isDark} lang={lang} />
+          <div className="col-span-2 lg:col-span-4 aspect-[2.06/1] lg:aspect-[4.15/1]">
+            <MonthlyTrendsChart consumptionByMonth={rangeByMonth} isDark={isDark} lang={lang} />
+          </div>
         </div>
 
         {settings.budgetLimit > 0 && (
-          <div className="col-span-1 sm:col-span-2 lg:col-span-5">
-            <NeonGradientCard borderColors={['#06b6d4', '#10b981', '#13eeef']} borderRadius={12}>
-              <Group justify="space-between" mb="sm">
-                <Text size="sm" fw={600} style={{ color: 'var(--mantine-color-white)' }}>
-                  {t('budgetLimit', lang)} ({settings.budgetPeriod})
-                </Text>
-                <Text size="sm" style={{ color: 'var(--mantine-color-slate-4)' }}>
-                  {formatCurrency(totalValue, settings.currency)} / {formatCurrency(settings.budgetLimit, settings.currency)}
-                </Text>
-              </Group>
-              <Box style={{ width: '100%', height: 8, borderRadius: '9999px', overflow: 'hidden', backgroundColor: '#1e293b' }}>
-                <Box style={{
-                  height: '100%',
-                  borderRadius: '9999px',
-                  width: `${Math.min(100, (totalValue / settings.budgetLimit) * 100)}%`,
-                  background: totalValue > settings.budgetLimit
-                    ? 'linear-gradient(90deg, #ef4444, #dc2626)'
-                    : totalValue > settings.budgetLimit * 0.8
-                      ? 'linear-gradient(90deg, #f59e0b, #d97706)'
-                      : 'linear-gradient(90deg, #10b981, #059669)',
-                }} />
-              </Box>
-            </NeonGradientCard>
-          </div>
+          <NeonGradientCard borderColors={['#06b6d4', '#10b981', '#13eeef']} borderRadius={12}>
+            <Group justify="space-between" mb="sm">
+              <Text size="sm" fw={600} style={{ color: 'var(--mantine-color-white)' }}>
+                {t('budgetLimit', lang)} ({settings.budgetPeriod})
+              </Text>
+              <Text size="sm" style={{ color: 'var(--mantine-color-slate-4)' }}>
+                {formatCurrency(totalValue, settings.currency)} / {formatCurrency(settings.budgetLimit, settings.currency)}
+              </Text>
+            </Group>
+            <Box style={{ width: '100%', height: 8, borderRadius: '9999px', overflow: 'hidden', backgroundColor: '#1e293b' }}>
+              <Box style={{
+                height: '100%',
+                borderRadius: '9999px',
+                width: `${Math.min(100, (totalValue / settings.budgetLimit) * 100)}%`,
+                background: totalValue > settings.budgetLimit
+                  ? 'linear-gradient(90deg, #ef4444, #dc2626)'
+                  : totalValue > settings.budgetLimit * 0.8
+                    ? 'linear-gradient(90deg, #f59e0b, #d97706)'
+                    : 'linear-gradient(90deg, #10b981, #059669)',
+              }} />
+            </Box>
+          </NeonGradientCard>
         )}
       </div>
     </BlurFade>

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, memo } from 'react';
 import type { PostComment } from '../types';
 import { supabase } from '../utils/supabase';
 import { t } from '../utils/translations';
-import { timeAgo } from '../utils/helpers';
+import { timeAgo, rateLimit } from '../utils/helpers';
 import { Box, Text, Group, Avatar, UnstyledButton, ActionIcon, TextInput, Skeleton, Stack, Loader } from '@mantine/core';
 import { IconHeart, IconTrash, IconSend, IconX } from '@tabler/icons-react';
 
@@ -176,6 +176,10 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
   async function handleSubmit() {
     const trimmed = newComment.trim();
     if (!trimmed || submitting) return;
+    if (!rateLimit('create-comment', 1, 2500)) {
+      setError(t('slowDown', lang));
+      return;
+    }
     setSubmitting(true);
     const { data, error: insertError } = await supabase.from('post_comments').insert({
       user_id: currentUserId,
@@ -284,7 +288,7 @@ export function CommentSection({ postId, postUserId, isDark, lang, currentUserId
         />
         <ActionIcon
           variant="gradient"
-          gradient={{ from: 'cyan', to: 'emerald' }}
+          gradient={{ from: 'cyan.7', to: 'emerald.7' }}
           onClick={handleSubmit}
           disabled={!newComment.trim() || submitting}
           aria-label="Submit comment"

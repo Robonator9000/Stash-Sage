@@ -655,7 +655,7 @@ export default function App() {
               <Button
                 size="compact-sm"
                 variant={isSelectMode ? 'gradient' : 'subtle'}
-                gradient={{ from: 'cyan', to: 'teal', deg: 135 }}
+                gradient={{ from: 'cyan.7', to: 'teal.7', deg: 135 }}
                 onClick={() => { setSelectMode(!isSelectMode); if (isSelectMode) setSelectedIds(new Set()); }}
               >
                 {isSelectMode ? t('done', lang) : t('select', lang)}
@@ -899,6 +899,9 @@ export default function App() {
               currentUserId={user.id}
               lang={lang}
               onViewProfile={handleViewProfile}
+              onOpenPost={(postId) => {
+                setSearchParams(prev => { prev.set('tab', 'community'); prev.set('post', postId); return prev; }, { replace: true });
+              }}
             />
           </ErrorBoundary>
         )}

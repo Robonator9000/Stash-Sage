@@ -2,12 +2,13 @@ import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import type { Post, Product, Profile } from '../types';
 import { supabase, uploadPostImages } from '../utils/supabase';
 import { t } from '../utils/translations';
+import { rateLimit } from '../utils/helpers';
 import { PostCard } from './PostCard';
 import { CreatePostCard } from './CreatePostCard';
 import { PostDetailView } from './PostDetailView';
 import { showToast } from './Toast';
 import { SegmentedControl, Paper, Text, Group, UnstyledButton, ActionIcon, Textarea, Button, Loader, Skeleton, Stack, Box } from '@mantine/core';
-import { IconBookmark, IconX } from '@tabler/icons-react';
+import { IconArrowUp, IconBookmark, IconUsers, IconX } from '@tabler/icons-react';
 import { getProfiles } from '../utils/profileCache';
 import { BlurFade, ShineBorder, BorderBeam } from './magicui';
 import { createPortal } from 'react-dom';
@@ -34,13 +35,6 @@ interface SocialFeedProps {
 const PAGE_SIZE = 10;
 let socialFeedChannelCounter = 0;
 
-const feedOptions = [
-  { value: 'latest' as const, label: 'Latest' },
-  { value: 'following' as const, label: 'Following' },
-  { value: 'trending' as const, label: 'Trending' },
-  { value: 'bookmarked' as const, label: (<Group gap={4} wrap="nowrap"><IconBookmark size={12} />Bookmarked</Group>) },
-];
-
 export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId, username, products, profile, onViewProfile, viewPostId, onViewPost, onClosePost, activeHashtag: externalHashtag, onHashtagClick: externalHashtagClick }: SocialFeedProps) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,8 +48,16 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
   const [trendingTags, setTrendingTags] = useState<string[]>([]);
   const [quotePostId, setQuotePostId] = useState<string | null>(null);
   const [quoteContent, setQuoteContent] = useState('');
+  const [pendingNew, setPendingNew] = useState<Post[]>([]);
   const pageRef = useRef(0);
   const observerRef = useRef<HTMLDivElement>(null);
+
+  const feedOptions = useMemo(() => [
+    { value: 'latest' as const, label: t('feedLatest', lang) },
+    { value: 'following' as const, label: t('feedFollowing', lang) },
+    { value: 'trending' as const, label: t('feedTrending', lang) },
+    { value: 'bookmarked' as const, label: (<Group gap={4} wrap="nowrap"><IconBookmark size={12} />{t('feedBookmarked', lang)}</Group>) },
+  ], [lang]);
 
   const enrichPosts = useCallback(async (rawPosts: Post[]): Promise<Post[]> => {
     if (rawPosts.length === 0) return [];
@@ -204,11 +206,10 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
           const newPost = payload.new as Post;
           if (newPost.user_id === currentUserId) return;
           const enriched = await enrichPosts([newPost]);
-          setPosts(prev => {
-            const next = [enriched[0], ...prev];
-            const seen = new Set<string>();
-            return next.filter(p => (seen.has(p.id) ? false : (seen.add(p.id), true)));
-          });
+          // Never auto-inject at the top of the feed — pushing what the user is
+          // reading down the page is the classic janky-feed pattern. Buffer new
+          // posts behind a "show new posts" banner instead.
+          setPendingNew(prev => prev.some(p => p.id === enriched[0]?.id) ? prev : [enriched[0], ...prev]);
         } catch (e) { console.error('Realtime post error:', e); }
       })
       .subscribe((status) => {
@@ -267,6 +268,10 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
 
   const handleCreatePost = useCallback(async (content: string, productId?: string, productName?: string, imageFiles?: File[]) => {
     if (submitting) return;
+    if (!rateLimit('create-post', 1, 4000)) {
+      showToast({ id: 'post-throttle', title: '', body: t('slowDown', lang) });
+      return;
+    }
     setSubmitting(true);
     try {
       let images: string[] | undefined;
@@ -397,6 +402,10 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
 
   const handleFollow = useCallback(async (userId: string) => {
     if (submitting) return;
+    if (!rateLimit('follow', 10, 30_000)) {
+      showToast({ id: 'follow-throttle', title: '', body: t('slowDown', lang) });
+      return;
+    }
     setSubmitting(true);
     try {
       const { error } = await supabase.from('follows').insert({ follower_id: currentUserId, following_id: userId });
@@ -455,6 +464,10 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
 
   const handleQuotePost = useCallback(async (content: string) => {
     if (!quotePostId || submitting) return;
+    if (!rateLimit('create-post', 1, 4000)) {
+      showToast({ id: 'post-throttle', title: '', body: t('slowDown', lang) });
+      return;
+    }
     setSubmitting(true);
     try {
       const { data, error: insertError } = await supabase.from('posts').insert({
@@ -547,7 +560,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
           <Group justify="flex-end">
             <Button
               variant="gradient"
-              gradient={{ from: 'cyan', to: 'emerald' }}
+              gradient={{ from: 'cyan.7', to: 'emerald.7' }}
               size="xs"
               onClick={() => {
                 if (quoteContent.trim()) handleQuotePost(quoteContent.trim());
@@ -583,6 +596,31 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
         radius="md"
         size="sm"
       />
+
+      {pendingNew.length > 0 && (
+        <UnstyledButton
+          onClick={() => {
+            setPosts(prev => {
+              const merged = [...pendingNew, ...prev];
+              const seen = new Set<string>();
+              return merged.filter(p => (seen.has(p.id) ? false : (seen.add(p.id), true)));
+            });
+            setPendingNew([]);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          w="100%"
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            padding: '8px 12px', borderRadius: 'var(--mantine-radius-md)',
+            background: isDark ? 'rgba(6,182,212,0.12)' : 'var(--mantine-color-cyan-1)',
+            border: '1px solid rgba(6,182,212,0.35)',
+            fontSize: 13, fontWeight: 600, color: isDark ? '#67e8f9' : '#0e7490',
+          }}
+        >
+          <IconArrowUp size={14} />
+          {t('showNewPosts', lang).replace('{n}', String(pendingNew.length))}
+        </UnstyledButton>
+      )}
 
       {loading && (
         <div aria-busy="true" aria-label="Loading posts">
@@ -631,10 +669,25 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
       )}
 
       {!loading && !error && displayedPosts.length === 0 && (
-        <Paper p="xl" radius="md" ta="center" withBorder style={{ background: isDark ? 'var(--mantine-color-dark-6)' : 'rgba(255,255,255,0.7)', backdropFilter: 'blur(4px)' }}>
-          <Text size="sm" c="dimmed">
-            {activeHashtag ? `No posts tagged #${activeHashtag}` : feedFilter === 'following' ? 'No posts from people you follow yet' : t('noPostsYet', lang)}
+        <Paper p="xl" radius="md" withBorder style={{ background: isDark ? 'var(--mantine-color-dark-6)' : 'rgba(255,255,255,0.7)', backdropFilter: 'blur(4px)' }}>
+          <Box
+            mb="sm"
+            mx="auto"
+            style={{
+              width: 56, height: 56, borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: isDark ? 'rgba(6,182,212,0.1)' : 'var(--mantine-color-cyan-1)',
+              border: `1px solid ${isDark ? 'rgba(6,182,212,0.25)' : 'var(--mantine-color-cyan-3)'}`,
+            }}
+          >
+            <IconUsers size={26} style={{ color: isDark ? '#22d3ee' : '#0e7490' }} />
+          </Box>
+          <Text size="sm" fw={600} c="dimmed">
+            {activeHashtag ? t('noPostsTagged', lang).replace('{tag}', activeHashtag) : feedFilter === 'following' ? t('noPostsFollowing', lang) : t('noPostsYet', lang)}
           </Text>
+          {!activeHashtag && feedFilter === 'latest' && (
+            <Text size="xs" mt={4} c="dimmed">{t('noPostsYetHint', lang)}</Text>
+          )}
         </Paper>
       )}
 

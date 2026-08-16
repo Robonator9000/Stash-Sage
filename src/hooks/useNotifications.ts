@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { Notification } from '../types';
 import { supabase } from '../utils/supabase';
 import { playNotificationSound } from '../utils/sounds';
+import { useSettings } from '../utils/useSettings';
 
 let notificationChannelCounter = 0;
 
@@ -16,6 +17,22 @@ interface UseNotificationsReturn {
 export function useNotifications(userId: string | undefined): UseNotificationsReturn {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const { settings } = useSettings();
+
+  const typeEnabled = useCallback((type: string) => {
+    if (settings.notificationsEnabled === false) return false;
+    const nt = settings.notificationTypes;
+    if (!nt) return true;
+    switch (type) {
+      case 'like': return nt.likes;
+      case 'comment': return nt.comments;
+      case 'follow': return nt.follows;
+      case 'mention': return nt.mentions;
+      case 'new_listing':
+      case 'listing_sold': return nt.listings;
+      default: return true;
+    }
+  }, [settings.notificationsEnabled, settings.notificationTypes]);
 
   useEffect(() => {
     if (!userId) {
@@ -32,13 +49,14 @@ export function useNotifications(userId: string | undefined): UseNotificationsRe
       .limit(50)
       .then(({ data, error }) => {
         if (!error && data) {
-          const userIds = [...new Set(data.map(n => n.actor_id))];
+          const visible = data.filter(n => typeEnabled(n.type));
+          const userIds = [...new Set(visible.map(n => n.actor_id))];
           supabase.from('profiles')
             .select('user_id, display_name, avatar_url')
             .in('user_id', userIds)
             .then(({ data: profiles }) => {
               const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
-              setNotifications(data.map(n => ({
+              setNotifications(visible.map(n => ({
                 ...n,
                 actor: {
                   username: profileMap.get(n.actor_id)?.display_name || 'Unknown',
@@ -47,7 +65,7 @@ export function useNotifications(userId: string | undefined): UseNotificationsRe
               })));
               setLoading(false);
             }).then(undefined, () => {
-              setNotifications(data.map(n => ({
+              setNotifications(visible.map(n => ({
                 ...n,
                 actor: { username: 'Unknown', avatar_url: null },
               })));
@@ -66,6 +84,7 @@ export function useNotifications(userId: string | undefined): UseNotificationsRe
         async (payload) => {
           try {
             const newNotif = payload.new as Notification;
+            if (!typeEnabled(newNotif.type)) return;
             const { data: profiles } = await supabase
               .from('profiles')
               .select('display_name, avatar_url')
@@ -86,7 +105,7 @@ export function useNotifications(userId: string | undefined): UseNotificationsRe
       });
 
     return () => { supabase.removeChannel(channel); };
-  }, [userId]);
+  }, [userId, typeEnabled]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 

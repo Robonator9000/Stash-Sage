@@ -11,7 +11,7 @@ const SETTINGS_VERSION = 1;
 const defaultSettings: Settings = {
   language: 'en', theme: 'dark', themeAuto: true, onboardingDone: false,
   coachMarksDone: false, currency: '$', decimalPrecision: 2,
-  showTimerMs: false, pinEnabled: false, pinHash: '',
+  showTimerMs: false, pinEnabled: false, pinHash: '', pinSalt: '',
   statsVisibility: {
     totalProducts: true, totalAmount: true, totalSessions: true,
     averageRating: true, averageTHC: true, totalValue: true,
@@ -26,6 +26,7 @@ const defaultSettings: Settings = {
   lowStockThreshold: 0, budgetLimit: 0, budgetPeriod: 'monthly',
   settingsVersion: SETTINGS_VERSION, customStrainColors: {},
   notificationsSound: true, notificationsEnabled: true,
+  notificationTypes: { likes: true, comments: true, follows: true, listings: true, mentions: true },
   defaultFeedFilter: 'latest', showOnlineStatus: true,
 };
 
@@ -39,6 +40,7 @@ function loadSettings(): Settings {
       ...parsed,
       sessionDefaults: { ...defaultSettings.sessionDefaults, ...parsed.sessionDefaults },
       statsVisibility: { ...defaultSettings.statsVisibility, ...parsed.statsVisibility },
+      notificationTypes: { ...defaultSettings.notificationTypes, ...parsed.notificationTypes },
     };
     if (!parsed.settingsVersion || parsed.settingsVersion < SETTINGS_VERSION) {
       merged.budgetLimit = 0;

@@ -116,7 +116,7 @@ export function ReviewSection({ listingId, isOwner, currentUserId, isDark, lang,
             minRows={2}
           />
           <Group gap="sm" mt="sm">
-            <Button variant="gradient" gradient={{ from: 'cyan', to: 'emerald' }} onClick={handleSubmit} disabled={myRating === 0 || submitting}>
+            <Button variant="gradient" gradient={{ from: 'cyan.7', to: 'emerald.7' }} onClick={handleSubmit} disabled={myRating === 0 || submitting}>
               {submitting ? '...' : t('submit', lang)}
             </Button>
             <Button variant="subtle" onClick={() => setShowForm(false)}>

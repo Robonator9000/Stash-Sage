@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Product, Settings, CONTACT_PLATFORMS } from '../types';
 import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
-import { hashPin } from '../utils/helpers';
+import { hashPin, generateId } from '../utils/helpers';
 import { createExportData, downloadExport, downloadCsvExport, copyExportToClipboard, parseImportData, ImportResult } from '../utils/dataTransfer';
 // jspdf loaded dynamically on PDF export only
 import { useAuth } from '../contexts/AuthContext';
@@ -94,6 +94,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const [passwordChangeSubmitting, setPasswordChangeSubmitting] = useState(false);
   const [passwordChangeError, setPasswordChangeError] = useState<string | null>(null);
   const [passwordChangeSuccess, setPasswordChangeSuccess] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [emailChangeSubmitting, setEmailChangeSubmitting] = useState(false);
   const [emailChangeError, setEmailChangeError] = useState<string | null>(null);
@@ -160,11 +161,11 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
     e.preventDefault();
     setAuthLocalError(null);
     if (!authEmail.trim() || authPassword.length < 6) {
-      setAuthLocalError(authMode === 'signin' ? 'Enter your email and password' : 'Password must be at least 6 characters');
+      setAuthLocalError(authMode === 'signin' ? t('errEnterEmailPassword', lang) : t('errPasswordMin', lang));
       return;
     }
     if (authMode === 'signup' && !authUsername.trim()) {
-      setAuthLocalError('Choose a username');
+      setAuthLocalError(t('errChooseUsername', lang));
       return;
     }
     setAuthSubmitting(true);
@@ -175,41 +176,50 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
         await signUp(authEmail.trim(), authPassword, authUsername.trim());
       }
     } catch (err: any) {
-      setAuthLocalError(err?.message || 'Something went wrong');
+      setAuthLocalError(err?.message || t('errSomethingWrong', lang));
     }
     setAuthSubmitting(false);
   };
 
   const handlePasswordChange = async () => {
-    if (newPassword.length < 6) { setPasswordChangeError('Password must be at least 6 characters'); return; }
-    if (newPassword !== confirmNewPassword) { setPasswordChangeError('Passwords do not match'); return; }
+    if (newPassword.length < 6) { setPasswordChangeError(t('errPasswordMin', lang)); return; }
+    if (newPassword !== confirmNewPassword) { setPasswordChangeError(t('errPasswordsDontMatch', lang)); return; }
+    if (!currentPassword) { setPasswordChangeError(t('currentPassword', lang)); return; }
     setPasswordChangeError(null);
     setPasswordChangeSubmitting(true);
     try {
+      // Re-authenticate before changing the password — the security details
+      // checklist calls for it and Supabase needs a fresh session claim.
+      const { error: reauthErr } = await supabase.auth.signInWithPassword({
+        email: user?.email || authEmail.trim(),
+        password: currentPassword,
+      });
+      if (reauthErr) { setPasswordChangeError(t('errCurrentPassword', lang)); return; }
       await updatePassword(newPassword);
       setPasswordChangeSuccess(true);
       setNewPassword('');
       setConfirmNewPassword('');
-      showToast({ id: 'password-updated', title: '', body: 'Password updated' });
+      setCurrentPassword('');
+      showToast({ id: 'password-updated', title: '', body: t('passwordUpdated', lang) });
       setTimeout(() => setPasswordChangeSuccess(false), 4000);
     } catch (err: any) {
-      setPasswordChangeError(err?.message || 'Something went wrong');
+      setPasswordChangeError(err?.message || t('errSomethingWrong', lang));
     }
     setPasswordChangeSubmitting(false);
   };
 
   const handleEmailChange = async () => {
-    if (!newEmail.trim() || !newEmail.includes('@')) { setEmailChangeError('Enter a valid email address'); return; }
+    if (!newEmail.trim() || !newEmail.includes('@')) { setEmailChangeError(t('errInvalidEmail', lang)); return; }
     setEmailChangeError(null);
     setEmailChangeSubmitting(true);
     try {
       await updateEmail(newEmail.trim());
       setEmailChangeSuccess(true);
       setNewEmail('');
-      showToast({ id: 'email-updated', title: '', body: 'Verification email sent' });
+      showToast({ id: 'email-updated', title: '', body: t('verificationEmailSent', lang) });
       setTimeout(() => setEmailChangeSuccess(false), 4000);
     } catch (err: any) {
-      setEmailChangeError(err?.message || 'Something went wrong');
+      setEmailChangeError(err?.message || t('errSomethingWrong', lang));
     }
     setEmailChangeSubmitting(false);
   };
@@ -273,7 +283,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
             {t('settings', lang)}
           </h2>
           <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-            Manage your account, preferences and data
+            {t('settingsSubtitle', lang)}
           </p>
         </div>
         <button onClick={handleSave} disabled={!dirty}
@@ -326,10 +336,10 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                   <div className={`p-4 rounded-xl text-center ${isDark ? 'bg-slate-800' : 'bg-gray-50'}`}>
                     <User className={`w-8 h-8 mx-auto mb-2 ${isDark ? 'text-slate-500' : 'text-gray-600'}`} />
                     <h3 className={`text-sm font-semibold mb-1 ${isDark ? 'text-white' : 'text-black'}`}>
-                      {authMode === 'signin' ? 'Welcome Back' : 'Create Account'}
+                      {authMode === 'signin' ? t('welcomeBack', lang) : t('createAccountTitle', lang)}
                     </h3>
                     <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-600'} mb-4`}>
-                      {authMode === 'signin' ? 'Sign in to manage your profile' : 'Create an account to set up your profile'}
+                      {authMode === 'signin' ? t('signInToManage', lang) : t('createAccountHint', lang)}
                     </p>
                   </div>
 
@@ -340,44 +350,44 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                   )}
 
                   <form onSubmit={handleAuth} className="flex flex-col gap-4">
-                    <TextInput type="email" label="Email" placeholder="Email" value={authEmail}
+                    <TextInput type="email" label={t('emailLabel', lang)} placeholder={t('emailLabel', lang)} value={authEmail}
                       onChange={e => { setAuthEmail(e.currentTarget.value); setAuthLocalError(null); }}
                       required autoFocus
                     />
-                    <TextInput type={showAuthPassword ? 'text' : 'password'} label="Password" placeholder="Password" value={authPassword}
+                    <TextInput type={showAuthPassword ? 'text' : 'password'} label={t('passwordLabel', lang)} placeholder={t('passwordLabel', lang)} value={authPassword}
                       onChange={e => { setAuthPassword(e.currentTarget.value); setAuthLocalError(null); }}
                       required minLength={6}
                       rightSection={
                         <button type="button" aria-label={showAuthPassword ? 'Hide password' : 'Show password'}
                           onClick={() => setShowAuthPassword(s => !s)}
-                          className={`p-1 rounded-lg transition-colors ${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-gray-400 hover:text-gray-700'}`}>
+                          className={`p-1.5 rounded-lg transition-colors ${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-gray-400 hover:text-gray-700'}`}>
                           {showAuthPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                       }
                     />
                     {authMode === 'signup' && (
                       <>
-                        <TextInput label="Username" placeholder="Username" value={authUsername}
+                        <TextInput label={t('usernameLabel', lang)} placeholder={t('usernameLabel', lang)} value={authUsername}
                           onChange={e => { setAuthUsername(e.currentTarget.value.replace(/[^a-zA-Z0-9_]/g, '')); setAuthLocalError(null); }}
                           required minLength={2} maxLength={20}
-                          description="Your unique @username — cannot be changed later"
+                          description={t('usernameHint', lang)}
                         />
                       </>
                     )}
                     {authMode === 'signin' && (
                       <button type="button" onClick={() => setShowResetPassword(true)}
                         className={`self-start text-xs -mt-2 ${isDark ? 'text-slate-200 hover:text-cyan-300' : 'text-gray-700 hover:text-cyan-600'}`}>
-                        Forgot password?
+                        {t('forgotPassword', lang)}
                       </button>
                     )}
-                    <Button type="submit" disabled={authSubmitting} className="w-full bg-gradient-to-r from-cyan-500 to-emerald-500" loading={authSubmitting}>
-                      {authSubmitting ? 'Please wait...' : authMode === 'signin' ? 'Sign In' : 'Create Account'}
+                    <Button type="submit" disabled={authSubmitting} className="w-full bg-gradient-to-r from-cyan-700 to-emerald-700" loading={authSubmitting}>
+                      {authSubmitting ? t('pleaseWait', lang) : authMode === 'signin' ? t('signInBtn', lang) : t('createAccountBtn', lang)}
                     </Button>
                   </form>
 
                   <button onClick={() => { setAuthMode(authMode === 'signin' ? 'signup' : 'signin'); setAuthLocalError(null); setAuthUsername(''); }}
                     className={`w-full text-sm ${isDark ? 'text-slate-200 hover:text-cyan-300' : 'text-gray-700 hover:text-cyan-600'}`}>
-                    {authMode === 'signin' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+                    {authMode === 'signin' ? t('noAccountSignUp', lang) : t('haveAccountSignIn', lang)}
                   </button>
                 </div>
               ) : (
@@ -620,10 +630,10 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                     location: p.location || null,
                     public_products: settings.publicProducts || false,
                   }, { onConflict: 'user_id' }).then(undefined, () => {});
-                  showToast({ id: 'profile-saved', title: '', body: 'Profile saved' });
+                  showToast({ id: 'profile-saved', title: '', body: t('profileSaved', lang) });
                 }}
                 disabled={!profileUsername.trim()}
-                className="w-full bg-gradient-to-r from-cyan-500 to-emerald-500"
+                className="w-full bg-gradient-to-r from-cyan-700 to-emerald-700"
               >
                 {t('save', lang)} {t('profileSetup', lang)}
               </Button>
@@ -650,45 +660,49 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
 
               <hr className={`my-6 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`} />
               <h4 className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-black'} flex items-center gap-2`}>
-                <Lock className="w-4 h-4" />Change Password
+                <Lock className="w-4 h-4" />{t('changePassword', lang)}
               </h4>
               {passwordChangeError && (
                 <div className={`px-3 py-2 rounded-lg text-sm ${isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600'}`}>{passwordChangeError}</div>
               )}
               {passwordChangeSuccess && (
-                <div className={`px-3 py-2 rounded-lg text-sm ${isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>Password updated successfully!</div>
+                <div className={`px-3 py-2 rounded-lg text-sm ${isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>{t('passwordUpdatedSuccess', lang)}</div>
               )}
-<TextInput type="password" placeholder="New password" value={newPassword}
+              <TextInput type="password" placeholder={t('currentPassword', lang)} value={currentPassword}
+                onChange={e => { setCurrentPassword(e.currentTarget.value); setPasswordChangeError(null); setPasswordChangeSuccess(false); }}
+                required
+              />
+              <TextInput type="password" placeholder={t('newPasswordLabel', lang)} value={newPassword}
                 onChange={e => { setNewPassword(e.currentTarget.value); setPasswordChangeError(null); setPasswordChangeSuccess(false); }}
                 minLength={6}
               />
-              <TextInput type="password" placeholder="Confirm new password" value={confirmNewPassword}
+              <TextInput type="password" placeholder={t('confirmPasswordLabel', lang)} value={confirmNewPassword}
                 onChange={e => { setConfirmNewPassword(e.currentTarget.value); setPasswordChangeError(null); setPasswordChangeSuccess(false); }}
                 minLength={6}
               />
-              <Button onClick={handlePasswordChange} disabled={passwordChangeSubmitting || !newPassword || !confirmNewPassword}
-                className="w-full bg-gradient-to-r from-cyan-500 to-emerald-500"
+              <Button onClick={handlePasswordChange} disabled={passwordChangeSubmitting || !newPassword || !confirmNewPassword || !currentPassword}
+                className="w-full bg-gradient-to-r from-cyan-700 to-emerald-700"
                 loading={passwordChangeSubmitting}>
-                {passwordChangeSubmitting ? 'Updating...' : 'Update Password'}
+                {passwordChangeSubmitting ? t('updating', lang) : t('updatePasswordBtn', lang)}
               </Button>
 
               <hr className={`my-6 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`} />
               <h4 className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-black'} flex items-center gap-2`}>
-                <Mail className="w-4 h-4" />Change Email
+                <Mail className="w-4 h-4" />{t('changeEmail', lang)}
               </h4>
               {emailChangeError && (
                 <div className={`px-3 py-2 rounded-lg text-sm ${isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600'}`}>{emailChangeError}</div>
               )}
               {emailChangeSuccess && (
-                <div className={`px-3 py-2 rounded-lg text-sm ${isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>Verification sent! Check your new email.</div>
+                <div className={`px-3 py-2 rounded-lg text-sm ${isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>{t('emailChangeSent', lang)}</div>
               )}
-              <TextInput type="email" placeholder="New email address" value={newEmail}
+              <TextInput type="email" placeholder={t('newEmailLabel', lang)} value={newEmail}
                 onChange={e => { setNewEmail(e.currentTarget.value); setEmailChangeError(null); setEmailChangeSuccess(false); }}
               />
               <Button onClick={handleEmailChange} disabled={emailChangeSubmitting || !newEmail}
-                className="w-full bg-gradient-to-r from-cyan-500 to-emerald-500"
+                className="w-full bg-gradient-to-r from-cyan-700 to-emerald-700"
                 loading={emailChangeSubmitting}>
-                {emailChangeSubmitting ? 'Sending...' : 'Update Email'}
+                {emailChangeSubmitting ? t('sending', lang) : t('updateEmailBtn', lang)}
               </Button>
             </>
             )}
@@ -776,6 +790,34 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                     description={t('notificationsSoundHint', lang)}
                     size="md"
                   />
+                  <div>
+                    <Text size="xs" fw={500} mb={2} className={isDark ? 'text-slate-400' : 'text-gray-600'}>
+                      {t('notifPrefsHint', lang)}
+                    </Text>
+                    {([
+                      { key: 'likes', label: t('notifTypeLikes', lang) },
+                      { key: 'comments', label: t('notifTypeComments', lang) },
+                      { key: 'follows', label: t('notifTypeFollows', lang) },
+                      { key: 'listings', label: t('notifTypeListings', lang) },
+                      { key: 'mentions', label: t('notifTypeMentions', lang) },
+                    ] as const).map(({ key, label }) => {
+                      const nt = { likes: true, comments: true, follows: true, listings: true, mentions: true, ...settings.notificationTypes };
+                      return (
+                        <Switch
+                          key={key}
+                          checked={nt[key]}
+                          disabled={settings.notificationsEnabled === false}
+                          onChange={(e) => {
+                            const next = { ...nt, [key]: e.currentTarget.checked };
+                            updateSettings({ notificationTypes: next });
+                          }}
+                          label={label}
+                          size="xs"
+                          mb={4}
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
@@ -958,9 +1000,9 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                         <Button variant="default" flex={1} onClick={() => { setShowPinSetup(false); setPinSetupValue(''); setPinError(''); }}>
                           {t('cancel', lang)}
                         </Button>
-                        <Button flex={1} className="bg-gradient-to-r from-cyan-500 to-emerald-500" disabled={pinSetupValue.length < 4} onClick={async () => {
+                        <Button flex={1} className="bg-gradient-to-r from-cyan-700 to-emerald-700" disabled={pinSetupValue.length < 4} onClick={async () => {
                           if (pinSetupValue.length < 4) { setPinError(t('pinLengthError', lang)); return; }
-                          try { const hash = await hashPin(pinSetupValue); updateSettings({ pinEnabled: true, pinHash: hash }); setShowPinSetup(false); setPinSetupValue(''); }
+                          try { const salt = generateId(); const hash = await hashPin(pinSetupValue, salt); updateSettings({ pinEnabled: true, pinHash: hash, pinSalt: salt }); setShowPinSetup(false); setPinSetupValue(''); }
                           catch { setPinError(t('importError', lang)); }
                         }}>{t('save', lang)}</Button>
                       </div>
@@ -986,8 +1028,8 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                         <Button variant="default" flex={1} onClick={() => { setShowPinDisable(false); setPinDisableValue(''); setPinError(''); }}>
                           {t('cancel', lang)}
                         </Button>
-                        <Button flex={1} className="bg-gradient-to-r from-red-500 to-rose-500" disabled={pinDisableValue.length < 4} onClick={async () => {
-                          try { const hash = await hashPin(pinDisableValue); if (hash !== settings.pinHash) { setPinError(t('pinMismatch', lang)); return; } updateSettings({ pinEnabled: false, pinHash: '' }); setShowPinDisable(false); setPinDisableValue(''); }
+                        <Button flex={1} className="bg-gradient-to-r from-red-600 to-rose-600" disabled={pinDisableValue.length < 4} onClick={async () => {
+                          try { const entered = await hashPin(pinDisableValue, settings.pinSalt || undefined); const legacy = !settings.pinSalt ? await hashPin(pinDisableValue) : null; if (entered !== settings.pinHash && legacy !== settings.pinHash) { setPinError(t('pinMismatch', lang)); return; } updateSettings({ pinEnabled: false, pinHash: '', pinSalt: '' }); setShowPinDisable(false); setPinDisableValue(''); }
                           catch { setPinError(t('importError', lang)); }
                         }}>{t('disablePin', lang)}</Button>
                       </div>
@@ -1036,7 +1078,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                         <Button variant="default" flex={1} onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); setDeleteError(null); }}>
                           {t('cancel', lang)}
                         </Button>
-                        <Button flex={1} className="bg-gradient-to-r from-red-500 to-rose-500" disabled={deleteConfirmText.trim() !== 'DELETE' || deleteSubmitting} loading={deleteSubmitting}
+                        <Button flex={1} className="bg-gradient-to-r from-red-600 to-rose-600" disabled={deleteConfirmText.trim() !== 'DELETE' || deleteSubmitting} loading={deleteSubmitting}
                           onClick={async () => {
                             if (deleteConfirmText.trim() !== 'DELETE') { setDeleteError('Type DELETE to confirm'); return; }
                             setDeleteSubmitting(true);
