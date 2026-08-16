@@ -27,6 +27,7 @@ const defaultSettings: Settings = {
   settingsVersion: SETTINGS_VERSION, customStrainColors: {},
   notificationsSound: true, notificationsEnabled: true,
   notificationTypes: { likes: true, comments: true, follows: true, listings: true, mentions: true },
+  notificationAlerts: { lowStock: true, budget: true, strainHistory: true },
   defaultFeedFilter: 'latest', showOnlineStatus: true,
 };
 
@@ -41,6 +42,7 @@ function loadSettings(): Settings {
       sessionDefaults: { ...defaultSettings.sessionDefaults, ...parsed.sessionDefaults },
       statsVisibility: { ...defaultSettings.statsVisibility, ...parsed.statsVisibility },
       notificationTypes: { ...defaultSettings.notificationTypes, ...parsed.notificationTypes },
+      notificationAlerts: { ...defaultSettings.notificationAlerts, ...parsed.notificationAlerts },
     };
     if (!parsed.settingsVersion || parsed.settingsVersion < SETTINGS_VERSION) {
       merged.budgetLimit = 0;

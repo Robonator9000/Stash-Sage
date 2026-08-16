@@ -11,6 +11,7 @@ import { ImportResult, mergeImportProducts } from './utils/dataTransfer';
 import { searchProducts, sortProducts, filterProducts, generateId, formatPrecision, roundToHundredth, formatCurrency } from './utils/helpers';
 import { t } from './utils/translations';
 import { playSmokeSound, playSellSound } from './utils/sounds';
+import { addSystemNotification } from './utils/systemNotifications';
 import { ToastContainer, showToast } from './components/Toast';
 import { ProductGrid } from './components/ProductGrid';
 import { QuickConsumeSelect } from './components/QuickConsumeSelect';
@@ -259,8 +260,27 @@ export default function App() {
         title: t('lowStockAlert', lng),
         body: t('lowStockMessage', lng).replace('{name}', product.name).replace('{amount}', formatPrecision(newAmount, settings.decimalPrecision)),
       });
+      if (settings.notificationAlerts?.lowStock !== false) {
+        addSystemNotification({
+          type: 'low_stock',
+          key: `low-${product.id}`,
+          titleKey: 'lowStockAlert',
+          bodyKey: 'sysNotifLowStockBody',
+          bodyParams: { name: product.name, amount: `${formatPrecision(newAmount, settings.decimalPrecision)}g` },
+        });
+      }
     }
-  }, [settings.lowStockThreshold, settings.decimalPrecision, settings.language]);
+  }, [settings.lowStockThreshold, settings.decimalPrecision, settings.language, settings.notificationAlerts]);
+
+  const logStrainHistory = useCallback((type: 'consumed' | 'session' | 'sold', productName: string, amount?: number, price?: number) => {
+    if (settings.notificationAlerts?.strainHistory === false) return;
+    addSystemNotification({
+      type,
+      titleKey: type === 'sold' ? 'sell' : type === 'session' ? 'session' : 'consumedLabel',
+      bodyKey: type === 'sold' ? 'sysNotifSoldBody' : 'sysNotifConsumedBody',
+      bodyParams: { name: productName, amount: amount != null ? `${formatPrecision(amount, settings.decimalPrecision)}g` : '', price: price != null ? formatCurrency(price, settings.currency) : '' },
+    });
+  }, [settings.notificationAlerts, settings.decimalPrecision, settings.currency]);
 
   const [showDollar, setShowDollar] = useState(false);
 
@@ -277,10 +297,11 @@ export default function App() {
       addActivityEntry({
         id: generateId(), type: 'sell', productId: product.id, productName: product.name, amount, notes, timestamp: new Date(),
       });
+      logStrainHistory('sold', product.name, amount, (product.price || 0) * amount);
     } catch (err) {
       console.error('sell failed', err);
     }
-  }, [sellingProduct, consumeProduct, checkLowStock, addActivityEntry]);
+  }, [sellingProduct, consumeProduct, checkLowStock, addActivityEntry, logStrainHistory]);
 
   const handleConsume = useCallback((amount: number, startSession: boolean, people: number, consumedAt?: Date, notes?: string) => {
     const product = consumingProduct;
@@ -304,10 +325,11 @@ export default function App() {
       addActivityEntry({
         id: generateId(), type: 'consume', productId: product.id, productName: product.name, amount, notes: notes || undefined, timestamp: consumedAt || new Date(),
       });
+      logStrainHistory('consumed', product.name, amount);
     } catch (err) {
       console.error('consume failed', err);
     }
-  }, [consumingProduct, consumeProduct, checkLowStock, addActivityEntry]);
+  }, [consumingProduct, consumeProduct, checkLowStock, addActivityEntry, logStrainHistory]);
 
   const handleQuickConsume = useCallback((product: Product) => {
     if (!product || product.amount <= 0) return;
@@ -327,10 +349,11 @@ export default function App() {
         title: `${formatPrecision(amount, settings.decimalPrecision)}g ${t('consume', lng)}`,
         body: product.name,
       });
+      logStrainHistory('consumed', product.name, amount);
     } catch (err) {
       console.error('quick consume failed', err);
     }
-  }, [consumeProduct, checkLowStock, addActivityEntry, settings.sessionDefaults, settings.decimalPrecision, settings.language]);
+  }, [consumeProduct, checkLowStock, addActivityEntry, settings.sessionDefaults, settings.decimalPrecision, settings.language, logStrainHistory]);
 
   const handleQuickLog = useCallback((product: Product, amount: number) => {
     if (!product || amount <= 0 || product.amount <= 0) return;
@@ -349,10 +372,11 @@ export default function App() {
         title: `${formatPrecision(amount, settings.decimalPrecision)}g ${t('consume', lng)}`,
         body: product.name,
       });
+      logStrainHistory('consumed', product.name, amount);
     } catch (err) {
       console.error('quick log failed', err);
     }
-  }, [consumeProduct, checkLowStock, addActivityEntry, settings.language, settings.decimalPrecision]);
+  }, [consumeProduct, checkLowStock, addActivityEntry, settings.language, settings.decimalPrecision, logStrainHistory]);
 
   const handleFinishSession = useCallback((_productId: string, _amountUsed: number, session: Session) => {
     setSessionProduct(null);
@@ -366,10 +390,11 @@ export default function App() {
       addActivityEntry({
         id: generateId(), type: 'session', productId: session.productId, productName: session.productName, amount: session.amount, notes: session.notes, timestamp: new Date(),
       });
+      logStrainHistory('session', session.productName, session.amount);
     } catch (err) {
       console.error('finish session failed', err);
     }
-  }, [addSession, addActivityEntry]);
+  }, [addSession, addActivityEntry, logStrainHistory]);
 
   const handleImport = useCallback((data: ImportResult) => {
     replaceAllProducts(data.products);
@@ -398,6 +423,15 @@ export default function App() {
           body: t('budgetExceededMessage', settings.language).replace('{amount}', formatCurrency(totalValue - settings.budgetLimit, settings.currency)),
           variant: 'danger',
         });
+        if (settings.notificationAlerts?.budget !== false) {
+          addSystemNotification({
+            type: 'budget',
+            key: `budget-${settings.budgetLimit}-${settings.budgetPeriod}`,
+            titleKey: 'budgetExceeded',
+            bodyKey: 'sysNotifBudgetBody',
+            bodyParams: { amount: formatCurrency(totalValue - settings.budgetLimit, settings.currency) },
+          });
+        }
       }
     } else {
       budgetAlertedRef.current = null;

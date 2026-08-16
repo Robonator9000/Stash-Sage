@@ -283,6 +283,7 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
               onClick={handleToggleLike}
               disabled={liking}
               aria-label={liked ? 'Unlike post' : 'Like post'}
+              className="transition-colors"
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 fontSize: 14, fontWeight: 700,
@@ -291,6 +292,8 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
                 borderRadius: 9999,
                 background: liked ? 'rgba(251,146,60,0.12)' : 'transparent',
               }}
+              onMouseEnter={(e) => { if (!liked) e.currentTarget.style.background = 'rgba(148,163,184,0.12)'; }}
+              onMouseLeave={(e) => { if (!liked) e.currentTarget.style.background = 'transparent'; }}
             >
               <IconHeart size={20} fill={liked ? 'currentColor' : 'none'} />
               {likesCount > 0 && likesCount}
@@ -301,7 +304,9 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
               aria-label="Toggle comments"
               aria-expanded={showComments}
               aria-controls={`comment-section-${post.id}`}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 600, color: showComments ? (isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)') : mutedColor }}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 600, padding: '4px 10px', borderRadius: 9999, color: showComments ? (isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)') : mutedColor, background: showComments ? 'rgba(6,182,212,0.1)' : 'transparent' }}
+              onMouseEnter={(e) => { if (!showComments) e.currentTarget.style.background = 'rgba(148,163,184,0.12)'; }}
+              onMouseLeave={(e) => { if (!showComments) e.currentTarget.style.background = 'transparent'; }}
             >
               <IconMessageCircle size={18} />
               {(post.comments_count ?? 0) > 0 && post.comments_count}

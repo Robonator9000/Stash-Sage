@@ -70,6 +70,11 @@ export interface Settings {
     listings: boolean;
     mentions: boolean;
   };
+  notificationAlerts?: {
+    lowStock: boolean;
+    budget: boolean;
+    strainHistory: boolean;
+  };
   defaultFeedFilter?: 'latest' | 'following' | 'trending';
   showOnlineStatus?: boolean;
   showLocation?: boolean;

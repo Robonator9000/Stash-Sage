@@ -129,7 +129,7 @@ export function TBreakTracker({ products, sessions, isDark }: TBreakTrackerProps
           <IconTarget size={14} />
           <Text size="xs" fw={600} c="dimmed">Start a Tolerance Break</Text>
         </Group>
-        <Group gap="xs" wrap="wrap">
+        <Group gap="xs" wrap="wrap" style={{ rowGap: 4 }}>
           {[
             { label: '7 days', value: 7, desc: 'Quick reset' },
             { label: '14 days', value: 14, desc: 'Moderate' },
@@ -143,7 +143,7 @@ export function TBreakTracker({ products, sessions, isDark }: TBreakTrackerProps
               radius="md"
               color="emerald"
               onClick={() => startTBreak(opt.value)}
-              styles={{ root: { flexDirection: 'column', height: 'auto', padding: '6px 12px' } }}
+              styles={{ root: { flexDirection: 'column', height: 'auto', padding: '4px 10px', minWidth: 0, flex: '1 1 40%' }, label: { whiteSpace: 'nowrap' } }}
             >
               <Text size="xs" fw={700}>{opt.label}</Text>
               <Text size="10px" opacity={0.7}>{opt.desc}</Text>

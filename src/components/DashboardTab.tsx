@@ -177,41 +177,20 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
         <StatsCard products={products} sessions={filteredSessions} isDark={isDark} rangeLabel={rangeLabel} />
 
         {/* Bento grid: 1×1 and 2×2 square tiles anchor row heights (aspect-square),
-            wide tiles stretch to match, so every row packs with no gaps at 2 cols
-            and 4 cols. Mobile rows are uniform full-width 2.06:1 tiles. */}
+            wide tiles stretch or take a 2.06:1 aspect, so every row packs with no
+            gaps at 2 and 4 columns. Mobile rows are full-width tiles. */}
         <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
           <div className="col-span-2 lg:col-span-1 aspect-[2.06/1] lg:aspect-square">
             <TBreakTracker products={products} sessions={sessions} isDark={isDark} />
           </div>
 
-          <ShineBorder borderRadius={12} color={['#10b981', '#06b6d4']} className="col-span-2 lg:col-span-1 aspect-[2.06/1] lg:aspect-square">
-            <ChartCard isDark={isDark} title={t('topStrains', lang)} gradient="linear-gradient(120deg, #10b981, #06b6d4)">
-              {topStrains.length > 0 ? (
-                <div className="flex-1 min-h-0">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={topStrains} layout="vertical" margin={{ left: 80 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e5e7eb'} />
-                      <XAxis type="number" tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} domain={[0, 5]} />
-                      <YAxis dataKey="name" type="category" tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} width={75} />
-                      <Tooltip contentStyle={tooltipStyle(isDark)}
-                        formatter={(value: any) => [Number(value).toFixed(1), t('rating', lang)]} />
-                      <Bar dataKey="rating" fill="#10b981" radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <Text ta="center" c="dimmed" className="flex-1 flex items-center justify-center">{t('noProductsYet', lang)}</Text>
-              )}
-            </ChartCard>
-          </ShineBorder>
-
-          <ShineBorder borderRadius={12} color={['#06b6d4', '#13eeef', '#10b981']} className="col-span-2 lg:col-span-2 lg:row-span-2 aspect-[2.06/1] lg:aspect-square">
+          <ShineBorder borderRadius={12} color={['#06b6d4', '#13eeef', '#10b981']} className="col-span-2 lg:col-span-1 aspect-[2.06/1] lg:aspect-square">
             <ChartCard isDark={isDark} title={t('stockOverview', lang)} gradient="linear-gradient(120deg, #06b6d4, #13eeef)">
               {typeDistribution.length > 0 ? (
                 <div className="flex-1 min-h-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={typeDistribution} cx="50%" cy="50%" innerRadius="55%" outerRadius="85%" paddingAngle={3} dataKey="value">
+                      <Pie data={typeDistribution} cx="50%" cy="50%" innerRadius="55%" outerRadius="82%" paddingAngle={3} dataKey="value">
                         {typeDistribution.map((_, idx) => (
                           <Cell key={idx} fill={DASHBOARD_COLORS[idx % DASHBOARD_COLORS.length]} />
                         ))}
@@ -235,7 +214,28 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
             </ChartCard>
           </ShineBorder>
 
-          <ShineBorder borderRadius={12} color={['#f59e0b', '#13eeef']} className="col-span-2 lg:col-span-2 lg:row-span-2 aspect-[2.06/1] lg:aspect-square">
+          <ShineBorder borderRadius={12} color={['#10b981', '#06b6d4']} className="col-span-2 lg:col-span-2 lg:row-span-2 aspect-square lg:aspect-square">
+            <ChartCard isDark={isDark} title={t('topStrains', lang)} gradient="linear-gradient(120deg, #10b981, #06b6d4)">
+              {topStrains.length > 0 ? (
+                <div className="flex-1 min-h-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={topStrains} layout="vertical" margin={{ left: 20, right: 12 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e5e7eb'} />
+                      <XAxis type="number" tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} domain={[0, 5]} />
+                      <YAxis dataKey="name" type="category" tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} width={90} />
+                      <Tooltip contentStyle={tooltipStyle(isDark)}
+                        formatter={(value: any) => [Number(value).toFixed(1), t('rating', lang)]} />
+                      <Bar dataKey="rating" fill="#10b981" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <Text ta="center" c="dimmed" className="flex-1 flex items-center justify-center">{t('noProductsYet', lang)}</Text>
+              )}
+            </ChartCard>
+          </ShineBorder>
+
+          <ShineBorder borderRadius={12} color={['#f59e0b', '#13eeef']} className="col-span-2 lg:col-span-2 aspect-[2.06/1]">
             <ChartCard isDark={isDark} title={t('totalSpent', lang)} gradient="linear-gradient(120deg, #f59e0b, #13eeef)">
               {spendingByType.length > 0 ? (
                 <div className="flex-1 min-h-0">
@@ -256,11 +256,11 @@ export function DashboardTab({ products, sessions, isDark, lang, settings, typeD
             </ChartCard>
           </ShineBorder>
 
-          <div className="col-span-2 lg:col-span-2 aspect-[2.06/1] lg:aspect-auto lg:h-full">
+          <div className="col-span-2 lg:col-span-2 aspect-[2.06/1]">
             <CalendarHeatmap sessions={filteredSessions} isDark={isDark} lang={lang} />
           </div>
 
-          <div className="col-span-2 lg:col-span-4 aspect-[2.06/1] lg:aspect-[4.15/1]">
+          <div className="col-span-2 lg:col-span-2 aspect-[2.06/1]">
             <MonthlyTrendsChart consumptionByMonth={rangeByMonth} isDark={isDark} lang={lang} />
           </div>
         </div>

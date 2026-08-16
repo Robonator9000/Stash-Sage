@@ -818,6 +818,32 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                       );
                     })}
                   </div>
+                  <div>
+                    <Text size="xs" fw={500} mb={2} className={isDark ? 'text-slate-400' : 'text-gray-600'}>
+                      {t('alertsHint', lang)}
+                    </Text>
+                    {([
+                      { key: 'lowStock', label: t('alertLowStock', lang) },
+                      { key: 'budget', label: t('alertBudget', lang) },
+                      { key: 'strainHistory', label: t('alertStrainHistory', lang) },
+                    ] as const).map(({ key, label }) => {
+                      const na = { lowStock: true, budget: true, strainHistory: true, ...settings.notificationAlerts };
+                      return (
+                        <Switch
+                          key={key}
+                          checked={na[key]}
+                          disabled={settings.notificationsEnabled === false}
+                          onChange={(e) => {
+                            const next = { ...na, [key]: e.currentTarget.checked };
+                            updateSettings({ notificationAlerts: next });
+                          }}
+                          label={label}
+                          size="xs"
+                          mb={4}
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 

@@ -3,7 +3,7 @@ import { useSettings } from '../utils/useSettings';
 import { t } from '../utils/translations';
 import { roundToHundredth, formatPrecision } from '../utils/helpers';
 import { Product, Session } from '../types';
-import { SimpleGrid, Text, Group, Paper } from '@mantine/core';
+import { SimpleGrid, Text, Group, Paper, Box } from '@mantine/core';
 import {
   IconPackage,
   IconScale,
@@ -173,11 +173,30 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            transition: 'border-color 0.15s',
+            transition: 'border-color 0.15s, transform 0.15s',
+            cursor: 'default',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.borderColor = accentColor;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = '';
+            e.currentTarget.style.borderColor = isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-3)';
           }}>
-            <Group gap={4} mb={4}>
-              <Icon size={16} stroke={1.5} style={{ color: accentColor }} />
-              <Text size="xs" fw={600} style={{ color: isDark ? '#fff' : '#000' }}>{stat.label}</Text>
+            <Group gap={6} mb={4}>
+              <Box
+                w={24}
+                h={24}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  borderRadius: 8,
+                  background: isDark ? 'rgba(6,182,212,0.12)' : 'var(--mantine-color-cyan-1)',
+                }}
+              >
+                <Icon size={14} stroke={1.5} style={{ color: accentColor }} />
+              </Box>
+              <Text size="xs" fw={600} style={{ color: isDark ? '#fff' : '#000', lineHeight: 1.2 }}>{stat.label}</Text>
             </Group>
             <Text fw={700} size="lg" style={{ lineHeight: 1.2, color: isCleanStreak && computed.cleanStreakDays > 0 ? 'var(--mantine-color-emerald-5)' : isDark ? 'var(--mantine-color-slate-1)' : 'var(--mantine-color-slate-9)' }}>
               {renderValue(stat)}

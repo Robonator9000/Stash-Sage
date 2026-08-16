@@ -188,7 +188,7 @@ export const PostDetailView = memo(function PostDetailView({ post, isDark, lang,
           <div className="flex-1 max-w-full sm:max-w-[55%] flex flex-col border-r-0 sm:border-r overflow-y-auto" style={{ borderColor: 'var(--mantine-color-gray-8)' }}>
             <Group justify="flex-start" gap="sm" p="sm" style={{ position: 'sticky', top: 0, zIndex: 10, background: isDark ? 'rgba(17,24,39,0.95)' : 'rgba(255,255,255,0.95)', backdropFilter: 'blur(4px)' }}>
               <InteractiveHoverButton type="button" onClick={onClose} icon={<IconArrowLeft size={16} />}>Back</InteractiveHoverButton>
-              <Text size="sm" fw={700} style={{ color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)' }}>Post</Text>
+              <Text size="sm" fw={700} style={{ color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)' }}>{t('postLabel', lang)}</Text>
             </Group>
 
             <Box px="md" pb="sm">
@@ -244,19 +244,11 @@ export const PostDetailView = memo(function PostDetailView({ post, isDark, lang,
                 </Text>
               </Box>
 
-              <Box py="sm" style={{ borderTop: `1px solid ${isDark ? 'var(--mantine-color-gray-8)' : 'var(--mantine-color-gray-2)'}` }}>
-                <Group gap="xl" style={{ fontSize: 14 }}>
-                  <Text c="dimmed" component="span"><strong style={{ color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)' }}>{likesCount}</strong> Likes</Text>
-                  <Text c="dimmed" component="span"><strong style={{ color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)' }}>{currentPost.comments_count ?? 0}</strong> Comments</Text>
-                </Group>
-              </Box>
-
               <Group justify="space-around" py="sm" style={{ borderTop: `1px solid ${isDark ? 'var(--mantine-color-gray-8)' : 'var(--mantine-color-gray-2)'}`, borderBottom: `1px solid ${isDark ? 'var(--mantine-color-gray-8)' : 'var(--mantine-color-gray-2)'}` }}>
-                <UnstyledButton onClick={handleToggleLike} disabled={liking} aria-label={liked ? 'Unlike' : 'Like'}
+                <UnstyledButton onClick={handleToggleLike} disabled={liking} aria-label={liked ? 'Unlike' : t('like', lang)}
                   style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 'var(--mantine-radius-md)', fontSize: 14, fontWeight: 500, color: liked ? 'var(--mantine-color-orange-6)' : mutedColor }}>
                   <IconHeart size={20} fill={liked ? 'currentColor' : 'none'} />
-                  Like
-                </UnstyledButton>
+                  {t('like', lang)}{likesCount > 0 && <strong style={{ color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)' }}> {likesCount}</strong>}                </UnstyledButton>
 
                 {onBookmark && (
                   <UnstyledButton onClick={handleToggleBookmark} aria-label={bookmarked ? t('bookmarked', lang) : t('bookmark', lang)}
@@ -272,14 +264,14 @@ export const PostDetailView = memo(function PostDetailView({ post, isDark, lang,
                       <UnstyledButton onClick={() => setEditing(true)}
                         style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 'var(--mantine-radius-md)', fontSize: 14, fontWeight: 500, color: mutedColor }}>
                         <IconEdit size={20} />
-                        Edit
+                        {t('edit', lang)}
                       </UnstyledButton>
                     )}
                     {onDelete && !editing && (
                       <UnstyledButton onClick={() => setShowConfirm(true)}
                         style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 'var(--mantine-radius-md)', fontSize: 14, fontWeight: 500, color: isDark ? 'var(--mantine-color-red-4)' : 'var(--mantine-color-red-7)' }}>
                         <IconTrash size={20} />
-                        Delete
+                        {t('delete', lang)}
                       </UnstyledButton>
                     )}
                   </>
@@ -290,7 +282,7 @@ export const PostDetailView = memo(function PostDetailView({ post, isDark, lang,
 
           <div className="flex-1 max-w-full sm:max-w-[45%] flex flex-col overflow-y-auto">
             <Box p="sm" style={{ position: 'sticky', top: 0, zIndex: 10, background: isDark ? 'rgba(17,24,39,0.95)' : 'rgba(255,255,255,0.95)', backdropFilter: 'blur(4px)' }}>
-              <Text size="sm" fw={700} style={{ color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)' }}>Replies</Text>
+              <Text size="sm" fw={700} style={{ color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)' }}>{t('replies', lang)}</Text>
             </Box>
             <Box px="md" pb="md" style={{ flex: 1 }}>
               <CommentSection

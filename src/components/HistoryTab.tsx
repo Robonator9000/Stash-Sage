@@ -25,7 +25,7 @@ function formatActivityDate(date: Date, lang: string): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return t('now', lang);
+  if (diffMins < 1) return t('timeNow', lang);
   if (diffMins < 60) return t('minutesAgo', lang).replace('{n}', String(diffMins));
   const diffHrs = Math.floor(diffMins / 60);
   if (diffHrs < 24) return t('hoursAgo', lang).replace('{n}', String(diffHrs));
@@ -123,7 +123,7 @@ export const HistoryTab = memo(function HistoryTab({
         </NeonGradientCard>
         <NeonGradientCard borderColors={['#f59e0b', '#06b6d4']} borderRadius={12} className="h-full">
           <Group justify="space-between" mb={4}>
-            <Text size="xs" fw={600} style={{ color: isDark ? '#fff' : '#000' }}>Consumed</Text>
+            <Text size="xs" fw={600} style={{ color: isDark ? '#fff' : '#000' }}>{t('consumedLabel', lang)}</Text>
             <IconScale size={16} style={{ color: '#f59e0b' }} />
           </Group>
           <Text fw={800} size="xl" style={{ lineHeight: 1.2, color: isDark ? '#fff' : '#000' }}>{formatPrecision(summary.totalGrams, settings.decimalPrecision)}g</Text>
@@ -137,7 +137,7 @@ export const HistoryTab = memo(function HistoryTab({
         </NeonGradientCard>
         <NeonGradientCard borderColors={['#8b5cf6', '#13eeef']} borderRadius={12} className="h-full">
           <Group justify="space-between" mb={4}>
-            <Text size="xs" fw={600} style={{ color: isDark ? '#fff' : '#000' }}>Sold Value</Text>
+            <Text size="xs" fw={600} style={{ color: isDark ? '#fff' : '#000' }}>{t('soldValue', lang)}</Text>
             <IconCurrencyDollar size={16} style={{ color: '#8b5cf6' }} />
           </Group>
           <Text fw={800} size="xl" style={{ lineHeight: 1.2, color: isDark ? '#fff' : '#000' }}>{formatCurrency(summary.totalValue, settings.currency)}</Text>
