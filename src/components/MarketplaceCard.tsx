@@ -177,6 +177,12 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
               </Badge>
             )}
 
+            {listing.status === 'active' && !isOwner && (
+              <Badge className="absolute top-2 left-2 z-10" color="green" variant="filled" size="sm">
+                {t('statusActive', lang)}
+              </Badge>
+            )}
+
             {/* Pin icon - top left */}
             {isOwner && listing.status === 'active' && onPinToggle && (
               <ActionIcon onClick={(e) => { e.stopPropagation(); onPinToggle(listing.id); }} aria-label={isPinned ? 'Unpin listing' : 'Pin listing to top'}
@@ -186,7 +192,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
             )}
 
             {/* Save bookmark - top right */}
-            {currentUserId && currentUserId !== listing.user_id && (
+            {currentUserId && currentUserId !== listing.user_id && listing.status === 'active' && (
               <ActionIcon onClick={(e) => { e.stopPropagation(); onSave?.(listing.id); }} aria-label={listing.saved_by_me ? t('unsaveListing', lang) : t('saveListing', lang)}
                 variant="transparent" className="absolute top-2 right-2 z-10"
                 style={listing.saved_by_me ? { background: 'rgba(255,140,0,0.8)', color: 'white' } : { background: 'rgba(0,0,0,0.3)', color: 'white' }}>
@@ -387,11 +393,18 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
 
               {/* Action buttons */}
               <div className="flex flex-col gap-2">
+                {listing.status === 'sold' && (
+                  <div className={`p-3 rounded-xl text-xs leading-relaxed ${isDark ? 'bg-red-900/20 text-red-400' : 'bg-red-50 text-red-500'}`}>
+                    {t('listingSoldNotice', lang)}
+                  </div>
+                )}
                 {contacts.map((contact, i) => {
                   const isCopied = copied === contact.value;
+                  const sold = listing.status === 'sold';
                   return (
                     <button key={i} onClick={() => handleContactClick(contact.platform, contact.value)} aria-label={`Contact via ${contact.platform}: ${contact.value}`}
-                      className={`flex items-center justify-center gap-2.5 w-full px-5 py-3 rounded-xl text-sm font-semibold transition-all ${isDark ? 'bg-cyanx/20 text-cyanx hover:bg-cyanx/30' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'}`}>
+                      disabled={sold}
+                      className={`flex items-center justify-center gap-2.5 w-full px-5 py-3 rounded-xl text-sm font-semibold transition-all ${isDark ? 'bg-cyanx/20 text-cyanx hover:bg-cyanx/30' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'} ${sold ? 'opacity-50 cursor-not-allowed hover:bg-cyanx/20 hover:bg-cyan-50' : ''}`}>
                       <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" style={{ color: PLATFORM_COLORS[contact.platform] || PLATFORM_COLORS.other }} aria-hidden="true">
                         <path d={PLATFORM_BRAND_ICONS[contact.platform] || PLATFORM_BRAND_ICONS.other} />
                       </svg>
@@ -406,7 +419,7 @@ export const MarketplaceCard = memo(function MarketplaceCard({ listing, products
                     </button>
                   );
                 })}
-                {!isOwner && currentUserId && onStartChat && (
+                {!isOwner && currentUserId && onStartChat && listing.status === 'active' && (
                   <button onClick={() => { onStartChat(listing.id); setShowDetailPopup(false); }} aria-label={t('startChat', lang)}
                     className={`flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl text-sm font-semibold transition-all ${isDark ? 'bg-[#8b5cf6]/10 text-[#8b5cf6] hover:bg-[#8b5cf6]/20' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'}`}>
                     <MessageCircle className="w-5 h-5" />

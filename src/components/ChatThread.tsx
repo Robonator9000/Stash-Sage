@@ -24,6 +24,7 @@ export const ChatThread = memo(function ChatThread({ conversation, currentUserId
   const [uploading, setUploading] = useState(false);
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
   const [replyingTo, setReplyingTo] = useState<{ id: string; content: string } | null>(null);
+  const [sendFailed, setSendFailed] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingBroadcastRef = useRef<ReturnType<typeof setInterval>>();
@@ -44,15 +45,24 @@ export const ChatThread = memo(function ChatThread({ conversation, currentUserId
   async function handleSend() {
     if ((!input.trim() && !imageFile) || sending || uploading) return;
     setUploading(true);
-    const imageUrl = imageFile ? await uploadMessageImage(currentUserId, imageFile) : null;
+    setSendFailed(false);
+    let imageUrl: string | null = null;
+    try {
+      if (imageFile) imageUrl = await uploadMessageImage(currentUserId, imageFile);
+    } catch {
+      setSendFailed(true);
+      setUploading(false);
+      return;
+    }
     const msgText = input.trim();
     const replyId = replyingTo?.id;
+    setUploading(false);
+    const ok = await sendMessage(msgText, imageUrl || undefined, replyId);
+    if (!ok) { setSendFailed(true); return; }
     setInput('');
     setImageFile(null);
     setImagePreview(null);
     setReplyingTo(null);
-    setUploading(false);
-    await sendMessage(msgText, imageUrl || undefined, replyId);
     inputRef.current?.focus();
   }
 
@@ -142,6 +152,7 @@ export const ChatThread = memo(function ChatThread({ conversation, currentUserId
                 message={msg}
                 isDark={isDark}
                 isOwn={msg.user_id === currentUserId}
+                lang={lang}
                 onEdit={msg.user_id === currentUserId ? editMessage : undefined}
                 onDelete={msg.user_id === currentUserId ? deleteMessage : undefined}
                 onReply={() => setReplyingTo({ id: msg.id, content: msg.content.substring(0, 60) })}
@@ -194,37 +205,44 @@ export const ChatThread = memo(function ChatThread({ conversation, currentUserId
             {blockedByOther ? conversation.other_user?.username + ' has blocked you' : 'You blocked ' + conversation.other_user?.username}
           </Text>
         ) : (
-          <form
-            onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}
-          >
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              onClick={() => fileInputRef.current?.click()}
-              aria-label="Attach image"
+          <div style={{ flex: 1 }}>
+            <form
+              onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}
             >
-              <IconPhoto size={20} />
-            </ActionIcon>
-            <input ref={fileInputRef} type="file" accept="image/webp,image/jpeg,image/png" style={{ display: 'none' }} tabIndex={-1} onChange={handleImageSelect} />
-            <TextInput
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder={t('typeMessage', lang)}
-              style={{ flex: 1 }}
-              styles={{ input: { background: inputBg, color: headerFg, border: `1px solid ${borderColor}` } }}
-            />
-            <Button
-              type="submit"
-              disabled={!canSend}
-              style={{ padding: 8, borderRadius: 'var(--mantine-radius-md)', height: 'auto' }}
-              variant="filled"
-              color="cyan"
-            >
-              <IconSend size={20} />
-            </Button>
-          </form>
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                onClick={() => fileInputRef.current?.click()}
+                aria-label="Attach image"
+              >
+                <IconPhoto size={20} />
+              </ActionIcon>
+              <input ref={fileInputRef} type="file" accept="image/webp,image/jpeg,image/png" style={{ display: 'none' }} tabIndex={-1} onChange={handleImageSelect} />
+              <TextInput
+                ref={inputRef}
+                value={input}
+                onChange={(e) => { setInput(e.target.value); setSendFailed(false); }}
+                placeholder={t('typeMessage', lang)}
+                style={{ flex: 1 }}
+                styles={{ input: { background: inputBg, color: headerFg, border: `1px solid ${borderColor}` } }}
+              />
+              <Button
+                type="submit"
+                disabled={!canSend}
+                style={{ padding: 8, borderRadius: 'var(--mantine-radius-md)', height: 'auto' }}
+                variant="filled"
+                color="cyan"
+              >
+                <IconSend size={20} />
+              </Button>
+            </form>
+            {sendFailed && (
+              <Text size="xs" c="red" mt={4} ta="right">
+                Message failed to send. Check your connection and try again.
+              </Text>
+            )}
+          </div>
         )}
       </Group>
     </Box>

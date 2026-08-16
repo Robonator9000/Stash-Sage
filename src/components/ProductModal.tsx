@@ -255,7 +255,7 @@ export const ProductModal = memo(function ProductModal({ product, onSave, onDele
                 onClick={() => fileInputRef.current?.click()}
               >
                 <IconCamera size={20} />
-                <Text style={{ fontSize: 10, lineHeight: 1.2 }}>{t('addPhoto', lang)}</Text>
+                <Text style={{ fontSize: 11, lineHeight: 1.2 }}>{t('addPhoto', lang)}</Text>
               </Button>
             </SimpleGrid>
             <input

@@ -428,6 +428,7 @@ export const SocialFeed = memo(function SocialFeed({ isDark, lang, currentUserId
 
   const handleComment = useCallback((userId: string, postId: string) => {
     notifyUser(userId, 'comment', postId);
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments_count: (p.comments_count ?? 0) + 1 } : p));
   }, [notifyUser]);
 
   const handleBookmark = useCallback(async (postId: string) => {

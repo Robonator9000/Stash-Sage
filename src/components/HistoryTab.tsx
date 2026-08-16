@@ -47,16 +47,16 @@ const TYPE_META: Record<string, { icon: typeof IconPlus; color: string; label: s
 
 const TYPE_OPTIONS = ['consume', 'sell', 'session', 'add', 'delete', 'edit'];
 
-function getDateGroup(date: Date): string {
+function getDateGroup(date: Date, lang: string): string {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const that = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const diffDays = Math.round((today.getTime() - that.getTime()) / 86400000);
-  if (diffDays <= 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return 'This Week';
-  if (diffDays < 30) return 'This Month';
-  return date.toLocaleDateString('en', { month: 'long', year: 'numeric' });
+  if (diffDays <= 0) return t('today', lang);
+  if (diffDays === 1) return t('yesterday', lang);
+  if (diffDays < 7) return t('thisWeek', lang);
+  if (diffDays < 30) return t('thisMonth', lang);
+  return date.toLocaleDateString(lang === 'en' ? 'en-US' : lang, { month: 'long', year: 'numeric' });
 }
 
 export const HistoryTab = memo(function HistoryTab({
@@ -103,7 +103,7 @@ export const HistoryTab = memo(function HistoryTab({
   const grouped = useMemo(() => {
     const groups: Record<string, ActivityEntry[]> = {};
     for (const e of filteredHistory) {
-      const g = getDateGroup(e.timestamp);
+      const g = getDateGroup(e.timestamp, lang);
       (groups[g] = groups[g] || []).push(e);
     }
     return Object.entries(groups);

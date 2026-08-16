@@ -221,7 +221,7 @@ export function MenuPage() {
             </Box>
             <Box>
               <div style={{ color: BRAND_PINK, fontWeight: 700, fontSize: 18, lineHeight: 1, fontFamily: '"Varela Round", sans-serif' }}>KOTY CANNA CO.</div>
-              <div style={{ color: BRAND_CYAN, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase' }}>Premium Vape Products</div>
+              <div style={{ color: BRAND_CYAN, fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' }}>Premium Vape Products</div>
             </Box>
           </Group>
           <a
@@ -313,9 +313,9 @@ export function MenuPage() {
             </Text>
             <Text style={{ color: BRAND_DARK, fontSize: 18 }}>All flavors — $15 each</Text>
             <Group justify="center" gap="sm" mt="md" wrap="nowrap">
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: '50%', background: '#6366f1' }} /> Indica</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: '50%', background: '#f59e0b' }} /> Sativa</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981' }} /> Hybrid</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: '50%', background: STRAIN_COLORS.indica.accent }} /> Indica</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: '50%', background: STRAIN_COLORS.sativa.accent }} /> Sativa</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: '50%', background: STRAIN_COLORS.hybrid.accent }} /> Hybrid</span>
             </Group>
           </Box>
           <SimpleGrid cols={{ base: 3, sm: 4, md: 5, lg: 7 }} spacing="sm">

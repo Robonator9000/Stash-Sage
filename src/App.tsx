@@ -225,7 +225,8 @@ export default function App() {
       });
     }
     setEditingProduct(null);
-  }, [editingProduct, updateProduct, addProduct, addActivityEntry]);
+    showToast({ id: 'product-saved', title: '', body: t('productSaved', settings.language) });
+  }, [editingProduct, updateProduct, addProduct, addActivityEntry, settings.language]);
 
   const handleDeleteProduct = useCallback((id: string) => {
     const p = products.find(x => x.id === id);
@@ -657,7 +658,7 @@ export default function App() {
                 gradient={{ from: 'cyan', to: 'teal', deg: 135 }}
                 onClick={() => { setSelectMode(!isSelectMode); if (isSelectMode) setSelectedIds(new Set()); }}
               >
-                {isSelectMode ? 'Done' : 'Select'}
+                {isSelectMode ? t('done', lang) : t('select', lang)}
               </Button>
 
               {isSelectMode && selectedIds.size > 0 && (
@@ -670,7 +671,7 @@ export default function App() {
                     variant={isDark ? 'subtle' : 'default'}
                     onClick={handleSelectAll}
                   >
-                    {selectedIds.size === paginatedProducts.length ? 'Deselect all' : 'Select all'}
+                    {selectedIds.size === paginatedProducts.length ? t('deselectAll', lang) : t('selectAll', lang)}
                   </Button>
                   <Button
                     size="compact-xs"
@@ -678,13 +679,13 @@ export default function App() {
                     color="cyan"
                     disabled={selectedIds.size !== 1}
                     title={
-                      selectedIds.size === 0 ? 'Select a product' :
-                      selectedIds.size > 1 ? 'Select only 1 product for a session' :
-                      'Start a session'
+                      selectedIds.size === 0 ? t('selectProductHint', lang) :
+                      selectedIds.size > 1 ? t('selectOneForSession', lang) :
+                      t('startSessionHint', lang)
                     }
                     onClick={handleBulkSession}
                   >
-                    {selectedIds.size > 1 ? 'Session (1 only)' : 'Session'}
+                    {selectedIds.size > 1 ? t('sessionOneOnly', lang) : t('session', lang)}
                   </Button>
                   <Button
                     size="compact-xs"
@@ -696,7 +697,7 @@ export default function App() {
                       setSelectMode(false);
                     }}
                   >
-                    Favorite
+                    {t('favoriteButton', lang)}
                   </Button>
                   <Button
                     size="compact-xs"
@@ -704,7 +705,7 @@ export default function App() {
                     color="red"
                     onClick={handleBulkDelete}
                   >
-                    Delete ({selectedIds.size})
+                    {t('deleteSelectedCount', lang).replace('{count}', String(selectedIds.size))}
                   </Button>
                 </Group>
               )}
@@ -719,7 +720,7 @@ export default function App() {
               />
 
               <Group gap="xs">
-                <Text size="xs" tt="uppercase" fw={700} c={isDark ? 'white' : 'black'}>Sort</Text>
+                <Text size="xs" tt="uppercase" fw={700} c={isDark ? 'white' : 'black'}>{t('sort', lang)}</Text>
                 <Select
                   size="xs"
                   value={sortBy}
@@ -731,7 +732,7 @@ export default function App() {
               </Group>
 
               <Group gap="xs">
-                <Text size="xs" tt="uppercase" fw={700} c={isDark ? 'white' : 'black'}>Filter</Text>
+                <Text size="xs" tt="uppercase" fw={700} c={isDark ? 'white' : 'black'}>{t('filter', lang)}</Text>
                 <Select
                   size="xs"
                   value={filterBy}
@@ -776,6 +777,7 @@ export default function App() {
               onToggleFavorite={toggleFavorite}
               onQuickConsumeProduct={handleQuickConsume}
               onAddProduct={() => setIsAddModalOpen(true)}
+              onClearFilters={() => { setSearchQuery(''); setFilterBy('all'); setCurrentPage(1); }}
               isSelectMode={isSelectMode}
               selectedIds={selectedIds}
               onToggleSelect={handleToggleSelect}
@@ -857,6 +859,7 @@ export default function App() {
                   searchQuery={searchQuery}
                   onViewProfile={handleViewProfile}
                   onOpenChat={handleOpenChat}
+                  onClearSearch={() => setSearchQuery('')}
                 />
               </Suspense>
             )}
@@ -894,6 +897,7 @@ export default function App() {
             <NotificationsPage
               isDark={isDark}
               currentUserId={user.id}
+              lang={lang}
               onViewProfile={handleViewProfile}
             />
           </ErrorBoundary>

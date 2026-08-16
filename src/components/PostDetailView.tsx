@@ -102,7 +102,7 @@ function PostDetailImages({ images }: { images: string[] }) {
   );
 }
 
-function QuotedPostDetail({ post, isDark, onHashtagClick }: { post: Post; isDark: boolean; onHashtagClick?: (tag: string) => void }) {
+function QuotedPostDetail({ post, isDark, lang, onHashtagClick }: { post: Post; isDark: boolean; lang: string; onHashtagClick?: (tag: string) => void }) {
   return (
     <Box p="sm" mb="md" style={{ background: isDark ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-1)', border: `1px solid ${isDark ? 'var(--mantine-color-gray-8)' : 'var(--mantine-color-gray-2)'}`, borderRadius: 'var(--mantine-radius-md)' }}>
       <Group gap="xs" mb={4} align="center" wrap="nowrap">
@@ -111,7 +111,7 @@ function QuotedPostDetail({ post, isDark, onHashtagClick }: { post: Post; isDark
         </Avatar>
         <Text size="xs" fw={700} style={{ color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)' }}>{post.author?.display_name || post.author?.username || 'Unknown'}</Text>
         <Text size="xs" c="dimmed">@{post.author?.username || 'user'}</Text>
-        <Text size="xs" c="dimmed" style={{ marginLeft: 'auto' }}>{timeAgo(post.created_at, 'en')}</Text>
+        <Text size="xs" c="dimmed" style={{ marginLeft: 'auto' }}>{timeAgo(post.created_at, lang)}</Text>
       </Group>
       <Text size="xs" style={{ whiteSpace: 'pre-wrap', color: isDark ? 'var(--mantine-color-gray-2)' : 'var(--mantine-color-gray-7)' }}>{renderContent(post.content, isDark, onHashtagClick)}</Text>
     </Box>
@@ -120,6 +120,11 @@ function QuotedPostDetail({ post, isDark, onHashtagClick }: { post: Post; isDark
 
 export const PostDetailView = memo(function PostDetailView({ post, isDark, lang, currentUserId, username, onClose, onLike, onUnlike, onBookmark, onUnbookmark, onDelete, onEdit, onViewProfile, onHashtagClick, onComment, onPostClick }: PostDetailViewProps) {
   const [currentPost, setCurrentPost] = useState(post);
+
+  useEffect(() => {
+    setCurrentPost(prev => prev.comments_count !== post.comments_count ? { ...prev, comments_count: post.comments_count } : prev);
+  }, [post.comments_count]);
+
   const [liking, setLiking] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -208,7 +213,7 @@ export const PostDetailView = memo(function PostDetailView({ post, isDark, lang,
               {postImages.length > 0 && <PostDetailImages images={postImages} />}
               {currentPost.quoted_post && (
                 <Box onClick={() => onPostClick?.(currentPost.quoted_post!.id)} style={{ cursor: 'pointer' }}>
-                  <QuotedPostDetail post={currentPost.quoted_post} isDark={isDark} onHashtagClick={onHashtagClick} />
+                  <QuotedPostDetail post={currentPost.quoted_post} isDark={isDark} lang={lang} onHashtagClick={onHashtagClick} />
                 </Box>
               )}
 

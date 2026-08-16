@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
-    supabase.from('profiles').select('role').eq('user_id', user.id).single().then(({ data }) => {
+    supabase.from('profiles').select('role').eq('user_id', user.id).maybeSingle().then(({ data }) => {
       setIsAdmin(data?.role === 'admin');
     }).then(undefined, () => setIsAdmin(false));
   }, [user]);

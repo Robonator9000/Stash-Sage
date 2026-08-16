@@ -7,7 +7,7 @@ import { createExportData, downloadExport, downloadCsvExport, copyExportToClipbo
 // jspdf loaded dynamically on PDF export only
 import { useAuth } from '../contexts/AuthContext';
 import { supabase, uploadProfileImage, deleteProfileImage } from '../utils/supabase';
-import { X, Globe, Palette, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, Camera, Mail, MessageCircle, MapPin, Bell, Rss } from 'lucide-react';
+import { X, Globe, Palette, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, Camera, Mail, MessageCircle, MapPin, Bell, Rss, Eye, EyeOff } from 'lucide-react';
 import { ResetPasswordModal } from './ResetPasswordModal';
 import { showToast } from './Toast';
 import { TextInput, NumberInput, Switch, Select, SegmentedControl, Button, Textarea, Text } from '@mantine/core';
@@ -57,13 +57,19 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
       }
     }
   }, [settings, dirty, onDirtyChange]);
-  const { user, signIn, signUp, updatePassword, updateEmail, error: authError } = useAuth();
+  const { user, signIn, signUp, signOut, deleteAccount, updatePassword, updateEmail, error: authError } = useAuth();
+  const [signOutSubmitting, setSignOutSubmitting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authUsername, setAuthUsername] = useState('');
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [authSubmitting, setAuthSubmitting] = useState(false);
   const [authLocalError, setAuthLocalError] = useState<string | null>(null);
+  const [showAuthPassword, setShowAuthPassword] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mergeFileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -270,11 +276,11 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
             Manage your account, preferences and data
           </p>
         </div>
-        <button onClick={handleSave}
+        <button onClick={handleSave} disabled={!dirty}
           className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border-2 ${
             dirty
               ? isDark ? 'bg-cyan-500/15 border-cyan-400/60 text-cyan-300 hover:bg-cyan-500/25' : 'bg-cyan-50 border-cyan-300 text-cyan-700 hover:bg-cyan-100'
-              : isDark ? 'border-slate-700 text-white hover:bg-slate-800' : 'border-gray-200 text-gray-700 hover:bg-gray-100'
+              : isDark ? 'border-slate-700 text-slate-500 cursor-not-allowed' : 'border-gray-200 text-gray-400 cursor-not-allowed'
           }`}>
           {t('save', lang)}
         </button>
@@ -338,9 +344,16 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                       onChange={e => { setAuthEmail(e.currentTarget.value); setAuthLocalError(null); }}
                       required autoFocus
                     />
-                    <TextInput type="password" label="Password" placeholder="Password" value={authPassword}
+                    <TextInput type={showAuthPassword ? 'text' : 'password'} label="Password" placeholder="Password" value={authPassword}
                       onChange={e => { setAuthPassword(e.currentTarget.value); setAuthLocalError(null); }}
                       required minLength={6}
+                      rightSection={
+                        <button type="button" aria-label={showAuthPassword ? 'Hide password' : 'Show password'}
+                          onClick={() => setShowAuthPassword(s => !s)}
+                          className={`p-1 rounded-lg transition-colors ${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-gray-400 hover:text-gray-700'}`}>
+                          {showAuthPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      }
                     />
                     {authMode === 'signup' && (
                       <>
@@ -388,7 +401,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                       <div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500 transition-all duration-500" style={{ width: `${pct}%` }} />
                     </div>
                     {pct < 100 && (
-                      <p className={`text-[10px] mt-1.5 ${isDark ? 'text-slate-500' : 'text-gray-600'}`}>{t('profileSetupHint', lang)}</p>
+                      <p className={`text-[11px] mt-1.5 ${isDark ? 'text-slate-500' : 'text-gray-600'}`}>{t('profileSetupHint', lang)}</p>
                     )}
                   </div>
                 );
@@ -399,7 +412,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                 <div className={`px-4 py-3 rounded-xl border-2 text-sm font-medium ${isDark ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
                   @{profileUsername}
                 </div>
-                <p className={`text-[10px] mt-1 ${isDark ? 'text-slate-500' : 'text-gray-600'}`}>{t('usernamePermanent', lang)}</p>
+                <p className={`text-[11px] mt-1 ${isDark ? 'text-slate-500' : 'text-gray-600'}`}>{t('usernamePermanent', lang)}</p>
               </div>
 
               <div>
@@ -439,6 +452,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                     )}
                     <button
                       onClick={() => avatarInputRef.current?.click()}
+                      aria-label="Change avatar photo"
                       className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
                     >
                       <Camera className="w-5 h-5 text-white" />
@@ -469,7 +483,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                         Remove
                       </button>
                     )}
-                    <span className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-gray-600'}`}>Max 2MB, square</span>
+                    <span className={`text-[11px] ${isDark ? 'text-slate-500' : 'text-gray-600'}`}>Max 2MB, square</span>
                   </div>
                 </div>
               </div>
@@ -485,7 +499,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                         <Camera className={`w-6 h-6 ${isDark ? 'text-slate-600' : 'text-gray-300'}`} />
                       </div>
                     )}
-                    <button onClick={() => bannerInputRef.current?.click()} className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                    <button onClick={() => bannerInputRef.current?.click()} aria-label="Change banner image" className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                       <Camera className="w-5 h-5 text-white" />
                     </button>
                   </div>
@@ -498,7 +512,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                         Remove
                       </button>
                     )}
-                    <span className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-gray-600'}`}>Max 5MB, 3:1 ratio</span>
+                    <span className={`text-[11px] ${isDark ? 'text-slate-500' : 'text-gray-600'}`}>Max 5MB, 3:1 ratio</span>
                   </div>
                 </div>
               </div>
@@ -531,7 +545,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                         setProfileContacts(next);
                       }} placeholder={contact.platform === 'email' ? 'user@example.com' : contact.platform === 'phone' ? '+1 555 0000' : '@username'}
                         size="xs" style={{ flex: 1 }} />
-                      <Button variant="subtle" color="red" size="compact-xs" onClick={() => setProfileContacts(profileContacts.filter((_, i) => i !== idx))}>
+                      <Button variant="subtle" color="red" size="compact-xs" aria-label={`Remove ${contact.platform} contact`} onClick={() => setProfileContacts(profileContacts.filter((_, i) => i !== idx))}>
                         <X className="w-3.5 h-3.5" />
                       </Button>
                     </div>
@@ -983,10 +997,67 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               )}
             </div>
           )}
+          <div className={`mt-6 pt-6 border-t-2 ${isDark ? 'border-red-500/20' : 'border-red-200'}`}>
+            <label className={sectionLabel}><AlertTriangle className="w-4 h-4 text-red-500" />{t('dangerZone', lang)}</label>
+
+            <div className={`p-4 rounded-xl border-2 ${isDark ? 'bg-red-500/5 border-red-500/30' : 'bg-red-50 border-red-200'}`}>
+              <div className="flex flex-col gap-4">
+                <div>
+                  <div className={`text-sm font-semibold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>{t('signOut', lang)}</div>
+                  <p className={`text-xs mb-3 ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>{t('signOutHint', lang)}</p>
+                  <Button color="red" variant="light" fullWidth disabled={signOutSubmitting} loading={signOutSubmitting}
+                    onClick={async () => {
+                      setSignOutSubmitting(true);
+                      try { await signOut(); showToast({ id: 'auth-signed-out', title: t('signOut', lang), body: t('signOutHint', lang) }); }
+                      catch { showToast({ id: 'auth-signout-fail', title: '', body: authError || 'Sign out failed', variant: 'danger' }); }
+                      finally { setSignOutSubmitting(false); }
+                    }}>
+                    {t('signOut', lang)}
+                  </Button>
+                </div>
+
+                <div>
+                  <div className={`text-sm font-semibold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>{t('deleteAccount', lang)}</div>
+                  <p className={`text-xs mb-3 ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>{t('deleteAccountHint', lang)}</p>
+                  {!showDeleteConfirm ? (
+                    <Button color="red" variant="light" fullWidth onClick={() => { setShowDeleteConfirm(true); setDeleteConfirmText(''); setDeleteError(null); }}>
+                      {t('deleteAccount', lang)}
+                    </Button>
+                  ) : (
+                    <div className="space-y-3">
+                      <p className={`text-xs ${isDark ? 'text-red-300' : 'text-red-600'}`}>{t('deleteAccountWarning', lang)}</p>
+                      <TextInput
+                        placeholder={t('deleteConfirmPlaceholder', lang)}
+                        value={deleteConfirmText}
+                        onChange={(e) => { setDeleteConfirmText(e.currentTarget.value); setDeleteError(null); }}
+                        error={deleteError || undefined}
+                      />
+                      <div className="flex gap-2">
+                        <Button variant="default" flex={1} onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); setDeleteError(null); }}>
+                          {t('cancel', lang)}
+                        </Button>
+                        <Button flex={1} className="bg-gradient-to-r from-red-500 to-rose-500" disabled={deleteConfirmText.trim() !== 'DELETE' || deleteSubmitting} loading={deleteSubmitting}
+                          onClick={async () => {
+                            if (deleteConfirmText.trim() !== 'DELETE') { setDeleteError('Type DELETE to confirm'); return; }
+                            setDeleteSubmitting(true);
+                            try { await deleteAccount(); setShowDeleteConfirm(false); setDeleteConfirmText(''); }
+                            catch { setDeleteError(authError || 'Could not delete account'); }
+                            finally { setDeleteSubmitting(false); }
+                          }}>
+                          {t('deleteAccount', lang)}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
           {showResetPassword && (
             <ResetPasswordModal
               isDark={isDark}
               onClose={() => setShowResetPassword(false)}
+              initialEmail={authEmail}
             />
           )}
         </div>

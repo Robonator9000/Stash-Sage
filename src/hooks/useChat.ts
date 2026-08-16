@@ -93,17 +93,18 @@ export function useChat(conversationId: string | null, userId: string | undefine
     };
   }, [conversationId, userId, otherUserId]);
 
-  const sendMessage = useCallback(async (content?: string, image_url?: string, reply_to_id?: string) => {
-    if (!conversationId || !userId || (!content?.trim() && !image_url) || sending || blockedByOther) return;
+  const sendMessage = useCallback(async (content?: string, image_url?: string, reply_to_id?: string): Promise<boolean> => {
+    if (!conversationId || !userId || (!content?.trim() && !image_url) || sending || blockedByOther) return false;
     setSending(true);
     try {
-      await supabase.from('messages').insert({
+      const { error } = await supabase.from('messages').insert({
         conversation_id: conversationId,
         user_id: userId,
         content: content?.trim() || '',
         image_url: image_url || null,
         reply_to_id: reply_to_id || null,
       });
+      return !error;
     } finally {
       setSending(false);
     }

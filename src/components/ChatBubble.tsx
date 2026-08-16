@@ -8,16 +8,17 @@ interface ChatBubbleProps {
   message: Message;
   isDark: boolean;
   isOwn: boolean;
+  lang: string;
   onEdit?: (id: string, content: string) => void;
   onDelete?: (id: string) => void;
   onReply?: (id: string) => void;
 }
 
-export const ChatBubble = memo(function ChatBubble({ message, isDark, isOwn, onEdit, onDelete, onReply }: ChatBubbleProps) {
+export const ChatBubble = memo(function ChatBubble({ message, isDark, isOwn, lang, onEdit, onDelete, onReply }: ChatBubbleProps) {
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(message.content);
   const [showActions, setShowActions] = useState(false);
-  const readLabel = message.read_at ? `Read ${timeAgo(message.read_at, 'en')}` : message.read ? 'Read' : '';
+  const readLabel = message.read_at ? `Read ${timeAgo(message.read_at, lang)}` : message.read ? 'Read' : '';
 
   if (message.deleted_at) {
     return (
@@ -104,7 +105,7 @@ export const ChatBubble = memo(function ChatBubble({ message, isDark, isOwn, onE
           message.content && <Text size="sm" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{message.content}</Text>
         )}
         <Text size="xs" style={{ color: metaColor, display: 'flex', alignItems: 'center', gap: 4, marginTop: 2, fontSize: 10 }}>
-          {timeAgo(message.created_at, 'en')}
+          {timeAgo(message.created_at, lang)}
           {message.edited_at && <span>(edited)</span>}
           {isOwn && readLabel && <span style={{ marginLeft: 'auto' }}>{readLabel}</span>}
         </Text>

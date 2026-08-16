@@ -109,9 +109,9 @@ export const StatsCard = memo(function StatsCard({ products, sessions, isDark = 
   }
 
   const primaryStats: StatItem[] = useMemo(() => [
-    { key: 'cleanStreak', icon: IconCalendarDue, label: 'Clean Streak', value: computed.cleanStreakDays.toString(), suffix: computed.cleanStreakDays === 1 ? 'day' : 'days', color: 'green' },
+    { key: 'cleanStreak', icon: IconCalendarDue, label: t('cleanStreak', settings.language), value: computed.cleanStreakDays.toString(), suffix: computed.cleanStreakDays === 1 ? t('unitDay', settings.language) : t('unitDays', settings.language), color: 'green' },
     { key: 'consumptionRate', icon: IconTrendingDown, label: t('consumptionRate', settings.language), value: formatPrecision(computed.consumptionRate, dp), suffix: t('perDay', settings.language), color: 'red' },
-    { key: 'weeklyCost', icon: IconCurrencyDollar, label: 'Est. Weekly Cost', value: settings.currency + formatPrecision(computed.weeklyCost, dp), suffix: '', color: 'orange' },
+    { key: 'weeklyCost', icon: IconCurrencyDollar, label: t('estWeeklyCost', settings.language), value: settings.currency + formatPrecision(computed.weeklyCost, dp), suffix: '', color: 'orange' },
   ].filter(s => s.value !== '0' && s.value !== settings.currency + '0' && !(s.key === 'cleanStreak' && s.value === '0')), [computed, dp, settings.language, settings.currency]);
 
   const secondaryStats: StatItem[] = useMemo(() => [

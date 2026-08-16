@@ -64,7 +64,7 @@ export const AdminDashboard = memo(function AdminDashboard({ isDark, currentUser
   const [reviews, setReviews] = useState<AdminReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [userSearch, setUserSearch] = useState('');
-  const [confirm, setConfirm] = useState<{ kind: string; id: string; label: string } | null>(null);
+  const [confirm, setConfirm] = useState<{ kind: string; id: string; label: string; role?: string; banned?: boolean } | null>(null);
 
   const fetchUsers = useCallback(async () => {
     const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
@@ -217,8 +217,10 @@ export const AdminDashboard = memo(function AdminDashboard({ isDark, currentUser
     else if (confirm.kind === 'listing') handleDeleteListing(confirm.id);
     else if (confirm.kind === 'comment') handleDeleteComment(confirm.id);
     else if (confirm.kind === 'review') handleDeleteReview(confirm.id);
+    else if (confirm.kind === 'role') handleSetRole(confirm.id, confirm.role || 'user');
+    else if (confirm.kind === 'ban') handleSetBan(confirm.id, !!confirm.banned);
     setConfirm(null);
-  }, [confirm, handleDeletePost, handleDeleteComment, handleDeleteReview]);
+  }, [confirm, handleDeletePost, handleDeleteComment, handleDeleteReview, handleSetRole, handleSetBan]);
 
   const filteredUsers = users.filter(u =>
     !userSearch.trim() ||
@@ -391,20 +393,20 @@ export const AdminDashboard = memo(function AdminDashboard({ isDark, currentUser
                 {u.user_id !== currentUserId && (
                   <>
                     {u.role === 'admin' ? (
-                      <ActionIcon variant="subtle" color="yellow" title="Demote to user" onClick={() => handleSetRole(u.user_id, 'user')}>
+                      <ActionIcon variant="subtle" color="yellow" title="Demote to user" onClick={() => setConfirm({ kind: 'role', id: u.user_id, label: `demote ${u.username || 'this user'} to user`, role: 'user' })}>
                         <IconUser size={16} />
                       </ActionIcon>
                     ) : (
-                      <ActionIcon variant="subtle" color="yellow" title="Promote to admin" onClick={() => handleSetRole(u.user_id, 'admin')}>
+                      <ActionIcon variant="subtle" color="yellow" title="Promote to admin" onClick={() => setConfirm({ kind: 'role', id: u.user_id, label: `promote ${u.username || 'this user'} to admin`, role: 'admin' })}>
                         <IconSettings size={16} />
                       </ActionIcon>
                     )}
                     {u.is_banned ? (
-                      <ActionIcon variant="subtle" color="green" title="Unban user" onClick={() => handleSetBan(u.user_id, false)}>
+                      <ActionIcon variant="subtle" color="green" title="Unban user" onClick={() => setConfirm({ kind: 'ban', id: u.user_id, label: `unban ${u.username || 'this user'}`, banned: false })}>
                         <IconCheck size={16} />
                       </ActionIcon>
                     ) : (
-                      <ActionIcon variant="subtle" color="red" title="Ban user" onClick={() => handleSetBan(u.user_id, true)}>
+                      <ActionIcon variant="subtle" color="red" title="Ban user" onClick={() => setConfirm({ kind: 'ban', id: u.user_id, label: `ban ${u.username || 'this user'}`, banned: true })}>
                         <IconLock size={16} />
                       </ActionIcon>
                     )}
@@ -564,7 +566,9 @@ export const AdminDashboard = memo(function AdminDashboard({ isDark, currentUser
           <Text size="sm" style={{ color: bodyText }}>Are you sure you want to {confirm?.label}? This cannot be undone.</Text>
           <Group justify="flex-end" gap="sm">
             <Button variant="default" size="sm" onClick={() => setConfirm(null)}>Cancel</Button>
-            <Button size="sm" color="red" onClick={confirmAction}>Delete</Button>
+            <Button size="sm" color={confirm?.kind === 'ban' && !confirm.banned ? 'green' : 'red'} onClick={confirmAction}>
+              {confirm?.kind === 'role' || confirm?.kind === 'ban' ? 'Confirm' : 'Delete'}
+            </Button>
           </Group>
         </Stack>
       </Modal>

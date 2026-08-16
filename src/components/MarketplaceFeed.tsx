@@ -20,9 +20,10 @@ interface MarketplaceFeedProps {
   searchQuery: string;
   onViewProfile?: (userId: string) => void;
   onOpenChat?: (userId: string) => void;
+  onClearSearch?: () => void;
 }
 
-export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, currentUserId, products, searchQuery, onViewProfile, onOpenChat }: MarketplaceFeedProps) {
+export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, currentUserId, products, searchQuery, onViewProfile, onOpenChat, onClearSearch }: MarketplaceFeedProps) {
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -326,6 +327,7 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
       </Carousel>
 
       {/* Compact sort */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
       <div className={`flex items-center gap-1 p-1 rounded-xl w-fit ${isDark ? 'bg-midnight' : 'bg-gray-100'}`}>
         <ArrowUpDown className={`w-3.5 h-3.5 ml-1.5 ${isDark ? 'text-muted' : 'text-gray-600'}`} />
         {([
@@ -338,6 +340,10 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
             {s.label}
           </button>
         ))}
+      </div>
+      {!loading && !error && (
+        <Text size="xs" c="dimmed">{sorted.length} {sorted.length === 1 ? 'listing' : 'listings'}</Text>
+      )}
       </div>
 
       {/* Loading */}
@@ -368,12 +374,12 @@ export const MarketplaceFeed = memo(function MarketplaceFeed({ isDark, lang, cur
           <p className={`text-xs max-w-sm mx-auto leading-relaxed ${isDark ? 'text-muted' : 'text-gray-600'}`}>
             Try browsing a different category or adjust your search terms.
           </p>
-          {categoryFilter !== 'all' && (
-            <button onClick={() => setCategoryFilter('all')}
+          {categoryFilter !== 'all' || searchQuery.trim() ? (
+            <button onClick={() => { setCategoryFilter('all'); onClearSearch?.(); }}
               className={`mt-4 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${isDark ? 'bg-midnight text-cyanx hover:bg-midnight/80' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
-              Browse all categories
+              {t('clearFilters', lang)}
             </button>
-          )}
+          ) : null}
         </div>
       )}
 

@@ -35,7 +35,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
   };
 
   const adjustAmount = (delta: number) => {
-    setAmount(prev => Math.max(0.01, roundToHundredth(prev + delta)));
+    setAmount(prev => Math.min(product.amount, Math.max(0.01, roundToHundredth(prev + delta))));
   };
 
   const quickAmounts = [0.1, 0.25, 0.5, 1, 2];
@@ -80,7 +80,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
               <NumberInput
                 flex={1}
                 value={amount}
-                onChange={(v) => setAmount(Math.max(0, typeof v === 'number' ? v : parseFloat(v) || 0))}
+                onChange={(v) => setAmount(Math.min(product.amount, Math.max(0, typeof v === 'number' ? v : parseFloat(v) || 0)))}
                 min={0}
                 step={0.1}
                 hideControls
@@ -185,18 +185,21 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
                 <Box style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isDark ? 'rgba(34,211,238,0.12)' : 'rgba(8,145,178,0.1)' }}>
                   <IconMinus size={16} style={{ color: isDark ? '#22d3ee' : '#0891b2' }} />
                 </Box>
-                <Text size="sm" fw={500}>After this consume</Text>
+                <Text size="sm" fw={500}>{t('remainingAfter', lang)}</Text>
               </Group>
               <Text fw={800} size="lg" c={product.amount - amount <= 0 ? 'red' : undefined}>{formatPrecision(Math.max(0, roundToHundredth(product.amount - amount)), settings.decimalPrecision)}g</Text>
             </Group>
+            {amount > product.amount && (
+              <Text size="xs" c="red" mt={6}>Only {formatPrecision(product.amount, settings.decimalPrecision)}g available</Text>
+            )}
           </Paper>
 
           <Box>
-            <Text fw={600} size="sm" mb="xs">Consumption Notes</Text>
+            <Text fw={600} size="sm" mb="xs">{t('consumeNotes', lang)}</Text>
             <Textarea
               value={consumeNotes}
               onChange={(e) => setConsumeNotes(e.currentTarget.value)}
-              placeholder="How was it? Note the flavor, effects, or who you shared it with..."
+              placeholder={t('consumeNotesPlaceholder', lang)}
               minRows={2}
               maxLength={500}
               size="sm"
@@ -217,7 +220,7 @@ export function ConsumeModal({ product, onConsume, onClose, isDark = true }: Con
           <Button
             flex={1} size="md" color="green"
             onClick={handleConsume}
-            disabled={amount <= 0}
+            disabled={amount <= 0 || amount > product.amount}
             aria-label={startSession ? t('session', lang) : t('consume', lang)}
           >
             {startSession ? t('session', lang) : t('consume', lang)}

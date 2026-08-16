@@ -145,7 +145,7 @@ export function TBreakTracker({ products, sessions, isDark }: TBreakTrackerProps
               styles={{ root: { flexDirection: 'column', height: 'auto', padding: '6px 12px' } }}
             >
               <Text size="xs" fw={700}>{opt.label}</Text>
-              <Text size="9px" opacity={0.7}>{opt.desc}</Text>
+              <Text size="10px" opacity={0.7}>{opt.desc}</Text>
             </Button>
           ))}
         </Group>
@@ -180,7 +180,7 @@ export function TBreakTracker({ products, sessions, isDark }: TBreakTrackerProps
             <Center>
               <Stack gap={0} align="center">
                 <Text size="xl" fw={900} c={isComplete ? '#10b981' : '#06b6d4'}>{streakDays}</Text>
-                <Text size="9px" c="dimmed">/ {tbreak.goalDays}d</Text>
+                <Text size="10px" c="dimmed">/ {tbreak.goalDays}d</Text>
               </Stack>
             </Center>
           }

@@ -115,7 +115,14 @@ export function ChatInbox({ currentUserId, isDark, lang, onBack, initialTargetUs
           />
           {filteredConversations.length === 0 ? (
             <Paper p="xl" radius="md" ta="center" withBorder style={{ background: cardBg }}>
-              <Text size="sm" c="dimmed">No results</Text>
+              <Text size="sm" c="dimmed">
+                {searchQuery.trim() ? 'No results' : t('noMessages', lang)}
+              </Text>
+              {!searchQuery.trim() && (
+                <Text size="xs" c="dimmed" mt={4}>
+                  Start a chat from a listing or profile.
+                </Text>
+              )}
             </Paper>
           ) : (
             <Stack gap={4}>

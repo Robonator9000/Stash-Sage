@@ -166,7 +166,7 @@ export function CalendarHeatmap({ sessions, isDark = true, lang = 'en' }: Calend
                 style={{
                   width: `${100 / weeks.length}%`,
                   visibility: label ? 'visible' : 'hidden',
-                  fontSize: 10,
+                  fontSize: 11,
                   lineHeight: 1,
                   flexShrink: 0,
                   color: labelColor,
@@ -184,7 +184,7 @@ export function CalendarHeatmap({ sessions, isDark = true, lang = 'en' }: Calend
               <Box
                 key={i}
                 style={{
-                  fontSize: 10,
+                  fontSize: 11,
                   lineHeight: 1,
                   height: 13,
                   display: 'flex',

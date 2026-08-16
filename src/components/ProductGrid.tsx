@@ -16,6 +16,7 @@ interface ProductGridProps {
   onToggleFavorite: (id: string) => void;
   onQuickConsumeProduct?: (product: Product) => void;
   onAddProduct: () => void;
+  onClearFilters?: () => void;
   isSelectMode?: boolean;
   selectedIds?: Set<string>;
   onToggleSelect?: (id: string) => void;
@@ -33,6 +34,7 @@ export const ProductGrid = memo(function ProductGrid({
   onToggleFavorite,
   onQuickConsumeProduct,
   onAddProduct,
+  onClearFilters,
   isSelectMode = false,
   selectedIds,
   onToggleSelect,
@@ -44,6 +46,7 @@ export const ProductGrid = memo(function ProductGrid({
           isDark={isDark}
           hasProducts={products.length > 0}
           onAddProduct={onAddProduct}
+          onClearFilters={onClearFilters}
         />
       ) : layout === 'list' ? (
         <Stack gap="sm">

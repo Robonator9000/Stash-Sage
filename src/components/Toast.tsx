@@ -65,7 +65,7 @@ export function ToastContainer({ isDark = true }: ToastContainerProps) {
     return () => clearTimeout(timer);
   }, [toasts, removeToast]);
 
-  const isInfo = (toast: ToastMessage) => toast.variant === 'info' || (!toast.variant && toast.action);
+  const isInfo = (toast: ToastMessage) => toast.variant !== 'danger';
 
   return (
     <Stack

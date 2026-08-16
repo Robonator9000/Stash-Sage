@@ -85,7 +85,7 @@ export function QuickConsumeSelect({
             variant="gradient"
             gradient={{ from: 'cyan', to: 'emerald', deg: 135 }}
             fullWidth
-            disabled={!selected || Number(amount) <= 0}
+            disabled={!selected || Number(amount) <= 0 || Number(amount) > selected.amount}
             leftSection={<IconFlame size={14} />}
             onClick={handleLog}
           >

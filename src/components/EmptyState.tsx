@@ -1,4 +1,4 @@
-import { IconPlus } from '@tabler/icons-react';
+import { IconPlus, IconFilterOff } from '@tabler/icons-react';
 import { t } from '../utils/translations';
 import { useSettings } from '../utils/useSettings';
 import { LogoIcon } from './LogoIcon';
@@ -8,9 +8,10 @@ interface EmptyStateProps {
   isDark?: boolean;
   hasProducts: boolean;
   onAddProduct: () => void;
+  onClearFilters?: () => void;
 }
 
-export function EmptyState({ isDark = true, hasProducts, onAddProduct }: EmptyStateProps) {
+export function EmptyState({ isDark = true, hasProducts, onAddProduct, onClearFilters }: EmptyStateProps) {
   const { settings } = useSettings();
   const lang = settings.language;
 
@@ -54,9 +55,20 @@ export function EmptyState({ isDark = true, hasProducts, onAddProduct }: EmptySt
           <Text fw={700} size="xl" mb={4} c={isDark ? 'var(--mantine-color-dark-0)' : 'var(--mantine-color-gray-9)'}>
             {t('noProductsFound', lang)}
           </Text>
-          <Text ta="center" c={isDark ? 'var(--mantine-color-dark-2)' : 'var(--mantine-color-gray-5)'}>
+          <Text ta="center" mb="lg" maw={320} c={isDark ? 'var(--mantine-color-dark-2)' : 'var(--mantine-color-gray-5)'}>
             {t('adjustSearchHint', lang)}
           </Text>
+          {onClearFilters && (
+            <Button
+              onClick={onClearFilters}
+              size="md"
+              variant="light"
+              color="cyan"
+              leftSection={<IconFilterOff size={18} />}
+            >
+              {t('clearFilters', lang)}
+            </Button>
+          )}
         </>
       )}
     </Stack>

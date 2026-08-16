@@ -428,7 +428,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
           </div>
           <div style={{ position: 'absolute', bottom: 34, right: 8, display: 'flex', gap: 4, padding: 4, borderRadius: 10, opacity: compactHovered ? 1 : 0, transition: 'all 0.2s', pointerEvents: compactHovered ? 'auto' : 'none', background: isDark ? 'rgba(8,11,20,0.6)' : 'rgba(255,255,255,0.85)', backdropFilter: 'blur(6px)' }}>
             {renderIconButton(undefined, t('consume', lang), 'cyan', <IconFlame size={14} />, quickConsume.handlers, t('quickConsumeHint', lang))}
-            {renderIconButton((e) => buttonAction(e, () => onSell(product)), 'Sell', 'amber', <IconCurrencyDollar size={14} />)}
+            {renderIconButton((e) => buttonAction(e, () => onSell(product)), t('sell', lang), 'amber', <IconCurrencyDollar size={14} />)}
             {renderIconButton(
               (e) => buttonAction(e, () => onToggleFavorite(product.id)),
               product.favorite ? t('filterFavorites', lang) : t('addToFavorites', lang),
@@ -607,7 +607,7 @@ export const ProductCard = memo(function ProductCard({ product, onClick, onConsu
           </UnstyledButton>
           <UnstyledButton
             onClick={(e) => buttonAction(e, () => onSell(product))}
-            aria-label="Sell"
+            aria-label={t('sell', lang)}
             style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '8px 0', borderRadius: 12, fontWeight: 500, transition: 'all 0.2s', color: 'var(--mantine-color-amber-6)', background: isDark ? 'rgba(251,191,36,0.1)' : 'linear-gradient(to right, var(--mantine-color-amber-1), var(--mantine-color-orange-1))' }}
           >
             <IconCurrencyDollar size={16} />

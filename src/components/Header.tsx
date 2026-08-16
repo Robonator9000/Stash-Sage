@@ -97,7 +97,9 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
           <LogoIcon className="w-7 h-7" />
           <AuroraText
             className="font-display !py-0 text-lg tracking-tight"
-            colors={['#06b6d4', '#10b981', '#13eeef', '#a855f7', '#06b6d4']}
+            colors={isDark
+              ? ['#22d3ee', '#10b981', '#13eeef', '#a855f7', '#22d3ee']
+              : ['#0891b2', '#047857', '#0d9488', '#7c3aed', '#0891b2']}
             paused={headerPaused}
           >
             STASH SAGE
@@ -141,7 +143,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
                   {searchResults.products.map(p => (
                     <button key={p.id} onMouseDown={() => { setSearchQuery(p.name); handleResultClick(); }}
                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? 'hover:bg-[#0b1120] text-white' : 'hover:bg-gray-50 text-gray-900'}`}>
-                      <span className={`w-2 h-2 rounded-full shrink-0 ${p.amount > 0 ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                      <span title={p.amount > 0 ? 'In stock' : 'Out of stock'} aria-label={p.amount > 0 ? 'In stock' : 'Out of stock'} role="img" className={`w-2 h-2 rounded-full shrink-0 ${p.amount > 0 ? 'bg-emerald-500 ring-2 ring-emerald-500/25' : 'bg-red-500 ring-2 ring-red-500/25'}`} />
                       <span className="font-medium truncate">{p.name}</span>
                       {p.strain && <span className={`text-xs ml-auto shrink-0 ${isDark ? 'text-muted' : 'text-gray-600'}`}>{p.strain}</span>}
                     </button>
@@ -154,10 +156,10 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
                     {searchResults.users.map(u => (
                     <button key={u.user_id} onMouseDown={() => { handleViewProfile(u.user_id); }}
                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? 'hover:bg-[#0b1120] text-white' : 'hover:bg-gray-50 text-gray-900'}`}>
-                      {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover" /> : <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyanx to-emera flex items-center justify-center"><span className="text-white text-[10px] font-bold">{(u.display_name?.[0] || '?').toUpperCase()}</span></div>}
+                      {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover" /> : <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyanx to-emera flex items-center justify-center"><span className="text-white text-[11px] font-bold">{(u.display_name?.[0] || '?').toUpperCase()}</span></div>}
                       <div className="min-w-0">
                         <span className="truncate block">{u.display_name}</span>
-                        {u.username && <span className={`text-[10px] ${isDark ? 'text-muted' : 'text-gray-600'}`}>@{u.username}</span>}
+                        {u.username && <span className={`text-[11px] ${isDark ? 'text-muted' : 'text-gray-600'}`}>@{u.username}</span>}
                       </div>
                     </button>
                   ))}
@@ -167,10 +169,10 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
                 <div>
                   <div className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-white bg-[#0b1120]' : 'text-black bg-gray-50'}`}>Posts</div>
                   {searchResults.posts.map(p => (
-                    <button key={p.id} onMouseDown={() => { setSearchParams(prev => { prev.set('tab', 'community'); return prev; }, { replace: true }); handleResultClick(); }}
+                    <button key={p.id} onMouseDown={() => { setSearchParams(prev => { prev.set('tab', 'community'); prev.set('post', p.id); return prev; }, { replace: true }); handleResultClick(); }}
                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? 'hover:bg-[#0b1120] text-white' : 'hover:bg-gray-50 text-gray-900'}`}>
                       <span className="truncate text-xs">{p.content?.slice(0, 80)}</span>
-                      <span className={`text-[10px] shrink-0 ml-auto ${isDark ? 'text-muted' : 'text-gray-600'}`}>{timeAgo(p.created_at, lang)}</span>
+                      <span className={`text-[11px] shrink-0 ml-auto ${isDark ? 'text-muted' : 'text-gray-600'}`}>{timeAgo(p.created_at, lang)}</span>
                     </button>
                   ))}
                 </div>
@@ -181,7 +183,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
                   {searchResults.listings.map(l => (
                     <button key={l.id} onMouseDown={() => { setSearchParams(prev => { prev.set('tab', 'marketplace'); return prev; }, { replace: true }); handleResultClick(); }}
                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? 'hover:bg-[#0b1120] text-white' : 'hover:bg-gray-50 text-gray-900'}`}>
-                      {l.image_url ? <img src={l.image_url} alt="" className="w-6 h-6 rounded object-cover" /> : <div className="w-6 h-6 rounded bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center"><span className="text-white text-[10px] font-bold">$</span></div>}
+                      {l.image_url ? <img src={l.image_url} alt="" className="w-6 h-6 rounded object-cover" /> : <div className="w-6 h-6 rounded bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center"><span className="text-white text-[11px] font-bold">$</span></div>}
                       <span className="truncate flex-1">{l.title}</span>
                       <span className={`text-xs font-semibold shrink-0 ${isDark ? 'text-emera' : 'text-emerald-600'}`}>${l.price}</span>
                     </button>

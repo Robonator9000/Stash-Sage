@@ -6,12 +6,13 @@ import { Modal, Stack, Text, TextInput, Button, Alert } from '@mantine/core';
 interface ResetPasswordModalProps {
   isDark: boolean;
   onClose: () => void;
+  initialEmail?: string;
 }
 
-export function ResetPasswordModal({ isDark, onClose }: ResetPasswordModalProps) {
+export function ResetPasswordModal({ isDark, onClose, initialEmail = '' }: ResetPasswordModalProps) {
   const { isVisible, handleClose } = useModalAnimation(onClose);
   const { error, resetPasswordForEmail, clearError } = useAuth();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(initialEmail);
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
 

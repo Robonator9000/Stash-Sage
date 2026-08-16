@@ -93,15 +93,13 @@ export function useSettings() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('settings').select('data').eq('user_id', user.id).single()
-      .then(({ data, error }) => {
-        if (error) {
-          if (user) {
-            supabase.from('settings').upsert(
-              { user_id: user.id, data: _settings },
-              { onConflict: 'user_id' }
-            ).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
-          }
+    supabase.from('settings').select('data').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => {
+        if (!data?.data && user) {
+          supabase.from('settings').upsert(
+            { user_id: user.id, data: _settings },
+            { onConflict: 'user_id' }
+          ).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
           return;
         }
         if (data?.data) {
