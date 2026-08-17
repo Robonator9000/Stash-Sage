@@ -264,6 +264,7 @@ export function LeftSidebar({
         <ActionIcon
           variant="subtle"
           onClick={() => setCollapsed(!collapsed)}
+          size="xl"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed ? <IconChevronRight size={18} /> : <IconChevronLeft size={18} />}
@@ -274,6 +275,7 @@ export function LeftSidebar({
         <Box px="sm" pt="sm">
           <TextInput
             placeholder="Search navigation..."
+            aria-label="Search navigation"
             leftSection={<IconSearch size={16} />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.currentTarget.value)}

@@ -195,7 +195,7 @@ export const Header = memo(function Header({ searchQuery, setSearchQuery, setIsA
         </div>
 
         <Group gap="xs" style={{ flexShrink: 0 }}>
-          <ActionIcon variant="subtle" className="sm:hidden" onClick={() => setMobileSearchOpen(s => !s)} aria-label="Search" data-coach="search-mobile">
+          <ActionIcon variant="subtle" size="xl" className="sm:hidden" onClick={() => setMobileSearchOpen(s => !s)} aria-label="Search" data-coach="search-mobile">
             <IconSearch size={18} />
           </ActionIcon>
 

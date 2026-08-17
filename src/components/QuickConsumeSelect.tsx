@@ -41,7 +41,7 @@ export function QuickConsumeSelect({
     <Popover opened={opened} onChange={setOpened} position="bottom" width={280} shadow="md" withinPortal>
       <Popover.Target>
         <Button
-          size="compact-sm"
+          size="sm"
           variant={opened ? 'gradient' : 'subtle'}
           gradient={{ from: 'cyan.7', to: 'teal.7', deg: 135 }}
           leftSection={<IconFlame size={14} />}

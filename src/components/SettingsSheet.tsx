@@ -88,6 +88,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const [bannerPreview, setBannerPreview] = useState<string | undefined>(settings.profile?.banner_url);
   const seededRef = useRef(false);
   const pendingSeedRef = useRef(false);
+  const baselineRef = useRef<string>('');
   const [profileContacts, setProfileContacts] = useState<{ platform: string; value: string }[]>(settings.profile?.contacts || []);
   const [profileLocation, setProfileLocation] = useState(settings.profile?.location || '');
   const [showResetPassword, setShowResetPassword] = useState(false);
@@ -121,6 +122,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
     setAvatarPreview(settings.profile?.avatar_url);
     setBannerPreview(settings.profile?.banner_url);
     pendingSeedRef.current = true;
+    seededRef.current = false;
   }, [settings.profile, user]);
 
   // Derived after all state declarations: current drafts vs the settled baseline.
@@ -129,7 +131,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   useEffect(() => {
     if (!pendingSeedRef.current) return;
     pendingSeedRef.current = false;
-    profileRef.current = draftsKey;
+    baselineRef.current = draftsKey;
     seededRef.current = true;
   }, [draftsKey]);
 
@@ -295,12 +297,12 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const profileRef = useRef(draftsKey);
   // Only real edits (after the initial seed) count as dirty — not the async
   // user/profile load that populates the fields on first render.
-  const profileDirty = seededRef.current && !!user && draftsKey !== profileRef.current;
+  const profileDirty = seededRef.current && !!user && draftsKey !== baselineRef.current;
 
   // Unsaved profile drafts count as unsaved changes app-wide, so leaving the
   // settings tab triggers the same revert flow + toast as settings edits.
   useEffect(() => {
-    if (profileDirty) onDirtyChange?.(true);
+    onDirtyChange?.(profileDirty);
   }, [profileDirty, onDirtyChange]);
 
   const commitProfile = async () => {

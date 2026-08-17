@@ -65,7 +65,7 @@ export function NotificationBell({ isDark, lang, onViewProfile }: NotificationBe
         onClick={() => setOpen(!open)}
         variant="subtle"
         color="gray"
-        size="lg"
+        size="xl"
         radius="md"
         aria-label="Notifications"
         aria-expanded={open}

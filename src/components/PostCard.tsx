@@ -306,7 +306,7 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
               aria-label="Toggle comments"
               aria-expanded={showComments}
               aria-controls={`comment-section-${post.id}`}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 600, padding: '8px 10px', margin: '-4px 0', minHeight: 40, borderRadius: 9999, color: showComments ? (isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)') : mutedColor, background: showComments ? 'rgba(6,182,212,0.1)' : 'transparent' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 600, padding: '8px 12px', margin: '-4px 0', minHeight: 40, minWidth: 44, borderRadius: 9999, color: showComments ? (isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)') : mutedColor, background: showComments ? 'rgba(6,182,212,0.1)' : 'transparent' }}
               onMouseEnter={(e) => { if (!showComments) e.currentTarget.style.background = 'rgba(148,163,184,0.12)'; }}
               onMouseLeave={(e) => { if (!showComments) e.currentTarget.style.background = 'transparent'; }}
             >

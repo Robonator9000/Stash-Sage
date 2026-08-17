@@ -176,7 +176,7 @@ export function CreatePostCard({ isDark, lang, displayName, currentUserId, produ
                 aria-label="Add images"
                 disabled={imageFiles.length >= MAX_IMAGES}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 'var(--mantine-radius-md)',
+                  display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', minHeight: 40, boxSizing: 'border-box', borderRadius: 'var(--mantine-radius-md)',
                   fontSize: 12, fontWeight: 500, color: imageFiles.length >= MAX_IMAGES ? (isDark ? 'var(--mantine-color-gray-7)' : 'var(--mantine-color-gray-4)') : mutedColor,
                   cursor: imageFiles.length >= MAX_IMAGES ? 'not-allowed' : 'pointer',
                 }}
@@ -192,7 +192,7 @@ export function CreatePostCard({ isDark, lang, displayName, currentUserId, produ
                 <UnstyledButton
                   onClick={() => setShowProductPicker(!showProductPicker)}
                   aria-label="Toggle product picker"
-                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 'var(--mantine-radius-md)', fontSize: 12, fontWeight: 500, color: mutedColor }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', minHeight: 40, boxSizing: 'border-box', borderRadius: 'var(--mantine-radius-md)', fontSize: 12, fontWeight: 500, color: mutedColor }}
                 >
                   <IconLink size={16} />
                   {t('linkProduct', lang)}
