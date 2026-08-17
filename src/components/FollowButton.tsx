@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import { Button } from '@mantine/core';
 import { IconCheck, IconUserPlus } from '@tabler/icons-react';
+import { t } from '../utils/translations';
 
 interface FollowButtonProps {
   userId: string;
   currentUserId: string;
   isFollowing: boolean;
   isDark: boolean;
+  lang?: string;
   onFollow: (userId: string) => Promise<void>;
   onUnfollow: (userId: string) => Promise<void>;
 }
 
-export function FollowButton({ userId, currentUserId, isFollowing, isDark, onFollow, onUnfollow }: FollowButtonProps) {
+export function FollowButton({ userId, currentUserId, isFollowing, isDark, lang = 'en', onFollow, onUnfollow }: FollowButtonProps) {
   const [loading, setLoading] = useState(false);
 
   if (userId === currentUserId) return null;
@@ -29,7 +31,7 @@ export function FollowButton({ userId, currentUserId, isFollowing, isDark, onFol
     }
   }
 
-  const gradient = 'linear-gradient(135deg, var(--mantine-color-cyan-5), var(--mantine-color-emerald-5))';
+  const gradient = 'linear-gradient(135deg, var(--mantine-color-cyan-7), var(--mantine-color-emerald-7))';
   const followingBg = isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)';
   const followingColor = isDark ? 'var(--mantine-color-gray-3)' : 'var(--mantine-color-gray-6)';
   const followingBorder = isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-2)';
@@ -59,7 +61,7 @@ export function FollowButton({ userId, currentUserId, isFollowing, isDark, onFol
         },
       } : undefined}
     >
-      {loading ? '...' : isFollowing ? <><IconCheck size={12} /> Following</> : <><IconUserPlus size={12} /> Follow</>}
+      {loading ? '...' : isFollowing ? <><IconCheck size={12} /> {t('following', lang)}</> : <><IconUserPlus size={12} /> {t('follow', lang)}</>}
     </Button>
   );
 }

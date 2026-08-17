@@ -1,5 +1,7 @@
 const translations: Record<string, Record<string, string>> = {
   en: {
+    follow: 'Follow',
+    following: 'Following',
     totalProducts: 'Products',
     totalAmount: 'Total Amount',
     totalSessions: 'Sessions',
@@ -505,6 +507,8 @@ const translations: Record<string, Record<string, string>> = {
     alertsHint: 'Personal alerts from your stash appear in your notifications',
   },
   es: {
+    follow: 'Seguir',
+    following: 'Siguiendo',
     totalProducts: 'Productos',
     totalAmount: 'Cantidad Total',
     totalSessions: 'Sesiones',
@@ -1000,6 +1004,8 @@ const translations: Record<string, Record<string, string>> = {
     alertsHint: 'Las alertas personales de tu inventario aparecen en tus notificaciones',
   },
   fr: {
+    follow: 'Suivre',
+    following: 'Suivi',
     totalProducts: 'Produits',
     totalAmount: 'Quantité Totale',
     totalSessions: 'Sessions',
@@ -1495,6 +1501,8 @@ const translations: Record<string, Record<string, string>> = {
     alertsHint: "Les alertes personnelles de votre stock apparaissent dans vos notifications",
   },
   de: {
+    follow: 'Folgen',
+    following: 'Folgt',
     totalProducts: 'Produkte',
     totalAmount: 'Gesamtmenge',
     totalSessions: 'Sitzungen',
@@ -1990,6 +1998,8 @@ const translations: Record<string, Record<string, string>> = {
     alertsHint: 'Persönliche Hinweise aus deinem Vorrat erscheinen in deinen Benachrichtigungen',
   },
   pt: {
+    follow: 'Seguir',
+    following: 'Seguindo',
     totalProducts: 'Produtos',
     totalAmount: 'Quantidade Total',
     totalSessions: 'Sessões',

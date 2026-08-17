@@ -86,6 +86,8 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const [profileBio, setProfileBio] = useState(settings.profile?.bio || '');
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(settings.profile?.avatar_url);
   const [bannerPreview, setBannerPreview] = useState<string | undefined>(settings.profile?.banner_url);
+  const seededRef = useRef(false);
+  const pendingSeedRef = useRef(false);
   const [profileContacts, setProfileContacts] = useState<{ platform: string; value: string }[]>(settings.profile?.contacts || []);
   const [profileLocation, setProfileLocation] = useState(settings.profile?.location || '');
   const [showResetPassword, setShowResetPassword] = useState(false);
@@ -106,9 +108,30 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
     return () => clearTimeout(timer);
   }, [feedback]);
 
+  // Reseed drafts whenever the saved profile or user identity changes. The
+  // seed only MARKS itself pending; the baseline is taken one commit later,
+  // once the reseeded state has actually settled — otherwise the transient
+  // render between "seed" and "settle" reads as an edit and latches dirty.
   useEffect(() => {
     setProfileUsername(settings.profile?.username || user?.email?.split('@')[0] || '');
+    setProfileDisplayName(settings.profile?.displayName || '');
+    setProfileBio(settings.profile?.bio || '');
+    setProfileLocation(settings.profile?.location || '');
+    setProfileContacts(settings.profile?.contacts || []);
+    setAvatarPreview(settings.profile?.avatar_url);
+    setBannerPreview(settings.profile?.banner_url);
+    pendingSeedRef.current = true;
   }, [settings.profile, user]);
+
+  // Derived after all state declarations: current drafts vs the settled baseline.
+  const draftsKey = JSON.stringify([profileUsername, profileDisplayName, profileBio, profileLocation, profileContacts, avatarPreview, bannerPreview]);
+
+  useEffect(() => {
+    if (!pendingSeedRef.current) return;
+    pendingSeedRef.current = false;
+    profileRef.current = draftsKey;
+    seededRef.current = true;
+  }, [draftsKey]);
 
   const handleStatToggle = (key: keyof Settings['statsVisibility']) => {
     toggleStatVisibility(key);
@@ -269,9 +292,16 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
 
   // Profile edits live in draft state; the header Save button commits them
   // (localStorage settings + cloud upsert) alongside everything else.
-  const draftsKey = JSON.stringify([profileUsername, profileDisplayName, profileBio, profileLocation, profileContacts, avatarPreview, bannerPreview]);
   const profileRef = useRef(draftsKey);
-  const profileDirty = !!user && draftsKey !== profileRef.current;
+  // Only real edits (after the initial seed) count as dirty — not the async
+  // user/profile load that populates the fields on first render.
+  const profileDirty = seededRef.current && !!user && draftsKey !== profileRef.current;
+
+  // Unsaved profile drafts count as unsaved changes app-wide, so leaving the
+  // settings tab triggers the same revert flow + toast as settings edits.
+  useEffect(() => {
+    if (profileDirty) onDirtyChange?.(true);
+  }, [profileDirty, onDirtyChange]);
 
   const commitProfile = async () => {
     if (!profileUsername.trim() || !user) return false;
@@ -1069,6 +1099,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               )}
             </div>
           )}
+          {activeTab === 'security' && user && (
           <div className={`mt-6 pt-6 border-t-2 ${isDark ? 'border-red-500/20' : 'border-red-200'}`}>
             <label className={sectionLabel}><AlertTriangle className="w-4 h-4 text-red-500" />{t('dangerZone', lang)}</label>
 
@@ -1125,6 +1156,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
               </div>
             </div>
           </div>
+          )}
           {showResetPassword && (
             <ResetPasswordModal
               isDark={isDark}

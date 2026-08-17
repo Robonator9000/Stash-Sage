@@ -89,8 +89,8 @@ export function MonthlyTrendsChart({ consumptionByMonth, isDark, lang }: Monthly
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e5e7eb'} vertical={false} />
-            <XAxis dataKey="month" tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 11 }} axisLine={{ stroke: isDark ? '#1e293b' : '#e5e7eb' }} tickLine={false} />
-            <YAxis tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
+            <XAxis dataKey="month" tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} axisLine={{ stroke: isDark ? '#1e293b' : '#e5e7eb' }} tickLine={false} />
+            <YAxis tick={{ fill: isDark ? '#9db0c7' : '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
             <Tooltip
               contentStyle={{
                 backgroundColor: isDark ? '#111827' : '#fff',

@@ -288,7 +288,9 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
                 display: 'flex', alignItems: 'center', gap: 6,
                 fontSize: 14, fontWeight: 700,
                 color: liked ? 'var(--mantine-color-orange-6)' : mutedColor,
-                padding: '4px 10px',
+                padding: '8px 10px',
+                margin: '-4px 0',
+                minHeight: 40,
                 borderRadius: 9999,
                 background: liked ? 'rgba(251,146,60,0.12)' : 'transparent',
               }}
@@ -304,7 +306,7 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
               aria-label="Toggle comments"
               aria-expanded={showComments}
               aria-controls={`comment-section-${post.id}`}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 600, padding: '4px 10px', borderRadius: 9999, color: showComments ? (isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)') : mutedColor, background: showComments ? 'rgba(6,182,212,0.1)' : 'transparent' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 600, padding: '8px 10px', margin: '-4px 0', minHeight: 40, borderRadius: 9999, color: showComments ? (isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)') : mutedColor, background: showComments ? 'rgba(6,182,212,0.1)' : 'transparent' }}
               onMouseEnter={(e) => { if (!showComments) e.currentTarget.style.background = 'rgba(148,163,184,0.12)'; }}
               onMouseLeave={(e) => { if (!showComments) e.currentTarget.style.background = 'transparent'; }}
             >
@@ -316,9 +318,11 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
               <UnstyledButton
                 onClick={handleToggleBookmark}
                 aria-label={bookmarked ? t('bookmarked', lang) : t('bookmark', lang)}
-                style={{ color: bookmarked ? (isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)') : mutedColor }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 40, height: 40, borderRadius: 9999, color: bookmarked ? (isDark ? 'var(--mantine-color-cyan-4)' : 'var(--mantine-color-cyan-7)') : mutedColor }}
+                onMouseEnter={(e) => { if (!bookmarked) e.currentTarget.style.background = 'rgba(148,163,184,0.12)'; }}
+                onMouseLeave={(e) => { if (!bookmarked) e.currentTarget.style.background = 'transparent'; }}
               >
-                <IconBookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
+                <IconBookmark size={20} fill={bookmarked ? 'currentColor' : 'none'} />
               </UnstyledButton>
             )}
 
@@ -326,9 +330,11 @@ export const PostCard = memo(function PostCard({ post, isDark, lang, currentUser
               <UnstyledButton
                 onClick={() => onQuote(post.id)}
                 aria-label={t('sharePost', lang)}
-                style={{ color: mutedColor }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 40, height: 40, borderRadius: 9999, color: mutedColor }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(148,163,184,0.12)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
               >
-                <IconRepeat size={18} />
+                <IconRepeat size={20} />
               </UnstyledButton>
             )}
 

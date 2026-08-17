@@ -28,20 +28,30 @@ function authLang(): string {
   } catch { return 'en'; }
 }
 
+// getSession() and onAuthStateChange both fire on boot; without this guard
+// the two concurrent upserts race and one fails (409/400) for the same user.
+const inflightProfileUpserts = new Set<string>();
+
 async function upsertProfile(userId: string, displayName: string) {
-  // Create the default profile only on first sign-in. Never overwrite a
-  // user's chosen username/display name on later visits (an upsert without
-  // ignoreDuplicates WOULD clobber it). ignoreDuplicates keeps this insert-only.
-  const { error } = await supabase.from('profiles').upsert(
-    { user_id: userId, display_name: displayName, username: displayName },
-    { onConflict: 'user_id', ignoreDuplicates: true }
-  );
-  if (error) {
-    const { error: fbError } = await supabase.from('profiles').upsert(
-      { user_id: userId, display_name: displayName },
+  if (inflightProfileUpserts.has(userId)) return;
+  inflightProfileUpserts.add(userId);
+  try {
+    // Create the default profile only on first sign-in. Never overwrite a
+    // user's chosen username/display name on later visits (an upsert without
+    // ignoreDuplicates WOULD clobber it). ignoreDuplicates keeps this insert-only.
+    const { error } = await supabase.from('profiles').upsert(
+      { user_id: userId, display_name: displayName, username: displayName },
       { onConflict: 'user_id', ignoreDuplicates: true }
     );
-    if (fbError) throw fbError;
+    if (error && error.code !== '23505') {
+      const { error: fbError } = await supabase.from('profiles').upsert(
+        { user_id: userId, display_name: displayName },
+        { onConflict: 'user_id', ignoreDuplicates: true }
+      );
+      if (fbError && fbError.code !== '23505') throw fbError;
+    }
+  } finally {
+    inflightProfileUpserts.delete(userId);
   }
 }
 
