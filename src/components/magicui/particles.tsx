@@ -55,6 +55,7 @@ export function Particles({
   const containerRef = useRef<HTMLDivElement>(null);
   const context = useRef<CanvasRenderingContext2D | null>(null);
   const rafId = useRef<number | null>(null);
+  const lastDrawTime = useRef<number>(0);
   const circles = useRef<Array<Circle> | null>(null);
   const mouse = useRef<{ x: number; y: number }>({ x: -100, y: -100 });
   const sizeRef = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
@@ -124,14 +125,20 @@ export function Particles({
       }));
     }
 
-    const draw = () => {
+    const draw = (time: number) => {
       if (!canvas || !context.current) return;
       const { w, h } = sizeRef.current;
+      // Normalize motion to a 60fps design rate and clamp dt, so high-refresh
+      // displays (120-165Hz) don't run particles 2-3x fast and a backgrounded
+      // tab doesn't teleport them on resume.
+      const k = Math.min(Math.max(time - lastDrawTime.current, 0), 50) / 16.667;
+      lastDrawTime.current = time;
+      const easeFactor = Math.max(0, 1 - (1 - ease / 100) * k);
       context.current.clearRect(0, 0, w, h);
 
       circles.current!.forEach((circle) => {
-        circle.x += circle.dx + (vx || 0);
-        circle.y += circle.dy + (vy || 0);
+        circle.x += (circle.dx + (vx || 0)) * k;
+        circle.y += (circle.dy + (vy || 0)) * k;
 
         if (circle.x > w + 20) circle.x -= w + 40;
         if (circle.x < -20) circle.x += w + 40;
@@ -139,8 +146,8 @@ export function Particles({
         if (circle.y < -20) circle.y += h + 40;
 
         // Ease the current offset back toward its resting value.
-        circle.translateX *= ease / 100;
-        circle.translateY *= ease / 100;
+        circle.translateX *= easeFactor;
+        circle.translateY *= easeFactor;
 
         // Magnetic interaction with the pointer; strongest when close.
         const dx = mouse.current.x - circle.x;
@@ -148,11 +155,11 @@ export function Particles({
         const distance = Math.sqrt(dx * dx + dy * dy);
         const strength = distance < 1 ? 0 : (staticity / Math.max(1, distance * 2)) * circle.magnetism;
 
-        circle.translateX += Math.abs(dx) > 0.01 && distance > 1 ? (dx / distance) * strength : 0;
-        circle.translateY += Math.abs(dy) > 0.01 && distance > 1 ? (dy / distance) * strength : 0;
+        circle.translateX += Math.abs(dx) > 0.01 && distance > 1 ? (dx / distance) * strength * k : 0;
+        circle.translateY += Math.abs(dy) > 0.01 && distance > 1 ? (dy / distance) * strength * k : 0;
 
         // Fade particles in; near the pointer they bloom.
-        circle.alpha += (circle.targetAlpha - circle.alpha) * 0.05;
+        circle.alpha += (circle.targetAlpha - circle.alpha) * Math.min(1, 0.05 * k);
         const proximity = Math.max(0, 1 - distance / Math.max(1, 160));
         const alpha = Math.min(0.95, circle.alpha + proximity * 0.3);
 
@@ -171,7 +178,8 @@ export function Particles({
       rafId.current = requestAnimationFrame(draw);
     };
 
-    draw();
+    lastDrawTime.current = performance.now();
+    draw(performance.now());
 
     return () => {
       window.removeEventListener('resize', onResize);

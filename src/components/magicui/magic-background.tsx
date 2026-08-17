@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { InteractiveGridBackground } from './grid-pattern';
 import { Particles } from './particles';
 
@@ -48,9 +48,15 @@ export function MagicBackground({ isDark, variant = 'full' }: MagicBackgroundPro
     };
   }, []);
 
-  const baseColors = isDark
-    ? ['#06b6d4', '#10b981', '#13eeef', '#06b6d4']
-    : ['#0891b2', '#059669', '#13eeef', '#0891b2'];
+  // Stable identity per theme: a new array every render would re-run the
+  // Particles effect (colors is a dep) and restart the loop on every re-render.
+  const baseColors = useMemo(
+    () =>
+      isDark
+        ? ['#06b6d4', '#10b981', '#13eeef', '#06b6d4']
+        : ['#0891b2', '#059669', '#13eeef', '#0891b2'],
+    [isDark]
+  );
 
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0">

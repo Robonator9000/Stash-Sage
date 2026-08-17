@@ -74,19 +74,27 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
 
     let frame = 0;
     let paused = false;
+    // Single-flight guard: a resume race must never stack a second RAF loop
+    // (stacked loops multiply particle speed and tear the animation apart).
+    let scheduled = false;
+    let lastTime = 0;
 
     const shouldRun = () =>
       !document.hidden &&
       !document.querySelector('.mantine-Modal-root, .mantine-Drawer-root, [data-mantine-modal]');
 
-    const animate = () => {
+    const animate = (time: number) => {
+      scheduled = false;
       if (paused) return;
-      frame++;
+      // Clamp dt so a backgrounded tab doesn't teleport particles on resume.
+      const k = Math.min(Math.max(time - lastTime, 0), 50) / 16.667;
+      lastTime = time;
+      frame += k;
       ctx.clearRect(0, 0, w, h);
 
       for (const orb of orbs) {
-        orb.x += orb.vx + Math.sin(frame * 0.002 + orb.radius) * 0.3;
-        orb.y += orb.vy + Math.cos(frame * 0.003 + orb.radius) * 0.3;
+        orb.x += (orb.vx + Math.sin(frame * 0.002 + orb.radius) * 0.3) * k;
+        orb.y += (orb.vy + Math.cos(frame * 0.003 + orb.radius) * 0.3) * k;
         orb.x = Math.max(orb.radius * 0.5, Math.min(w - orb.radius * 0.5, orb.x));
         orb.y = Math.max(orb.radius * 0.5, Math.min(h - orb.radius * 0.5, orb.y));
 
@@ -115,9 +123,9 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
       ctx.fillRect(0, 0, w, h);
 
       for (const p of particles) {
-        p.x += p.vx + Math.sin(frame * 0.01 + p.size) * 0.15;
-        p.y += p.vy;
-        p.alpha += (Math.random() - 0.5) * 0.003;
+        p.x += (p.vx + Math.sin(frame * 0.01 + p.size) * 0.15) * k;
+        p.y += p.vy * k;
+        p.alpha += (Math.random() - 0.5) * 0.003 * k;
         p.alpha = Math.max(0.04, Math.min(0.4, p.alpha));
         if (p.y > h + 10) { p.y = -10; p.x = Math.random() * w; }
         if (p.x < -10) p.x = w + 10;
@@ -128,17 +136,26 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
         ctx.fill();
       }
 
-      rafRef.current = requestAnimationFrame(animate);
+      schedule();
+    };
+
+    const schedule = () => {
+      if (!scheduled) {
+        scheduled = true;
+        rafRef.current = requestAnimationFrame(animate);
+      }
     };
 
     const syncPause = () => {
       const run = shouldRun();
       if (run && paused) {
         paused = false;
-        rafRef.current = requestAnimationFrame(animate);
+        lastTime = performance.now();
+        schedule();
       } else if (!run && !paused) {
         paused = true;
         cancelAnimationFrame(rafRef.current);
+        scheduled = false;
       }
     };
 
@@ -148,7 +165,8 @@ export function BackgroundCanvas({ isDark }: BackgroundCanvasProps) {
     const observer = new MutationObserver(syncPause);
     observer.observe(document.body, { childList: true, subtree: true });
 
-    animate();
+    lastTime = performance.now();
+    schedule();
 
     return () => {
       window.removeEventListener('resize', resize);
