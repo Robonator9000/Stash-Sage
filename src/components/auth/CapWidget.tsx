@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface CapWidgetProps {
   onSuccess: (token: string) => void;
@@ -8,12 +8,14 @@ interface CapWidgetProps {
 }
 
 export function CapWidget({ onSuccess, className = '' }: CapWidgetProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [a, setA] = useState(0);
   const [b, setB] = useState(0);
   const [answer, setAnswer] = useState('');
   const [message, setMessage] = useState('');
   const [verified, setVerified] = useState(false);
 
+  // Generate new math problem on mount
   useEffect(() => {
     setA(Math.floor(Math.random() * 10));
     setB(Math.floor(Math.random() * 10));
@@ -27,6 +29,10 @@ export function CapWidget({ onSuccess, className = '' }: CapWidgetProps) {
       onSuccess(`math-${a}-${b}-${Date.now()}`);
     } else {
       setMessage('Incorrect answer, please try again.');
+      // Generate new problem for next attempt
+      setA(Math.floor(Math.random() * 10));
+      setB(Math.floor(Math.random() * 10));
+      setAnswer('');
     }
   };
 
@@ -39,7 +45,7 @@ export function CapWidget({ onSuccess, className = '' }: CapWidgetProps) {
         <input
           type="number"
           value={answer}
-          onChange={e => setAnswer(e.target.value)}
+          onChange={(e) => setAnswer(e.target.value)}
           className="w-20 text-center border rounded px-2 py-1"
           placeholder="Answer"
         />
