@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase, uploadProfileImage, deleteProfileImage } from '../utils/supabase';
 import { X, Globe, Palette, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, Camera, Mail, MessageCircle, MapPin, Bell, Rss, Eye, EyeOff } from 'lucide-react';
 import { ResetPasswordModal } from './ResetPasswordModal';
+import { CapWidget } from './auth/CapWidget';
 import { showToast } from './Toast';
 import { TextInput, NumberInput, Switch, Select, SegmentedControl, Button, Textarea, Text } from '@mantine/core';
 
@@ -89,6 +90,7 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const seededRef = useRef(false);
   const pendingSeedRef = useRef(false);
   const baselineRef = useRef<string>('');
+  const [capToken, setCapToken] = useState('');
   const [profileContacts, setProfileContacts] = useState<{ platform: string; value: string }[]>(settings.profile?.contacts || []);
   const [profileLocation, setProfileLocation] = useState(settings.profile?.location || '');
   const [showResetPassword, setShowResetPassword] = useState(false);
@@ -191,6 +193,15 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
     }
     if (authMode === 'signup' && !authUsername.trim()) {
       setAuthLocalError(t('errChooseUsername', lang));
+      return;
+    }
+    if (!capToken) {
+      setAuthLocalError('Please complete the CAPTCHA');
+      return;
+    }
+    const verified = await verifyCapToken(capToken);
+    if (!verified) {
+      setAuthLocalError('CAPTCHA verification failed');
       return;
     }
     setAuthSubmitting(true);
@@ -298,6 +309,20 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   // Only real edits (after the initial seed) count as dirty — not the async
   // user/profile load that populates the fields on first render.
   const profileDirty = seededRef.current && !!user && draftsKey !== baselineRef.current;
+
+  const verifyCapToken = async (token: string): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/cap/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, solutions: [], instr: true })
+      });
+      const data = await res.json();
+      return data.success === true;
+    } catch {
+      return false;
+    }
+  };
 
   // Unsaved profile drafts count as unsaved changes app-wide, so leaving the
   // settings tab triggers the same revert flow + toast as settings edits.
@@ -454,6 +479,9 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                         </button>
                       }
                     />
+                    <div className={`py-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+                      <CapWidget onSuccess={setCapToken} />
+                    </div>
                     {authMode === 'signup' && (
                       <>
                         <TextInput label={t('usernameLabel', lang)} placeholder={t('usernameLabel', lang)} value={authUsername}

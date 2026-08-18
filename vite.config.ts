@@ -4,7 +4,53 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   base: '/',
-  server: { fs: { strict: false } },
+  server: {
+    fs: { strict: false },
+    middleware: [
+      // Cap API routes
+      (req, res, next) => {
+        const url = req.url || '';
+        
+        if (url.startsWith('/api/cap/challenge') && req.method === 'GET') {
+          const scope = new URL(req.url || '', 'http://localhost').searchParams.get('scope') || 'auth';
+          const instrumentation = new URL(req.url || '', 'http://localhost').searchParams.get('instrumentation') !== 'false';
+          
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({
+            challenge: { c: 'challenge', s: 'salt', d: 'data' },
+            token: 'mock-token-' + Date.now(),
+            expires: Math.floor(Date.now() / 1000) + 300,
+            instrumentation: instrumentation,
+            scope: scope,
+          }));
+          return;
+        }
+        
+        if (url.startsWith('/api/cap/verify') && req.method === 'POST') {
+          let body = '';
+          req.on('data', chunk => body += chunk);
+          req.on('end', () => {
+            try {
+              const data = JSON.parse(body);
+              if (data.token) {
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ success: true, token: data.token }));
+              } else {
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ success: false, error: 'Missing token' }));
+              }
+            } catch {
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ success: false, error: 'Invalid JSON' }));
+            }
+          });
+          return;
+        }
+        
+        next();
+      },
+    ],
+  },
   optimizeDeps: {
     entries: ['src/**/*.{ts,tsx,js,jsx}'],
     exclude: ['three'],
