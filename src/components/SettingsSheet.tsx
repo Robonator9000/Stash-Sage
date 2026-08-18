@@ -310,14 +310,14 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   // user/profile load that populates the fields on first render.
   const profileDirty = seededRef.current && !!user && draftsKey !== baselineRef.current;
 
-  const verifyCapToken = async (token: string): Promise<boolean> => {
+const verifyCapToken = async (token: string): Promise<boolean> => {
     try {
-      const res = await fetch('/api/cap/verify', {
+      const resp = await fetch('/api/cap/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, solutions: [], instr: true })
+        body: JSON.stringify({ token, scope: 'auth', instrumentation: true }),
       });
-      const data = await res.json();
+      const data = await resp.json();
       return data.success === true;
     } catch {
       return false;
