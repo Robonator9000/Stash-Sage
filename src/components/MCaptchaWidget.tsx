@@ -6,7 +6,7 @@ interface MCaptchaWidgetProps {
 }
 
 const MCAPTCHA_WIDGET_URL = 'https://demo.mcaptcha.org/widget/?sitekey=Q3D8LBQqVbSLhdRHbHXdvj5GqE7sxaHV';
-const MCAPTCHA_SCRIPT_SRC = 'https://unpkg.com/@mcaptcha/vanilla-glue@0.1.0-rc2/dist/index.js';
+const MCAPTCHA_SCRIPT_SRC = 'https://cdn.mcaptcha.org/captcha.js';
 
 /**
  * mCaptcha proof-of-work widget.
@@ -18,6 +18,7 @@ const MCAPTCHA_SCRIPT_SRC = 'https://unpkg.com/@mcaptcha/vanilla-glue@0.1.0-rc2/
 export function MCaptchaWidget({ onVerify, className = '' }: MCaptchaWidgetProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [verified, setVerified] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -33,7 +34,7 @@ export function MCaptchaWidget({ onVerify, className = '' }: MCaptchaWidgetProps
         class="sr-only"
       >mCaptcha authorization token</label>
       <input type="hidden" name="mcaptcha__token" id="mcaptcha__token" />
-      <div id="mcaptcha__widget-container"></div>
+      <div id="mcaptcha__widget-container" style="min-height: 100px;"></div>
     `;
 
     // Load the glue script once per page
@@ -42,7 +43,11 @@ export function MCaptchaWidget({ onVerify, className = '' }: MCaptchaWidgetProps
       script.src = MCAPTCHA_SCRIPT_SRC;
       script.async = true;
       script.crossOrigin = 'anonymous';
-      script.onerror = () => console.error('mCaptcha: failed to load vanilla-glue script');
+      script.onload = () => setIsLoading(false);
+      script.onerror = () => {
+        console.error('mCaptcha: failed to load vanilla-glue script');
+        setIsLoading(false);
+      };
       document.head.appendChild(script);
     }
 
@@ -63,7 +68,24 @@ export function MCaptchaWidget({ onVerify, className = '' }: MCaptchaWidgetProps
   }, [onVerify]);
 
   return (
-    <div ref={rootRef} className={`mcaptcha-root ${className}`}>
+    <div ref={rootRef} className={`mcaptcha-root ${className}`} style={{ minHeight: '120px' }}>
+      {isLoading && (
+        <div className="flex items-center justify-center py-8">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Loading CAPTCHA...
+            </p>
+          </div>
+        </div>
+      )}
+      {!isLoading && !verified && (
+        <div className="text-center py-4">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">
+            Complete the CAPTCHA to verify you are human.
+          </p>
+        </div>
+      )}
       {verified && (
         <p className="text-sm text-emerald-500 mt-2" role="status">
           ✓ Verified
