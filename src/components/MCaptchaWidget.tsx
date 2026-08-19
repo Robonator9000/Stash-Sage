@@ -26,16 +26,26 @@ export function MCaptchaWidget({ onVerify, className = '' }: MCaptchaWidgetProps
 
     // vanilla-glue scans for these elements when it loads, so the DOM
     // skeleton must exist BEFORE the script tag is appended.
-    root.innerHTML = `
-      <label
-        data-mcaptcha_url="${MCAPTCHA_WIDGET_URL}"
-        for="mcaptcha__token"
-        id="mcaptcha__token-label"
-        class="sr-only"
-      >mCaptcha authorization token</label>
-      <input type="hidden" name="mcaptcha__token" id="mcaptcha__token" />
-      <div id="mcaptcha__widget-container" style="min-height: 100px;"></div>
-    `;
+    // Build DOM nodes properly to avoid innerHTML issues
+    const label = document.createElement('label');
+    label.setAttribute('data-mcaptcha_url', MCAPTCHA_WIDGET_URL);
+    label.setAttribute('for', 'mcaptcha__token');
+    label.setAttribute('id', 'mcaptcha__token-label');
+    label.className = 'sr-only';
+    label.textContent = 'mCaptcha authorization token';
+
+    const tokenInput = document.createElement('input');
+    tokenInput.type = 'hidden';
+    tokenInput.name = 'mcaptcha__token';
+    tokenInput.id = 'mcaptcha__token';
+
+    const widgetContainer = document.createElement('div');
+    widgetContainer.id = 'mcaptcha__widget-container';
+    widgetContainer.style.minHeight = '100px';
+
+    root.appendChild(label);
+    root.appendChild(tokenInput);
+    root.appendChild(widgetContainer);
 
     // Load the glue script once per page
     if (!document.querySelector(`script[src="${MCAPTCHA_SCRIPT_SRC}"]`)) {
@@ -52,9 +62,9 @@ export function MCaptchaWidget({ onVerify, className = '' }: MCaptchaWidgetProps
     }
 
     // Watch the hidden token input — vanilla-glue fills it once solved
-    const tokenInput = root.querySelector<HTMLInputElement>('#mcaptcha__token');
+    // Use the tokenInput we already created
     const interval = window.setInterval(() => {
-      if (tokenInput?.value) {
+      if (tokenInput.value) {
         window.clearInterval(interval);
         setVerified(true);
         onVerify(tokenInput.value);
@@ -63,7 +73,7 @@ export function MCaptchaWidget({ onVerify, className = '' }: MCaptchaWidgetProps
 
     return () => {
       window.clearInterval(interval);
-      root.innerHTML = '';
+      while (root.firstChild) root.removeChild(root.firstChild);
     };
   }, [onVerify]);
 
