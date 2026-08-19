@@ -9,7 +9,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase, uploadProfileImage, deleteProfileImage } from '../utils/supabase';
 import { X, Globe, Palette, Download, Upload, FileSpreadsheet, FileText, Clipboard, Merge, Clock, DollarSign, Lock, Hash, AlertTriangle, Database, BarChart3, User, Camera, Mail, MessageCircle, MapPin, Bell, Rss, Eye, EyeOff } from 'lucide-react';
 import { ResetPasswordModal } from './ResetPasswordModal';
-import { MCaptchaWidget } from './MCaptchaWidget';
 import { showToast } from './Toast';
 import { TextInput, NumberInput, Switch, Select, SegmentedControl, Button, Textarea, Text } from '@mantine/core';
 
@@ -103,7 +102,6 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
   const [emailChangeSubmitting, setEmailChangeSubmitting] = useState(false);
   const [emailChangeError, setEmailChangeError] = useState<string | null>(null);
   const [emailChangeSuccess, setEmailChangeSuccess] = useState(false);
-  const [mcaptchaToken, setMcaptchaToken] = useState('');
 
   useEffect(() => {
     if (!feedback) return;
@@ -193,10 +191,6 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
     }
     if (authMode === 'signup' && !authUsername.trim()) {
       setAuthLocalError(t('errChooseUsername', lang));
-      return;
-    }
-    if (!mcaptchaToken) {
-      setAuthLocalError('Please complete the CAPTCHA to continue');
       return;
     }
     setAuthSubmitting(true);
@@ -460,9 +454,6 @@ export function SettingsSheet({ products, onImport, onMergeImport, onClose, isDa
                         </button>
                       }
                     />
-                    <div className={`py-2 ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                      <MCaptchaWidget onVerify={setMcaptchaToken} />
-                    </div>
                     {authMode === 'signup' && (
                       <>
                         <TextInput label={t('usernameLabel', lang)} placeholder={t('usernameLabel', lang)} value={authUsername}
