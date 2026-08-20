@@ -24,12 +24,10 @@ import { Header } from './components/Header';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useAuth } from './contexts/AuthContext';
 import { supabase } from './utils/supabase';
-import { Button, Group, Select, SegmentedControl, Text, Pagination } from '@mantine/core';
+import { Box, Button, Group, Select, SegmentedControl, Text, Pagination } from '@mantine/core';
 
-// TEMPORARILY DISABLED: menu imports
-// import { MenuButton } from './components/MenuButton';
-// import { LeftSidebar } from './components/LeftSidebar';
-// import { BottomNav } from './components/BottomNav';
+import { LeftSidebar } from './components/LeftSidebar';
+import { BottomNav } from './components/BottomNav';
 import { MessagePopup } from './components/MessagePopup';
 import { NotificationsPage } from './components/NotificationsPage';
 const DashboardTab = lazy(() => import('./components/DashboardTab').then(m => ({ default: m.DashboardTab })));
@@ -70,7 +68,7 @@ export default function App() {
   const [sessionProduct, setSessionProduct] = useState<Product | null>(null);
   const [sessionAmount, setSessionAmount] = useState(0);
   const [sessionPeople, setSessionPeople] = useState(2);
-  const [settingsDefaultTab] = useState<'profile' | 'preferences' | 'session' | 'budget' | 'data' | 'security'>('preferences');
+  const [settingsDefaultTab, setSettingsDefaultTab] = useState<'profile' | 'preferences' | 'session' | 'budget' | 'data' | 'security'>('preferences');
   const [showChat, setShowChat] = useState(false);
   const [chatTargetUserId, setChatTargetUserId] = useState<string | null>(null);
 
@@ -623,7 +621,7 @@ export default function App() {
 
       {/* Main layout with left sidebar */}
       <div className="flex flex-1 w-full">
-        {/* TEMPORARILY DISABLED: Left Nav - desktop only
+        {/* Left Nav - desktop only, pinned to left wall, fixed on scroll */}
         <div className="hidden lg:block lg:sticky lg:top-[56px] lg:self-start lg:h-[calc(100vh-56px)] shrink-0">
           <Box style={{ height: '100%' }}>
             <LeftSidebar
@@ -635,7 +633,6 @@ export default function App() {
             />
           </Box>
         </div>
-        */}
 
         {/* Main content */}
         <div className="flex-1 min-w-0">
@@ -974,12 +971,10 @@ export default function App() {
       </div>
 
       {/* Bottom Nav - mobile only */}
-      {/* TEMPORARILY DISABLED: BottomNav
       <BottomNav
         isDark={isDark}
         onOpenChat={() => setShowChat(true)}
       />
-      */}
 
       {/* Pin Lock */}
       {showPinModal && (
@@ -1055,9 +1050,8 @@ export default function App() {
       <ToastContainer isDark={isDark} />
 
       {/* Menu shortcut */}
-      {/* TEMPORARILY DISABLED: MenuButton
-      <MenuButton />
-      */}
+      {/* DISABLED: MenuButton (opens MenuPage) */}
+      {/* <MenuButton /> */}
 
       {/* Animations */}
       {showSmoke && (
