@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BorderAnimate } from '@gfazioli/mantine-border-animate';
+import { useAuth } from '../contexts/AuthContext';
 
 export function MenuButton() {
+  const { isAdmin } = useAuth();
   const navigate = useNavigate();
   const [hovered, setHovered] = useState(false);
   const [hidden, setHidden] = useState(false);
@@ -16,6 +18,7 @@ export function MenuButton() {
   }, []);
 
   if (hidden) return null;
+  if (!isAdmin) return null;
 
   return (
     <button
