@@ -4,6 +4,7 @@ import { parseProductDates, safeSetItem, roundToHundredth } from './helpers';
 import { supabase } from './supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { showToast } from '../components/Toast';
+import { getOwner, setOwner, getTombstones, addTombstone, mergeProducts } from './productSync';
 
 const PRODUCTS_KEY = 'weed-products';
 
@@ -67,12 +68,21 @@ export function useProducts() {
     const id = user.id;
     $ids.forEach(x => { if (x !== id) $ids.delete(x); });
     $ids.add(id);
+    // Snapshot whether this device's cache belongs to the current user. Only
+    // merge when it does — otherwise (first login, or a different user's
+    // leftovers) trust the cloud to avoid leaking one user's stash to another.
+    const owner = getOwner();
     supabase.from('products').select('*').eq('user_id', id).order('createdat', { ascending: false })
       .then(({ data }) => {
         if (cancelled || !data || !$ids.has(id)) return;
-        const mapped = data.map(toCamel);
-        setProducts(mapped);
-        safeSetItem(PRODUCTS_KEY, JSON.stringify(mapped));
+        const cloud = data.map(toCamel);
+        if (owner === id) {
+          const tombstones = getTombstones();
+          setProducts(prev => mergeProducts(prev, cloud, tombstones));
+        } else {
+          setOwner(id);
+          setProducts(cloud);
+        }
       });
     return () => { cancelled = true; };
   }, [user?.id]);
@@ -82,23 +92,29 @@ export function useProducts() {
   }, [products]);
 
   const addProduct = useCallback((product: Product) => {
-    setProducts((prev) => [product, ...prev]);
+    const now = new Date();
+    const next = { ...product, updatedAt: now };
+    setProducts((prev) => [next, ...prev]);
     if (user) {
-      supabase.from('products').insert({ id: product.id, user_id: user.id, ...toSnake(product) }).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
+      supabase.from('products').insert({ id: product.id, user_id: user.id, ...toSnake(next) }).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
     }
   }, [user]);
 
   const updateProduct = useCallback((updated: Product) => {
+    const next = { ...updated, updatedAt: new Date() };
     setProducts((prev) =>
-      prev.map((p) => (p.id === updated.id ? updated : p))
+      prev.map((p) => (p.id === updated.id ? next : p))
     );
     if (user) {
-      supabase.from('products').update(toSnake(updated)).eq('id', updated.id).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
+      supabase.from('products').update(toSnake(next)).eq('id', updated.id).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
     }
   }, [user]);
 
   const deleteProduct = useCallback((id: string) => {
     setProducts((prev) => prev.filter((p) => p.id !== id));
+    // Remember the deletion so a later cloud fetch cannot resurrect the row if
+    // the cloud delete failed (e.g. the user was offline).
+    addTombstone(id);
     if (user) {
       supabase.from('products').delete().eq('id', id).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
     }
@@ -107,11 +123,12 @@ export function useProducts() {
   const toggleFavorite = useCallback((id: string) => {
     setProducts((prev) => {
       const p = prev.find(x => x.id === id);
+      const now = new Date();
       const next = prev.map((x) =>
-        x.id === id ? { ...x, favorite: !x.favorite } : x
+        x.id === id ? { ...x, favorite: !x.favorite, updatedAt: now } : x
       );
       if (user && p) {
-        supabase.from('products').update({ favorite: !p.favorite }).eq('id', id).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
+        supabase.from('products').update({ favorite: !p.favorite, updatedat: now.toISOString() }).eq('id', id).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
       }
       return next;
     });
@@ -119,6 +136,7 @@ export function useProducts() {
 
   const consumeProduct = useCallback((id: string, amountConsumed: number, consumedAt?: Date) => {
     let pRef: Product | undefined;
+    const now = new Date();
     setProducts((prev) => {
       pRef = prev.find(x => x.id === id);
       if (!pRef) return prev;
@@ -128,7 +146,8 @@ export function useProducts() {
               ...p,
               amount: roundToHundredth(Math.max(0, p.amount - amountConsumed)),
               consumptionCount: (p.consumptionCount || 0) + 1,
-              lastConsumed: consumedAt || new Date(),
+              lastConsumed: consumedAt || now,
+              updatedAt: now,
             }
           : p
       );
@@ -137,7 +156,8 @@ export function useProducts() {
       supabase.from('products').update({
         amount: roundToHundredth(Math.max(0, pRef.amount - amountConsumed)),
         consumptionCount: (pRef.consumptionCount || 0) + 1,
-        lastconsumed: (consumedAt || new Date()).toISOString(),
+        lastconsumed: (consumedAt || now).toISOString(),
+        updatedat: now.toISOString(),
       }).eq('id', id).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
     }
   }, [user]);
