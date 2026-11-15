@@ -1,11 +1,12 @@
 # Stash Sage
 
-Cannabis stash tracker PWA (React 19 + TypeScript + Mantine 8 + Tailwind 4 + Vite 6 + Supabase).
+Cannabis stash tracker PWA (React 18 + TypeScript + Mantine 7 + Tailwind 3 + Vite 6 + Supabase).
 
 ## Commands
 - `npm run dev` — dev server on :5173
 - `npm run build` — typecheck (`tsc -b`) + production build + PWA service worker. MUST pass before committing.
 - `npx tsc -b` — typecheck only
+- `npm test` — unit tests (Vitest, `tests/`); `npm run test:watch` for watch mode
 
 ## Critical workflow notes
 
@@ -31,3 +32,4 @@ Cannabis stash tracker PWA (React 19 + TypeScript + Mantine 8 + Tailwind 4 + Vit
 - `posts` and `notifications` are in the `supabase_realtime` publication with `REPLICA IDENTITY FULL` (migration `20260816010000`) — realtime respects RLS.
 - A BEFORE INSERT trigger (`trg_validate_notification`) silently DROPS notifications not backed by a real like/comment/follow/mention/listing row. If a test notification doesn't appear, that's the guard working — create the backing row first.
 - Realtime channels + optimistic updates are the norm; keep console free of 4xx noise (previous audit eliminated 406/404 errors)
+- Product sync is local-first: the cloud snapshot is merged into the local cache by `updatedAt` (last-write-wins per record) via `src/utils/productSync.ts`, not blindly replacing it, so offline edits survive reconnect. Deletions are remembered as localStorage tombstones so a failed cloud delete can't resurrect a row. Keep mutations bumping `updatedAt` (add/update/toggleFavorite/consumeProduct do).
