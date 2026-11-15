@@ -6,22 +6,21 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@gfazioli/mantine-border-animate": "^1.0.0",
     "@mantine/carousel": "^7.17.8",
-    "@mantine/charts": "^7.17.8",
     "@mantine/core": "^7.17.8",
     "@mantine/dates": "^7.17.8",
     "@mantine/form": "^7.17.8",
     "@mantine/hooks": "^7.17.8",
     "@mantine/modals": "^7.17.8",
     "@mantine/notifications": "^7.17.8",
-    "@supabase/server": "^1.1.0",
     "@supabase/supabase-js": "^2.108.1",
     "@tabler/icons-react": "^3.45.0",
-    "capjs-core": "^0.1.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "embla-carousel-react": "^8.6.0",
@@ -47,6 +46,7 @@
     "typescript": "^5.6.3",
     "vite": "^6.0.3",
     "vite-plugin-pwa": "^0.21.1",
+    "vitest": "^5.1.0",
     "workbox-precaching": "^7.4.1",
     "workbox-routing": "^7.4.1",
     "workbox-strategies": "^7.4.1"

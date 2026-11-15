@@ -1,9 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { Message } from '../types';
 import { supabase } from '../utils/supabase';
 import { rateLimit } from '../utils/helpers';
 
 let chatChannelCounter = 0;
+
+// Hard cap on messages fetched per thread open. Long conversations load the
+// most recent page instead of the entire history.
+const MESSAGE_PAGE_SIZE = 200;
 
 export function useChat(conversationId: string | null, userId: string | undefined, otherUserId?: string) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -14,6 +19,12 @@ export function useChat(conversationId: string | null, userId: string | undefine
   const [iBlockedOther, setIBlockedOther] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  // One channel per conversation, reused for both realtime events and typing
+  // broadcasts. Previously each typing ping created a throwaway channel that
+  // was never subscribed or removed (a leak), and its topic could drift from
+  // the subscribed channel's topic so typing was silently dropped.
+  const channelRef = useRef<RealtimeChannel | null>(null);
+  const subscribedRef = useRef(false);
 
   const fetchMessages = useCallback(async () => {
     if (!conversationId) { setLoading(false); return; }
@@ -24,7 +35,8 @@ export function useChat(conversationId: string | null, userId: string | undefine
         .from('messages')
         .select('*, reply_to:reply_to_id(id, content, user_id)')
         .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: true }),
+        .order('created_at', { ascending: false })
+        .limit(MESSAGE_PAGE_SIZE),
       otherUserId && userId
         ? supabase.from('blocked_users').select('blocker_id, blocked_id')
             .or(`and(blocker_id.eq.${userId},blocked_id.eq.${otherUserId}),and(blocker_id.eq.${otherUserId},blocked_id.eq.${userId})`)
@@ -32,7 +44,10 @@ export function useChat(conversationId: string | null, userId: string | undefine
         : { data: null },
     ]);
 
-    if (!messagesRes.error && messagesRes.data) setMessages(messagesRes.data);
+    if (!messagesRes.error && messagesRes.data) {
+      // Query pulled newest-first for the cap; restore chronological order for render.
+      setMessages([...messagesRes.data].reverse());
+    }
     setLoading(false);
 
     if (blockedRes?.data) {
@@ -58,13 +73,16 @@ export function useChat(conversationId: string | null, userId: string | undefine
     if (!conversationId) return;
     chatChannelCounter += 1;
     const id = chatChannelCounter;
+    subscribedRef.current = false;
 
     const channel = supabase.channel(`chat-${conversationId}-${id}`)
       .on('postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },
         (payload) => {
           const newMsg = payload.new as Message;
-          setMessages(prev => [...prev, newMsg]);
+          // Dedupe: the row may already be present (initial fetch overlap or a
+          // repeated echo) — never append a duplicate.
+          setMessages(prev => (prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]));
           if (newMsg.user_id !== userId) {
             const now = new Date().toISOString();
             supabase.from('messages').update({ read: true, read_at: now }).eq('id', newMsg.id);
@@ -86,9 +104,16 @@ export function useChat(conversationId: string | null, userId: string | undefine
           typingTimeoutRef.current = setTimeout(() => setOtherUserTyping(false), 3000);
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        subscribedRef.current = status === 'SUBSCRIBED';
+      });
+
+    // Reuse this single channel for typing broadcasts.
+    channelRef.current = channel;
 
     return () => {
+      channelRef.current = null;
+      subscribedRef.current = false;
       supabase.removeChannel(channel);
       clearTimeout(typingTimeoutRef.current);
     };
@@ -113,10 +138,10 @@ export function useChat(conversationId: string | null, userId: string | undefine
   }, [conversationId, userId, sending, blockedByOther]);
 
   const broadcastTyping = useCallback(() => {
-    if (!conversationId) return;
-    const channel = supabase.channel(`chat-${conversationId}-${chatChannelCounter}`);
+    const channel = channelRef.current;
+    if (!channel || !subscribedRef.current) return;
     channel.send({ type: 'broadcast', event: 'typing', payload: { userId } });
-  }, [conversationId, userId]);
+  }, [userId]);
 
   const unblockUser = useCallback(async () => {
     if (!userId || !otherUserId) return;

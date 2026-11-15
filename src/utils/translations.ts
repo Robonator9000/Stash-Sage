@@ -2496,6 +2496,20 @@ const translations: Record<string, Record<string, string>> = {
   },
 };
 
-export function t(key: string, language: string): string {
-  return translations[language]?.[key] || translations.en[key] || key;
+export function t(key: string, language: string, params?: Record<string, string | number>): string {
+  let value = translations[language]?.[key] || translations.en[key];
+  if (!value) {
+    // In dev, surface missing keys loudly instead of silently rendering the raw
+    // key to the user. Production keeps the graceful fallback.
+    if (import.meta.env.DEV) {
+      console.warn(`[i18n] Missing translation key "${key}" (language: ${language})`);
+    }
+    value = key;
+  }
+  if (params) {
+    for (const [name, replacement] of Object.entries(params)) {
+      value = value.replace(new RegExp(`\\{${name}\\}`, 'g'), String(replacement));
+    }
+  }
+  return value;
 }

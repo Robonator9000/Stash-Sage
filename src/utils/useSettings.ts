@@ -65,18 +65,29 @@ function notifyListeners() {
   _listeners.forEach((l) => l(_settings));
 }
 
+// Perform the actual cloud write for the latest settings snapshot. Safe to call
+// from the debounce timer OR on unmount; it is idempotent (upsert by user_id).
+function flushPersist() {
+  if (_persistTimer) {
+    clearTimeout(_persistTimer);
+    _persistTimer = undefined;
+  }
+  if (_persistUser) {
+    supabase.from('settings').upsert(
+      { user_id: _persistUser, data: _settings },
+      { onConflict: 'user_id' }
+    ).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
+  }
+}
+
 function persistSettings(s: Settings, user: string | undefined) {
   _persistUser = user;
   _settings = s;
   safeSetItem(SETTINGS_KEY, JSON.stringify(s));
   if (_persistTimer) clearTimeout(_persistTimer);
   _persistTimer = setTimeout(() => {
-    if (_persistUser) {
-      supabase.from('settings').upsert(
-        { user_id: _persistUser, data: _settings },
-        { onConflict: 'user_id' }
-      ).then(undefined, (err) => showToast({ id: 'sync-failed', title: 'Sync error', body: err?.message || 'Could not save to cloud' }));
-    }
+    _persistTimer = undefined;
+    flushPersist();
   }, 400);
 }
 
@@ -88,9 +99,10 @@ export function useSettings() {
     _listeners.add(setSettings);
     return () => {
       _listeners.delete(setSettings);
+      // If a debounced save is still pending when the last consumer unmounts,
+      // flush it now instead of dropping it on the floor.
       if (_listeners.size === 0 && _persistTimer) {
-        clearTimeout(_persistTimer);
-        _persistTimer = undefined;
+        flushPersist();
       }
     };
   }, []);

@@ -53,7 +53,6 @@ export default defineConfig({
   },
   optimizeDeps: {
     entries: ['src/**/*.{ts,tsx,js,jsx}'],
-    exclude: ['three'],
   },
   build: {
     chunkSizeWarningLimit: 500,
@@ -64,8 +63,8 @@ export default defineConfig({
           'vendor-supabase': ['@supabase/supabase-js'],
           'vendor-charts': ['recharts'],
           'vendor-pdf': ['jspdf', 'jspdf-autotable'],
-          'vendor-ui': ['lucide-react', 'dompurify'],
-          'vendor-mantine': ['@mantine/core', '@mantine/hooks', '@mantine/form', '@mantine/notifications', '@mantine/modals', '@mantine/carousel', '@mantine/charts', '@mantine/dates', 'embla-carousel-react', '@tabler/icons-react'],
+          'vendor-ui': ['lucide-react'],
+          'vendor-mantine': ['@mantine/core', '@mantine/hooks', '@mantine/form', '@mantine/notifications', '@mantine/modals', '@mantine/carousel', '@mantine/dates', 'embla-carousel-react', '@tabler/icons-react'],
         },
       },
     },
