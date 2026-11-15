@@ -10,7 +10,8 @@ import { useActivity } from './utils/useActivity';
 import { ImportResult, mergeImportProducts } from './utils/dataTransfer';
 import { searchProducts, sortProducts, filterProducts, generateId, formatPrecision, roundToHundredth, formatCurrency } from './utils/helpers';
 import { t } from './utils/translations';
-import { playSmokeSound, playSellSound } from './utils/sounds';
+import { useCelebration } from './hooks/useCelebration';
+import { CelebrationOverlay } from './components/CelebrationOverlay';
 import { addSystemNotification } from './utils/systemNotifications';
 import { ToastContainer, showToast } from './components/Toast';
 import { ProductGrid } from './components/ProductGrid';
@@ -30,6 +31,7 @@ import { LeftSidebar } from './components/LeftSidebar';
 import { BottomNav } from './components/BottomNav';
 import { MessagePopup } from './components/MessagePopup';
 import { NotificationsPage } from './components/NotificationsPage';
+import { FeatureGate } from './components/FeatureGate';
 const DashboardTab = lazy(() => import('./components/DashboardTab').then(m => ({ default: m.DashboardTab })));
 const HistoryTab = lazy(() => import('./components/HistoryTab').then(m => ({ default: m.HistoryTab })));
 const ProductModal = lazy(() => import('./components/ProductModal').then(m => ({ default: m.ProductModal })));
@@ -72,7 +74,7 @@ export default function App() {
   const [showChat, setShowChat] = useState(false);
   const [chatTargetUserId, setChatTargetUserId] = useState<string | null>(null);
 
-  const [showSmoke, setShowSmoke] = useState(false);
+  const { showSmoke, showDollar, celebrateSmoke, celebrateDollar } = useCelebration();
 
   const [settingsDirty, setSettingsDirty] = useState(false);
   const settingsSnapshot = useRef(settings);
@@ -281,15 +283,11 @@ export default function App() {
     });
   }, [settings.notificationAlerts, settings.decimalPrecision, settings.currency]);
 
-  const [showDollar, setShowDollar] = useState(false);
-
   const handleSell = useCallback((amount: number, notes?: string) => {
     const product = sellingProduct;
     if (!product) return;
     setSellingProduct(null);
-    setShowDollar(true);
-    playSellSound();
-      setTimeout(() => setShowDollar(false), 2200);
+    celebrateDollar();
     try {
       checkLowStock(product, amount);
       consumeProduct(product.id, amount);
@@ -313,9 +311,7 @@ export default function App() {
       setSessionAmount(amount);
       setSessionPeople(people);
     } else {
-      setShowSmoke(true);
-      playSmokeSound();
-      setTimeout(() => setShowSmoke(false), 2200);
+      celebrateSmoke();
     }
     // Persist + record in a try/catch so a failure can never block the UI flow.
     try {
@@ -333,9 +329,7 @@ export default function App() {
   const handleQuickConsume = useCallback((product: Product) => {
     if (!product || product.amount <= 0) return;
     const amount = settings.sessionDefaults?.defaultAmount > 0 ? Math.min(settings.sessionDefaults.defaultAmount, product.amount) : 0.25;
-    setShowSmoke(true);
-    playSmokeSound();
-    setTimeout(() => setShowSmoke(false), 2200);
+    celebrateSmoke();
     try {
       checkLowStock(product, amount);
       consumeProduct(product.id, amount);
@@ -356,9 +350,7 @@ export default function App() {
 
   const handleQuickLog = useCallback((product: Product, amount: number) => {
     if (!product || amount <= 0 || product.amount <= 0) return;
-    setShowSmoke(true);
-    playSmokeSound();
-    setTimeout(() => setShowSmoke(false), 2200);
+    celebrateSmoke();
     try {
       checkLowStock(product, amount);
       consumeProduct(product.id, amount);
@@ -381,9 +373,7 @@ export default function App() {
     setSessionProduct(null);
     setSessionAmount(0);
     setSessionPeople(2);
-    setShowSmoke(true);
-    playSmokeSound();
-    setTimeout(() => setShowSmoke(false), 2200);
+    celebrateSmoke();
     try {
       addSession(session);
       addActivityEntry({
@@ -838,21 +828,7 @@ export default function App() {
           <ErrorBoundary isDark={isDark} lang={lang}>
           <div className="space-y-4">
             {!user ? (
-              <div className={`flex flex-col items-center justify-center py-20 px-6 text-center rounded-2xl ${
-                isDark ? 'bg-slate-800/40 border border-slate-700/50' : 'bg-gray-50 border border-gray-200'
-              }`}>
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
-                  isDark ? 'bg-slate-700/60' : 'bg-gray-200'
-                }`}>
-                  <Lock className={`w-7 h-7 ${isDark ? 'text-slate-300' : 'text-gray-600'}`} />
-                </div>
-                <h3 className={`text-lg font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {t('wipTitle', lang)}
-                </h3>
-                <p className={`text-sm max-w-xs ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                  {t('wipCommunityDesc', lang)}
-                </p>
-              </div>
+              <FeatureGate isDark={isDark} lang={lang} titleKey="wipTitle" descKey="wipCommunityDesc" />
             ) : (
               <Suspense fallback={<div className={`text-center py-16 ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>Loading...</div>}>
                 <CommunityPage onOpenChat={handleOpenChat} />
@@ -867,21 +843,7 @@ export default function App() {
           <ErrorBoundary isDark={isDark} lang={lang}>
           <div className="space-y-4">
             {!user ? (
-              <div className={`flex flex-col items-center justify-center py-20 px-6 text-center rounded-2xl ${
-                isDark ? 'bg-slate-800/40 border border-slate-700/50' : 'bg-gray-50 border border-gray-200'
-              }`}>
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
-                  isDark ? 'bg-slate-700/60' : 'bg-gray-200'
-                }`}>
-                  <Lock className={`w-7 h-7 ${isDark ? 'text-slate-300' : 'text-gray-600'}`} />
-                </div>
-                <h3 className={`text-lg font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {t('wipTitle', lang)}
-                </h3>
-                <p className={`text-sm max-w-xs ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
-                  {t('wipMarketplaceDesc', lang)}
-                </p>
-              </div>
+              <FeatureGate isDark={isDark} lang={lang} titleKey="wipTitle" descKey="wipMarketplaceDesc" />
             ) : (
               <Suspense fallback={<div className={`text-center py-16 ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>Loading...</div>}>
                 <MarketplaceFeed
@@ -1054,34 +1016,7 @@ export default function App() {
       {/* <MenuButton /> */}
 
       {/* Animations */}
-      {showSmoke && (
-        <div className="fixed inset-0 z-[100] pointer-events-none flex flex-col items-center justify-center gap-2">
-          <div className="flex items-end gap-3">
-            <span className="animate-smoke-puff text-6xl" style={{ animationDuration: '1.6s', animationDelay: '0s' }}>{'\uD83D\uDD25'}</span>
-            <span className="animate-smoke-puff text-7xl" style={{ animationDuration: '1.1s', animationDelay: '0.2s' }}>{'\uD83D\uDCA8'}</span>
-            <span className="animate-smoke-puff text-5xl" style={{ animationDuration: '1.4s', animationDelay: '0.4s' }}>{'\uD83D\uDCA8'}</span>
-          </div>
-          <div className="flex items-end gap-4 mt-2">
-            <span className="animate-smoke-puff text-4xl" style={{ animationDuration: '1.3s', animationDelay: '0.1s' }}>{'\uD83D\uDCA8'}</span>
-            <span className="animate-smoke-puff text-5xl" style={{ animationDuration: '0.9s', animationDelay: '0.35s' }}>{'\uD83D\uDD25'}</span>
-            <span className="animate-smoke-puff text-3xl" style={{ animationDuration: '1.5s', animationDelay: '0.5s' }}>{'\uD83D\uDCA8'}</span>
-          </div>
-        </div>
-      )}
-      {showDollar && (
-        <div className="fixed inset-0 z-[100] pointer-events-none flex flex-col items-center justify-center gap-1">
-          <div className="flex items-end gap-3">
-            <span className="animate-dollar-float text-4xl" style={{ animationDuration: '1.8s', animationDelay: '0s' }}>{'\uD83D\uDCB0'}</span>
-            <span className="animate-dollar-float text-6xl font-black text-emerald-400" style={{ animationDuration: '1.2s', animationDelay: '0.15s' }}>$</span>
-            <span className="animate-dollar-float text-4xl" style={{ animationDuration: '1.6s', animationDelay: '0.3s' }}>{'\uD83D\uDCB8'}</span>
-          </div>
-          <div className="flex items-end gap-4 mt-1">
-            <span className="animate-dollar-float text-3xl font-bold text-emerald-400" style={{ animationDuration: '1.4s', animationDelay: '0.1s' }}>$</span>
-            <span className="animate-dollar-float text-5xl font-black text-emerald-400" style={{ animationDuration: '2s', animationDelay: '0.35s' }}>$</span>
-            <span className="animate-dollar-float text-3xl" style={{ animationDuration: '1.3s', animationDelay: '0.05s' }}>{'\uD83D\uDCB0'}</span>
-          </div>
-        </div>
-      )}
+      <CelebrationOverlay smoke={showSmoke} dollar={showDollar} />
     </div>
   );
 }
